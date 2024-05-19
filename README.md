@@ -1,4 +1,4 @@
-# PAZZY
+# ZAPPY
 Zappy a epitech project
 
 ## Our team
