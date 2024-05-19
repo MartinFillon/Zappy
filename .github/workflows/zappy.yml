@@ -1,4 +1,4 @@
-name: 'arcade'
+name: 'zappy'
 
 on:
   push:
@@ -13,7 +13,6 @@ on:
 env:
   MIRROR_URL: ""
   EXECUTABLES: ""
-  ARGUMENTS: ""
 
 jobs:
   check_program_compilation:
@@ -30,19 +29,14 @@ jobs:
       - run: |
           OIFS=$IFS
           IFS=' '
-          ls $EXECUTABLES
+          for file in $EXECUTABLES; do
+            if [[ ! -x "$file" ]]; then
+              echo "Not proper executable: $file"
+              exit 2
+            fi
+          done
           IFS=$OIFS
-          if [[ $? != 0 ]]
-          then
-              echo "Program not compiled properly"
-              exit 2
-          fi
-          TEST=`ls $EXECUTABLES`
-          if [[ $TEST != $EXECUTABLES ]]
-          then
-              echo "Not proper executable"
-              exit 2
-          fi
+          echo "All files are proper executables"
 
   push_to_mirror:
     needs: [check_program_compilation]
