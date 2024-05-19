@@ -1,4 +1,4 @@
-name: 'ccding-style'
+name: 'coding-style'
 
 on:
   push:
