@@ -15,7 +15,8 @@ SRC = $(BASE_SRC)
 BASE_SRC = 	src/main.c\
 			src/queue/create.c\
 			src/queue/delete.c\
-			src/queue/push.c
+			src/queue/push.c\
+			src/queue/pop.c
 
 OBJ = $(SRC:.c=.o)
 

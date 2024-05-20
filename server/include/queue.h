@@ -50,3 +50,11 @@ void free_queue(queue_t *q);
  * @return QUEUE_SUCESS or QUEUE_ERROR or QUEUE_ALLOC_FAILED
  */
 enum queue_error_e queue_push_back(queue_t *q, command_t *command);
+
+/**
+ * @brief pop the first command of the queue
+ *
+ * @param q the queue
+ * @return the command (which is a stack allocation) or NULL
+ */
+command_t *queue_pop(queue_t *q);
