@@ -58,3 +58,11 @@ enum queue_error_e queue_push_back(queue_t *q, command_t *command);
  * @return the command (which is a stack allocation) or NULL
  */
 command_t *queue_pop(queue_t *q);
+
+/**
+ * @brief display the queue
+ *
+ * @param q the queue
+ * @param f the function to display the command
+ */
+void queue_display(queue_t *q, void (*f)(command_t *));
