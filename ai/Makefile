@@ -23,7 +23,7 @@ fclean: clean
 	rm -f $(NAME)
 
 tests_run:
-	cargo test --coverage
+	cargo test
 
 re: fclean all
 
