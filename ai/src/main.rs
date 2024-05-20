@@ -10,7 +10,7 @@ mod flags;
 fn main() {
     let tmp = flags::get_flags();
     match tmp {
-        Ok(res) => println!("{:?}", res.port),
-        Err(e) => println!("{}", e)
+        Ok(res) => println!("{}", res),
+        Err(e) => println!("{}", e),
     }
 }
