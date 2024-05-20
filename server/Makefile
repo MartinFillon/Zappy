@@ -7,11 +7,13 @@
 
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
+CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
 
 SRC = $(BASE_SRC)
-BASE_SRC = src/main.c
+BASE_SRC = 	src/main.c\
+			src/queue/create.c
 
 OBJ = $(SRC:.c=.o)
 

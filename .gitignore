@@ -3,3 +3,5 @@ zappy_ai
 zappy_gui
 
 *.o
+.cache
+compile_commands.json
