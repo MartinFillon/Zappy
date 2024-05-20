@@ -6,6 +6,7 @@
 */
 
 #include "parsing_handler.h"
+#include "utils.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -24,12 +25,23 @@ static void init_args(args_infos_t *args)
     args->names = NULL;
 }
 
+static bool check_args(args_infos_t *args)
+{
+    if (args->freq == -1)
+        args->freq = 100;
+    if (args->clients_nb == -1 || args->height == -1 ||
+        args->width == -1 || args->port == -1 || args->names == NULL) {
+        logger_error("Options are missing.");
+        return false;
+    }
+    return true;
+}
+
 static bool handle_flags(char const **av, size_t *idx, args_infos_t *args)
 {
     for (size_t i = 0; handlers[i].flag != NULL; i++) {
-        if (!strcmp(av[*idx], handlers[i].flag)) {
+        if (!strcmp(av[*idx], handlers[i].flag))
             return handlers[i].handler(av, idx, args);
-        }
     }
     return false;
 }
@@ -45,5 +57,5 @@ bool parse_command_line(char const **av, args_infos_t *args)
         if (!handle_flags(av, &i, args))
             return false;
     }
-    return true;
+    return check_args(args);
 }

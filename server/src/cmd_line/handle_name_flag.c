@@ -32,13 +32,14 @@ static bool get_names(
 )
 {
     size_t max_idx = (*idx) + nb_team;
+    size_t i = 1;
 
-    for (size_t i = 1; ((*idx) + i) <= max_idx && av[(*idx) + i] != NULL; i++) {
+    for (; ((*idx) + i) <= max_idx && av[(*idx) + i] != NULL; i++) {
         args->names[i - 1] = strdup(av[(*idx) + i]);
         if (!args->names[i - 1])
             return false;
     }
-    args->names[nb_team] = NULL;
+    args->names[i - 1] = NULL;
     *idx = max_idx;
     return true;
 }
