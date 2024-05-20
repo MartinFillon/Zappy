@@ -2,13 +2,19 @@ name: 'coding-style'
 
 on:
   push:
-    branches:
-    - main
-    - master
+    branches: [ main, master ]
+    paths:
+      - 'server/**'
+      - 'gui/Makefile'
+      - 'Makefile'
+      - 'ai/Makefile'
   pull_request:
-    branches:
-    - main
-    - master
+    branches: [ main, master ]
+    paths:
+      - 'server/**'
+      - 'gui/Makefile'
+      - 'Makefile'
+      - 'ai/Makefile'
 
 jobs:
   check_coding_style:
