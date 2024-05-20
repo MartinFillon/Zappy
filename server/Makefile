@@ -8,6 +8,7 @@
 CC = gcc
 CPPFLAGS = -Iinclude/
 CFLAGS = -Wall -Wextra -Werror
+CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
 
@@ -20,13 +21,20 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_cmd_line 		\
 						handle_nb_flags			\
 						handle_name_flag		\
-					)						\
+					)\
 					$(addprefix utils/, 	\
 						logger_error 		\
 						free_box 			\
 					)\
-				)							\
+          $(addprefix queue/,   \
+            create              \
+            delete              \
+            push                \
+            pop                 \
+          )\
+				)\
 			)\
+
 
 OBJ = $(SRC:.c=.o)
 
@@ -50,7 +58,7 @@ fclean: clean
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): $(SRC) $(TEST_SRC)
 	$(CC) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
-		-o $(TEST_NAME)
+		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
