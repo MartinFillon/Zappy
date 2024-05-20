@@ -9,7 +9,6 @@
 
 #include "ArgParser/ArgParser.hpp"
 
-
 int main(int argc, char *argv[])
 {
     ArgParser parser;
@@ -18,7 +17,6 @@ int main(int argc, char *argv[])
 
     parser.setDefault("p", 4242, true)
         .setDefault("h", std::string("local"), true);
-    ;
     try {
         parser.parse(argc, argv);
         port = parser.get<int>("p");
