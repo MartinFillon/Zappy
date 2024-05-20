@@ -5,12 +5,20 @@
 // main
 //
 
+use std::process;
+
 mod flags;
 
+static ERROR_CODE: i32 = 84;
+
 fn main() {
-    let tmp = flags::get_flags();
-    match tmp {
-        Ok(res) => println!("{}", res),
-        Err(e) => println!("{}", e),
+    match flags::check_flags() {
+        Ok(res) => {
+            println!("{}", res)
+        },
+        Err(e) => {
+            println!("Error: {}", e);
+            process::exit(ERROR_CODE)
+        }
     }
 }

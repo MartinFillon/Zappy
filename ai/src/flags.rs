@@ -13,11 +13,12 @@ static LOCALHOST: &str = "127.0.0.1";
 
 #[derive(Debug)]
 pub struct Flags {
-    pub port: Option<usize>,
-    pub name: Option<String>,
-    pub machine: String,
+    port: Option<usize>,
+    name: Option<String>,
+    machine: String,
 }
 
+#[allow(dead_code)]
 impl Flags {
     fn new() -> Flags {
         Flags {
@@ -30,19 +31,30 @@ impl Flags {
     fn set_port(&mut self, port: usize) {
         self.port = Some(port)
     }
+
     fn set_name(&mut self, name: String) {
         self.name = Some(name)
     }
+
     fn set_machine(&mut self, machine: String) {
         self.machine = machine
     }
+
+    pub fn is_port_none(&self) -> bool {
+        self.port.is_none()
+    }
+
+    pub fn is_name_none(&self) -> bool {
+        self.name.is_none()
+    }
+
 }
 
 impl std::fmt::Display for Flags {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "Machine: {}, Port: {}, Name: {}",
+            "Flags {{\n  Machine: {},\n  Port: {},\n  Name: {}\n}};",
             self.machine,
             self.port
                 .map_or_else(|| "None".to_string(), |p| p.to_string()),
@@ -93,7 +105,7 @@ fn get_machine_from_args(
     Ok(())
 }
 
-pub fn get_flags() -> Result<Flags, String> {
+fn get_flags() -> Result<Flags, String> {
     let mut flags_struct = Flags::new();
     let mut args = args_os();
     args.next();
@@ -111,4 +123,19 @@ pub fn get_flags() -> Result<Flags, String> {
         };
     }
     Ok(flags_struct)
+}
+
+pub fn check_flags() -> Result<Flags, String> {
+    match get_flags() {
+        Ok(flags) => {
+            if flags.is_port_none() {
+                return Err(String::from("Port is not set."))
+            }
+            if flags.is_name_none() {
+                return Err(String::from("Name is not set."))
+            }
+            return Ok(flags);
+        }
+        Err(e) => Err(e)
+    }
 }
