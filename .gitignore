@@ -5,3 +5,4 @@ zappy_gui
 *.o
 .cache
 compile_commands.json
+coding-style-reports.log
