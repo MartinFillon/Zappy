@@ -5,31 +5,15 @@
 ## Makefile
 ##
 
-all: gui server
+all: gui server # ai
 
-gui:
-	@make -C gui
+gui server ai:
+	@make -C $@
 
-ai:
-	@make -C ai
-
-server:
-	@make -C server
-
-clean:
-	@make clean -C gui
-	# @make clean -C ai
-	@make clean -C server
-
-fclean:
-	@make fclean -C gui
-	# @make fclean -C ai
-	@make fclean -C server
-
-tests_run:
-	@make tests_run -C gui
-	# @make tests_run -C ai
-	@make tests_run -C server
+clean fclean tests_run:
+	@make $@ -C gui
+	# @make $@ -C ai
+	@make $@ -C server
 
 re: fclean all
 
