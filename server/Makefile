@@ -6,12 +6,22 @@
 ##
 
 CC = gcc
+CPPFLAGS = -Iinclude/
 CFLAGS = -Wall -Wextra -Werror
 
 NAME = ../zappy_server
 
 SRC = $(BASE_SRC)
-BASE_SRC = src/main.c
+BASE_SRC = $(addsuffix .c, 				\
+				$(addprefix src/, 			\
+					main 					\
+					$(addprefix cmd_line/, 	\
+					display_help 			\
+					handle_cmd_line 		\
+					handle_nb_flags			\
+					)						\
+				)							\
+			)\
 
 OBJ = $(SRC:.c=.o)
 
