@@ -40,7 +40,7 @@ fclean: clean
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): $(SRC) $(TEST_SRC)
 	$(CC) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
-		-o $(TEST_NAME)
+		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
