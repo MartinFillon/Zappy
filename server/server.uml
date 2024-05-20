@@ -1,0 +1,38 @@
+@startuml server
+
+class Reader {
+    +read()
+    -queue
+}
+
+class Processing {
+    +process(Client)
+    +send()
+}
+'
+class Client {
+    +send()
+    -Queue queue
+    -int fd
+    -char *team
+    -Vector2 position
+    -Inventory inventory
+    -int level
+    -bool is_alive
+}
+
+Processing <-- Reader
+Processing <|- Client
+
+class Gui {
+    -Client
+    -int height
+    -int width
+    -int fd
+    +send()
+}
+
+Gui <-- Reader
+Gui <|- Client
+
+@enduml
