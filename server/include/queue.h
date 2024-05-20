@@ -7,9 +7,15 @@
 
 #pragma once
 
+#include <stdlib.h>
 #include "command.h"
 
-typedef struct queue_s {
+struct queue_node_s {
     command_t *command;
-    struct queue_s *next;
+    struct queue_node_s *next;
+};
+
+typedef struct {
+    struct queue_node_s *node;
+    size_t size_max;
 } queue_t;
