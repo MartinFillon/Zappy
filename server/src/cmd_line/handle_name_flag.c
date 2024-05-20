@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "logger.h"
+#include "utils.h"
 #include "args_info.h"
 
 static size_t get_nb_team(char const **av, size_t idx)
@@ -22,6 +22,8 @@ static size_t get_nb_team(char const **av, size_t idx)
     return count;
 }
 
+/// @brief Get all the names that are inside av argument
+///        between idx and (idx + nb_team) index..
 static bool get_names(
     char const **av,
     size_t *idx,
@@ -31,9 +33,9 @@ static bool get_names(
 {
     size_t max_idx = (*idx) + nb_team;
 
-    for (size_t i = 1; ((*idx) + i) < max_idx && av[(*idx) + i] != NULL; i++) {
-        args->names[i] = strdup(av[(*idx) + i]);
-        if (!args->names[i])
+    for (size_t i = 1; ((*idx) + i) <= max_idx && av[(*idx) + i] != NULL; i++) {
+        args->names[i - 1] = strdup(av[(*idx) + i]);
+        if (!args->names[i - 1])
             return false;
     }
     args->names[nb_team] = NULL;

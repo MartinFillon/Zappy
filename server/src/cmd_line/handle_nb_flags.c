@@ -10,7 +10,7 @@
 #include <ctype.h>
 
 #include "args_info.h"
-#include "logger.h"
+#include "utils.h"
 
 static bool is_number(char const *str)
 {

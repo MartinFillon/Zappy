@@ -21,8 +21,9 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_nb_flags			\
 						handle_name_flag		\
 					)						\
-					$(addprefix logger/, 	\
+					$(addprefix utils/, 	\
 						logger_error 		\
+						free_box 			\
 					)\
 				)							\
 			)\
