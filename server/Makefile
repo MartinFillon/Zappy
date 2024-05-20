@@ -14,7 +14,8 @@ NAME = ../zappy_server
 SRC = $(BASE_SRC)
 BASE_SRC = 	src/main.c\
 			src/queue/create.c\
-			src/queue/delete.c
+			src/queue/delete.c\
+			src/queue/push.c
 
 OBJ = $(SRC:.c=.o)
 
