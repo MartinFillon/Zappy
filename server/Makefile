@@ -6,7 +6,6 @@
 ##
 
 CC = gcc
-CPPFLAGS = -Iinclude/
 CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -iquote./include
 
