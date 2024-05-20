@@ -7,9 +7,12 @@
 
 use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
+use std::process;
 use std::str::FromStr;
 
 static LOCALHOST: &str = "127.0.0.1";
+
+static SUCCESS_CODE: i32 = 0;
 
 #[derive(Debug)]
 pub struct Flags {
@@ -105,8 +108,8 @@ fn get_machine_from_args(
 }
 
 fn get_flags() -> Result<Flags, String> {
-    let mut flags_struct = Flags::new();
     let mut args = args_os();
+    let mut flags_struct = Flags::new();
     args.next();
 
     while let Some(flag) = args.next() {
@@ -115,6 +118,10 @@ fn get_flags() -> Result<Flags, String> {
             .map_err(|_| String::from("Invalid UTF-8 Format."))?
             .as_str()
         {
+            "-help" => {
+                usage();
+                process::exit(SUCCESS_CODE);
+            }
             "-p" => get_port_from_args("port", &mut args, &mut flags_struct)?,
             "-n" => get_name_from_args("name", &mut args, &mut flags_struct)?,
             "-h" => get_machine_from_args("machine", &mut args, &mut flags_struct)?,
@@ -133,4 +140,13 @@ pub fn check_flags() -> Result<Flags, String> {
         return Err(String::from("Name is not set."));
     }
     Ok(flags)
+}
+
+pub fn usage() {
+    println!(
+        "USAGE: ./zappy_ai -p port -n name -h machine
+    -p `port` port number
+    -n `name` name of the team
+    -h `machine` name of the machine; localhost by default"
+    )
 }

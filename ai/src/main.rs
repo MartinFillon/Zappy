@@ -16,6 +16,7 @@ fn main() {
         Ok(res) => println!("{}", res),
         Err(e) => {
             println!("Error: {}", e);
+            flags::usage();
             process::exit(ERROR_CODE)
         }
     }
