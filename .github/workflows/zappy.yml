@@ -11,8 +11,8 @@ on:
     - master
 
 env:
-  MIRROR_URL: ""
-  EXECUTABLES: ""
+  MIRROR_URL: "git@github.com:EpitechPromo2027/B-YEP-400-PAR-4-1-zappy-alexandre.vigoureux.git"
+  EXECUTABLES: "zappy_gui zappy_server"
 
 jobs:
   check_program_compilation:
@@ -24,7 +24,7 @@ jobs:
         with:
             fetch-depth: 0
       - run: make
-        timeout-minutes: 2
+        timeout-minutes: 5
       - run: make clean
       - run: |
           OIFS=$IFS
