@@ -45,6 +45,5 @@ bool parse_command_line(char const **av, args_infos_t *args)
         if (!handle_flags(av, &i, args))
             return false;
     }
-    dprintf(1, "%d %d %d %d %d\n", args->port, args->width, args->height, args->clients_nb, args->freq);
     return true;
 }

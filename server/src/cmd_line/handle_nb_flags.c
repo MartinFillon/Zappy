@@ -10,6 +10,7 @@
 #include <ctype.h>
 
 #include "args_info.h"
+#include "logger.h"
 
 static bool is_number(char const *str)
 {
@@ -26,8 +27,14 @@ static bool parse_nbr(
     int *nbr
 )
 {
-    if (av[(*idx) + 1] == NULL || !is_number(av[(*idx + 1)]))
+    if (av[(*idx) + 1] == NULL || av[(*idx) + 1][0] == '-') {
+        logger_error("Argument not provided.");
         return false;
+    }
+    if (!is_number(av[(*idx + 1)])) {
+        logger_error("Argument is not a number.");
+        return false;
+    }
     *nbr = atoi(av[(*idx) + 1]);
     (*idx)++;
     return true;
@@ -35,35 +42,45 @@ static bool parse_nbr(
 
 bool parse_height(char const **av, size_t *idx, args_infos_t *args)
 {
-    if (args->height != -1)
+    if (args->height != -1) {
+        logger_error("Height already defined.");
         return false;
+    }
     return parse_nbr(av, idx, &args->height);
 }
 
 bool parse_width(char const **av, size_t *idx, args_infos_t *args)
 {
-    if (args->width != -1)
+    if (args->width != -1) {
+        logger_error("Width already defined.");
         return false;
+    }
     return parse_nbr(av, idx, &args->width);
 }
 
 bool parse_port(char const **av, size_t *idx, args_infos_t *args)
 {
-    if (args->port != -1)
+    if (args->port != -1) {
+        logger_error("Port already defined.");
         return false;
+    }
     return parse_nbr(av, idx, &args->port);
 }
 
 bool parse_clients_nb(char const **av, size_t *idx, args_infos_t *args)
 {
-    if (args->clients_nb != -1)
+    if (args->clients_nb != -1) {
+        logger_error("Clients_nb already defined.");
         return false;
+    }
     return parse_nbr(av, idx, &args->clients_nb);
 }
 
 bool parse_frequency(char const **av, size_t *idx, args_infos_t *args)
 {
-    if (args->freq != -1)
+    if (args->freq != -1) {
+        logger_error("Frequency already defined.");
         return false;
+    }
     return parse_nbr(av, idx, &args->freq);
 }

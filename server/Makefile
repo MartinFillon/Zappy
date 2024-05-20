@@ -16,10 +16,14 @@ BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					main 					\
 					$(addprefix cmd_line/, 	\
-					display_help 			\
-					handle_cmd_line 		\
-					handle_nb_flags			\
+						display_help 			\
+						handle_cmd_line 		\
+						handle_nb_flags			\
+						handle_name_flag		\
 					)						\
+					$(addprefix logger/, 	\
+						logger_error 		\
+					)\
 				)							\
 			)\
 
