@@ -5,16 +5,12 @@
 // main
 //
 
-use std::{env, process};
+mod flags;
 
 fn main() {
-    let mut args = env::args_os();
-    args.next();
-
-    if let Some(flag) = args.next() {
-        if flag.into_string().is_ok() {
-        } else {
-            eprintln!("Argument")
-        }
+    let tmp = flags::get_flags();
+    match tmp {
+        Ok(res) => println!("{:?}", res.port),
+        Err(e) => println!("{}", e)
     }
 }
