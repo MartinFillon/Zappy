@@ -26,6 +26,11 @@ fclean:
 	# @make fclean -C ai
 	@make fclean -C server
 
+tests_run:
+	@make tests_run -C gui
+	# @make tests_run -C ai
+	@make tests_run -C server
+
 re: fclean all
 
-.PHONY: all clean fclean re gui ai server
+.PHONY: all clean fclean re gui ai server tests_run
