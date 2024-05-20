@@ -5,6 +5,16 @@
 // main
 //
 
+use std::{env, process};
+
 fn main() {
-    println!("Hello, world!");
+    let mut args = env::args_os();
+    args.next();
+
+    if let Some(flag) = args.next() {
+        if flag.into_string().is_ok() {
+        } else {
+            eprintln!("Argument")
+        }
+    }
 }
