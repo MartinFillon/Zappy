@@ -47,7 +47,6 @@ impl Flags {
     pub fn is_name_none(&self) -> bool {
         self.name.is_none()
     }
-
 }
 
 impl std::fmt::Display for Flags {
@@ -64,14 +63,14 @@ impl std::fmt::Display for Flags {
 }
 
 fn parse_arg<T: FromStr>(arg_type: &str, arg: Option<OsString>) -> Result<T, String> {
-    arg.ok_or_else(|| String::from(format!("Flag `{}` argument is missing.", arg_type)))
+    arg.ok_or_else(|| format!("Flag `{}` argument is missing.", arg_type))
         .and_then(|arg| {
             arg.into_string()
                 .map_err(|_| String::from("Invalid UTF-8 Format."))
         })
         .and_then(|arg| {
             arg.parse::<T>()
-                .map_err(|_| String::from(format!("Failed to parse argument for {}.", arg_type)))
+                .map_err(|_| format!("Failed to parse argument for {}.", arg_type))
         })
 }
 
@@ -119,23 +118,19 @@ fn get_flags() -> Result<Flags, String> {
             "-p" => get_port_from_args("port", &mut args, &mut flags_struct)?,
             "-n" => get_name_from_args("name", &mut args, &mut flags_struct)?,
             "-h" => get_machine_from_args("machine", &mut args, &mut flags_struct)?,
-            any => return Err(String::from(format!("Unknown flag: {}.", any))),
+            any => return Err(format!("Unknown flag: {}.", any)),
         };
     }
     Ok(flags_struct)
 }
 
 pub fn check_flags() -> Result<Flags, String> {
-    match get_flags() {
-        Ok(flags) => {
-            if flags.is_port_none() {
-                return Err(String::from("Port is not set."))
-            }
-            if flags.is_name_none() {
-                return Err(String::from("Name is not set."))
-            }
-            return Ok(flags);
-        }
-        Err(e) => Err(e)
+    let flags = get_flags()?;
+    if flags.is_port_none() {
+        return Err(String::from("Port is not set."));
     }
+    if flags.is_name_none() {
+        return Err(String::from("Name is not set."));
+    }
+    Ok(flags)
 }
