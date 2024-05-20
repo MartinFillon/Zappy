@@ -45,7 +45,7 @@ $(TEST_NAME): $(SRC) $(TEST_SRC)
 		-o $(TEST_NAME)
 
 tests_run:	$(TEST_NAME)
-	./$(TEST_NAME)
+	./$(TEST_NAME) -h 123 -p 123123
 
 re: fclean all
 
