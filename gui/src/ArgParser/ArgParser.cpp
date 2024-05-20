@@ -36,6 +36,17 @@ bool ArgParser::get<bool>(const std::string &param) const
     }
 }
 
+template <>
+std::string ArgParser::get<std::string>(const std::string &param) const
+{
+    if (params_.find(param) == params_.end()) {
+        throw ArgParserException(
+            "Parameter not found: " + param, "ArgParser::get"
+        );
+    }
+    return params_.at(param);
+}
+
 void ArgParser::checkMandatoryArgs(const std::set<std::string> &providedArgs
 ) const
 {
