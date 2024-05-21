@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-#include "define.h"
+#include "macros.h"
 #include "map.h"
 #include "types/map.h"
 

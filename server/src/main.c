@@ -10,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "define.h"
+#include "macros.h"
 #include "server.h"
 #include "utils.h"
 #include "args_info.h"
