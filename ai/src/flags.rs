@@ -5,10 +5,15 @@
 // flags
 //
 
+#![allow(dead_code)]
+
 use std::env::{args_os, ArgsOs};
-use std::ffi::OsString;
 use std::process;
+
+use std::ffi::OsString;
 use std::str::FromStr;
+
+use std::fmt::Display;
 
 static LOCALHOST: &str = "127.0.0.1";
 
@@ -21,16 +26,7 @@ pub struct Flags {
     machine: String,
 }
 
-#[allow(dead_code)]
 impl Flags {
-    fn new() -> Flags {
-        Flags {
-            port: None,
-            name: None,
-            machine: String::from(LOCALHOST),
-        }
-    }
-
     fn set_port(&mut self, port: usize) {
         self.port = Some(port)
     }
@@ -52,7 +48,17 @@ impl Flags {
     }
 }
 
-impl std::fmt::Display for Flags {
+impl Default for Flags {
+    fn default() -> Flags {
+        Flags {
+            port: None,
+            name: None,
+            machine: String::from(LOCALHOST),
+        }
+    }
+}
+
+impl Display for Flags {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
@@ -109,7 +115,7 @@ fn get_machine_from_args(
 
 fn get_flags() -> Result<Flags, String> {
     let mut args = args_os();
-    let mut flags_struct = Flags::new();
+    let mut flags_struct = Flags::default();
     args.next();
 
     while let Some(flag) = args.next() {
