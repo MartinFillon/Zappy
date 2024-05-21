@@ -52,7 +52,7 @@ bool parse_names(char const **av, size_t *idx, args_infos_t *args)
         logger_error("No team provided for '-n' option.");
         return false;
     }
-    args->names = malloc(sizeof(*args->names) * (nb_team + 1));
+    args->names = calloc((nb_team + 1), sizeof(*args->names));
     if (!args->names || !get_names(av, idx, nb_team, args)) {
         logger_error("Allocation error.");
         return false;
