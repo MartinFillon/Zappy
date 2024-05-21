@@ -7,26 +7,22 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
 
-typedef struct {
-    char *team;
-    size_t x;
-    size_t y;
-} ai_t;
+#include "ai.h"
+#include "map.h"
+#include "queue.h"
 
 enum client_type_e {
     AI,
     GUI,
-    UNSET,
+    UNSET = -1,
 };
 
 typedef struct {
-    size_t map_x;
-    size_t map_y;
-
-    size_t nb_teams;
     ai_t *ais;
+    map_t map;
 } game_t;
 
 union data_u {
@@ -35,14 +31,10 @@ union data_u {
 };
 
 typedef struct {
-    char *str;
-    size_t len;
-} buffer_t;
-
-typedef struct {
     int fd;
-    buffer_t *buffer;
+    FILE *ffd; // for getline purposes, to be openened with fdopen
+    queue_t *process_queue;
     union data_u data;
     enum client_type_e type;
-    int (*fct)(int, char const *, union data_u *data, game_t *game);
+    int (*fct)(int, char const *, union data_u *data, map_t *game);
 } client_t;
