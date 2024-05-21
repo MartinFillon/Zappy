@@ -14,7 +14,6 @@ NAME = ../zappy_server
 SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
-					main 					\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -44,6 +43,7 @@ BASE_SRC = $(addsuffix .c, 				\
 				)\
 			)\
 
+SRC += src/main.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -65,11 +65,11 @@ fclean: clean
 	rm -f $(TEST_NAME)
 
 $(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): $(SRC) $(TEST_SRC)
-	$(CC) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
+$(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
+	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS)
 
-tests_run:	$(TEST_NAME)
+tests_run:	$(TEST_NAMsE)
 	./$(TEST_NAME)
 
 re: fclean all
