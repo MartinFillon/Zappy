@@ -11,3 +11,4 @@
 
 map_t *create_map(size_t x, size_t y);
 void fill_map(map_t *map);
+void destroy_map(map_t *map);
