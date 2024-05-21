@@ -2,14 +2,18 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** init_client
+** close_client
 */
 
+#include <unistd.h>
 #include "client.h"
+#include "types/client.h"
 
-void init_client(client_t *c, int fd)
+void close_client(client_t *c)
 {
-    c->fd = fd;
+    close(c->fd);
+    c->fd = 0;
+    free(c->buffer.buffer);
     c->buffer.buffer = NULL;
     c->buffer.size = 0;
     c->ai = NULL;

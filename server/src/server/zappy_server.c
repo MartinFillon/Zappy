@@ -11,10 +11,22 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
+#include "client.h"
 #include "define.h"
 #include "server.h"
 #include "utils.h"
-#include "args_info.h"
+
+static void handle_client(server_t *serv)
+{
+    for (int i = 0; i < SOMAXCONN; i++) {
+        if (serv->clients[i].fd != 0 &&
+            FD_ISSET(serv->clients[i].fd, &serv->read_fds)) {
+            if (read_client(&serv->clients[i]) == ERROR) {
+                close_client(&serv->clients[i]);
+            }
+        }
+    }
+}
 
 /// @brief Actually there is only stdin that is read so we put 1 to maxfd.
 static int select_server(server_t *serv)
@@ -33,6 +45,7 @@ static int select_server(server_t *serv)
     }
     if (FD_ISSET(serv->fd, &serv->read_fds))
         accept_new_client(serv);
+    handle_client(serv);
     return SUCCESS;
 }
 
