@@ -5,6 +5,7 @@
 ** main
 */
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +15,11 @@
 #include "server.h"
 #include "utils.h"
 #include "args_info.h"
+
+static void sig(int signum)
+{
+    (void)signum;
+}
 
 int main(int ac, char const **av)
 {
@@ -27,7 +33,9 @@ int main(int ac, char const **av)
     if (parse_command_line(av, &args) == false)
         return EPI_ERROR;
     my_free_box(args.names);
+    signal(SIGINT, &sig);
     if (loop_server(&args) == ERROR)
         return EPI_ERROR;
+    logger_info("Server stopped\n");
     return SUCCESS;
 }

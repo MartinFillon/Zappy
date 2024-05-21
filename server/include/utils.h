@@ -7,5 +7,8 @@
 
 #pragma once
 
-void logger_error(char const *mess);
+void logger_debug(char const *fmt, ...);
+void logger_info(char const *fmt, ...);
+void logger_warn(char const *fmt, ...);
+void logger_error(char const *fmt, ...);
 void my_free_box(char **arr);

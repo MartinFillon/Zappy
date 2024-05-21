@@ -7,15 +7,15 @@
 
 #include <arpa/inet.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #include "macros.h"
+#include "utils.h"
 
 static int bind_server(int sock_fd, struct sockaddr_in *my_addr)
 {
     if (bind(sock_fd, (struct sockaddr *)my_addr, sizeof(*my_addr)) == -1) {
-        perror("bind");
+        logger_error("Bind failed\n");
         return ERROR;
     }
     return SUCCESS;
@@ -24,7 +24,7 @@ static int bind_server(int sock_fd, struct sockaddr_in *my_addr)
 static int listen_to_port(int sock_fd, uint32_t port)
 {
     if (listen(sock_fd, port) == -1) {
-        perror("listen");
+        logger_error("Listen failed\n");
         return ERROR;
     }
     return SUCCESS;
@@ -42,7 +42,7 @@ static int socket_init(void)
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sock_fd == -1)
-        perror("sock_fd");
+        logger_error("Socket creation failed\n");
     return sock_fd;
 }
 

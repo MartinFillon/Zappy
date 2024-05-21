@@ -22,6 +22,7 @@ static void init_args(args_infos_t *args)
     args->height = -1;
     args->width = -1;
     args->port = -1;
+    args->team_count = 0;
     args->names = NULL;
 }
 

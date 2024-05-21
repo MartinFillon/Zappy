@@ -9,6 +9,9 @@
 
 void display_help(void)
 {
-    dprintf(1, "USAGE: ./zappy_server -p port"
-        "-x width -y height -n name1 name2 ... -c clientsNb -f freq");
+    dprintf(
+        1,
+        "USAGE: ./zappy_server -p port "
+        "-x width -y height -n name1 name2 ... -c clientsNb -f freq\n"
+    );
 }

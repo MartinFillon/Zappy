@@ -37,8 +37,18 @@ BASE_SRC = $(addsuffix .c, 				\
           			  	pop                 \
           			)\
 					$(addprefix server/, 	\
+						accept				\
 					  	init_server			\
 						zappy_server		\
+					)						\
+					$(addprefix client/, 	\
+						init_client			\
+						send	 			\
+						ai_entrypoint	 	\
+						gui_entrypoint	 	\
+						parse_unset			\
+						read_client			\
+						close_client		\
 					)						\
 				)\
 			)\

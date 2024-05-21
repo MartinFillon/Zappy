@@ -8,33 +8,31 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "ai.h"
 #include "map.h"
-#include "queue.h"
 
 enum client_type_e {
+    UNSET,
     AI,
     GUI,
-    UNSET = -1,
+};
+
+struct buffer_s {
+    char *buffer;
+    size_t size;
 };
 
 typedef struct {
     ai_t *ais;
     map_t map;
+    char **teams;
 } game_t;
 
-union data_u {
-    ai_t *ai;
-    game_t *gui;
-};
-
-typedef struct {
+typedef struct client_s {
     int fd;
-    FILE *ffd; // for getline purposes, to be openened with fdopen
-    queue_t *process_queue;
-    union data_u data;
+    struct buffer_s buffer;
+    ai_t *ai; // only for AI clients
     enum client_type_e type;
-    int (*fct)(int, char const *, union data_u *data, map_t *game);
+    int (*entrypoint)(char const *, struct client_s *, game_t *);
 } client_t;
