@@ -18,7 +18,6 @@ int read_client(client_t *c)
     ssize_t bytes_read = 0;
 
     bytes_read = read(c->fd, buffer, BUFF_SIZE);
-
     if (bytes_read <= 0) {
         logger_info("Client %d has disconnected\n", c->fd);
         return -1;

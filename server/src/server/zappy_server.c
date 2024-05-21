@@ -16,15 +16,20 @@
 #include "server.h"
 #include "utils.h"
 
+static void handle_cli_isset(server_t *serv, int i)
+{
+    if (serv->clients[i].fd != 0 &&
+        FD_ISSET(serv->clients[i].fd, &serv->read_fds)) {
+        if (read_client(&serv->clients[i]) == ERROR) {
+            close_client(&serv->clients[i]);
+        }
+    }
+}
+
 static void handle_client(server_t *serv)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
-        if (serv->clients[i].fd != 0 &&
-            FD_ISSET(serv->clients[i].fd, &serv->read_fds)) {
-            if (read_client(&serv->clients[i]) == ERROR) {
-                close_client(&serv->clients[i]);
-            }
-        }
+        handle_cli_isset(serv, i);
     }
 }
 

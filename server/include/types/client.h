@@ -11,7 +11,6 @@
 
 #include "ai.h"
 #include "map.h"
-#include "queue.h"
 
 enum client_type_e {
     UNSET,

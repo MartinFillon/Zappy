@@ -13,6 +13,7 @@
 void logger_error(char const *fmt, ...)
 {
     va_list args;
+
     va_start(args, fmt);
     dprintf(STDERR_FILENO, "[ERROR]: ");
     vdprintf(STDERR_FILENO, fmt, args);
@@ -22,6 +23,7 @@ void logger_error(char const *fmt, ...)
 void logger_debug(char const *fmt, ...)
 {
     va_list args;
+
     va_start(args, fmt);
     dprintf(STDERR_FILENO, "[DEBUG]: ");
     vdprintf(STDERR_FILENO, fmt, args);
@@ -31,6 +33,7 @@ void logger_debug(char const *fmt, ...)
 void logger_info(char const *fmt, ...)
 {
     va_list args;
+
     va_start(args, fmt);
     dprintf(STDERR_FILENO, "[INFO]: ");
     vdprintf(STDERR_FILENO, fmt, args);
