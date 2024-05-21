@@ -7,7 +7,6 @@
 
 #include <arpa/inet.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #include "define.h"
