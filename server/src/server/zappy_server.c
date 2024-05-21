@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "args_info.h"
-#include "define.h"
+#include "macros.h"
 #include "server.h"
+#include "args_info.h"
 
 /// @brief Actually there is only stdin that is read so we put 1 to maxfd.
 static int select_server(server_t *serv)

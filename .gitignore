@@ -9,3 +9,4 @@ target/
 coding-style-reports.log
 .cache
 compile_commands.json
+*gc*
