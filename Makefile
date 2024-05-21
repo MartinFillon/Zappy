@@ -5,32 +5,17 @@
 ## Makefile
 ##
 
-all: gui server ai
+MODULES := gui server ai
 
-gui:
-	@make -C gui
 
-ai:
-	@make -C ai
+all: zappy_gui zappy_server zappy_ai
 
-server:
-	@make -C server
+zappy_%:
+	@make -C $*
 
-clean:
-	@make clean -C gui
-	@make clean -C ai
-	@make clean -C server
-
-fclean:
-	@make fclean -C gui
-	@make fclean -C ai
-	@make fclean -C server
-
-tests_run:
-	@make tests_run -C gui
-	@make tests_run -C ai
-	@make tests_run -C server
+clean fclean tests_run:
+	$(foreach M,$(MODULES), make -C $M $@;)
 
 re: fclean all
 
-.PHONY: all clean fclean re gui ai server tests_run
+.PHONY: clean fclean re tests_run

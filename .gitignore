@@ -1,7 +1,7 @@
 zappy_server
 zappy_ai
 zappy_gui
-
+doc/html
 *.o
 
 Cargo.lock
