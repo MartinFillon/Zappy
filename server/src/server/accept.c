@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 
 #include "client.h"
-#include "define.h"
+#include "macros.h"
 #include "server.h"
 #include "utils.h"
 

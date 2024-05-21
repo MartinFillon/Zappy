@@ -10,8 +10,15 @@ CFLAGS = -Wall -Wextra -Werror -std=c++20
 
 NAME = ../zappy_gui
 
-SRC = $(BASE_SRC)
-BASE_SRC = src/Main.cpp
+SRC = $(BASE_SRC) 						\
+	$(addsuffix .cpp,					\
+		$(addprefix src/,				\
+			$(addprefix ArgParser/,		\
+				ArgParser				\
+			)							\
+		)								\
+	)
+BASE_SRC = src/main.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -38,7 +45,7 @@ $(TEST_NAME): $(SRC) $(TEST_SRC)
 		-o $(TEST_NAME)
 
 tests_run:	$(TEST_NAME)
-	./$(TEST_NAME)
+	./$(TEST_NAME) -h 123 -p 123123
 
 re: fclean all
 

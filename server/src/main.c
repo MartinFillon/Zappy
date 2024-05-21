@@ -7,9 +7,11 @@
 
 #include <signal.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#include "define.h"
+#include "macros.h"
 #include "server.h"
 #include "utils.h"
 #include "args_info.h"
@@ -23,6 +25,7 @@ int main(int ac, char const **av)
 {
     args_infos_t args = {0};
 
+    srand(time(NULL));
     if (ac == 2 && strcmp(av[1], "-help") == 0) {
         display_help();
         return SUCCESS;

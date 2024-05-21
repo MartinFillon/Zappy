@@ -8,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "define.h"
+#include "macros.h"
 #include "types/client.h"
 #include "utils.h"
 
