@@ -5,16 +5,16 @@
 ** init_server
 */
 
-#include "define.h"
-
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include "define.h"
 
 static int bind_server(int sock_fd, struct sockaddr_in *my_addr)
 {
-    if (bind(sock_fd, (struct sockaddr *) my_addr, sizeof(*my_addr)) == -1) {
+    if (bind(sock_fd, (struct sockaddr *)my_addr, sizeof(*my_addr)) == -1) {
         perror("bind");
         return ERROR;
     }
