@@ -5,9 +5,10 @@
 ## Makefile
 ##
 
-MODULES := gui server # ai
+MODULES := gui server ai
 
-all: zappy_gui zappy_server # zappy_ai
+
+all: zappy_gui zappy_server zappy_ai
 
 zappy_%:
 	@make -C $*

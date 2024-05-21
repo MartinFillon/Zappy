@@ -12,11 +12,32 @@ CPPFLAGS = -iquote./include
 NAME = ../zappy_server
 
 SRC = $(BASE_SRC)
-BASE_SRC = 	src/main.c\
-			src/queue/create.c\
-			src/queue/delete.c\
-			src/queue/push.c\
-			src/queue/pop.c
+BASE_SRC = $(addsuffix .c, 				\
+				$(addprefix src/, 			\
+					main 					\
+					$(addprefix cmd_line/, 	\
+						display_help 			\
+						handle_cmd_line 		\
+						handle_nb_flags			\
+						handle_name_flag		\
+					)\
+					$(addprefix utils/, 	\
+						logger_error 		\
+						free_box 			\
+					)\
+          			$(addprefix queue/,   \
+          			  	create              \
+          			  	delete              \
+          			  	push                \
+          			  	pop                 \
+          			)\
+					$(addprefix server/, 	\
+					  	init_server			\
+						zappy_server		\
+					)						\
+				)\
+			)\
+
 
 OBJ = $(SRC:.c=.o)
 

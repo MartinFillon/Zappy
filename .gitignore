@@ -3,6 +3,9 @@ zappy_ai
 zappy_gui
 doc/html
 *.o
+
+Cargo.lock
+target/
+coding-style-reports.log
 .cache
 compile_commands.json
-coding-style-reports.log
