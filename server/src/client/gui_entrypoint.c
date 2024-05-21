@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include "types/client.h"
 
-int client_entrypoint(char const *line, client_t *c, game_t *game)
+int gui_entrypoint(char const *line, client_t *c, game_t *game)
 {
     (void)game;
-    fprintf(c->ffd, "Gui received: %s\n", line);
+    dprintf(c->fd, "Gui received: %s\n", line);
     return 0;
 }
