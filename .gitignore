@@ -3,6 +3,6 @@ zappy_ai
 zappy_gui
 
 *.o
+coding-style-reports.log
 .cache
 compile_commands.json
-coding-style-reports.log
