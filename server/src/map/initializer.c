@@ -42,7 +42,85 @@ static void fill_food(map_t *map, size_t number)
     }
 }
 
+static void fill_deraumere(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.deraumere += 1;
+    }
+}
+
+static void fill_linemate(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.linemate += 1;
+    }
+}
+
+static void fill_sibur(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.sibur += 1;
+    }
+}
+
+static void fill_mendiane(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.mendiane += 1;
+    }
+}
+
+static void fill_phiras(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.phiras += 1;
+    }
+}
+
+static void fill_thystame(map_t *map, size_t number)
+{
+    int x = 0;
+    int y = 0;
+
+    for (size_t i = 0; i < number; i++) {
+        x = rand() % map->x;
+        y = rand() % map->y;
+        map->arena[y][x].content.thystame += 1;
+    }
+}
+
 void fill_map(map_t *map)
 {
     fill_food(map, map->x * map->y * FOOD_DENSITY);
+    fill_deraumere(map, map->x * map->y * DERAUMERE_DENSITY);
+    fill_linemate(map, map->x * map->y * LINEMATE_DENSITY);
+    fill_mendiane(map, map->x * map->y * MENDIANE_DENSITY);
+    fill_sibur(map, map->x * map->y * SIBUR_DENSITY);
+    fill_phiras(map, map->x * map->y * PHIRAS_DENSITY);
+    fill_thystame(map, map->x * map->y * THYSTAME_DENSITY);
 }
