@@ -21,16 +21,22 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_nb_flags			\
 						handle_name_flag		\
 					)\
-					$(addprefix utils/, 	\
-						logger_error 		\
-						free_box 			\
+					$(addprefix utils/,	\
+						logger_error	\
+						free_box		\
 					)\
-          			$(addprefix queue/,   \
-          			  create              \
-          			  delete              \
-          			  push                \
-          			  pop                 \
+          			$(addprefix queue/,	\
+          				create	\
+          				delete	\
+          				push	\
+          				pop		\
           			)\
+					$(addprefix map/, 	\
+						initializer		\
+						destroyer		\
+						drop_on_tile	\
+						take_on_tile	\
+					)\
 				)\
 			)\
 
