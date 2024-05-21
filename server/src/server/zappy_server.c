@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 
 #include "define.h"
 #include "server.h"
@@ -16,7 +18,7 @@
 /// @brief Actually there is only stdin that is read so we put 1 to maxfd.
 static int select_server(server_t *serv)
 {
-    int retval = select(1, &serv->read_fds, &serv->write_fds, NULL, NULL);
+    int retval = select(SOMAXCONN, &serv->read_fds, &serv->write_fds, NULL, NULL);
     char *line = NULL;
     size_t n = 0;
 
@@ -27,6 +29,8 @@ static int select_server(server_t *serv)
             return SERV_END;
         dprintf(1, "%s", line);
     }
+    if (FD_ISSET(serv->fd, &serv->read_fds))
+        accept_new_client(serv);
     return SUCCESS;
 }
 

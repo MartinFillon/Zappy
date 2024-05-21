@@ -9,7 +9,9 @@
 
 #include "types/client.h"
 
-void init_client(client_t *c);
+void init_client(client_t *c, int fd);
+
+void send_client(client_t *client, char *fmt, ...);
 
 int ai_entrypoint(char const *line, client_t *c, game_t *game);
 int gui_entrypoint(char const *line, client_t *c, game_t *game);

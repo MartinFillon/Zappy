@@ -7,10 +7,9 @@
 
 #include "client.h"
 
-void init_client(client_t *c)
+void init_client(client_t *c, int fd)
 {
-    c->fd = 0;
-    c->ffd = NULL;
+    c->fd = fd;
     c->process_queue = NULL;
     c->ai = NULL;
     c->type = UNSET;

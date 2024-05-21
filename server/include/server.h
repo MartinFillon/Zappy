@@ -26,3 +26,4 @@ typedef struct server_s {
 
 int server_init(uint32_t port);
 int loop_server(args_infos_t *args);
+int accept_new_client(server_t *s);

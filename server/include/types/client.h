@@ -28,7 +28,6 @@ typedef struct {
 
 typedef struct client_s {
     int fd;
-    FILE *ffd; // for getline purposes, to be openened with fdopen
     queue_t *process_queue;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
