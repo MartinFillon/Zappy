@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "define.h"
 #include "server.h"
@@ -41,6 +42,7 @@ int loop_server(args_infos_t *args)
     server_t serv = {0};
     int retval = 0;
 
+    serv.game.teams = args->names;
     serv.fd = server_init(args->port);
     if (serv.fd == ERROR)
         return ERROR;
