@@ -6,3 +6,6 @@ zappy_gui
 
 Cargo.lock
 target/
+coding-style-reports.log
+.cache
+compile_commands.json
