@@ -9,6 +9,7 @@
 
 #define ERROR -1
 #define SUCCESS 0
+#define SERV_END 1
 
 #define EPI_ERROR 84
 

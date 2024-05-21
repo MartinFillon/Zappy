@@ -25,18 +25,22 @@ BASE_SRC = $(addsuffix .c, 				\
 						logger_error	\
 						free_box		\
 					)\
-          			$(addprefix queue/,	\
-          				create	\
-          				delete	\
-          				push	\
-          				pop		\
-          			)\
 					$(addprefix map/, 	\
 						initializer		\
 						destroyer		\
 						drop_on_tile	\
 						take_on_tile	\
 					)\
+          			$(addprefix queue/,   \
+          			  	create              \
+          			  	delete              \
+          			  	push                \
+          			  	pop                 \
+          			)\
+					$(addprefix server/, 	\
+					  	init_server			\
+						zappy_server		\
+					)						\
 				)\
 			)\
 

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "args_info.h"
+#include "server.h"
 #include "utils.h"
 #include "define.h"
 
@@ -23,5 +24,7 @@ int main(int ac, char const **av)
     if (parse_command_line(av, &args) == false)
         return EPI_ERROR;
     my_free_box(args.names);
+    if (loop_server(&args) == ERROR)
+        return EPI_ERROR;
     return SUCCESS;
 }
