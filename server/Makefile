@@ -6,7 +6,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server

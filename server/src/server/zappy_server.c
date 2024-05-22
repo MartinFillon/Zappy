@@ -69,6 +69,15 @@ static void fill_fd_set(server_t *serv)
     }
 }
 
+static void exec_clients(server_t *s)
+{
+    for (int i = 0; i < SOMAXCONN; i++) {
+        if (s->clients[i].fd != 0 && s->clients[i].buffer.size > 0) {
+            handle_buffer(&s->clients[i], &s->game);
+        }
+    }
+}
+
 int loop_server(args_infos_t *args)
 {
     server_t serv = {0};
@@ -84,11 +93,7 @@ int loop_server(args_infos_t *args)
     while (!retval) {
         fill_fd_set(&serv);
         retval = select_server(&serv);
-        for (int i = 0; i < SOMAXCONN; i++) {
-            if (serv.clients[i].fd != 0 && serv.clients[i].buffer.size > 0) {
-                handle_buffer(&serv.clients[i], &serv.game);
-            }
-        }
+        exec_clients(&serv);
     }
     logger_info("Server shutting down\n");
     return SUCCESS;
