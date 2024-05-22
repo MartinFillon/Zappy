@@ -5,8 +5,9 @@
 ## Makefile
 ##
 
-CC = g++
-CFLAGS = -Wall -Wextra -Werror -std=c++20
+CXX = g++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -Iinclude/
+LDFLAGS = -lraylib -lpthread
 
 NAME = ../zappy_gui
 
@@ -15,6 +16,14 @@ SRC = $(BASE_SRC) 						\
 		$(addprefix src/,				\
 			$(addprefix ArgParser/,		\
 				ArgParser				\
+			)							\
+			$(addprefix Network/,		\
+				NetworkHandler			\
+				cmd                     \
+			)							\
+			$(addprefix Display/,		\
+				Display					\
+				ServerMessageHandler	\
 			)							\
 		)								\
 	)
@@ -28,7 +37,7 @@ TEST_SRC =
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ) $(LDFLAGS)
 
 clean:
 	rm -f $(OBJ)
@@ -41,7 +50,7 @@ fclean: clean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): $(SRC) $(TEST_SRC)
-	$(CC) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
+	$(CXX) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME)
 
 tests_run:	$(TEST_NAME)
