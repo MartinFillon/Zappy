@@ -101,7 +101,7 @@ fn get_port_from_args(
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
     let port: usize = dbg!(parse_arg(arg_type, args.next())?);
-    dbg!(flags_struct.set_port(port));
+    flags_struct.set_port(port);
     Ok(())
 }
 
@@ -111,7 +111,7 @@ fn get_name_from_args(
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
     let name: String = dbg!(parse_arg(arg_type, args.next())?);
-    dbg!(flags_struct.set_name(name));
+    flags_struct.set_name(name);
     Ok(())
 }
 
@@ -140,13 +140,9 @@ fn get_flags() -> Result<Flags, String> {
                 usage();
                 process::exit(SUCCESS_CODE);
             }
-            "-p" => dbg!(get_port_from_args("port", &mut args, &mut flags_struct)?),
-            "-n" => dbg!(get_name_from_args("name", &mut args, &mut flags_struct)?),
-            "-h" => dbg!(get_machine_from_args(
-                "machine",
-                &mut args,
-                &mut flags_struct
-            )?),
+            "-p" => get_port_from_args("port", &mut args, &mut flags_struct)?,
+            "-n" => get_name_from_args("name", &mut args, &mut flags_struct)?,
+            "-h" => get_machine_from_args("machine", &mut args, &mut flags_struct)?,
             any => return Err(format!("Unknown flag: {}.", any)),
         };
     }

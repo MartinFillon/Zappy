@@ -17,9 +17,8 @@ fn main() {
     match flags::check_flags() {
         Ok(res) => {
             dbg!(res.clone());
-            match tcp::tcp(res.clone().get_machine(), res.get_port()) {
-                Ok(_) => println!("Connection closed."),
-                Err(e) => eprintln!("An error occurred: {}", e),
+            if let Err(e) = tcp::tcp(res.clone().get_machine(), res.get_port()) {
+                eprintln!("Error: {}", e);
             }
             process::exit(SUCCESS_CODE)
         }

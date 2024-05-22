@@ -9,6 +9,7 @@
 
 use std::io::{self, BufRead, BufReader, Result};
 use std::net::TcpStream;
+use std::thread;
 use std::time::Duration;
 
 pub fn tcp(address: String, port: usize) -> Result<()> {
@@ -22,19 +23,12 @@ pub fn tcp(address: String, port: usize) -> Result<()> {
     loop {
         let mut line = String::new();
         match reader.read_line(&mut line) {
-            Ok(0) => {
-                break;
-            }
-            Ok(_) => {
-                print!("{line}");
-            }
+            Ok(0) => break,
+            Ok(_) => print!("{line}"),
             Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {
-                std::thread::sleep(timeout);
+                thread::sleep(timeout);
             }
-            Err(e) => {
-                eprintln!("Error reading from stream: {}", e);
-                return Err(e);
-            }
+            Err(e) => return Err(e),
         }
     }
     Ok(())
