@@ -13,7 +13,7 @@
 int handle_buffer(client_t *c, game_t *game)
 {
     size_t idx = (size_t)(strstr(c->buffer.buffer, "\n") - c->buffer.buffer);
-    char *tmp = strdup(c->buffer.buffer + idx + 2);
+    char *tmp = strdup(c->buffer.buffer + idx + 1);
     char *com = strndup(c->buffer.buffer, idx);
 
     if (!tmp || !com) {
@@ -23,6 +23,7 @@ int handle_buffer(client_t *c, game_t *game)
     free(c->buffer.buffer);
     c->buffer.buffer = tmp;
     c->buffer.size = strlen(tmp);
+    logger_info("Client %d sent command: %s\n", c->fd, com);
     c->entrypoint(com, c, game);
     return 0;
 }

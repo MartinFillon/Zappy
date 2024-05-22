@@ -17,5 +17,5 @@ void map_size(char *args, client_t *cli, game_t *game)
         dprintf(cli->fd, "sbp\n");
         return;
     }
-    dprintf(cli->fd, "msz %lu %lu\n", game->map.x, game->map.y);
+    dprintf(cli->fd, "msz %lu %lu\n", game->map->x, game->map->y);
 }

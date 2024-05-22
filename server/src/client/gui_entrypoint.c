@@ -9,17 +9,21 @@
 #include <string.h>
 #include "gui/list.h"
 #include "types/client.h"
+#include "utils.h"
 
 int gui_entrypoint(char const *line, client_t *c, game_t *game)
 {
-    char *ln_cpy = strdup(line);
-    char *cmd = strtok(ln_cpy, " ");
+    logger_debug("GUI received: %s\n", line);
+    size_t idx = (size_t)(strchrnul(line, ' ') - line);
+    logger_debug("IDX: %lu\n", idx);
+    char *args = strdup(line + idx + 1);
+    char *cmd = strndup(line, idx);
 
-    dprintf(2, "CMD: %s\n", cmd);
-    dprintf(2, "ARGS: %s\n", ln_cpy);
+    logger_debug("CMD: %s\n", cmd);
+    logger_debug("ARGS: %s\n", args);
     for (int i = 0; CMDS[i].cmd; i++) {
         if (strcmp(CMDS[i].cmd, cmd) == 0) {
-            CMDS[i].func(ln_cpy, c, game);
+            CMDS[i].func(args, c, game);
             return 0;
         }
     }
