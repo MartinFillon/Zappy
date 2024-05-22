@@ -1,3 +1,12 @@
+//
+// EPITECH PROJECT, 2024
+// Zappy
+// File description:
+// tcp
+//
+
+#![allow(dead_code)]
+
 use std::io::{BufReader, BufRead};
 use std::net::TcpStream;
 
