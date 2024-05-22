@@ -22,10 +22,7 @@ class ArgParserException : public std::exception {
      * @param what A description of the error.
      * @param where The location where the exception was thrown (default: "?").
      */
-    ArgParserException(const std::string &what, const std::string &where = "?")
-        : what_(what), where_(where)
-    {
-    }
+    ArgParserException(const std::string &what, const std::string &where = "?") : what_(what), where_(where) {}
 
     /**
      * @brief Returns the description of the error.

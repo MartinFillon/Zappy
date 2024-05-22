@@ -8,16 +8,19 @@
 #include "Display.hpp"
 #include "ServerMessageHandler.hpp"
 
-Display::Display(NetworkHandler& networkHandler, bool debug, int width, int height)
-    : networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug) {
+Display::Display(NetworkHandler &networkHandler, bool debug, int width, int height)
+    : networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug)
+{
     InitWindow(width, height, "Zappy");
 }
 
-Display::~Display() {
+Display::~Display()
+{
     CloseWindow();
 }
 
-void Display::run() {
+void Display::run()
+{
     std::string message;
 
     while (!WindowShouldClose()) {
@@ -30,7 +33,8 @@ void Display::run() {
     }
 }
 
-void Display::handleServerMessage(std::string &message) {
+void Display::handleServerMessage(std::string &message)
+{
     if (!networkHandler.getMessage(message))
         return;
 

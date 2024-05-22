@@ -7,23 +7,15 @@
 
 #include <iostream>
 
-#include "define.hpp"
 #include "ArgParser/ArgParser.hpp"
 #include "Display/Display.hpp"
 #include "Network/NetworkHandler.hpp"
+#include "define.hpp"
 
-static void parseArguments(
-    int argc,
-    char *argv[],
-    int &port,
-    std::string &machine,
-    bool &debug
-)
+static void parseArguments(int argc, char *argv[], int &port, std::string &machine, bool &debug)
 {
     ArgParser parser;
-    parser.setDefault("p", 4242, true)
-        .setDefault("h", std::string("localhost"), true)
-        .setDefault("d", false, false);
+    parser.setDefault("p", 4242, true).setDefault("h", std::string("localhost"), true).setDefault("d", false, false);
 
     try {
         parser.parse(argc, argv);

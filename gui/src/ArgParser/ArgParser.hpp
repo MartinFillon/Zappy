@@ -54,11 +54,7 @@ class ArgParser {
      * @return A reference to the ArgParser object.
      */
     template <typename T>
-    ArgParser &setDefault(
-        const std::string &param,
-        T value,
-        bool mandatory = false
-    )
+    ArgParser &setDefault(const std::string &param, T value, bool mandatory = false)
     {
         std::stringstream ss;
         ss << value;
@@ -83,13 +79,9 @@ class ArgParser {
     T get(const std::string &param) const
     {
         if (params_.find(param) == params_.end()) {
-            throw ArgParserException(
-                "Parameter not found: " + param, "ArgParser::get"
-            );
+            throw ArgParserException("Parameter not found: " + param, "ArgParser::get");
         } else if (types_.at(param) != typeid(T).name()) {
-            throw ArgParserException(
-                "Type mismatch for parameter: " + param, "ArgParser::get"
-            );
+            throw ArgParserException("Type mismatch for parameter: " + param, "ArgParser::get");
         }
         std::istringstream ss(params_.at(param));
         T value;

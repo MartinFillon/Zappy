@@ -7,24 +7,29 @@
 
 #pragma once
 
-#include <string>
 #include <raylib.h>
+#include <string>
+
 #include "../Network/NetworkHandler.hpp"
 #include "ServerMessageHandler.hpp"
 
 class ServerMessageHandler;
 
 class Display {
-public:
-    Display(NetworkHandler& networkHandler, bool debug, int width=800, int height=450);
+  public:
+    Display(
+        NetworkHandler &networkHandler,
+        bool debug,
+        int width = 800,
+        int height = 450
+    );
     ~Display();
-
     void run();
 
-private:
+  private:
     void handleServerMessage(std::string &message);
 
-    NetworkHandler& networkHandler;
+    NetworkHandler &networkHandler;
     ServerMessageHandler serverMessageHandler;
     bool debug;
 };

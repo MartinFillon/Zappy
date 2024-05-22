@@ -10,8 +10,7 @@
 #include "NetworkHandler.hpp"
 
 NetworkHandler::NetworkHandler(const std::string &machine, int port)
-    : machine(machine), port(port), io_context(), socket(io_context),
-      running(false)
+    : machine(machine), port(port), io_context(), socket(io_context), running(false)
 {
 }
 
@@ -53,13 +52,11 @@ void NetworkHandler::sendMessage(const std::string &message)
 
 void NetworkHandler::run()
 {
-    std::cout << "Connecting to " << machine << " on port " << port
-              << std::endl;
+    std::cout << "Connecting to " << machine << " on port " << port << std::endl;
     std::string message;
     try {
         asio::ip::tcp::resolver resolver(io_context);
-        asio::ip::tcp::resolver::results_type endpoints =
-            resolver.resolve(machine, std::to_string(port));
+        asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(machine, std::to_string(port));
         asio::connect(socket, endpoints);
 
         std::thread receiver(&NetworkHandler::receiveMessages, this);
@@ -96,4 +93,3 @@ void NetworkHandler::receiveMessages()
         }
     }
 }
-
