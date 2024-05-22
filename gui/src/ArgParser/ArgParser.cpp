@@ -5,6 +5,8 @@
 ** ArgParser
 */
 
+#include <algorithm>
+
 #include "ArgParser.hpp"
 
 bool ArgParser::has(const std::string &param) const
@@ -25,9 +27,10 @@ bool ArgParser::get<bool>(const std::string &param) const
         );
     }
     std::string value = params_.at(param);
-    if (value == "true") {
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    if (value == "true" || value == "1") {
         return true;
-    } else if (value == "false") {
+    } else if (value == "false" || value == "0") {
         return false;
     } else {
         throw ArgParserException(
