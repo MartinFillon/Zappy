@@ -8,6 +8,7 @@
 use std::process;
 
 mod flags;
+mod tcp;
 
 static ERROR_CODE: i32 = 84;
 
