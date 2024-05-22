@@ -10,26 +10,24 @@
 #include <raylib.h>
 #include <string>
 
-#include "../Network/NetworkHandler.hpp"
+#include "../Network/Handler.hpp"
 #include "ServerMessageHandler.hpp"
+
+namespace GUI {
 
 class ServerMessageHandler;
 
 class Display {
   public:
-    Display(
-        NetworkHandler &networkHandler,
-        bool debug,
-        int width = 800,
-        int height = 450
-    );
+    Display(Network::Handler &networkHandler, bool debug, int width = 800, int height = 450);
     ~Display();
     void run();
 
   private:
     void handleServerMessage(std::string &message);
 
-    NetworkHandler &networkHandler;
+    Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
     bool debug;
 };
+}; // namespace GUI

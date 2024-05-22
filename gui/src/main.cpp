@@ -8,13 +8,13 @@
 #include <iostream>
 
 #include "ArgParser/ArgParser.hpp"
-#include "Display/Display.hpp"
-#include "Network/NetworkHandler.hpp"
+#include "GUI/Display.hpp"
+#include "Network/Handler.hpp"
 #include "define.hpp"
 
 static void parseArguments(int argc, char *argv[], int &port, std::string &machine, bool &debug)
 {
-    ArgParser parser;
+    ArgParser::ArgParser parser;
     parser.setDefault("p", 4242, true).setDefault("h", std::string("localhost"), true).setDefault("d", false, false);
 
     try {
@@ -22,7 +22,7 @@ static void parseArguments(int argc, char *argv[], int &port, std::string &machi
         port = parser.get<int>("p");
         machine = parser.get<std::string>("h");
         debug = parser.get<bool>("d");
-    } catch (const ArgParserException &e) {
+    } catch (const ArgParser::Error &e) {
         std::cerr << "Error: " << e.what() << " in " << e.where() << std::endl;
         throw std::runtime_error("Argument parsing failed");
     }
@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
         std::cerr << "Error: " << e.what() << std::endl;
         return ERROR;
     }
-    NetworkHandler networkHandler(machine, port);
+    Network::Handler networkHandler(machine, port);
     networkHandler.start();
 
-    Display display(networkHandler, debug);
+    GUI::Display display(networkHandler, debug);
     display.run();
 
     networkHandler.stop();

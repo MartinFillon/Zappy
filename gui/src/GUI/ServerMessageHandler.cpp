@@ -11,6 +11,8 @@
 
 #include "ServerMessageHandler.hpp"
 
+namespace GUI {
+
 ServerMessageHandler::ServerMessageHandler(bool debug, Display &display) : debug(debug), display(display)
 {
     commandHandlers["msz"] = std::bind(&ServerMessageHandler::handleMapSize, this, std::placeholders::_1);
@@ -42,6 +44,7 @@ ServerMessageHandler::ServerMessageHandler(bool debug, Display &display) : debug
 void ServerMessageHandler::handleServerMessage(const std::string &message)
 {
     std::string commandType = message.substr(0, 3);
+    std::cout << commandType << std::endl;
 
     auto it = commandHandlers.find(commandType);
     if (it != commandHandlers.end()) {
@@ -240,3 +243,5 @@ void ServerMessageHandler::handleCommandParameter(__attribute__((unused)) const 
 {
     std::cout << "Command parameter issue." << std::endl;
 }
+
+}; // namespace GUI

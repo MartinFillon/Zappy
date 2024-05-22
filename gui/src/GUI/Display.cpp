@@ -8,7 +8,9 @@
 #include "Display.hpp"
 #include "ServerMessageHandler.hpp"
 
-Display::Display(NetworkHandler &networkHandler, bool debug, int width, int height)
+namespace GUI {
+
+Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug)
 {
     InitWindow(width, height, "Zappy");
@@ -40,3 +42,5 @@ void Display::handleServerMessage(std::string &message)
 
     serverMessageHandler.handleServerMessage(message);
 }
+
+} // namespace GUI

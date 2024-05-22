@@ -5,54 +5,56 @@
 ** cmd
 */
 
-#include "NetworkHandler.hpp"
+#include "Handler.hpp"
 
-void NetworkHandler::requestMapSize()
+namespace Network {
+void Handler::requestMapSize()
 {
     sendMessage("msz");
 }
 
-void NetworkHandler::requestTileContent(int x, int y)
+void Handler::requestTileContent(int x, int y)
 {
     sendMessage("bct " + std::to_string(x) + " " + std::to_string(y));
 }
 
-void NetworkHandler::requestMapContent()
+void Handler::requestMapContent()
 {
     sendMessage("mct");
 }
 
-void NetworkHandler::requestTeamNames()
+void Handler::requestTeamNames()
 {
     sendMessage("tna");
 }
 
-void NetworkHandler::requestPlayerPosition(int playerNumber)
+void Handler::requestPlayerPosition(int playerNumber)
 {
     sendMessage("ppo #" + std::to_string(playerNumber));
 }
 
-void NetworkHandler::requestPlayerLevel(int playerNumber)
+void Handler::requestPlayerLevel(int playerNumber)
 {
     sendMessage("plv #" + std::to_string(playerNumber));
 }
 
-void NetworkHandler::requestPlayerInventory(int playerNumber)
+void Handler::requestPlayerInventory(int playerNumber)
 {
     sendMessage("pin #" + std::to_string(playerNumber));
 }
 
-void NetworkHandler::sendBroadcast(const std::string &message)
+void Handler::sendBroadcast(const std::string &message)
 {
     sendMessage("pbc " + message);
 }
 
-void NetworkHandler::requestTimeUnit()
+void Handler::requestTimeUnit()
 {
     sendMessage("sgt");
 }
 
-void NetworkHandler::modifyTimeUnit(int t)
+void Handler::modifyTimeUnit(int t)
 {
     sendMessage("sst " + std::to_string(t));
 }
+} // namespace Network

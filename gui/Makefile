@@ -18,10 +18,10 @@ SRC = $(BASE_SRC) 						\
 				ArgParser				\
 			)							\
 			$(addprefix Network/,		\
-				NetworkHandler			\
-				cmd                     \
+				Handler					\
+				Handler_queries         \
 			)							\
-			$(addprefix Display/,		\
+			$(addprefix GUI/,			\
 				Display					\
 				ServerMessageHandler	\
 			)							\

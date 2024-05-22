@@ -7,25 +7,26 @@
 
 #include <iostream>
 
-#include "NetworkHandler.hpp"
+#include "Handler.hpp"
 
-NetworkHandler::NetworkHandler(const std::string &machine, int port)
+namespace Network {
+Handler::Handler(const std::string &machine, int port)
     : machine(machine), port(port), io_context(), socket(io_context), running(false)
 {
 }
 
-NetworkHandler::~NetworkHandler()
+Handler::~Handler()
 {
     stop();
 }
 
-void NetworkHandler::start()
+void Handler::start()
 {
     running = true;
-    networkThread = std::thread(&NetworkHandler::run, this);
+    networkThread = std::thread(&Handler::run, this);
 }
 
-void NetworkHandler::stop()
+void Handler::stop()
 {
     running = false;
     if (networkThread.joinable()) {
@@ -33,7 +34,7 @@ void NetworkHandler::stop()
     }
 }
 
-bool NetworkHandler::getMessage(std::string &message)
+bool Handler::getMessage(std::string &message)
 {
     std::scoped_lock lock(mutex);
     if (!mQ.empty()) {
@@ -44,13 +45,13 @@ bool NetworkHandler::getMessage(std::string &message)
     return false;
 }
 
-void NetworkHandler::sendMessage(const std::string &message)
+void Handler::sendMessage(const std::string &message)
 {
     std::scoped_lock lock(socketMutex);
     asio::write(socket, asio::buffer(message + "\n"));
 }
 
-void NetworkHandler::run()
+void Handler::run()
 {
     std::cout << "Connecting to " << machine << " on port " << port << std::endl;
     std::string message;
@@ -59,7 +60,7 @@ void NetworkHandler::run()
         asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(machine, std::to_string(port));
         asio::connect(socket, endpoints);
 
-        std::thread receiver(&NetworkHandler::receiveMessages, this);
+        std::thread receiver(&Handler::receiveMessages, this);
         sendMessage("GRAPHIC");
         while (message != "WELCOME") {
             getMessage(message);
@@ -78,7 +79,7 @@ void NetworkHandler::run()
     }
 }
 
-void NetworkHandler::receiveMessages()
+void Handler::receiveMessages()
 {
     while (running) {
         asio::streambuf buffer;
@@ -93,3 +94,4 @@ void NetworkHandler::receiveMessages()
         }
     }
 }
+}; // namespace Network

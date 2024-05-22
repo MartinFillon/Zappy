@@ -13,8 +13,9 @@
 #include <string>
 #include <typeinfo>
 
-#include "ArgParserException.hpp"
+#include "Error.hpp"
 
+namespace ArgParser {
 /**
  * @class ArgParser
  * @brief A class to parse and handle command-line arguments.
@@ -72,16 +73,16 @@ class ArgParser {
      * @tparam T The type of the parameter value.
      * @param param The name of the parameter.
      * @return The value of the parameter.
-     * @throws ArgParserException if the parameter is not found or if there is a
+     * @throws Error if the parameter is not found or if there is a
      * type mismatch.
      */
     template <typename T>
     T get(const std::string &param) const
     {
         if (params_.find(param) == params_.end()) {
-            throw ArgParserException("Parameter not found: " + param, "ArgParser::get");
+            throw Error("Parameter not found: " + param, "ArgParser::get");
         } else if (types_.at(param) != typeid(T).name()) {
-            throw ArgParserException("Type mismatch for parameter: " + param, "ArgParser::get");
+            throw Error("Type mismatch for parameter: " + param, "ArgParser::get");
         }
         std::istringstream ss(params_.at(param));
         T value;
@@ -98,7 +99,7 @@ class ArgParser {
      * @brief Checks if all mandatory arguments are provided.
      *
      * @param providedArgs The set of provided argument names.
-     * @throws ArgParserException if a mandatory argument is missing.
+     * @throws Error if a mandatory argument is missing.
      */
     void checkMandatoryArgs(const std::set<std::string> &providedArgs) const;
 
@@ -111,3 +112,4 @@ class ArgParser {
      */
     bool isValidType(const std::string &key, const std::string &value) const;
 };
+}; // namespace ArgParser

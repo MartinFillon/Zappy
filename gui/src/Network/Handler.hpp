@@ -6,26 +6,27 @@
 #include <thread>
 #include <condition_variable>
 
+namespace Network {
 /**
- * @class NetworkHandler
+ * @class Handler
  * @brief Handles network communication with a server.
  *
- * The NetworkHandler class provides functionality to establish a network connection,
+ * The Handler class provides functionality to establish a network connection,
  * send and receive messages, and perform various requests to the server.
  */
-class NetworkHandler {
+class Handler {
   public:
     /**
-     * @brief Constructs a NetworkHandler object with the specified machine and port.
+     * @brief Constructs a Handler object with the specified machine and port.
      * @param machine The IP address or hostname of the server.
      * @param port The port number to connect to.
      */
-    NetworkHandler(const std::string &machine, int port);
+    Handler(const std::string &machine, int port);
 
     /**
-     * @brief Destructor for the NetworkHandler object.
+     * @brief Destructor for the Handler object.
      */
-    ~NetworkHandler();
+    ~Handler();
 
     /**
      * @brief Starts the network communication.
@@ -129,3 +130,4 @@ class NetworkHandler {
     std::condition_variable cv;   ///< Condition variable for synchronizing access to the message queue.
     std::mutex socketMutex;       ///< Mutex for protecting access to the socket.
 };
+} // namespace Network

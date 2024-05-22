@@ -11,6 +11,7 @@
 #include "Display.hpp"
 #include <unordered_map>
 
+namespace GUI {
 class Display;
 
 class ServerMessageHandler {
@@ -47,6 +48,6 @@ class ServerMessageHandler {
 
     bool debug;
     Display &display;
-    std::unordered_map<std::string, std::function<void(const std::string &)>>
-        commandHandlers;
+    std::unordered_map<std::string, std::function<void(const std::string &)>> commandHandlers;
 };
+}; // namespace GUI

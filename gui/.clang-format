@@ -55,7 +55,7 @@ ExperimentalAutoDetectBinPacking: false
 AllowAllParametersOfDeclarationOnNextLine: false
 
 # namespaces
-NamespaceIndentation: All
+NamespaceIndentation: None
 
 # switch cases
 IndentCaseLabels: true
