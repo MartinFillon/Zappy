@@ -19,7 +19,7 @@ static LOCALHOST: &str = "127.0.0.1";
 
 static SUCCESS_CODE: i32 = 0;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Flags {
     port: Option<usize>,
     name: Option<String>,
@@ -39,12 +39,24 @@ impl Flags {
         self.machine = machine
     }
 
-    pub fn is_port_none(&self) -> bool {
+    fn is_port_none(&self) -> bool {
         self.port.is_none()
     }
 
-    pub fn is_name_none(&self) -> bool {
+    fn is_name_none(&self) -> bool {
         self.name.is_none()
+    }
+
+    pub fn get_name(self) -> String {
+        self.name.unwrap_or_default()
+    }
+
+    pub fn get_port(self) -> usize {
+        self.port.unwrap_or_default()
+    }
+
+    pub fn get_machine(self) -> String {
+        self.machine
     }
 }
 
@@ -88,8 +100,8 @@ fn get_port_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let port: usize = parse_arg(arg_type, args.next())?;
-    flags_struct.set_port(port);
+    let port: usize = dbg!(parse_arg(arg_type, args.next())?);
+    dbg!(flags_struct.set_port(port));
     Ok(())
 }
 
@@ -98,8 +110,8 @@ fn get_name_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let name: String = parse_arg(arg_type, args.next())?;
-    flags_struct.set_name(name);
+    let name: String = dbg!(parse_arg(arg_type, args.next())?);
+    dbg!(flags_struct.set_name(name));
     Ok(())
 }
 
@@ -108,8 +120,8 @@ fn get_machine_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let machine: String = parse_arg(arg_type, args.next())?;
-    flags_struct.set_machine(machine);
+    let machine: String = dbg!(parse_arg(arg_type, args.next())?);
+    dbg!(flags_struct.set_machine(machine));
     Ok(())
 }
 
@@ -128,9 +140,13 @@ fn get_flags() -> Result<Flags, String> {
                 usage();
                 process::exit(SUCCESS_CODE);
             }
-            "-p" => get_port_from_args("port", &mut args, &mut flags_struct)?,
-            "-n" => get_name_from_args("name", &mut args, &mut flags_struct)?,
-            "-h" => get_machine_from_args("machine", &mut args, &mut flags_struct)?,
+            "-p" => dbg!(get_port_from_args("port", &mut args, &mut flags_struct)?),
+            "-n" => dbg!(get_name_from_args("name", &mut args, &mut flags_struct)?),
+            "-h" => dbg!(get_machine_from_args(
+                "machine",
+                &mut args,
+                &mut flags_struct
+            )?),
             any => return Err(format!("Unknown flag: {}.", any)),
         };
     }
