@@ -43,3 +43,13 @@ void destroy_map(map_t *map);
  * @return false if the object was not taken
  */
 bool take_item(map_t *map, size_t x, size_t y, enum object_e obj);
+
+/**
+ * @brief retieves a tile from the map
+ *
+ * @param map the map object
+ * @param x x position of the tile
+ * @param y y position of the tile
+ * @return struct tile_s* the tile object
+ */
+struct tile_s *get_tile(map_t *map, size_t x, size_t y);

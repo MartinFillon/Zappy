@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						destroyer		\
 						drop_on_tile	\
 						take_on_tile	\
+						get_tile		\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -46,6 +47,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix client/, 	\
 						$(addprefix gui/,	\
 							map_size		\
+							map_content		\
 						)\
 						init_client			\
 						send	 			\
