@@ -14,7 +14,7 @@ SRC =	src/main.rs
 all: $(NAME)
 
 $(NAME): $(SRC)
-	cargo build --release --offline && cp ./target/release/$(BIN) $(NAME)
+	cargo build --release --offline && cp ../target/release/$(BIN) $(NAME)
 
 clean:
 	cargo clean
