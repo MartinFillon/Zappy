@@ -35,11 +35,23 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     );
 }
 
+static bool get_tile_pos(char *arg, long *x, long *y)
+{
+    char *end = NULL;
+
+    *x = strtol(arg, &end, 10);
+    if (*end != ' ' || *x < 0)
+        return false;
+    *y = strtol(end, &end, 10);
+    if (*end != '\0' || *y < 0)
+        return false;
+    return true;
+}
+
 void map_content_tile(char *args, client_t *c, game_t *game)
 {
     char *x = strtok(args, " \t");
     char *y = strtok(NULL, " \t");
-    char *end = NULL;
     long px = 0;
     long py = 0;
 
@@ -49,13 +61,7 @@ void map_content_tile(char *args, client_t *c, game_t *game)
         dprintf(c->fd, "sbp\n");
         return;
     }
-    px = strtol(x, &end, 10);
-    if (*end != '\0' || px < 0) {
-        dprintf(c->fd, "sbp\n");
-        return;
-    }
-    py = strtol(y, &end, 10);
-    if (*end != '\0' || py < 0) {
+    if (!get_tile_pos(x, &px, &py)) {
         dprintf(c->fd, "sbp\n");
         return;
     }
