@@ -79,19 +79,38 @@ void Handler::run()
     }
 }
 
-void Handler::receiveMessages()
-{
+void Handler::receiveMessages() {
+    asio::streambuf buffer;
+    std::string leftover;
     while (running) {
-        asio::streambuf buffer;
-        asio::read_until(socket, buffer, "\n");
-        std::istream is(&buffer);
-        std::string message;
-        std::getline(is, message);
-        if (!message.empty()) {
-            std::scoped_lock lock(mutex);
-            mQ.push(message);
-            cv.notify_one();
+        try {
+            size_t n = asio::read_until(socket, buffer, '\n');
+            std::istream is(&buffer);
+            std::string line;
+            while (std::getline(is, line)) {
+                if (!line.empty() && line.back() == '\r') {
+                    line.pop_back();
+                }
+                if (!leftover.empty()) {
+                    line = leftover + line;
+                    leftover.clear();
+                }
+                if (!line.empty()) {
+                    std::scoped_lock lock(mutex);
+                    mQ.push(line);
+                    cv.notify_one();
+                }
+            }
+            if (!line.empty() && line.back() != '\n') {
+                leftover = line;
+            }
+            buffer.consume(n);
+        } catch (const std::exception &e) {
+            std::cerr << "Receive error: " << e.what() << std::endl;
+            running = false;
+            break;
         }
     }
 }
+
 }; // namespace Network

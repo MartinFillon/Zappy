@@ -8,19 +8,18 @@
 #pragma once
 #include <functional>
 #include <string>
-#include "Display.hpp"
 #include <unordered_map>
 
 namespace GUI {
 class Display;
 
 class ServerMessageHandler {
-  public:
+public:
     ServerMessageHandler(bool debug, Display &display);
 
     void handleServerMessage(const std::string &message);
 
-  private:
+private:
     void handleMapSize(const std::string &message);
     void handleTileContent(const std::string &message);
     void handleTeamNames(const std::string &message);
