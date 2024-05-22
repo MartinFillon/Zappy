@@ -25,7 +25,7 @@ struct buffer_s {
 
 typedef struct {
     ai_t *ais;
-    map_t map;
+    map_t *map;
     char **teams;
 } game_t;
 
