@@ -13,7 +13,7 @@ jobs:
 
       - name: compile
         run: |
-          make fclean && make zappy_server
+          make -C server fclean && make zappy_server
         timeout-minutes: 5
   run-unit-tests:
     needs: build
@@ -25,5 +25,5 @@ jobs:
         uses: actions/checkout@v4
       - name: compile
         run: |
-          make fclean && make tests_run -C zappy_server
+          make -C server fclean && make -C server tests_run
         timeout-minutes: 5
