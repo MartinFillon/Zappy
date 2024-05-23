@@ -11,13 +11,9 @@ BIN = ai
 
 BPATH = ../target/release/$(BIN)
 
-SRC =	src/main.rs	\
-		src/tcp.rs	\
-		src/flags.rs
-
 all: $(NAME)
 
-$(NAME): $(SRC)
+$(NAME):
 	cargo build --release -p ai && cp $(BPATH) $(NAME)
 
 clean:
