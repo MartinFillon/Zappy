@@ -9,12 +9,14 @@ NAME = ../zappy_ai
 
 BIN = ai
 
+BPTAH = ../target/release/$(BIN)
+
 SRC =	src/main.rs
 
 all: $(NAME)
 
 $(NAME): $(SRC)
-	cargo build --release --offline && cp ./target/release/$(BIN) $(NAME)
+	cargo build --release --offline -p ai && cp $(BPTAH) $(NAME)
 
 clean:
 	cargo clean

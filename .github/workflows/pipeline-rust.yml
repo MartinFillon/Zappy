@@ -6,10 +6,12 @@ on:
         paths:
             - "**.rs"
             - "ai/**"
+            - "**.toml"
     pull_request:
         paths:
             - "**.rs"
             - "ai/**"
+            - "**.toml"
 
 jobs:
     build:
