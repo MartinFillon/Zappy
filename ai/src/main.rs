@@ -8,12 +8,20 @@
 use std::process;
 
 mod flags;
+mod tcp;
 
 static ERROR_CODE: i32 = 84;
+static SUCCESS_CODE: i32 = 0;
 
 fn main() {
     match flags::check_flags() {
-        Ok(res) => println!("{}", res),
+        Ok(res) => {
+            dbg!(res.clone());
+            if let Err(e) = tcp::tcp(res.clone().get_machine(), res.get_port()) {
+                eprintln!("Error: {}", e);
+            }
+            process::exit(SUCCESS_CODE)
+        }
         Err(e) => {
             println!("Error: {}", e);
             flags::usage();
