@@ -14,7 +14,7 @@ use std::time::Duration;
 
 pub fn tcp(address: String, port: usize) -> Result<()> {
     let addr = dbg!(format!("{}:{}", address, port));
-    let stream = TcpStream::connect(&addr)?;
+    let stream = TcpStream::connect(addr)?;
     stream.set_nonblocking(true)?;
 
     let mut reader = BufReader::new(stream);
