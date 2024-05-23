@@ -1,0 +1,20 @@
+name: Pipeline-server
+
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - "**.c"
+            - "server/**"
+    pull_request:
+        paths:
+            - "**.c"
+            - "server/**"
+
+jobs:
+    build:
+        name: Build
+        uses: ./.github/workflows/c-ci.yml
+    coding-style:
+        name: Coding-style
+        uses: ./.github/workflows/coding-style.yml

@@ -6,7 +6,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
@@ -23,6 +23,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix utils/,	\
 						logger_error	\
 						free_box		\
+						va_free			\
 					)\
 					$(addprefix map/, 	\
 						initializer		\
@@ -40,8 +41,12 @@ BASE_SRC = $(addsuffix .c, 				\
 						accept				\
 					  	init_server			\
 						zappy_server		\
+						buffer 				\
 					)						\
 					$(addprefix client/, 	\
+						$(addprefix gui/,	\
+							map_size		\
+						)\
 						init_client			\
 						send	 			\
 						ai_entrypoint	 	\

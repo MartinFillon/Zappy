@@ -13,6 +13,7 @@
 
 #include "client.h"
 #include "macros.h"
+#include "map.h"
 #include "server.h"
 #include "utils.h"
 #include "args_info.h"
@@ -68,6 +69,15 @@ static void fill_fd_set(server_t *serv)
     }
 }
 
+static void exec_clients(server_t *s)
+{
+    for (int i = 0; i < SOMAXCONN; i++) {
+        if (s->clients[i].fd != 0 && s->clients[i].buffer.size > 0) {
+            handle_buffer(&s->clients[i], &s->game);
+        }
+    }
+}
+
 int loop_server(args_infos_t *args)
 {
     server_t serv = {0};
@@ -76,12 +86,14 @@ int loop_server(args_infos_t *args)
     logger_info("Starting server on port %d\n", args->port);
     serv.game.teams = args->names;
     serv.fd = server_init(args->port);
-    logger_info("Server up and running on port %d\n", args->port);
     if (serv.fd == ERROR)
         return ERROR;
+    logger_info("Server up and running on port %d\n", args->port);
+    serv.game.map = create_map(args->width, args->height);
     while (!retval) {
         fill_fd_set(&serv);
         retval = select_server(&serv);
+        exec_clients(&serv);
     }
     logger_info("Server shutting down\n");
     return SUCCESS;

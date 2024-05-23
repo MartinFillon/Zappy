@@ -1,17 +1,7 @@
 name: "Rust ci"
 on:
-    push:
-      branches: [ main, master ]
-      paths:
-        - 'ai/**'
-        - 'Cargo.*'
-        - build.rs
-    pull_request:
-      branches: [ main, master ]
-      paths:
-        - 'ai/**'
-        - 'Cargo.*'
-        - build.rs
+    workflow_dispatch:
+    workflow_call:
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,31 +10,24 @@ env:
 jobs:
   unit-tests:
     runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - run: rustup toolchain install ${{ matrix.rust }} --profile minimal
       - uses: Swatinem/rust-cache@v2
-
       - name: Install cargo-hack
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
           max_attempts: 5
           command: cargo install cargo-hack
-
       - name: Run rustfmt checks
         run: cargo fmt --check
-
       - name: Run clippy lints
         run: cargo clippy -- -D warnings
-
       - name: Run unit tests
         run: cargo hack test
