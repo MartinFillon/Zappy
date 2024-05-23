@@ -43,3 +43,13 @@ void destroy_map(map_t *map);
  * @return false if the object was not taken
  */
 bool take_item(map_t *map, size_t x, size_t y, enum object_e obj);
+
+
+/**
+ * @brief Display the map in stdout
+ *
+ * @param map the map object
+ * @param width width of the map
+ * @param height height of the map
+ */
+void display_map(map_t *map, size_t width, size_t height);

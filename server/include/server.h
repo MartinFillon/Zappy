@@ -28,3 +28,4 @@ int server_init(uint32_t port);
 int loop_server(args_infos_t *args);
 int accept_new_client(server_t *s);
 int handle_buffer(client_t *c, game_t *game);
+void handle_server_cmd(char const *cmd, server_t *serv);

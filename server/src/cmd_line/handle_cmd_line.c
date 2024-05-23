@@ -32,7 +32,7 @@ static bool check_args(args_infos_t *args)
         args->freq = 100;
     if (args->clients_nb == -1 || args->height == -1 ||
         args->width == -1 || args->port == -1 || args->names == NULL) {
-        logger_error("Options are missing.");
+        logger_error("Options are missing.\n");
         return false;
     }
     return true;

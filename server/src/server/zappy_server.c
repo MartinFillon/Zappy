@@ -48,7 +48,8 @@ static int select_server(server_t *serv)
     if (FD_ISSET(0, &serv->read_fds)) {
         if (getline(&line, &n, stdin) == -1)
             return SERV_END;
-        dprintf(1, "%s", line);
+        line[strlen(line) - 1] = '\0';
+        handle_server_cmd(line, serv);
     }
     if (FD_ISSET(serv->fd, &serv->read_fds))
         accept_new_client(serv);
