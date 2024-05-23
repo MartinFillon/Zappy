@@ -89,6 +89,9 @@ $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
 
+func_tests: $(NAME)
+	$(MAKE) -C tests
+
 re: fclean all
 
 .PHONY: all clean fclean re tests_run

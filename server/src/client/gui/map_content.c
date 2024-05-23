@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "client.h"
 #include "map.h"
-#include "types/client.h"
 #include "types/map.h"
 
 static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
@@ -17,11 +17,11 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     struct tile_s *tile = get_tile(map, x, y);
 
     if (tile == NULL) {
-        dprintf(c->fd, "sbp\n");
+        send_client(c, "sbp\n");
         return;
     }
-    dprintf(
-        c->fd,
+    send_client(
+        c,
         "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         x,
         y,
@@ -58,11 +58,11 @@ void map_content_tile(char *args, client_t *c, game_t *game)
     if (c->type != GUI)
         return;
     if (strtok(NULL, " \t") != NULL || x == NULL || y == NULL) {
-        dprintf(c->fd, "sbp\n");
+        send_client(c, "sbp\n");
         return;
     }
     if (!get_tile_pos(x, &px, &py)) {
-        dprintf(c->fd, "sbp\n");
+        send_client(c, "sbp\n");
         return;
     }
     get_and_send_tile(px, py, game->map, c);
@@ -73,7 +73,7 @@ void map_content_full(char *args, client_t *c, game_t *game)
     if (c->type != GUI)
         return;
     if (args[0] != '\0') {
-        dprintf(c->fd, "sbp\n");
+        send_client(c, "sbp\n");
         return;
     }
     for (size_t y = 0; y < game->map->y; y++) {

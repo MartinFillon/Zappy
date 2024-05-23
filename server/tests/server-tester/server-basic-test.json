@@ -1,0 +1,20 @@
+{
+    "tests": [
+        {
+            "name": "test1",
+            "description": "This is a sample test",
+            "commands": [
+                {
+                    "command": "GRAPHIC",
+                    "expected": []
+                },
+                {
+                    "command": "msz",
+                    "expected": [
+                        "10 a"
+                    ]
+                }
+            ]
+        }
+    ]
+}
