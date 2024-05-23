@@ -32,5 +32,6 @@ int read_client(client_t *c)
         strcat(c->buffer.buffer, buffer);
         c->buffer.size = strlen(c->buffer.buffer);
     }
+    logger_debug("Buffer: %s\n", c->buffer.buffer);
     return 0;
 }

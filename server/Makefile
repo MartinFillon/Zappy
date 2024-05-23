@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						destroyer		\
 						drop_on_tile	\
 						take_on_tile	\
+						get_tile		\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -46,6 +47,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix client/, 	\
 						$(addprefix gui/,	\
 							map_size		\
+							map_content		\
 						)\
 						init_client			\
 						send	 			\
@@ -86,6 +88,9 @@ $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
+
+func_tests: $(NAME)
+	$(MAKE) -C tests
 
 re: fclean all
 

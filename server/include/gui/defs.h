@@ -15,3 +15,5 @@ typedef struct gui_cmd_s {
 } gui_cmd_t;
 
 void map_size(char *args, client_t *cli, game_t *game);
+void map_content_tile(char *args, client_t *c, game_t *game);
+void map_content_full(char *args, client_t *c, game_t *game);

@@ -16,7 +16,7 @@ SRC =	src/main.rs
 all: $(NAME)
 
 $(NAME): $(SRC)
-	cargo build --release --offline -p ai && cp $(BPTAH) $(NAME)
+	cargo build --release -p ai && cp $(BPATH) $(NAME)
 
 clean:
 	cargo clean
