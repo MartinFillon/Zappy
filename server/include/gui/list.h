@@ -15,5 +15,7 @@ static const gui_cmd_t CMDS[] = {
     {"mct", &map_content_full},
     {"tna", &team_names},
     {"ppo", &player_position},
+    {"plv", &player_level},
+    {"pin", &player_inventory},
     {NULL, NULL},
 };

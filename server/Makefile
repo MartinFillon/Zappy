@@ -49,7 +49,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							map_size		\
 							map_content		\
 							team_names		\
-							player_position	\
+							player			\
 						)\
 						init_client			\
 						send	 			\
