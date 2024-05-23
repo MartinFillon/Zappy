@@ -50,6 +50,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							map_content		\
 							team_names		\
 							player			\
+							time 			\
 						)\
 						init_client			\
 						send	 			\

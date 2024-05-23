@@ -29,6 +29,7 @@ typedef struct {
     map_t *map;
     char **teams;
     size_t ai_count;
+    int freq;
 } game_t;
 
 typedef struct client_s {

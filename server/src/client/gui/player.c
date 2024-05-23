@@ -9,12 +9,12 @@
 #include "client.h"
 #include "types/client.h"
 
-static bool parse_number(char *args, long *n)
+bool parse_number(char *args, long *n)
 {
     char *end;
 
     *n = strtol(args, &end, 10);
-    if (end[0] != '\0' || n < 0)
+    if (end[0] != '\0' || *n < 0)
         return false;
     return true;
 }
