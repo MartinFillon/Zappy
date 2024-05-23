@@ -1,0 +1,29 @@
+name: compile
+
+on: [ workflow_call, workflow_dispatch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: compile
+        run: |
+          make fclean && make zappy_server
+        timeout-minutes: 5
+  run-unit-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: compile
+        run: |
+          make fclean && make tests_run -C zappy_server
+        timeout-minutes: 5

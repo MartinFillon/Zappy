@@ -1,0 +1,23 @@
+name: Pipeline
+
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - "**.rs"
+            - "ai/**"
+    pull_request:
+        paths:
+            - "**.rs"
+            - "ai/**"
+
+jobs:
+    commits:
+        name: Commits
+        uses: ./.github/workflows/conventional-commits.yml
+    build:
+        name: Build
+        uses: ./.github/workflows/rust-ci.yml
+    coding-style:
+        name: Coding-style
+        uses: ./.github/workflows/coding-style.yml
