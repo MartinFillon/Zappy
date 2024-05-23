@@ -9,7 +9,7 @@ NAME = ../zappy_ai
 
 BIN = ai
 
-BPATH = ../target/release/$(BIN)
+BPTAH = ../target/release/$(BIN)
 
 SRC =	src/main.rs
 
