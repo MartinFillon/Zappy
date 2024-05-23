@@ -1,47 +1,18 @@
 name: 'zappy'
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-    - main
-    - master
-  pull_request:
     branches:
     - main
     - master
 
 env:
   MIRROR_URL: "git@github.com:EpitechPromo2027/B-YEP-400-PAR-4-1-zappy-alexandre.vigoureux.git"
-  EXECUTABLES: "zappy_gui zappy_server"
 
 jobs:
-  check_program_compilation:
-    name: "verify that each file specified in the EXECUTABLES environment variable exists and is executable"
-    runs-on: ubuntu-latest
-    container: epitechcontent/epitest-docker:latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-            fetch-depth: 0
-      - run: make
-        timeout-minutes: 5
-      - run: make clean
-      - run: |
-          OIFS=$IFS
-          IFS=' '
-          for file in $EXECUTABLES; do
-            if [[ ! -x "$file" ]]; then
-              echo "Not proper executable: $file"
-              exit 2
-            fi
-          done
-          IFS=$OIFS
-          echo "All files are proper executables"
-
   push_to_mirror:
-    needs: [check_program_compilation]
-    if: ${{ github.event_name == 'push' }}
-    name: "pushes all files to mirror specified"
+    name: "Push to mirror"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

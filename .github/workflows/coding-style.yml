@@ -1,20 +1,8 @@
-name: 'coding-style'
+name: 'Coding-style'
 
 on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - 'server/**'
-      - 'gui/Makefile'
-      - 'Makefile'
-      - 'ai/Makefile'
-  pull_request:
-    branches: [ main, master ]
-    paths:
-      - 'server/**'
-      - 'gui/Makefile'
-      - 'Makefile'
-      - 'ai/Makefile'
+  workflow_dispatch:
+  workflow_call:
 
 jobs:
   check_coding_style:
