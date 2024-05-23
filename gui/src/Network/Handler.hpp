@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2024
+** Zappy
+** File description:
+** Handler
+*/
+
 #pragma once
 #include <asio.hpp>
 #include <atomic>
@@ -5,6 +12,8 @@
 #include <queue>
 #include <thread>
 #include <condition_variable>
+
+#define BUFFER_LEN 1024
 
 namespace Network {
 /**

@@ -68,8 +68,8 @@ void Handler::run()
 
         while (running) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            requestMapSize();
-            requestTeamNames();
+            // requestMapSize();
+            // requestTeamNames();
         }
 
         receiver.join();
@@ -79,32 +79,35 @@ void Handler::run()
     }
 }
 
-void Handler::receiveMessages() {
-    asio::streambuf buffer;
+void Handler::receiveMessages()
+{
+    std::vector<char> buffer(BUFFER_LEN);
     std::string leftover;
+
     while (running) {
         try {
-            size_t n = asio::read_until(socket, buffer, '\n');
-            std::istream is(&buffer);
-            std::string line;
-            while (std::getline(is, line)) {
+            asio::error_code error;
+            size_t n = socket.read_some(asio::buffer(buffer), error);
+            if (error)
+                throw asio::system_error(error);
+            std::string data(buffer.data(), n);
+            data = leftover + data;
+            leftover.clear();
+
+            size_t pos = 0;
+            while ((pos = data.find('\n')) != std::string::npos) {
+                std::string line = data.substr(0, pos);
                 if (!line.empty() && line.back() == '\r') {
                     line.pop_back();
                 }
-                if (!leftover.empty()) {
-                    line = leftover + line;
-                    leftover.clear();
-                }
-                if (!line.empty()) {
-                    std::scoped_lock lock(mutex);
-                    mQ.push(line);
-                    cv.notify_one();
-                }
+                std::scoped_lock lock(mutex);
+                std::cout << line << std::endl;
+                mQ.push(line);
+                cv.notify_one();
+                data.erase(0, pos + 1);
             }
-            if (!line.empty() && line.back() != '\n') {
-                leftover = line;
-            }
-            buffer.consume(n);
+
+            leftover = data;
         } catch (const std::exception &e) {
             std::cerr << "Receive error: " << e.what() << std::endl;
             running = false;

@@ -48,5 +48,5 @@ int main(int argc, char *argv[])
 
     networkHandler.stop();
 
-    return 0;
+    return SUCCESS;
 }

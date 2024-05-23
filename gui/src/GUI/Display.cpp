@@ -39,7 +39,6 @@ void Display::handleServerMessage(std::string &message)
 {
     if (!networkHandler.getMessage(message))
         return;
-
     serverMessageHandler.handleServerMessage(message);
 }
 
