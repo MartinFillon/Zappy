@@ -30,7 +30,7 @@ fn main() {
     if tester
         .tests
         .iter()
-        .fold(true, |acc, test| acc && connection.run_test(test).unwrap())
+        .all(|test| connection.run_test(test).unwrap())
     {
         println!("All tests passed");
     } else {

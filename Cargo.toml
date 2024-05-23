@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["server/tests/server-tester", "ai"]

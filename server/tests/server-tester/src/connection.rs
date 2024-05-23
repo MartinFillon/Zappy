@@ -1,5 +1,5 @@
 use std::{
-    io::{self, BufRead, BufReader, BufWriter, Write},
+    io::{self, BufRead, BufReader, Write},
     net::TcpStream,
 };
 
@@ -35,8 +35,8 @@ impl Connection {
 
     pub fn run_test(&mut self, test: &Test) -> io::Result<bool> {
         for command in test.get_commands() {
-            self.stream.write(command.get_command().as_bytes())?;
-            self.stream.write(b"\n")?;
+            self.stream.write_all(command.get_command().as_bytes())?;
+            self.stream.write_all(b"\n")?;
             for expected in command.get_expected() {
                 let mut response = String::new();
                 self.reader.read_line(&mut response)?;
