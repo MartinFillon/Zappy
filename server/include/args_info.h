@@ -16,6 +16,8 @@ typedef struct args_infos_s {
     int height;
 
     char **names;
+    int team_count;
+
     int clients_nb;
 
     int freq; // Default 100

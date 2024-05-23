@@ -5,32 +5,25 @@
 ## Makefile
 ##
 
-all: gui server ai
+MODULES := gui server ai
 
-gui:
-	@make -C gui
+FUNC_TESTER := server-tester
+FUNC_TESTER_BIN := $(FUNC_TESTER)-bin
+FUNC_TESTER_PATH := target/release/$(FUNC_TESTER)
 
-ai:
-	@make -C ai
 
-server:
-	@make -C server
+all: zappy_gui zappy_server zappy_ai
 
-clean:
-	@make clean -C gui
-	@make clean -C ai
-	@make clean -C server
+zappy_%:
+	@make -C $*
 
-fclean:
-	@make fclean -C gui
-	@make fclean -C ai
-	@make fclean -C server
+clean fclean tests_run:
+	$(foreach M,$(MODULES), make -C $M $@;)
 
-tests_run:
-	@make tests_run -C gui
-	@make tests_run -C ai
-	@make tests_run -C server
+func_tests:
+	cargo build --release -p $(FUNC_TESTER)
+		&& cp $(FUNC_TESTER_PATH) $(FUNC_TESTER_BIN)
 
 re: fclean all
 
-.PHONY: all clean fclean re gui ai server tests_run
+.PHONY: clean fclean re tests_run

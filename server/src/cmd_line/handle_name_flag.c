@@ -57,5 +57,6 @@ bool parse_names(char const **av, size_t *idx, args_infos_t *args)
         logger_error("Allocation error.");
         return false;
     }
+    args->team_count = nb_team;
     return true;
 }

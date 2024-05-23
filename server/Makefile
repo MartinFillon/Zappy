@@ -6,7 +6,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
@@ -14,16 +14,23 @@ NAME = ../zappy_server
 SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
-					main 					\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
 						handle_nb_flags			\
 						handle_name_flag		\
 					)\
-					$(addprefix utils/, 	\
-						logger_error 		\
-						free_box 			\
+					$(addprefix utils/,	\
+						logger_error	\
+						free_box		\
+						va_free			\
+					)\
+					$(addprefix map/, 	\
+						initializer		\
+						destroyer		\
+						drop_on_tile	\
+						take_on_tile	\
+						get_tile		\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -32,12 +39,28 @@ BASE_SRC = $(addsuffix .c, 				\
           			  	pop                 \
           			)\
 					$(addprefix server/, 	\
+						accept				\
 					  	init_server			\
 						zappy_server		\
+						buffer 				\
+					)						\
+					$(addprefix client/, 	\
+						$(addprefix gui/,	\
+							map_size		\
+							map_content		\
+						)\
+						init_client			\
+						send	 			\
+						ai_entrypoint	 	\
+						gui_entrypoint	 	\
+						parse_unset			\
+						read_client			\
+						close_client		\
 					)						\
 				)\
 			)\
 
+SRC += src/main.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -59,12 +82,15 @@ fclean: clean
 	rm -f $(TEST_NAME)
 
 $(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): $(SRC) $(TEST_SRC)
-	$(CC) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
+$(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
+	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
+
+func_tests: $(NAME)
+	$(MAKE) -C tests
 
 re: fclean all
 

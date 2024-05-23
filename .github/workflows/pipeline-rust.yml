@@ -1,0 +1,22 @@
+name: Pipeline-rust
+
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - "**.rs"
+            - "ai/**"
+            - "**.toml"
+    pull_request:
+        paths:
+            - "**.rs"
+            - "ai/**"
+            - "**.toml"
+
+jobs:
+    build:
+        name: Build
+        uses: ./.github/workflows/rust-ci.yml
+    coding-style:
+        name: Coding-style
+        uses: ./.github/workflows/coding-style.yml
