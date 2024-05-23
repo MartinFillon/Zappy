@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "ai.h"
 #include "map.h"
@@ -27,6 +28,7 @@ typedef struct {
     ai_t *ais;
     map_t *map;
     char **teams;
+    size_t ai_count;
 } game_t;
 
 typedef struct client_s {
