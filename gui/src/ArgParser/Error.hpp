@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** ArgParserException
+** Error
 */
 
 #pragma once
@@ -10,22 +10,20 @@
 #include <exception>
 #include <string>
 
+namespace ArgParser {
 /**
- * @class ArgParserException
- * @brief Exception class for argument parser errors.
+ * @class Error
+ * @brief Error class for argument parser errors.
  */
-class ArgParserException : public std::exception {
+class Error : public std::exception {
   public:
     /**
-     * @brief Constructs an ArgParserException.
+     * @brief Constructs an Error.
      *
      * @param what A description of the error.
      * @param where The location where the exception was thrown (default: "?").
      */
-    ArgParserException(const std::string &what, const std::string &where = "?")
-        : what_(what), where_(where)
-    {
-    }
+    Error(const std::string &what, const std::string &where = "?") : what_(what), where_(where) {}
 
     /**
      * @brief Returns the description of the error.
@@ -51,3 +49,4 @@ class ArgParserException : public std::exception {
     std::string what_;
     std::string where_;
 };
+}; // namespace ArgParser
