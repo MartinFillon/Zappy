@@ -17,5 +17,7 @@ static const gui_cmd_t CMDS[] = {
     {"ppo", &player_position},
     {"plv", &player_level},
     {"pin", &player_inventory},
+    {"sgt", &request_time},
+    {"sst", &update_time},
     {NULL, NULL},
 };
