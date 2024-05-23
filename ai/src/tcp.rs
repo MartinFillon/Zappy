@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use std::io::{self, BufRead, BufReader, Write, Result};
+use std::io::{self, BufRead, BufReader, Result, Write};
 use std::net::TcpStream;
 use std::thread;
 use std::time::Duration;
