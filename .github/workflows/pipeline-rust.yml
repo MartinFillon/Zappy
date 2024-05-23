@@ -12,9 +12,6 @@ on:
             - "ai/**"
 
 jobs:
-    commits:
-        name: Commits
-        uses: ./.github/workflows/conventional-commits.yml
     build:
         name: Build
         uses: ./.github/workflows/rust-ci.yml
