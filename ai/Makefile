@@ -9,9 +9,11 @@ NAME = ../zappy_ai
 
 BIN = ai
 
-BPTAH = ../target/release/$(BIN)
+BPATH = ../target/release/$(BIN)
 
-SRC =	src/main.rs
+SRC =	src/main.rs	\
+		src/tcp.rs	\
+		src/flags.rs
 
 all: $(NAME)
 
