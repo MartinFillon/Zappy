@@ -21,8 +21,6 @@ impl Connection {
             response
         };
 
-        dbg!(&connection_response);
-
         if connection_response != "WELCOME\n" {
             Err(io::Error::new(
                 io::ErrorKind::Other,
@@ -34,12 +32,14 @@ impl Connection {
     }
 
     pub fn run_test(&mut self, test: &Test) -> io::Result<bool> {
+        println!("Running test: {}", test.get_name());
         for command in test.get_commands() {
             self.stream.write_all(command.get_command().as_bytes())?;
             self.stream.write_all(b"\n")?;
             for expected in command.get_expected() {
                 let mut response = String::new();
                 self.reader.read_line(&mut response)?;
+                response = response.trim_end().to_string();
                 if response != *expected {
                     return Ok(false);
                 }
@@ -47,5 +47,10 @@ impl Connection {
         }
 
         Ok(true)
+    }
+
+    pub fn send(&mut self, mode: String) -> io::Result<()> {
+        self.stream.write_all(mode.as_bytes())?;
+        self.stream.write_all(b"\n")
     }
 }

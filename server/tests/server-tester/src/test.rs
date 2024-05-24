@@ -37,6 +37,10 @@ impl Test {
     pub fn get_commands(&self) -> &Vec<Command> {
         &self.commands
     }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
 impl Command {

@@ -48,6 +48,9 @@ BASE_SRC = $(addsuffix .c, 				\
 						$(addprefix gui/,	\
 							map_size		\
 							map_content		\
+							team_names		\
+							player			\
+							time 			\
 						)\
 						init_client			\
 						send	 			\

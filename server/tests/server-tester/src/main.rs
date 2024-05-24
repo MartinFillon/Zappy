@@ -1,8 +1,14 @@
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{self, BufReader},
+    path::Path,
+};
 
 use clap::Parser;
+use connection::Connection;
 use parser::Opts;
 use serde::Deserialize;
+use serde_json::from_reader;
 use test::Test;
 
 mod connection;
@@ -11,29 +17,30 @@ mod test;
 
 #[derive(Deserialize)]
 struct Tester {
+    mode: String,
     tests: Vec<Test>,
 }
 
 impl Tester {
     fn new<P: AsRef<Path>>(path: P) -> Self {
-        let file = std::fs::File::open(path).unwrap();
-        let reader = std::io::BufReader::new(file);
-        serde_json::from_reader(reader).unwrap()
+        let file = File::open(path).unwrap();
+        let reader = BufReader::new(file);
+        from_reader(reader).unwrap()
     }
 }
 
-fn main() {
+fn main() -> io::Result<()> {
     let opts = Opts::parse();
     let tester = Tester::new(opts.path);
-    let mut connection = connection::Connection::new(opts.port, opts.host).unwrap();
+    let mut connection = Connection::new(opts.port, opts.host).unwrap();
 
-    if tester
-        .tests
-        .iter()
-        .all(|test| connection.run_test(test).unwrap())
-    {
-        println!("All tests passed");
-    } else {
-        println!("Some tests failed");
+    connection.send(tester.mode)?;
+    for test in tester.tests {
+        if connection.run_test(&test)? {
+            println!("Test passed");
+        } else {
+            println!("Test failed {test}");
+        }
     }
+    Ok(())
 }
