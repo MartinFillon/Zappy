@@ -60,6 +60,10 @@ BASE_SRC = $(addsuffix .c, 				\
 						read_client			\
 						close_client		\
 					)						\
+					$(addprefix time/, 	\
+						clock				\
+						duration 			\
+					)						\
 				)\
 			)\
 
