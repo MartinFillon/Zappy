@@ -11,7 +11,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "clock.h"
 #include "macros.h"
 #include "server.h"
 #include "utils.h"
@@ -24,22 +23,19 @@ static void sig(int signum)
 
 int main(int ac, char const **av)
 {
-    zclock_t *clock = clock_new(1);
+    args_infos_t args = {0};
 
-    wait_n_ticks(clock, 10);
-    // args_infos_t args = {0};
-
-    // srand(time(NULL));
-    // if (ac == 2 && strcmp(av[1], "-help") == 0) {
-    //     display_help();
-    //     return SUCCESS;
-    // }
-    // if (parse_command_line(av, &args) == false)
-    //     return EPI_ERROR;
-    // signal(SIGINT, &sig);
-    // if (loop_server(&args) == ERROR)
-    //     return EPI_ERROR;
-    // my_free_box(args.names);
-    // logger_info("Server stopped\n");
+    srand(time(NULL));
+    if (ac == 2 && strcmp(av[1], "-help") == 0) {
+        display_help();
+        return SUCCESS;
+    }
+    if (parse_command_line(av, &args) == false)
+        return EPI_ERROR;
+    signal(SIGINT, &sig);
+    if (loop_server(&args) == ERROR)
+        return EPI_ERROR;
+    my_free_box(args.names);
+    logger_info("Server stopped\n");
     return SUCCESS;
 }
