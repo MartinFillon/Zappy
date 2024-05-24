@@ -54,6 +54,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						$(addprefix ai/,	\
 							handle_foward 	\
+							handle_rotate 	\
 						)\
 						init_client			\
 						send	 			\

@@ -46,7 +46,7 @@ void handle_forward(client_t *cli, game_t *game)
 {
     ai_t *ai = cli->ai;
 
-    if (ai->dir < LEFT) {
+    if (ai->dir == UP || ai->dir == DOWN) {
         move_y(ai, game->map);
     } else {
         move_x(ai, game->map);

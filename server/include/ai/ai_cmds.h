@@ -24,11 +24,28 @@ typedef struct ai_cmds_s {
  */
 void handle_forward(client_t *cli, game_t *game);
 
+/**
+ * @brief Rotate player's direction of 90° in right side.
+ * @param cli Clients' informations/Ai that will rotate.
+ * @param game Game object with all the current game state.
+ *
+ */
+void handle_rotate_right(client_t *cli, game_t *game);
+
+
+/**
+ * @brief Rotate player's direction of 90° in left side.
+ * @param cli Clients' informations/Ai that will rotate.
+ * @param game Game object with all the current game state.
+ *
+ */
+void handle_rotate_left(client_t *cli, game_t *game);
+
 static const ai_cmds_t AI_CMDS[] = {
     {"Forward", handle_forward},
 
-    // {"Right", NULL},
-    // {"Left", NULL},
+    {"Right", handle_rotate_right},
+    {"Left", handle_rotate_left},
 
     // {"Look", NULL},
     // {"Inventory", NULL},

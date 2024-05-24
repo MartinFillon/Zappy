@@ -10,13 +10,15 @@
 #include <stdlib.h>
 #include "map.h"
 
+#define NB_DIR 4
+
 typedef struct tile_content_s inventory_t;
 
 enum Direction {
     UP,
+    RIGHT,
     DOWN,
     LEFT,
-    RIGHT
 };
 
 typedef struct {
