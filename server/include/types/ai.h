@@ -29,5 +29,5 @@ typedef struct {
     enum Direction dir;
 
     inventory_t inventory;
-    long time_to_wait; // if current time < this time dont do anything
+    long cycles_to_wait; // if current time < this time dont do anything
 } ai_t;

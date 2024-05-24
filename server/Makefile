@@ -6,7 +6,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -D_GNU_SOURCE
+CFLAGS = -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
@@ -62,7 +62,6 @@ BASE_SRC = $(addsuffix .c, 				\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
-						duration 			\
 					)						\
 				)\
 			)\
