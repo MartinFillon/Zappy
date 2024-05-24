@@ -12,10 +12,17 @@
 
 typedef struct ai_cmds_s {
     char const *name;
-    int (*func)(client_t *, game_t *);
+    void (*func)(client_t *, game_t *);
 } ai_cmds_t;
 
-int handle_forward(client_t *cli, game_t *game);
+/**
+ * @brief Handle forward command from an ai, that move an ai forward
+ *        with respect with his direction.
+ * @param cli Clients' informations/Ai that will move.
+ * @param game Game object with all the current game state.
+ *
+ */
+void handle_forward(client_t *cli, game_t *game);
 
 static const ai_cmds_t AI_CMDS[] = {
     {"Forward", handle_forward},

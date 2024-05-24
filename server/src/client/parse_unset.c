@@ -5,6 +5,7 @@
 ** parse_unset
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,6 +28,7 @@ static int init_ai(client_t *c, game_t *game)
         c->ai->y = rand() % game->map->y;
         c->ai->x = rand() % game->map->x;
     }
+    dprintf(1, "Ai at pos (%ld, %ld)\n", c->ai->y, c->ai->x);
     game->map->arena[c->ai->y][c->ai->x].occupied = true;
     return SUCCESS;
 }

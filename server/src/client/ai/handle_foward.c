@@ -5,13 +5,51 @@
 ** handle_foward
 */
 
+#include <stdbool.h>
 #include <stdio.h>
+#include "types/ai.h"
+#include "types/map.h"
 
 #include "ai/ai_cmds.h"
 
-int handle_forward(client_t *cli, game_t *game)
+static void move_y(ai_t *ai, map_t *map)
 {
-    (void) game;
+    ssize_t y = ai->y;
+
+    if (ai->dir == UP)
+        y = (y == 0) ? (map->y - 1) : (y - 1) % map->y;
+    if (ai->dir == DOWN)
+        y = (y + 1) % map->y;
+    if (map->arena[y][ai->x].occupied)
+        return;
+    map->arena[ai->y][ai->x].occupied = false;
+    map->arena[y][ai->x].occupied = true;
+    ai->y = y;
+}
+
+static void move_x(ai_t *ai, map_t *map)
+{
+    ssize_t x = ai->x;
+
+    if (ai->dir == LEFT)
+        x = (x == 0) ? (map->x - 1) : (x - 1) % map->y;
+    if (ai->dir == RIGHT)
+        x = (x + 1) % map->x;
+    if (map->arena[ai->y][x].occupied)
+        return;
+    map->arena[ai->y][ai->x].occupied = false;
+    map->arena[ai->y][x].occupied = true;
+    ai->x = x;
+}
+
+void handle_forward(client_t *cli, game_t *game)
+{
+    ai_t *ai = cli->ai;
+
+    if (ai->dir < LEFT) {
+        move_y(ai, game->map);
+    } else {
+        move_x(ai, game->map);
+    }
     dprintf(cli->fd, "ok\n");
-    return 0;
 }
