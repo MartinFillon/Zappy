@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader, path::Path, thread, time::Duration};
+use std::{fs::File, io::BufReader, path::Path};
 
 use clap::Parser;
 use connection::Connection;

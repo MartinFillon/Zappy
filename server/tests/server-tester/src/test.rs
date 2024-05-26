@@ -1,6 +1,7 @@
-use std::fmt::Display;
+#![allow(dead_code)]
 
 use serde::Deserialize;
+use std::fmt::Display;
 
 #[derive(Debug, Deserialize)]
 pub struct Command {
