@@ -5,6 +5,7 @@
 ** zappy_server
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 #include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
+#include <bits/types/struct_timeval.h>
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
@@ -38,9 +40,9 @@ static void handle_client(zappy_t *z)
 /// @brief Actually there is only stdin that is read so we put 1 to maxfd.
 static int select_server(zappy_t *z)
 {
-    int retval = select(
-        SOMAXCONN, &z->server.read_fds, &z->server.write_fds, NULL, NULL
-    );
+    struct timeval t = {0, 1};
+    int retval =
+        select(SOMAXCONN, &z->server.read_fds, &z->server.write_fds, NULL, &t);
     char *line = NULL;
     size_t n = 0;
 

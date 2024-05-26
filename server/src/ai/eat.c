@@ -22,8 +22,7 @@ static void send_death(int n, server_t *s)
 
 void make_ai_eat(client_t *cli, server_t *server, int n)
 {
-    logger_info("Trying to feed %d\n", n);
-    if (!has_n_ticks_passed(cli->ai->food_clock, 126)) {
+    if (!cli->ai->alive || !has_n_ticks_passed(cli->ai->food_clock, 126)) {
         return;
     }
     if (cli->ai->inventory.food == 0) {
