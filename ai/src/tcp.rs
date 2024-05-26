@@ -6,29 +6,32 @@
 //
 
 #![allow(dead_code)]
+use std::sync::Arc;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::net::TcpStream;
+use tokio::sync::Mutex;
+use tokio::time::{sleep, Duration};
 
-use std::io::{stdin, ErrorKind::WouldBlock};
-use std::io::{BufRead, BufReader, Result, Write};
-use std::net::TcpStream;
-use std::sync::{Arc, Mutex, MutexGuard};
-use std::thread::{sleep, spawn};
-use std::time::Duration;
-
-fn read_stream(stream: Arc<Mutex<TcpStream>>) -> Result<()> {
-    let stream_clone = stream.clone();
-    let mut reader = BufReader::new(stream_clone.lock().unwrap().try_clone()?); // to look at and fix
+async fn read_stream(stream: Arc<Mutex<TcpStream>>) -> std::io::Result<()> {
+    let stream_clone = stream.lock().await;
+    let mut reader = BufReader::new(stream_clone);
     let timeout = Duration::from_secs(1);
 
-    spawn(move || loop {
+    tokio::spawn(async move {
         let mut line = String::new();
 
-        match reader.read_line(&mut line) {
-            Ok(0) => break,
-            Ok(_) => print!("{line}"),
-            Err(ref err) if err.kind() == WouldBlock => sleep(timeout),
-            Err(e) => {
-                eprintln!("Error reading from stream: {e}");
-                break;
+        loop {
+            match reader.read_line(&mut line).await {
+                Ok(0) => break,
+                Ok(_) => print!("{line}"),
+                Err(e) => {
+                    if e.kind() == std::io::ErrorKind::WouldBlock {
+                        sleep(timeout).await;
+                    } else {
+                        eprintln!("Error reading from stream: {e}");
+                        break;
+                    }
+                }
             }
         }
     });
@@ -36,32 +39,28 @@ fn read_stream(stream: Arc<Mutex<TcpStream>>) -> Result<()> {
     Ok(())
 }
 
-fn write_stream(stream: Arc<Mutex<TcpStream>>, message: String) -> Result<()> {
-    if let Ok(res) = stream.lock() {
-        let mut stream: MutexGuard<TcpStream> = res;
-        stream.write_all(message.as_bytes())?;
-        stream.flush()?;
-    } else {
-        eprintln!("Lock error()");
-        return Err(std::io::Error::from(std::io::ErrorKind::Other));
-    }
-
+async fn write_stream(stream: Arc<Mutex<TcpStream>>, message: String) -> std::io::Result<()> {
+    let mut stream = stream.lock().await;
+    stream.write_all(message.as_bytes()).await?;
+    stream.flush().await?;
     Ok(())
 }
 
-pub fn tcp(address: String, port: usize) -> Result<()> {
+pub async fn tcp(address: String, port: usize) -> std::io::Result<()> {
     let addr = format!("{}:{}", address, port);
-    let stream = dbg!(TcpStream::connect(addr)?);
-    stream.set_nonblocking(true)?;
+    let stream = TcpStream::connect(addr).await?;
+    stream.set_nodelay(true)?;
 
     let stream = Arc::new(Mutex::new(stream));
 
-    read_stream(stream.clone())?;
+    read_stream(stream.clone()).await?;
 
-    let stdin = stdin();
-    for line in stdin.lock().lines() {
-        let line = line?;
-        write_stream(stream.clone(), line + "\n")?;
+    let mut stdin = BufReader::new(tokio::io::stdin());
+    let mut line = String::new();
+
+    while stdin.read_line(&mut line).await.unwrap_or(0) > 0 {
+        write_stream(stream.clone(), line.clone()).await?;
+        line.clear();
     }
 
     Ok(())
