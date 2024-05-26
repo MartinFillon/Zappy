@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "map.h"
+#include "types/clock.h"
 
 typedef struct tile_content_s inventory_t;
 
@@ -30,4 +31,5 @@ typedef struct {
 
     inventory_t inventory;
     long cycles_to_wait; // if current time < this time dont do anything
+    zclock_t *clock;
 } ai_t;

@@ -15,3 +15,5 @@
 zclock_t *clock_new(double frequency);
 ztime_t get_elapsed_time(zclock_t *this);
 void wait_n_ticks(zclock_t *this, uint n);
+bool has_n_ticks_passed(zclock_t *this, uint n);
+void reset_clock(zclock_t *this);

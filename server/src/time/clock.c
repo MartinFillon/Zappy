@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "macros.h"
 #include "types/clock.h"
 #include "utils.h"
 
@@ -37,11 +36,24 @@ ztime_t get_elapsed_time(zclock_t *this)
     return get_current_time() - this->start;
 }
 
+bool has_n_ticks_passed(zclock_t *this, uint n)
+{
+    return get_current_time() > this->start + (this->frequency * n);
+}
+
 void wait_n_ticks(zclock_t *this, uint n)
 {
+    int i = 0;
+
     logger_info("Elapsed time %llu microsseconds\n", get_elapsed_time(this));
-    for (size_t i = 0; i < n; i++) {
+    while(!has_n_ticks_passed(this, n)) {
         logger_debug("tick: %lu\n", i);
         usleep(this->frequency);
+        i++;
     }
+}
+
+void reset_clock(zclock_t *this)
+{
+    this->start = get_current_time();
 }
