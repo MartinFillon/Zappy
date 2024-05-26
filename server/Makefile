@@ -24,6 +24,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						logger_error	\
 						free_box		\
 						va_free			\
+						mod				\
 					)\
 					$(addprefix map/, 	\
 						initializer		\

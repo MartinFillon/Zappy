@@ -9,6 +9,7 @@
 
 #include "types/ai.h"
 #include "types/client.h"
+#include "utils.h"
 
 void handle_rotate_right(client_t *cli, game_t *game)
 {
@@ -19,8 +20,5 @@ void handle_rotate_right(client_t *cli, game_t *game)
 void handle_rotate_left(client_t *cli, game_t *game)
 {
     (void) game;
-    if (cli->ai->dir == 0)
-        cli->ai->dir = LEFT;
-    else
-        cli->ai->dir = (cli->ai->dir - 1) % NB_DIR;
+    cli->ai->dir = modulo((cli->ai->dir - 1), NB_DIR);
 }

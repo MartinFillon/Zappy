@@ -11,13 +11,14 @@
 #include "types/map.h"
 
 #include "ai/ai_cmds.h"
+#include "utils.h"
 
 static void move_y(ai_t *ai, map_t *map)
 {
-    ssize_t y = ai->y;
+    int y = ai->y;
 
     if (ai->dir == UP)
-        y = (y == 0) ? (map->y - 1) : (y - 1) % map->y;
+        y = modulo(ai->y - 1, map->y);
     if (ai->dir == DOWN)
         y = (y + 1) % map->y;
     if (map->arena[y][ai->x].occupied)
@@ -29,10 +30,10 @@ static void move_y(ai_t *ai, map_t *map)
 
 static void move_x(ai_t *ai, map_t *map)
 {
-    ssize_t x = ai->x;
+    int x = ai->x;
 
     if (ai->dir == LEFT)
-        x = (x == 0) ? (map->x - 1) : (x - 1) % map->y;
+        x = modulo(ai->x - 1, map->x);
     if (ai->dir == RIGHT)
         x = (x + 1) % map->x;
     if (map->arena[ai->y][x].occupied)
