@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::{self, BufReader},
-    path::Path,
-};
+use std::{fs::File, io::BufReader, path::Path};
 
 use clap::Parser;
 use connection::Connection;

@@ -60,7 +60,7 @@ impl ServerOptions {
             .arg(format!("{}", self.y))
             .arg("-n");
 
-        for (_, team) in self.teams.iter().enumerate() {
+        for team in self.teams.iter() {
             c.arg(team);
         }
 
