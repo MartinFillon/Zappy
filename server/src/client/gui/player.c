@@ -25,8 +25,8 @@ static void send_infos(client_t *c, ai_t *ai, size_t nb)
         c,
         "ppo %lu %lu %lu %d %d %s\n",
         nb,
-        ai->x,
-        ai->y,
+        ai->pos.x,
+        ai->pos.y,
         ai->dir,
         ai->level,
         ai->team
@@ -39,9 +39,9 @@ void player_position(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->len)
         return send_client(c, "sbp\n");
-    return send_infos(c, &g->ais[nb], nb);
+    return send_infos(c, &g->ais->ais[nb], nb);
 }
 
 void player_level(char *args, client_t *c, game_t *g)
@@ -50,9 +50,9 @@ void player_level(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->len)
         return send_client(c, "sbp\n");
-    return send_client(c, "plv %ld %d", nb, g->ais[nb].level);
+    return send_client(c, "plv %ld %d", nb, g->ais->ais[nb].level);
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
@@ -61,8 +61,8 @@ static void send_inventory(client_t *c, ai_t *ai, size_t nb)
         c,
         "pin %lu %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         nb,
-        ai->x,
-        ai->y,
+        ai->pos.x,
+        ai->pos.y,
         ai->inventory.food,
         ai->inventory.linemate,
         ai->inventory.deraumere,
@@ -79,7 +79,7 @@ void player_inventory(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->len)
         return send_client(c, "sbp\n");
-    return send_inventory(c, &g->ais[nb], nb);
+    return send_inventory(c, &g->ais->ais[nb], nb);
 }

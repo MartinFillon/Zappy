@@ -20,8 +20,6 @@ typedef struct server_s {
     fd_set write_fds;
 
     client_t clients[SOMAXCONN];
-
-    game_t game;
 } server_t;
 
 int server_init(uint32_t port);

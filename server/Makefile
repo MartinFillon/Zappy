@@ -14,6 +14,7 @@ NAME = ../zappy_server
 SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
+					init_program 			\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -25,12 +26,19 @@ BASE_SRC = $(addsuffix .c, 				\
 						free_box		\
 						va_free			\
 					)\
-					$(addprefix map/, 	\
-						initializer		\
-						destroyer		\
-						drop_on_tile	\
-						take_on_tile	\
-						get_tile		\
+					$(addprefix game/, 		\
+						$(addprefix map/, 	\
+							initializer		\
+							destroyer		\
+							drop_on_tile	\
+							take_on_tile	\
+							get_tile		\
+						)\
+						$(addprefix team/,	\
+							team			\
+							teams			\
+						)\
+						game 				\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -63,6 +71,10 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix time/, 	\
 						clock				\
 					)						\
+					$(addprefix ai/, 	\
+						init				\
+						vector				\
+					)\
 				)\
 			)\
 

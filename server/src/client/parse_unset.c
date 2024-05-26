@@ -5,6 +5,7 @@
 ** parse_unset
 */
 
+#include <stddef.h>
 #include <string.h>
 
 #include "client.h"
@@ -22,8 +23,8 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
         logger_warn("No teams set\n");
         return 1;
     }
-    for (int i = 0; game->teams[i]; i++) {
-        if (strcmp(line, game->teams[i]) == 0) {
+    for (size_t i = 0; i < game->teams->len; i++) {
+        if (strcmp(line, game->teams->data[i].name) == 0) {
             logger_info("Client %d is an AI\n", c->fd);
             c->type = AI;
             c->entrypoint = &ai_entrypoint;
