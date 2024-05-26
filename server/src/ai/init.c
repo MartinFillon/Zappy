@@ -5,8 +5,6 @@
 ** ai_init
 */
 
-#include <string.h>
-
 #include "clock.h"
 #include "types/client.h"
 #include "types/team.h"
