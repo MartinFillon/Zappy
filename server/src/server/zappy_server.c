@@ -13,7 +13,6 @@
 
 #include "client.h"
 #include "macros.h"
-#include "map.h"
 #include "server.h"
 #include "utils.h"
 #include "zappy.h"
@@ -81,6 +80,13 @@ static void exec_clients(zappy_t *z)
     }
 }
 
+static void check_eating(server_t *s)
+{
+    for (__auto_type i = 0; i < SOMAXCONN; i++)
+        if (s->clients[i].fd > 0 && s->clients[i].type == AI)
+            make_ai_eat(&s->clients[i], s, i);
+}
+
 int loop_server(args_infos_t *args)
 {
     zappy_t z = {0};
@@ -92,6 +98,7 @@ int loop_server(args_infos_t *args)
         fill_fd_set(&z);
         retval = select_server(&z);
         exec_clients(&z);
+        check_eating(&z.server);
     }
     logger_info("Server shutting down\n");
     return SUCCESS;

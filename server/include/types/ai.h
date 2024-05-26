@@ -34,4 +34,6 @@ typedef struct {
     long cycles_to_wait; // if current time < this time dont do anything
     zclock_t *clock;
     zclock_t *food_clock;
+
+    bool alive;
 } ai_t;

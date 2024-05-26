@@ -52,14 +52,14 @@ BASE_SRC = $(addsuffix .c, 				\
 						zappy_server		\
 						buffer 				\
 					)						\
+					$(addprefix gui/,		\
+						map_size			\
+						map_content			\
+						team_names			\
+						player				\
+						time 				\
+					)\
 					$(addprefix client/, 	\
-						$(addprefix gui/,	\
-							map_size		\
-							map_content		\
-							team_names		\
-							player			\
-							time 			\
-						)\
 						init_client			\
 						send	 			\
 						ai_entrypoint	 	\
@@ -74,6 +74,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix ai/, 	\
 						init				\
 						vector				\
+						eat					\
 					)\
 				)\
 			)\

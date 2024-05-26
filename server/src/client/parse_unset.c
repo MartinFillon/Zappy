@@ -28,6 +28,8 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
             logger_info("Client %d is an AI\n", c->fd);
             c->type = AI;
             c->entrypoint = &ai_entrypoint;
+            init_ai(game, c, 100, &game->teams->data[i]);
+            logger_info("AI inited\n");
             return 0;
         }
     }
