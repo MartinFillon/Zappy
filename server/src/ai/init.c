@@ -11,7 +11,7 @@
 #include "types/team.h"
 #include "vector.h"
 
-bool init_ai(game_t *game, client_t *client, double freq, team_t const *team)
+bool init_ai(game_t *game, client_t *client, team_t const *team)
 {
     ai_t *new = calloc(1, sizeof(ai_t));
 
@@ -19,9 +19,9 @@ bool init_ai(game_t *game, client_t *client, double freq, team_t const *team)
         if (resize_vector_ai(game->ais))
             return true;
     }
-    new->clock = clock_new(freq);
+    new->clock = clock_new(game->frequency);
     new->team = (team_t *)team;
-    new->food_clock = clock_new(freq);
+    new->food_clock = clock_new(game->frequency);
     new->inventory.food = 20;
     push_back_vector_ai(game->ais, new);
     client->ai = new;

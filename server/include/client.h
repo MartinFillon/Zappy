@@ -19,4 +19,4 @@ int gui_entrypoint(char const *line, client_t *c, game_t *game);
 int unset_entrypoint(char const *line, client_t *c, game_t *game);
 void close_client(client_t *c);
 void make_ai_eat(client_t *cli, server_t *server, int n);
-bool init_ai(game_t *game, client_t *client, double freq, team_t const *team);
+bool init_ai(game_t *game, client_t *client, team_t const *team);

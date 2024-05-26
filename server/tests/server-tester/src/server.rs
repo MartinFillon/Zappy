@@ -16,6 +16,7 @@ struct ServerOptions {
     teams: Vec<String>,
     count_per_team: u32,
     frequency: u32,
+    path: Option<String>,
 }
 
 impl Default for ServerOptions {
@@ -27,6 +28,7 @@ impl Default for ServerOptions {
             teams: vec!["hello".to_string()],
             count_per_team: 10,
             frequency: 1,
+            path: Some("./zappy_server".to_string()),
         }
     }
 }
@@ -50,8 +52,9 @@ impl ServerOptions {
         }
     }
 
-    fn run(&self) -> Result<Server, String> {
-        let mut c = Command::new("./zappy_server");
+    fn run(&self, bin: Option<String>) -> Result<Server, String> {
+        let mut c = Command::new(bin.unwrap_or_else(|| self.path.clone().unwrap()));
+
         c.arg("-p")
             .arg(format!("{}", self.port))
             .arg("-x")
@@ -60,9 +63,9 @@ impl ServerOptions {
             .arg(format!("{}", self.y))
             .arg("-n");
 
-        for team in self.teams.iter() {
+        self.teams.iter().for_each(|team| {
             c.arg(team);
-        }
+        });
 
         c.arg("-c")
             .arg(format!("{}", self.count_per_team))
@@ -75,8 +78,8 @@ impl ServerOptions {
 }
 
 impl Server {
-    pub fn new(path: Option<String>) -> Result<Self, String> {
-        ServerOptions::new(path).and_then(|options| options.run())
+    pub fn new(path: Option<String>, binary: Option<String>) -> Result<Self, String> {
+        ServerOptions::new(path).and_then(|options| options.run(binary))
     }
 
     pub fn kill(&mut self) -> Result<(), String> {

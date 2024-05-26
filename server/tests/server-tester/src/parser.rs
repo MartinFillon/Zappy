@@ -16,6 +16,11 @@ pub struct Opts {
     #[arg(long)]
     pub host: String,
 
+    /// Path to the server configuration file
+    #[arg(short, long)]
+    pub config: Option<String>,
+
+    /// Path to the server binary
     #[arg(long)]
     pub server: Option<String>,
 }

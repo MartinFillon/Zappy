@@ -5,7 +5,7 @@
 ** parse_unset
 */
 
-#include <stddef.h>
+#include <stddef.h><
 #include <string.h>
 
 #include "client.h"
@@ -18,7 +18,7 @@ static int put_in_team(client_t *c, game_t *game, size_t i)
     logger_info("Client %d is an AI\n", c->fd);
     c->type = AI;
     c->entrypoint = &ai_entrypoint;
-    init_ai(game, c, 100, &game->teams->data[i]);
+    init_ai(game, c, &game->teams->data[i]);
     logger_info("AI inited\n");
     return 0;
 }

@@ -26,6 +26,7 @@ game_t init_game(args_infos_t *args)
     logger_info("Creating teams\n");
     game.teams = init_teams(1);
     game.ais = init_ais(1);
+    game.frequency = args->freq;
     for (__auto_type i = 0; args->names[i]; i++) {
         logger_debug("Creating %s\n", args->names[i]);
         nw = create_team(args->names[i]);

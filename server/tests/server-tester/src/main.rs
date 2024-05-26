@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader, path::Path};
+use std::{fs::File, io::BufReader, path::Path, thread, time::Duration};
 
 use clap::Parser;
 use connection::Connection;
@@ -28,19 +28,22 @@ impl Tester {
 
 fn main() -> Result<(), String> {
     let opts = Opts::parse();
-    let mut svr = Server::new(opts.server)?;
     let tester = Tester::new(opts.path);
-    let mut connection = Connection::new(opts.port, opts.host).map_err(|e| e.to_string())?;
 
-    connection
-        .send("GRAPHIC".to_owned())
-        .map_err(|e| e.to_string())?;
+    let mut svr = Server::new(opts.config.clone(), opts.server.clone())?;
     for test in tester.tests {
+        let mut connection = Connection::new(opts.port, &opts.host).map_err(|e| e.to_string())?;
+
+        connection
+            .send(test.get_mode().to_owned())
+            .map_err(|e| e.to_string())?;
+
         if connection.run_test(&test).map_err(|e| e.to_string())? {
             println!("Test passed");
         } else {
-            println!("Test failed {test}");
+            println!("Test failed {:?}", test);
         }
     }
-    svr.kill()
+    svr.kill()?;
+    Ok(())
 }
