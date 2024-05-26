@@ -9,9 +9,10 @@
 
 #include "clock.h"
 #include "types/client.h"
+#include "types/team.h"
 #include "vector.h"
 
-bool init_ai(game_t *game, client_t *client, double freq, char const *team)
+bool init_ai(game_t *game, client_t *client, double freq, team_t const *team)
 {
     ai_t new = {0};
 
@@ -20,7 +21,7 @@ bool init_ai(game_t *game, client_t *client, double freq, char const *team)
             return true;
     }
     new.clock = clock_new(freq);
-    new.team = strdup(team);
+    new.team = (team_t *)team;
     push_back_vector_ai(game->ais, &new);
     client->ai = &new;
     return false;

@@ -10,8 +10,9 @@
 #include <stddef.h>
 #include "types/ai.h"
 #include "types/clock.h"
+#include "types/team.h"
 
-typedef struct  {
+typedef struct {
     ai_t *ais;
     size_t len;
     size_t size;
@@ -20,6 +21,6 @@ typedef struct  {
 typedef struct {
     vector_ai_t *ais;
     map_t *map;
-    char **teams;
+    teams_t *teams;
     zclock_t *clock;
 } game_t;

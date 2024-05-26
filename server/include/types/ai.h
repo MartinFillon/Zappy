@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "map.h"
 #include "types/clock.h"
+#include "types/position.h"
+#include "types/team.h"
 
 typedef struct tile_content_s inventory_t;
 
@@ -21,10 +23,9 @@ enum Direction {
 };
 
 typedef struct {
-    char *team;
+    team_t *team;
 
-    size_t x;
-    size_t y;
+    pos_t pos;
     size_t level;
 
     enum Direction dir;
