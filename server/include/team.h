@@ -13,3 +13,4 @@
 bool resize_vector_team(teams_t *v);
 void push_back_vector_team(teams_t *v, const team_t *nw);
 team_t create_team(char const *name);
+teams_t *init_teams(size_t team_count);

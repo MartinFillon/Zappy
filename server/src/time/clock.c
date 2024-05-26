@@ -46,7 +46,7 @@ void wait_n_ticks(zclock_t *this, uint n)
     int i = 0;
 
     logger_info("Elapsed time %llu microsseconds\n", get_elapsed_time(this));
-    while(!has_n_ticks_passed(this, n)) {
+    while (!has_n_ticks_passed(this, n)) {
         logger_debug("tick: %lu\n", i);
         usleep(this->frequency);
         i++;

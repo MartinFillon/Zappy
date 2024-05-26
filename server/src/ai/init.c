@@ -20,6 +20,8 @@ bool init_ai(game_t *game, client_t *client, double freq, team_t const *team)
     }
     new.clock = clock_new(freq);
     new.team = (team_t *)team;
+    new.food_clock = clock_new(freq);
+    new.inventory.food = 20;
     push_back_vector_ai(game->ais, &new);
     client->ai = &new;
     return false;

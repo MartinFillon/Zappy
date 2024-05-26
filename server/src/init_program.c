@@ -17,11 +17,8 @@ int init_program(args_infos_t *args, zappy_t *z)
     if (z->server.fd == ERROR)
         return ERROR;
     logger_info("Server up and running on port %d\n", args->port);
-    logger_info(
-        "Initailizing game\nInitailizing map with size %d %d\n",
-        args->width,
-        args->height
-    );
+    logger_info("Initailizing game\n");
     z->game = init_game(args);
+    logger_info("Game successfully initialised\n");
     return SUCCESS;
 }
