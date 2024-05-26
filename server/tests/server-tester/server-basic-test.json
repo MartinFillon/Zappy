@@ -1,5 +1,4 @@
 {
-    "mode": "GRAPHIC",
     "tests": [
         {
             "name": "map size",

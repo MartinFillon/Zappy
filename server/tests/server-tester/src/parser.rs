@@ -15,4 +15,7 @@ pub struct Opts {
     /// Host to connect to
     #[arg(long)]
     pub host: String,
+
+    #[arg(long)]
+    pub server: Option<String>,
 }
