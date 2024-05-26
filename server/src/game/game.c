@@ -28,9 +28,7 @@ game_t init_game(args_infos_t *args)
     game.ais = init_ais(1);
     game.frequency = args->freq;
     for (__auto_type i = 0; args->names[i]; i++) {
-        logger_debug("Creating %s\n", args->names[i]);
         nw = create_team(args->names[i]);
-        logger_debug("Pushing %s\n", nw.name);
         push_back_vector_team(game.teams, &nw);
     }
     logger_info("Team created successfully\n");
