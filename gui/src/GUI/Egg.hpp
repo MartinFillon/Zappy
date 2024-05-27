@@ -13,11 +13,10 @@
 namespace GUI {
 class Egg {
   public:
-    Egg(size_t x, size_t y, size_t id) : id(id), pos(x, y) {}
-    Egg(Pos<size_t> pos, size_t id) : id(id), pos(pos) {}
+    Egg(int x, int y, int id) : id(id), pos(x, y) {}
+    Egg(Pos<int> pos, int id) : id(id), pos(pos) {}
 
-    
-    size_t id;
-    Pos<size_t> pos;
+    int id;
+    Pos<int> pos;
 };
 } // namespace GUI
