@@ -27,6 +27,10 @@ map_t *create_map(size_t x, size_t y)
         if (map->arena[i] == NULL)
             return NULL;
     }
+    for (size_t i = 0; i < y; i++) {
+        for (size_t j = 0; j < x; j++)
+            map->arena[i][j].players = vec_create_vector_int(10);
+    }
     return map;
 }
 

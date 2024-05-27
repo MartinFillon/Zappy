@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "vector.h"
+
 enum object_e {
     FOOD,
     LINEMATE,
@@ -21,7 +23,7 @@ enum object_e {
 };
 
 struct tile_s {
-    bool occupied;
+    struct vector_int *players;
 
     struct tile_content_s {
         size_t food;

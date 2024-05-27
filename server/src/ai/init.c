@@ -9,7 +9,6 @@
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/team.h"
-#include "vector.h"
 
 bool init_ai(game_t *game, client_t *client, team_t const *team)
 {
