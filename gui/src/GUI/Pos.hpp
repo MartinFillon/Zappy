@@ -7,10 +7,10 @@
 
 #pragma once
 
-template <classname T>
+template <typename T>
 class Pos {
   public:
-    Pos(T x, T y) : x(x), y(y);
+    Pos(T x, T y) : x(x), y(y) {}
 
     T x, y;
-}
+};
