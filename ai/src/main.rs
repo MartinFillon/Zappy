@@ -18,7 +18,7 @@ async fn main() {
     match flags::check_flags() {
         Ok(res) => {
             dbg!(res.clone());
-            if let Err(e) = tcp::tcp(res.clone().get_machine(), res.get_port()).await {
+            if let Err(e) = tcp::tcp_client(res.clone().get_machine(), res.get_port()).await {
                 eprintln!("Error: {}", e);
             }
             process::exit(SUCCESS_CODE)
