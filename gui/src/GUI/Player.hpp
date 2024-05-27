@@ -19,6 +19,11 @@ namespace GUI {
             Player(Pos<int> &pos, int &id): m_pos(pos), m_id(id) {};
             ~Player() = default;
 
+            Pos<int> getPos() { return m_pos; };
+            Inventory getRessources() { return m_inv; };
+            int getLevel() { return m_level; };
+            int getId() { return m_id; };
+
         private:
             Pos<int> m_pos;
             Inventory m_inv;

@@ -24,6 +24,9 @@ namespace GUI {
             Tile &getTile(Pos<int> &pos) {
                 m_map.at(pos.y * m_size.x + pos.x);
             };
+            std::vector<Player> getPlayers() const { return m_players; };
+            std::vector<Egg> getEggs() const { return m_egg; };
+            Pos<int> getSize() const { return m_size; };
 
         private:
             std::vector<Tile> m_map;
