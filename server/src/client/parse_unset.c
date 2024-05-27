@@ -5,7 +5,7 @@
 ** parse_unset
 */
 
-#include <stddef.h><
+#include <stddef.h>
 #include <string.h>
 
 #include "client.h"
@@ -35,7 +35,7 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
         logger_warn("No teams set\n");
         return 1;
     }
-    for (size_t i = 0; i < game->teams->len; i++)
+    for (size_t i = 0; i < game->teams->size; i++)
         if (strcmp(line, game->teams->data[i].name) == 0)
             return put_in_team(c, game, i);
     return 1;

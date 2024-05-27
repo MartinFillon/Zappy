@@ -9,17 +9,18 @@
 
 #include <stddef.h>
 #include "types/ai.h"
+
+#define TYPE ai_t
+#include "vector.h"
+
 #include "types/team.h"
 
-typedef struct {
-    ai_t *ais;
-    size_t len;
-    size_t size;
-} vector_ai_t;
+#define TYPE team_t
+#include "vector.h"
 
 typedef struct {
-    vector_ai_t *ais;
+    struct vector_ai_t *ais;
     map_t *map;
-    teams_t *teams;
+    struct vector_team_t *teams;
     long frequency;
 } game_t;

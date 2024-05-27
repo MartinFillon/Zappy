@@ -23,8 +23,4 @@ typedef struct {
     eggs_t eggs;
 } team_t;
 
-typedef struct {
-    team_t *data;
-    size_t len;
-    size_t size;
-} teams_t;
+team_t create_team(char const *name);

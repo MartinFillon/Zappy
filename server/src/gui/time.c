@@ -28,8 +28,8 @@ void update_time(char *args, client_t *c, game_t *g)
         return send_client(c, "sbp\n");
     g->frequency = nfreq;
     send_client(c, "sst %d\n", nfreq);
-    for (__auto_type i = 0ul; i < g->ais->len; i++) {
-        g->ais->ais[i].clock->frequency = nfreq;
-        g->ais->ais[i].food_clock->frequency = nfreq;
+    for (__auto_type i = 0ul; i < g->ais->size; i++) {
+        g->ais->data[i].clock->frequency = nfreq;
+        g->ais->data[i].food_clock->frequency = nfreq;
     }
 }

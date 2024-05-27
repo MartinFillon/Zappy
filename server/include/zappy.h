@@ -31,11 +31,3 @@ game_t init_game(args_infos_t *args);
  * @return int 0 if success, 84 if error
  */
 int init_program(args_infos_t *args, zappy_t *z);
-
-/**
- * @brief Initialize the ais vector
- *
- * @param ais_count the base size
- * @return vector_ai_t * the initialized ais vector
- */
-vector_ai_t *init_ais(size_t ais_count);

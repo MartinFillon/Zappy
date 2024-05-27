@@ -36,7 +36,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						$(addprefix team/,	\
 							team			\
-							teams			\
 						)\
 						game 				\
 					)\
@@ -73,7 +72,6 @@ BASE_SRC = $(addsuffix .c, 				\
 					)						\
 					$(addprefix ai/, 	\
 						init				\
-						vector				\
 						eat					\
 					)\
 				)\
