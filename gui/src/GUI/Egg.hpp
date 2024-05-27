@@ -7,17 +7,17 @@
 
 #pragma once
 
-#include "Player.hpp"
+#include <cstddef>
 #include "Pos.hpp"
 
 namespace GUI {
 class Egg {
   public:
-    Egg(int x, int y, int id) : id(id), pos(x, y) {}
+    Egg(size_t x, size_t y, size_t id) : id(id), pos(x, y) {}
+    Egg(Pos<size_t> pos, size_t id) : id(id), pos(pos) {}
 
-    Egg(Pos pos, int id) : id(id), pos(pos) {}
-
-    int id;
-    Pos pos;
-}
+    
+    size_t id;
+    Pos<size_t> pos;
+};
 } // namespace GUI
