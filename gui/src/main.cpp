@@ -8,25 +8,45 @@
 #include <iostream>
 
 #include "ArgParser/ArgParser.hpp"
+#include "GUI/Display.hpp"
+#include "Network/Handler.hpp"
+#include "define.hpp"
 
-int main(int argc, char *argv[])
+static void parseArguments(int argc, char *argv[], int &port, std::string &machine, bool &debug)
 {
-    ArgParser parser;
-    int port;
-    std::string machine;
+    ArgParser::ArgParser parser;
+    parser.setDefault("p", 4242, true).setDefault("h", std::string("localhost"), true).setDefault("d", false, false);
 
-    parser.setDefault("p", 4242, true)
-        .setDefault("h", std::string("local"), true);
     try {
         parser.parse(argc, argv);
         port = parser.get<int>("p");
         machine = parser.get<std::string>("h");
-    } catch (const ArgParserException &e) {
+        debug = parser.get<bool>("d");
+    } catch (const ArgParser::Error &e) {
         std::cerr << "Error: " << e.what() << " in " << e.where() << std::endl;
-        return 84;
+        throw std::runtime_error("Argument parsing failed");
     }
-    std::cout << "Machine: " << machine << std::endl;
-    std::cout << "Port: " << port << std::endl;
+}
 
-    return 0;
+int main(int argc, char *argv[])
+{
+    int port;
+    std::string machine;
+    bool debug;
+
+    try {
+        parseArguments(argc, argv, port, machine, debug);
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return ERROR;
+    }
+    Network::Handler networkHandler(machine, port);
+    networkHandler.start();
+
+    GUI::Display display(networkHandler, debug);
+    display.run();
+
+    networkHandler.stop();
+
+    return SUCCESS;
 }

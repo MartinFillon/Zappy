@@ -35,6 +35,7 @@ int main(int ac, char const **av)
     signal(SIGINT, &sig);
     if (loop_server(&args) == ERROR)
         return EPI_ERROR;
+    my_free_box(args.names);
     logger_info("Server stopped\n");
     return SUCCESS;
 }

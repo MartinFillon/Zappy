@@ -33,6 +33,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						take_on_tile	\
 						display_map 	\
 						send_info_tile 	\
+						get_tile		\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -53,6 +54,10 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix client/, 	\
 						$(addprefix gui/,	\
 							map_size		\
+							map_content		\
+							team_names		\
+							player			\
+							time 			\
 						)\
 						$(addprefix ai/,	\
 							handle_foward 	\
@@ -98,6 +103,9 @@ $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
+
+func_tests: $(NAME)
+	$(MAKE) -C tests
 
 re: fclean all
 

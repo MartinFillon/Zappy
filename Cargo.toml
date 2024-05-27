@@ -1,0 +1,4 @@
+[workspace]
+
+members = ["server/tests/server-tester", "ai"]
+resolver = "2"

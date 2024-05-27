@@ -86,6 +86,7 @@ int loop_server(args_infos_t *args)
 
     logger_info("Starting server on port %d\n", args->port);
     serv.game.teams = args->names;
+    serv.game.freq = args->freq;
     serv.fd = server_init(args->port);
     if (serv.fd == ERROR)
         return ERROR;

@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include "map.h"
 
-#define NB_DIR 4
-
 typedef struct tile_content_s inventory_t;
 
 enum Direction {
@@ -19,6 +17,7 @@ enum Direction {
     RIGHT,
     DOWN,
     LEFT,
+    NB_DIR
 };
 
 typedef struct pos_s {

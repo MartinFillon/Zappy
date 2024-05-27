@@ -15,3 +15,11 @@ typedef struct gui_cmd_s {
 } gui_cmd_t;
 
 void map_size(char *args, client_t *cli, game_t *game);
+void map_content_tile(char *args, client_t *c, game_t *game);
+void map_content_full(char *args, client_t *c, game_t *game);
+void team_names(char *args, client_t *c, game_t *g);
+void player_position(char *args, client_t *c, game_t *g);
+void player_level(char *args, client_t *c, game_t *g);
+void player_inventory(char *args, client_t *c, game_t *g);
+void update_time(char *args, client_t *c, game_t *g);
+void request_time(char *args, client_t *c, game_t *g);

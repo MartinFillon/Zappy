@@ -1,0 +1,89 @@
+{
+    "mode": "GRAPHIC",
+    "tests": [
+        {
+            "name": "map size",
+            "description": "This is a sample test that tests map size",
+            "commands": [
+                {
+                    "command": "msz",
+                    "expected": [
+                        "msz 10 10"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "frequency",
+            "description": "Check if frequency is retrieved right",
+            "commands": [
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 1"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "unknown command",
+            "description": "Test an unknown command",
+            "commands": [
+                {
+                    "command": "un mot",
+                    "expected": [
+                        "suc"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "team name",
+            "description": "Test team name",
+            "commands": [
+                {
+                    "command": "tna",
+                    "expected": [
+                        "tna hello"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "set frequency",
+            "description": "Test set frequency",
+            "commands": [
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 1"
+                    ]
+                },
+                {
+                    "command": "sst 2",
+                    "expected": [
+                        "sst 2"
+                    ]
+                },
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 2"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bad argument",
+            "description": "Test bad argument",
+            "commands": [
+                {
+                    "command": "msz 1",
+                    "expected": [
+                        "sbp"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -7,6 +7,10 @@
 
 MODULES := gui server ai
 
+FTEST := server-tester
+FTESTBIN := $(FTEST)-bin
+FBIN := target/release/$(FTEST)
+
 
 all: zappy_gui zappy_server zappy_ai
 
@@ -15,6 +19,9 @@ zappy_%:
 
 clean fclean tests_run:
 	$(foreach M,$(MODULES), make -C $M $@;)
+
+func_tests:
+	cargo build --release -p $(FTEST) && cp $(FBIN) $(FTESTBIN)
 
 re: fclean all
 
