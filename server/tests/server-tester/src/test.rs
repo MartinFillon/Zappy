@@ -1,6 +1,7 @@
-use std::fmt::Display;
+#![allow(dead_code)]
 
 use serde::Deserialize;
+use std::fmt::Display;
 
 #[derive(Debug, Deserialize)]
 pub struct Command {
@@ -13,6 +14,7 @@ pub struct Test {
     name: String,
     description: String,
     commands: Vec<Command>,
+    mode: String,
 }
 
 impl Display for Command {
@@ -25,17 +27,17 @@ impl Display for Command {
     }
 }
 
-impl Display for Test {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}: {}", self.name, self.description)?;
-        writeln!(f, "Commands and their expected output:")?;
-        self.commands.iter().try_for_each(|c| writeln!(f, "{c}"))
-    }
-}
-
 impl Test {
     pub fn get_commands(&self) -> &Vec<Command> {
         &self.commands
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn get_mode(&self) -> &str {
+        &self.mode
     }
 }
 

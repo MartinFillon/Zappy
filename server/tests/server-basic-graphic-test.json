@@ -1,0 +1,94 @@
+{
+    "tests": [
+        {
+            "mode": "GRAPHIC",
+            "name": "map size",
+            "description": "This is a sample test that tests map size",
+            "commands": [
+                {
+                    "command": "msz",
+                    "expected": [
+                        "msz 10 10"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "GRAPHIC",
+            "name": "frequency",
+            "description": "Check if frequency is retrieved right",
+            "commands": [
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "GRAPHIC",
+            "name": "unknown command",
+            "description": "Test an unknown command",
+            "commands": [
+                {
+                    "command": "un mot",
+                    "expected": [
+                        "suc"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "GRAPHIC",
+            "name": "team name",
+            "description": "Test team name",
+            "commands": [
+                {
+                    "command": "tna",
+                    "expected": [
+                        "tna hello"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "GRAPHIC",
+            "name": "set frequency",
+            "description": "Test set frequency",
+            "commands": [
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 1"
+                    ]
+                },
+                {
+                    "command": "sst 2",
+                    "expected": [
+                        "sst 2"
+                    ]
+                },
+                {
+                    "command": "sgt",
+                    "expected": [
+                        "sgt 2"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "GRAPHIC",
+            "name": "bad argument",
+            "description": "Test bad argument",
+            "commands": [
+                {
+                    "command": "msz 1",
+                    "expected": [
+                        "sbp"
+                    ]
+                }
+            ]
+        }
+    ]
+}

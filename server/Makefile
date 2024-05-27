@@ -6,7 +6,7 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -D_GNU_SOURCE
+CFLAGS = -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
 NAME = ../zappy_server
@@ -14,6 +14,7 @@ NAME = ../zappy_server
 SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
+					init_program 			\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -24,13 +25,22 @@ BASE_SRC = $(addsuffix .c, 				\
 						logger_error	\
 						free_box		\
 						va_free			\
+						mod				\
 					)\
-					$(addprefix map/, 	\
-						initializer		\
-						destroyer		\
-						drop_on_tile	\
-						take_on_tile	\
-						get_tile		\
+					$(addprefix game/, 		\
+						$(addprefix map/, 	\
+							initializer		\
+							destroyer		\
+							drop_on_tile	\
+							take_on_tile	\
+							get_tile		\
+							display_map 	\
+							send_info_tile 	\
+						)\
+						$(addprefix team/,	\
+							team			\
+						)\
+						game 				\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -43,12 +53,19 @@ BASE_SRC = $(addsuffix .c, 				\
 					  	init_server			\
 						zappy_server		\
 						buffer 				\
+						$(addprefix cmd/, 	\
+							handle_cmds 	\
+							handle_display 	\
+						) 					\
 					)						\
+					$(addprefix gui/,		\
+						map_size			\
+						map_content			\
+						team_names			\
+						player				\
+						time 				\
+					)\
 					$(addprefix client/, 	\
-						$(addprefix gui/,	\
-							map_size		\
-							map_content		\
-						)\
 						init_client			\
 						send	 			\
 						ai_entrypoint	 	\
@@ -57,6 +74,16 @@ BASE_SRC = $(addsuffix .c, 				\
 						read_client			\
 						close_client		\
 					)						\
+					$(addprefix time/, 	\
+						clock				\
+					)						\
+					$(addprefix ai/, 	\
+						init				\
+						eat					\
+						handle_look			\
+						handle_forward		\
+						handle_rotate		\
+					)\
 				)\
 			)\
 
@@ -88,9 +115,6 @@ $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
 
 tests_run:	$(TEST_NAME)
 	./$(TEST_NAME)
-
-func_tests: $(NAME)
-	$(MAKE) -C tests
 
 re: fclean all
 

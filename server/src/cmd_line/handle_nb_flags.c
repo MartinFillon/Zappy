@@ -28,11 +28,11 @@ static bool parse_nbr(
 )
 {
     if (av[(*idx) + 1] == NULL || av[(*idx) + 1][0] == '-') {
-        logger_error("Argument not provided.");
+        logger_error("Argument not provided.\n");
         return false;
     }
     if (!is_number(av[(*idx + 1)])) {
-        logger_error("Argument is not a number.");
+        logger_error("Argument is not a number.\n");
         return false;
     }
     *nbr = atoi(av[(*idx) + 1]);
@@ -43,7 +43,7 @@ static bool parse_nbr(
 bool parse_height(char const **av, size_t *idx, args_infos_t *args)
 {
     if (args->height != -1) {
-        logger_error("Height already defined.");
+        logger_error("Height already defined.\n");
         return false;
     }
     return parse_nbr(av, idx, &args->height);
@@ -52,7 +52,7 @@ bool parse_height(char const **av, size_t *idx, args_infos_t *args)
 bool parse_width(char const **av, size_t *idx, args_infos_t *args)
 {
     if (args->width != -1) {
-        logger_error("Width already defined.");
+        logger_error("Width already defined.\n");
         return false;
     }
     return parse_nbr(av, idx, &args->width);
@@ -61,7 +61,7 @@ bool parse_width(char const **av, size_t *idx, args_infos_t *args)
 bool parse_port(char const **av, size_t *idx, args_infos_t *args)
 {
     if (args->port != -1) {
-        logger_error("Port already defined.");
+        logger_error("Port already defined.\n");
         return false;
     }
     return parse_nbr(av, idx, &args->port);
@@ -70,7 +70,7 @@ bool parse_port(char const **av, size_t *idx, args_infos_t *args)
 bool parse_clients_nb(char const **av, size_t *idx, args_infos_t *args)
 {
     if (args->clients_nb != -1) {
-        logger_error("Clients_nb already defined.");
+        logger_error("Clients_nb already defined.\n");
         return false;
     }
     return parse_nbr(av, idx, &args->clients_nb);
@@ -79,7 +79,7 @@ bool parse_clients_nb(char const **av, size_t *idx, args_infos_t *args)
 bool parse_frequency(char const **av, size_t *idx, args_infos_t *args)
 {
     if (args->freq != -1) {
-        logger_error("Frequency already defined.");
+        logger_error("Frequency already defined.\n");
         return false;
     }
     return parse_nbr(av, idx, &args->freq);
