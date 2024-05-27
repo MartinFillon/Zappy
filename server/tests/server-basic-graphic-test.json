@@ -1,7 +1,7 @@
 {
-    "mode": "GRAPHIC",
     "tests": [
         {
+            "mode": "GRAPHIC",
             "name": "map size",
             "description": "This is a sample test that tests map size",
             "commands": [
@@ -14,6 +14,7 @@
             ]
         },
         {
+            "mode": "GRAPHIC",
             "name": "frequency",
             "description": "Check if frequency is retrieved right",
             "commands": [
@@ -26,6 +27,7 @@
             ]
         },
         {
+            "mode": "GRAPHIC",
             "name": "unknown command",
             "description": "Test an unknown command",
             "commands": [
@@ -38,6 +40,7 @@
             ]
         },
         {
+            "mode": "GRAPHIC",
             "name": "team name",
             "description": "Test team name",
             "commands": [
@@ -50,6 +53,7 @@
             ]
         },
         {
+            "mode": "GRAPHIC",
             "name": "set frequency",
             "description": "Test set frequency",
             "commands": [
@@ -74,6 +78,7 @@
             ]
         },
         {
+            "mode": "GRAPHIC",
             "name": "bad argument",
             "description": "Test bad argument",
             "commands": [

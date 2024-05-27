@@ -9,6 +9,9 @@
 
 #include <stdlib.h>
 #include "map.h"
+#include "types/clock.h"
+#include "types/position.h"
+#include "types/team.h"
 
 typedef struct tile_content_s inventory_t;
 
@@ -17,21 +20,21 @@ enum Direction {
     RIGHT,
     DOWN,
     LEFT,
-    NB_DIR
+    NB_DIR,
 };
 
-typedef struct pos_s {
-    int x;
-    int y;
-} pos_t;
-
 typedef struct {
-    char *team;
+    team_t *team;
+
     pos_t pos;
     size_t level;
 
     enum Direction dir;
 
     inventory_t inventory;
-    long time_to_wait; // if current time < this time dont do anything
+    long cycles_to_wait; // if current time < this time dont do anything
+    zclock_t *clock;
+    zclock_t *food_clock;
+
+    bool alive;
 } ai_t;

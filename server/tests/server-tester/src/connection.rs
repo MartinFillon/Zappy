@@ -11,7 +11,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(port: u16, host: String) -> io::Result<Self> {
+    pub fn new(port: u16, host: &String) -> io::Result<Self> {
         let stream = TcpStream::connect(format!("{}:{}", host, port))?;
         let mut reader = BufReader::new(stream.try_clone()?);
 

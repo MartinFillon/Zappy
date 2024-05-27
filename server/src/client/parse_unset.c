@@ -5,31 +5,22 @@
 ** parse_unset
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "client.h"
-#include "macros.h"
-#include "types/ai.h"
 #include "types/client.h"
+#include "types/game.h"
 #include "utils.h"
 
-static int init_ai(client_t *c, game_t *game)
+static int put_in_team(client_t *c, game_t *game, size_t i)
 {
-    c->ai = calloc(1, sizeof(ai_t));
-    if (!c->ai)
-        return ERROR;
-    c->ai->level = 1;
-    c->ai->dir = rand() % 4;
-    c->ai->pos.y = rand() % game->map->y;
-    c->ai->pos.x = rand() % game->map->x;
-    while (game->map->arena[c->ai->pos.y][c->ai->pos.x].occupied) {
-        c->ai->pos.y = rand() % game->map->y;
-        c->ai->pos.x = rand() % game->map->x;
-    }
-    game->map->arena[c->ai->pos.y][c->ai->pos.x].occupied = true;
-    return SUCCESS;
+    logger_info("Client %d is an AI\n", c->fd);
+    c->type = AI;
+    c->entrypoint = &ai_entrypoint;
+    init_ai(game, c, &game->teams->data[i]);
+    logger_info("AI inited\n");
+    return 0;
 }
 
 int unset_entrypoint(char const *line, client_t *c, game_t *game)
@@ -44,13 +35,8 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
         logger_warn("No teams set\n");
         return 1;
     }
-    for (int i = 0; game->teams[i]; i++) {
-        if (strcmp(line, game->teams[i]) == 0) {
-            logger_info("Client %d is an AI\n", c->fd);
-            c->type = AI;
-            c->entrypoint = &ai_entrypoint;
-            return init_ai(c, game);
-        }
-    }
+    for (size_t i = 0; i < game->teams->size; i++)
+        if (strcmp(line, game->teams->data[i].name) == 0)
+            return put_in_team(c, game, i);
     return 1;
 }

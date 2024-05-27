@@ -39,9 +39,9 @@ void player_position(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
         return send_client(c, "sbp\n");
-    return send_infos(c, &g->ais[nb], nb);
+    return send_infos(c, &g->ais->data[nb], nb);
 }
 
 void player_level(char *args, client_t *c, game_t *g)
@@ -50,9 +50,9 @@ void player_level(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
         return send_client(c, "sbp\n");
-    return send_client(c, "plv %ld %d", nb, g->ais[nb].level);
+    return send_client(c, "plv %ld %d", nb, g->ais->data[nb].level);
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
@@ -79,7 +79,7 @@ void player_inventory(char *args, client_t *c, game_t *g)
 
     if (c->type != GUI)
         return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ai_count)
+    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
         return send_client(c, "sbp\n");
-    return send_inventory(c, &g->ais[nb], nb);
+    return send_inventory(c, &g->ais->data[nb], nb);
 }

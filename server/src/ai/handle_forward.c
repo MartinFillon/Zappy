@@ -6,12 +6,12 @@
 */
 
 #include <stdbool.h>
+#include "client.h"
 #include "types/ai.h"
 #include "types/map.h"
-#include "client.h"
 
-#include "ai/ai_cmds.h"
 #include "utils.h"
+#include "ai/ai_cmds.h"
 
 static void move_y(ai_t *ai, map_t *map)
 {
@@ -21,10 +21,6 @@ static void move_y(ai_t *ai, map_t *map)
         y = modulo(ai->pos.y - 1, map->y);
     if (ai->dir == DOWN)
         y = (y + 1) % map->y;
-    if (map->arena[y][ai->pos.x].occupied)
-        return;
-    map->arena[ai->pos.y][ai->pos.x].occupied = false;
-    map->arena[y][ai->pos.x].occupied = true;
     ai->pos.y = y;
 }
 
@@ -36,8 +32,6 @@ static void move_x(ai_t *ai, map_t *map)
         x = modulo(ai->pos.x - 1, map->x);
     if (ai->dir == RIGHT)
         x = (x + 1) % map->x;
-    map->arena[ai->pos.y][ai->pos.x].occupied = false;
-    map->arena[ai->pos.y][x].occupied = true;
     ai->pos.x = x;
 }
 
