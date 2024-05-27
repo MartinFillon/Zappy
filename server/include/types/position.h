@@ -10,6 +10,6 @@
 #include <stddef.h>
 
 typedef struct {
-    size_t x;
-    size_t y;
+    int x;
+    int y;
 } pos_t;

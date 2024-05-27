@@ -31,3 +31,4 @@ game_t init_game(args_infos_t *args);
  * @return int 0 if success, 84 if error
  */
 int init_program(args_infos_t *args, zappy_t *z);
+void handle_server_cmd(char const *cmd, zappy_t *serv);

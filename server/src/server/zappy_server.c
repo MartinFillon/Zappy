@@ -5,7 +5,6 @@
 ** zappy_server
 */
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,7 +51,7 @@ static int select_server(zappy_t *z)
         if (getline(&line, &n, stdin) == -1)
             return SERV_END;
         line[strlen(line) - 1] = '\0';
-        handle_server_cmd(line, serv);
+        handle_server_cmd(line, z);
     }
     if (FD_ISSET(z->server.fd, &z->server.read_fds))
         accept_new_client(&z->server);

@@ -34,6 +34,8 @@ BASE_SRC = $(addsuffix .c, 				\
 							drop_on_tile	\
 							take_on_tile	\
 							get_tile		\
+							display_map 	\
+							send_info_tile 	\
 						)\
 						$(addprefix team/,	\
 							team			\
@@ -78,6 +80,9 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix ai/, 	\
 						init				\
 						eat					\
+						handle_look			\
+						handle_forward		\
+						handle_rotate		\
 					)\
 				)\
 			)\

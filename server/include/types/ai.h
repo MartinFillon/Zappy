@@ -20,13 +20,8 @@ enum Direction {
     RIGHT,
     DOWN,
     LEFT,
-    NB_DIR
+    NB_DIR,
 };
-
-typedef struct pos_s {
-    int x;
-    int y;
-} pos_t;
 
 typedef struct {
     team_t *team;
