@@ -24,12 +24,15 @@ BASE_SRC = $(addsuffix .c, 				\
 						logger_error	\
 						free_box		\
 						va_free			\
+						mod				\
 					)\
 					$(addprefix map/, 	\
 						initializer		\
 						destroyer		\
 						drop_on_tile	\
 						take_on_tile	\
+						display_map 	\
+						send_info_tile 	\
 						get_tile		\
 					)\
           			$(addprefix queue/,   \
@@ -43,6 +46,10 @@ BASE_SRC = $(addsuffix .c, 				\
 					  	init_server			\
 						zappy_server		\
 						buffer 				\
+						$(addprefix cmd/, 	\
+							handle_cmds 	\
+							handle_display 	\
+						) 					\
 					)						\
 					$(addprefix client/, 	\
 						$(addprefix gui/,	\
@@ -51,6 +58,11 @@ BASE_SRC = $(addsuffix .c, 				\
 							team_names		\
 							player			\
 							time 			\
+						)\
+						$(addprefix ai/,	\
+							handle_foward 	\
+							handle_rotate 	\
+							handle_look 	\
 						)\
 						init_client			\
 						send	 			\
