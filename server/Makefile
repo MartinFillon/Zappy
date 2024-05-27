@@ -25,6 +25,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						logger_error	\
 						free_box		\
 						va_free			\
+						mod				\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
@@ -50,6 +51,10 @@ BASE_SRC = $(addsuffix .c, 				\
 					  	init_server			\
 						zappy_server		\
 						buffer 				\
+						$(addprefix cmd/, 	\
+							handle_cmds 	\
+							handle_display 	\
+						) 					\
 					)						\
 					$(addprefix gui/,		\
 						map_size			\

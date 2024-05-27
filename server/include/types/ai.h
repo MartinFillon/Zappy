@@ -17,10 +17,16 @@ typedef struct tile_content_s inventory_t;
 
 enum Direction {
     UP,
+    RIGHT,
     DOWN,
     LEFT,
-    RIGHT,
+    NB_DIR
 };
+
+typedef struct pos_s {
+    int x;
+    int y;
+} pos_t;
 
 typedef struct {
     team_t *team;

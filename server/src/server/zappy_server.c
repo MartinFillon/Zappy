@@ -51,7 +51,8 @@ static int select_server(zappy_t *z)
     if (FD_ISSET(0, &z->server.read_fds)) {
         if (getline(&line, &n, stdin) == -1)
             return SERV_END;
-        dprintf(1, "%s", line);
+        line[strlen(line) - 1] = '\0';
+        handle_server_cmd(line, serv);
     }
     if (FD_ISSET(z->server.fd, &z->server.read_fds))
         accept_new_client(&z->server);

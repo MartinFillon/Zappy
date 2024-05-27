@@ -54,3 +54,4 @@ int accept_new_client(server_t *s);
  * @return int 0 if success, 84 if error
  */
 int handle_buffer(client_t *c, game_t *game);
+void handle_server_cmd(char const *cmd, server_t *serv);

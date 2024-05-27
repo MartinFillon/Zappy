@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 /**
  * @brief Log a debug message
@@ -55,6 +56,8 @@ void my_free_box(char **arr);
  * @param ... the pointers to free
  */
 void va_free(int nb, ...);
+
+int modulo(int nb, int m);
 
 /**
  * @brief Parse a number from a string
