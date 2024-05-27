@@ -22,14 +22,13 @@ static int init_ai(client_t *c, game_t *game)
         return ERROR;
     c->ai->level = 1;
     c->ai->dir = rand() % 4;
-    c->ai->y = rand() % game->map->y;
-    c->ai->x = rand() % game->map->x;
-    while (game->map->arena[c->ai->y][c->ai->x].occupied) {
-        c->ai->y = rand() % game->map->y;
-        c->ai->x = rand() % game->map->x;
+    c->ai->pos.y = rand() % game->map->y;
+    c->ai->pos.x = rand() % game->map->x;
+    while (game->map->arena[c->ai->pos.y][c->ai->pos.x].occupied) {
+        c->ai->pos.y = rand() % game->map->y;
+        c->ai->pos.x = rand() % game->map->x;
     }
-    dprintf(1, "Ai at pos (%ld, %ld)\n", c->ai->y, c->ai->x);
-    game->map->arena[c->ai->y][c->ai->x].occupied = true;
+    game->map->arena[c->ai->pos.y][c->ai->pos.x].occupied = true;
     return SUCCESS;
 }
 

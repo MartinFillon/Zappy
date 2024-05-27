@@ -32,6 +32,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						drop_on_tile	\
 						take_on_tile	\
 						display_map 	\
+						send_info_tile 	\
 					)\
           			$(addprefix queue/,   \
           			  	create              \
@@ -56,6 +57,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						$(addprefix ai/,	\
 							handle_foward 	\
 							handle_rotate 	\
+							handle_look 	\
 						)\
 						init_client			\
 						send	 			\

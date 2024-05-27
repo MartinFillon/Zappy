@@ -41,13 +41,15 @@ void handle_rotate_right(client_t *cli, game_t *game);
  */
 void handle_rotate_left(client_t *cli, game_t *game);
 
+void handle_look(client_t *cli, game_t *game);
+
 static const ai_cmds_t AI_CMDS[] = {
     {"Forward", handle_forward},
 
     {"Right", handle_rotate_right},
     {"Left", handle_rotate_left},
 
-    // {"Look", NULL},
+    {"Look", handle_look},
     // {"Inventory", NULL},
     // {"Broadcast text", NULL},
 

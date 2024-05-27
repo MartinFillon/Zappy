@@ -53,3 +53,14 @@ bool take_item(map_t *map, size_t x, size_t y, enum object_e obj);
  * @param height height of the map
  */
 void display_map(map_t *map, size_t width, size_t height);
+
+
+/**
+ * @brief Send informations about a tile in a client with @param fd
+ *
+ * @param fd File descriptor of the client
+ * @param map the map object
+ * @param y y coordinates of the tile
+ * @param x x coordinates of the tile
+ */
+void send_info_tile(int fd, map_t *map, size_t y, size_t x);

@@ -6,41 +6,39 @@
 */
 
 #include <stdbool.h>
-#include <stdio.h>
 #include "types/ai.h"
 #include "types/map.h"
+#include "client.h"
 
 #include "ai/ai_cmds.h"
 #include "utils.h"
 
 static void move_y(ai_t *ai, map_t *map)
 {
-    int y = ai->y;
+    int y = ai->pos.y;
 
     if (ai->dir == UP)
-        y = modulo(ai->y - 1, map->y);
+        y = modulo(ai->pos.y - 1, map->y);
     if (ai->dir == DOWN)
         y = (y + 1) % map->y;
-    if (map->arena[y][ai->x].occupied)
+    if (map->arena[y][ai->pos.x].occupied)
         return;
-    map->arena[ai->y][ai->x].occupied = false;
-    map->arena[y][ai->x].occupied = true;
-    ai->y = y;
+    map->arena[ai->pos.y][ai->pos.x].occupied = false;
+    map->arena[y][ai->pos.x].occupied = true;
+    ai->pos.y = y;
 }
 
 static void move_x(ai_t *ai, map_t *map)
 {
-    int x = ai->x;
+    int x = ai->pos.x;
 
     if (ai->dir == LEFT)
-        x = modulo(ai->x - 1, map->x);
+        x = modulo(ai->pos.x - 1, map->x);
     if (ai->dir == RIGHT)
         x = (x + 1) % map->x;
-    if (map->arena[ai->y][x].occupied)
-        return;
-    map->arena[ai->y][ai->x].occupied = false;
-    map->arena[ai->y][x].occupied = true;
-    ai->x = x;
+    map->arena[ai->pos.y][ai->pos.x].occupied = false;
+    map->arena[ai->pos.y][x].occupied = true;
+    ai->pos.x = x;
 }
 
 void handle_forward(client_t *cli, game_t *game)
@@ -52,5 +50,5 @@ void handle_forward(client_t *cli, game_t *game)
     } else {
         move_x(ai, game->map);
     }
-    dprintf(cli->fd, "ok\n");
+    send_client(cli, "ok\n");
 }

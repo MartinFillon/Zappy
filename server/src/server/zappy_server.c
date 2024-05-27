@@ -91,6 +91,7 @@ int loop_server(args_infos_t *args)
         return ERROR;
     logger_info("Server up and running on port %d\n", args->port);
     serv.game.map = create_map(args->width, args->height);
+    fill_map(serv.game.map);
     while (!retval) {
         fill_fd_set(&serv);
         retval = select_server(&serv);

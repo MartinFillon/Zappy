@@ -21,11 +21,14 @@ enum Direction {
     LEFT,
 };
 
+typedef struct pos_s {
+    int x;
+    int y;
+} pos_t;
+
 typedef struct {
     char *team;
-
-    size_t x;
-    size_t y;
+    pos_t pos;
     size_t level;
 
     enum Direction dir;
