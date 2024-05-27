@@ -16,6 +16,8 @@ namespace GUI {
             Tile() = default;
             ~Tile() = default;
 
+            Inventory getRessources() { return m_inv; };
+
         private:
             Inventory m_inv;
     };
