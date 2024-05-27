@@ -12,7 +12,7 @@
 #include "types/map.h"
 #include "utils.h"
 
-static inline void check_ressource(
+static void check_ressource(
     int fd,
     char const *name,
     size_t nb_ressource,
@@ -45,5 +45,5 @@ void send_info_tile(int fd, map_t *map, size_t y, size_t x)
         map->arena[y][x].content.mendiane, &is_first);
     check_ressource(fd, "phiras", map->arena[y][x].content.phiras, &is_first);
     check_ressource(fd, "thystame",
-        map->arena[y][x].content.thystame, &is_first);  
+        map->arena[y][x].content.thystame, &is_first);
 }
