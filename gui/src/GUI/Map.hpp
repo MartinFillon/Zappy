@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vector>
+
 #include "Tile.hpp"
 #include "Player.hpp"
 #include "Pos.hpp"
@@ -16,17 +17,18 @@ namespace GUI {
 
     class Map {
         public:
-            Map() = default;
+            Map(int &x, int &y): m_size(Pos<int>(x, y)) {};
+            Map(Pos<int> &pos): m_size(pos) {};
             ~Map() = default;
 
-            Tile &getTile(Pos<size_t> &pos) {
-                m_map.at(pos.x % m_size.);
+            Tile &getTile(Pos<int> &pos) {
+                m_map.at(pos.y * m_size.x + pos.x);
             };
 
         private:
             std::vector<Tile> m_map;
             std::vector<Player> m_players;
             std::vector<Egg> m_egg;
-            Pos<size_t> m_size;
+            Pos<int> m_size;
     };
 }
