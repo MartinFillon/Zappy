@@ -5,7 +5,10 @@
 ** main
 */
 
+#include <assert.h>
 #include <stdio.h>
+
+#include "json/map.h"
 #include "json/json_parser.h"
 
 static int parse_object_inner(json_parser_t *p)
@@ -54,4 +57,13 @@ int parse_object(json_parser_t *p)
     if (parent != NULL)
         p->self = parent;
     return get(p);
+}
+
+struct map_json_data_t *json_get_object(
+    json_data_t const *this,
+    str_t const *key
+)
+{
+    assert(this->t == OBJECT);
+    return map_get_json_data_t(this->data.obj, key)->data.obj;
 }

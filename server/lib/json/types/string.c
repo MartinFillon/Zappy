@@ -5,6 +5,8 @@
 ** main
 */
 
+#include <assert.h>
+
 #include "json/json_parser.h"
 
 static void add_escaped_char(json_parser_t *p, str_t *value)
@@ -45,4 +47,10 @@ int parse_string(json_parser_t *p)
     next(p);
     append_value(p, elem);
     return get(p);
+}
+
+str_t *json_get_string(json_data_t const *this, str_t const *key)
+{
+    assert(this->t == OBJECT);
+    return map_get_json_data_t(this->data.obj, key)->data.str;
 }

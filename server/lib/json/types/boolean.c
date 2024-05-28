@@ -5,6 +5,9 @@
 ** main
 */
 
+#include <assert.h>
+#include "json/json.h"
+#include "str.h"
 #include "json/json_parser.h"
 
 int parse_boolean(json_parser_t *p)
@@ -25,4 +28,10 @@ int parse_boolean(json_parser_t *p)
     if (append_value(p, elem) != 0)
         return -1;
     return 0;
+}
+
+bool json_get_bool(json_data_t const *this, str_t const *key)
+{
+    assert(this->t == OBJECT);
+    return map_get_json_data_t(this->data.obj, key)->data.boolean;
 }
