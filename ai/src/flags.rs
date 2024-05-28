@@ -15,9 +15,9 @@ use std::str::FromStr;
 
 use std::fmt::Display;
 
-static LOCALHOST: &str = "127.0.0.1";
+const LOCALHOST: &str = "127.0.0.1";
 
-static SUCCESS_CODE: i32 = 0;
+const SUCCESS_CODE: i32 = 0;
 
 #[derive(Debug, Clone)]
 pub struct Flags {
