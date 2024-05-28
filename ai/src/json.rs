@@ -5,33 +5,28 @@
 // json
 //
 
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use std::fs::File;
 use std::io::{self, Read};
+use std::iter::Peekable;
 
 #[derive(Debug)]
 struct ConfigFile {
     file_path: String,
-    file: Option<File>,
 }
 
 impl ConfigFile {
     pub fn new(file_path: String) -> Self {
-        Self {
-            file_path,
-            file: None,
-        }
-    }
-
-    pub fn open_file(&mut self) -> io::Result<()> {
-        self.file = Some(File::open(self.file_path.clone())?);
-        Ok(())
+        Self { file_path }
     }
 
     pub fn read_file(&mut self) -> io::Result<String> {
+        let file = Some(File::open(self.file_path.clone())?);
         let mut contents = String::new();
-        if let Some(mut file) = self.file {
+        if let Some(mut file) = file {
             file.read_to_string(&mut contents)?;
         }
         Ok(contents)
@@ -64,7 +59,7 @@ pub fn parse(input: &str) -> Result<JsonValue, String> {
     parse_value(&mut chars)
 }
 
-fn parse_value<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+fn parse_value<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
 where
     I: Iterator<Item = char>,
 {
@@ -83,7 +78,7 @@ where
     }
 }
 
-fn skip_whitespace<I>(chars: &mut std::iter::Peekable<I>)
+fn skip_whitespace<I>(chars: &mut Peekable<I>)
 where
     I: Iterator<Item = char>,
 {
@@ -92,11 +87,11 @@ where
     }
 }
 
-fn parse_digits<I>(chars: &mut std::iter::Peekable<I>, number_str: &mut String) -> bool
+fn parse_digits<I>(chars: &mut Peekable<I>, number_str: &mut String) -> bool
 where
     I: Iterator<Item = char>,
 {
-    let digits: String = chars.take_while(|c| c.is_digit(10)).collect();
+    let digits: String = chars.take_while(|c| c.is_ascii_digit()).collect();
 
     if !digits.is_empty() {
         number_str.push_str(&digits);
@@ -107,7 +102,7 @@ where
 }
 
 impl JsonValue {
-    fn parse_array<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+    fn parse_array<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
     where
         I: Iterator<Item = char>,
     {
@@ -139,7 +134,7 @@ impl JsonValue {
         Ok(JsonValue::Array(array))
     }
 
-    fn parse_string<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+    fn parse_string<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
     where
         I: Iterator<Item = char>,
     {
@@ -165,7 +160,7 @@ impl JsonValue {
         Err(String::from("Unexpected EOF"))
     }
 
-    fn parse_number<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+    fn parse_number<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
     where
         I: Iterator<Item = char>,
     {
@@ -205,7 +200,7 @@ impl JsonValue {
         }
     }
 
-    fn parse_bool<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+    fn parse_bool<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
     where
         I: Iterator<Item = char>,
     {
@@ -228,7 +223,7 @@ impl JsonValue {
         Err(String::from("Invalid boolean value"))
     }
 
-    fn parse_null<I>(chars: &mut std::iter::Peekable<I>) -> Result<JsonValue, String>
+    fn parse_null<I>(chars: &mut Peekable<I>) -> Result<JsonValue, String>
     where
         I: Iterator<Item = char>,
     {
@@ -246,10 +241,8 @@ impl JsonValue {
 
 pub fn parse_file(file_path: &str) -> Result<JsonValue, String> {
     let mut config_file = ConfigFile::new(file_path.to_string());
-    if config_file.open_file().is_ok() {
-        if let Ok(file_contents) = config_file.read_file() {
-            return parse(&file_contents);
-        }
+    if let Ok(file_contents) = config_file.read_file() {
+        return parse(&file_contents);
     }
     Err(String::from("Error reading file"))
 }
