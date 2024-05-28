@@ -5,13 +5,13 @@
 ** main
 */
 
-#include "json.h"
+#include "json/json.h"
 #include "str.h"
 
 static bool find_key(
     json_data_t const *this,
     const str_t *key,
-    types const type
+    types_t const type
 )
 {
     for (size_t i = 0; i < this->data.obj->size; i++)

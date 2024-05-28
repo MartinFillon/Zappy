@@ -8,6 +8,7 @@
 CC = gcc
 
 SRC =   str/str.c\
+		str/new.c\
 		json/parser.c\
 		json/utils.c\
 		json/types/array.c\
@@ -16,13 +17,15 @@ SRC =   str/str.c\
 		json/types/number.c\
 		json/types/object.c\
 		json/dump.c\
-		json/checker.c
+		json/checker.c\
+		json/file.c\
+		json/free.c
 
 NAME = ../libmy.a
 
 OBJ = $(SRC:.c=.o)
 
-CFLAGS += -Wall -Wextra -Wno-unused-function
+CFLAGS += -Wall -Wextra -Wno-unused-function -g3
 CPPFLAGS += -iquote ../include
 
 all: $(NAME)

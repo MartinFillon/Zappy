@@ -10,16 +10,6 @@
 
 #include "str.h"
 
-str_t *str_snew(char const *data)
-{
-    str_t *s = calloc(1, sizeof(str_t));
-
-    s->data = strdup(data);
-    s->capacity = strlen(data);
-    s->size = strlen(data);
-    return s;
-}
-
 void str_resize(str_t *s)
 {
     s->capacity *= 2;

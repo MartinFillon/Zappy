@@ -5,7 +5,7 @@
 ** main
 */
 
-#include "json_parser.h"
+#include "json/json_parser.h"
 
 static void add_escaped_char(json_parser_t *p, str_t *value)
 {
@@ -30,7 +30,7 @@ int parse_string(json_parser_t *p)
 {
     json_data_t *elem = malloc(sizeof(json_data_t));
 
-    elem->data.str = str_snew("");
+    elem->data.str = str_new(10);
     elem->t = STRING;
     if (get(p) == '"')
         next(p);

@@ -6,9 +6,9 @@
 */
 
 #include <stdio.h>
-#include "json.h"
+#include "json/json.h"
 
-static void print_array(const int fd, vec_json_t *arr)
+static void print_array(const int fd, struct vec_json_t *arr)
 {
     dprintf(fd, "[");
     for (size_t i = 0; i < arr->size; i++) {
@@ -44,7 +44,7 @@ void print_data(const int fd, json_data_t const *data)
 
 void print_json(const int fd, json_data_t const *json)
 {
-    map_json_data_t *obj = NULL;
+    struct map_json_data_t *obj = NULL;
 
     if (json->t != OBJECT)
         return;

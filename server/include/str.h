@@ -45,3 +45,6 @@ void str_clear(str_t *s);
 ** @param the other string
 **/
 int str_cmp(str_t const *this, str_t const *other);
+
+str_t *str_new(size_t size);
+str_t *str_dup(str_t const *str);

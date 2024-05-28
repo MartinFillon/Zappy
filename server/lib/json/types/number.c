@@ -7,7 +7,7 @@
 
 #include <ctype.h>
 
-#include "json_parser.h"
+#include "json/json_parser.h"
 
 int parse_number(json_parser_t *p)
 {
