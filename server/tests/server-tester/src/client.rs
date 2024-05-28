@@ -12,8 +12,8 @@ use crate::{
 
 #[derive(Debug, Deserialize)]
 pub enum Mode {
-    Graphic,    // "GRAPHIC"
-    Ai(String), // {"AI": "team_name"}
+    Graphic,    // "Graphic"
+    Ai(String), // {"Ai": "team_name"}
 }
 
 #[derive(Debug)]
@@ -157,6 +157,24 @@ impl Graphic {
             .map(|s| s.to_string())
             .collect())
     }
+
+    fn read_egg(&self, line: &str) -> Result<(u32, Position), String> {
+        let egg_trimmed = line
+            .trim_end()
+            .split(' ')
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+
+        if egg_trimmed.len() != 5 || egg_trimmed[0] != "smg" || egg_trimmed[1] != "eni" {
+            return Err("Invalid egg".to_string());
+        }
+
+        let id = egg_trimmed[2].parse::<u32>().map_err(|e| e.to_string())?;
+        let x = egg_trimmed[3].parse::<u32>().map_err(|e| e.to_string())?;
+        let y = egg_trimmed[4].parse::<u32>().map_err(|e| e.to_string())?;
+
+        Ok((id, Position { x, y }))
+    }
 }
 
 pub trait Client {
@@ -196,6 +214,16 @@ impl Client for Graphic {
 
         if self.teams != server_options.teams {
             return Err("Invalid teams".to_string());
+        }
+
+        for _ in 0..server_options.count_per_team {
+            let line = sock.get_line().map_err(|e| e.to_string())?;
+            let (id, pos) = self.read_egg(&line)?;
+            self.eggs.insert(id, pos);
+        }
+
+        if self.eggs.len() != server_options.count_per_team as usize * server_options.teams.len() {
+            return Err("Invalid eggs".to_string());
         }
         Ok(())
     }

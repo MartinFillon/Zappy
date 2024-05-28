@@ -33,14 +33,13 @@ impl Tester {
 
 fn main() -> Result<(), String> {
     let opts = Opts::parse();
-    // let tester = Tester::new(opts.path);
+    let _ = Tester::new(opts.path);
 
     let mut svr = Server::new(opts.config.clone(), opts.server.clone())?;
 
     std::thread::sleep(std::time::Duration::from_secs(1));
     let mut conn = Connection::new(opts.port, &opts.host).map_err(|e| e.to_string())?;
     let mut graphic = client::Graphic::default();
-    dbg!(&graphic);
     graphic.connect(&mut conn, svr.get_options())?;
 
     svr.kill()?;
