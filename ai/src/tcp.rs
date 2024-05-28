@@ -7,6 +7,8 @@
 
 #![allow(dead_code)]
 
+use std::io::{Error, ErrorKind};
+
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::select;
@@ -122,22 +124,27 @@ impl TcpClient {
     }
 }
 
-pub async fn handle_tcp(address: String) -> io::Result<()> {
+pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
     let mut client = TcpClient::new(address.as_str());
     client.connect().await?;
 
-    client.send_request("Team1".to_string()).await?;
     if let Some(response) = client.get_response().await {
-        println!("Response: {}", response);
+        print!("Response: {}", response);
     } else {
-        println!("bruh");
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
     }
 
-    client.send_request("Team1".to_string()).await?;
+    client.send_request(team + "\n").await?;
     if let Some(response) = client.get_response().await {
-        println!("Response: {}", response);
+        print!("Response: {}", response);
     } else {
-        println!("bruh");
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
     }
     Ok(())
 }

@@ -8,25 +8,23 @@
 #![allow(dead_code)]
 
 use crate::tcp::TcpClient;
-use std::sync::Arc;
 
-pub async fn broadcast(client: Arc<TcpClient>, msg: &str) -> bool {
+pub async fn broadcast(client: &mut TcpClient, msg: &str) -> bool {
     match client
-        .clone()
-        .write_stream(String::from("Broadcast ") + msg + "\n")
+        .send_request(String::from("Broadcast ") + msg + "\n")
         .await
     {
         Ok(_) => {}
         Err(_) => return false,
     }
-    match client.clone().read_stream().await {
-        Ok(res) => {
+    match client.get_response().await {
+        Some(res) => {
             print!("{res}");
             if res == "dead\n" {
                 return false;
             }
         }
-        Err(_) => return false,
+        None => return false,
     }
     true
 }

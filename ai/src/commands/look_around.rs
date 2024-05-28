@@ -8,12 +8,16 @@
 #![allow(dead_code)]
 
 use crate::tcp::TcpClient;
-use std::sync::Arc;
 
 fn read_output(raw: String) {
+    let tmp = if raw.contains('[') {
+        &raw[1..raw.len() - 2]
+    } else {
+        &raw
+    };
     let mut i = 0;
-    for tile in raw.split(',') {
-        print!("Tile {}: [", i);
+    for tile in tmp.split(',') {
+        print!("Tile {}: [ ", i);
         for item in tile.split(' ') {
             print!("{item} ");
         }
@@ -22,19 +26,19 @@ fn read_output(raw: String) {
     }
 }
 
-pub async fn look_around(client: Arc<TcpClient>) -> Result<(), bool> {
-    match client.clone().write_stream(String::from("Look\n")).await {
+pub async fn look_around(client: &mut TcpClient) -> Result<(), bool> {
+    match client.send_request(String::from("Look\n")).await {
         Ok(_) => {}
         Err(_) => return Err(true),
     }
-    match client.clone().read_stream().await {
-        Ok(res) => {
+    match client.get_response().await {
+        Some(res) => {
             if res == "dead\n" {
                 return Err(false);
             }
             read_output(res);
         }
-        Err(_) => return Err(true),
+        None => return Err(true),
     }
     Ok(())
 }
