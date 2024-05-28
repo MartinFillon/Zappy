@@ -22,7 +22,6 @@ int read_client(client_t *c)
         logger_info("Client %d has disconnected\n", c->fd);
         return -1;
     }
-    logger_debug("Read %ld bytes from client %d\n", bytes_read, c->fd);
     if (c->buffer.buffer == NULL) {
         c->buffer.buffer = strdup(buffer);
         c->buffer.size = strlen(c->buffer.buffer);
@@ -32,6 +31,5 @@ int read_client(client_t *c)
         strcat(c->buffer.buffer, buffer);
         c->buffer.size = strlen(c->buffer.buffer);
     }
-    logger_debug("Buffer: %s\n", c->buffer.buffer);
     return 0;
 }
