@@ -15,14 +15,12 @@ fn read_output(raw: String) {
     } else {
         &raw
     };
-    let mut i = 0;
-    for tile in tmp.split(',') {
+    for (i, tile) in tmp.split(',').enumerate() {
         print!("Tile {}: [ ", i);
         for item in tile.split(' ') {
             print!("{item} ");
         }
         println!("]");
-        i += 1;
     }
 }
 
