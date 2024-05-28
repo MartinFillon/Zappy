@@ -3,6 +3,8 @@
 use serde::Deserialize;
 use std::fmt::Display;
 
+use crate::client::Mode;
+
 #[derive(Debug, Deserialize)]
 pub struct Command {
     command: String,
@@ -14,7 +16,7 @@ pub struct Test {
     name: String,
     description: String,
     commands: Vec<Command>,
-    mode: String,
+    mode: Mode,
 }
 
 impl Display for Command {
@@ -34,10 +36,6 @@ impl Test {
 
     pub fn get_name(&self) -> &str {
         &self.name
-    }
-
-    pub fn get_mode(&self) -> &str {
-        &self.mode
     }
 }
 

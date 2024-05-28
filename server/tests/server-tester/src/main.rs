@@ -1,6 +1,7 @@
 use std::{fs::File, io::BufReader, path::Path};
 
 use clap::Parser;
+use client::{Client, Mode};
 use connection::Connection;
 use parser::Opts;
 use serde::Deserialize;
@@ -8,6 +9,7 @@ use serde_json::from_reader;
 use server::Server;
 use test::Test;
 
+mod client;
 mod connection;
 mod parser;
 mod server;
@@ -28,22 +30,16 @@ impl Tester {
 
 fn main() -> Result<(), String> {
     let opts = Opts::parse();
-    let tester = Tester::new(opts.path);
+    // let tester = Tester::new(opts.path);
 
     let mut svr = Server::new(opts.config.clone(), opts.server.clone())?;
-    for test in tester.tests {
-        let mut connection = Connection::new(opts.port, &opts.host).map_err(|e| e.to_string())?;
 
-        connection
-            .send(test.get_mode().to_owned())
-            .map_err(|e| e.to_string())?;
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    let mut conn = Connection::new(opts.port, &opts.host).map_err(|e| e.to_string())?;
+    let mut graphic = client::Graphic::default();
+    dbg!(&graphic);
+    graphic.connect(&mut conn, svr.get_options())?;
 
-        if connection.run_test(&test).map_err(|e| e.to_string())? {
-            println!("Test passed");
-        } else {
-            println!("Test failed {:?}", test);
-        }
-    }
     svr.kill()?;
     Ok(())
 }
