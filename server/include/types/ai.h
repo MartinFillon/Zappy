@@ -15,7 +15,7 @@
 
 typedef struct tile_content_s inventory_t;
 
-enum Direction {
+enum direction {
     UP,
     RIGHT,
     DOWN,
@@ -29,7 +29,7 @@ typedef struct {
     pos_t pos;
     size_t level;
 
-    enum Direction dir;
+    enum direction dir;
 
     inventory_t inventory;
     long cycles_to_wait; // if current time < this time dont do anything
@@ -37,4 +37,5 @@ typedef struct {
     zclock_t *food_clock;
 
     bool alive;
+    size_t id;
 } ai_t;
