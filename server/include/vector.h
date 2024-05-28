@@ -94,8 +94,8 @@ static inline bool FN_NAME(vec_erase_at, NAME)(struct NAME *vec, size_t idx)
         return false;
     }
     memmove(
-        &vec->data[idx],
-        &vec->data[idx + 1],
+        &vec->data + idx,
+        vec->data + (idx + 1),
         (vec->size - (idx + 1)) * sizeof(TYPE)
     );
     vec->size--;
@@ -130,7 +130,7 @@ static inline void FN_NAME(vec_foreach, NAME)(
 )
 {
     for (size_t i = 0; i < vec->size; i++) {
-        func(&(vec->data[i]));
+        func(vec->data + i);
     }
 }
 
