@@ -10,13 +10,14 @@
 use std::sync::Arc;
 use crate::tcp::TcpClient;
 
-pub async fn broadcast(client: Arc<TcpClient>, msg: &str) -> std::io::Result<()> {
-    client.clone().write_stream(String::from("Broadcast ") + msg + "\n").await?;
-
+pub async fn broadcast(client: Arc<TcpClient>, msg: &str) -> bool {
+    match client.clone().write_stream(String::from("Broadcast ") + msg + "\n").await {
+        Ok(_) => {},
+        Err(_) => return false,
+    }
     match client.clone().read_stream().await {
         Ok(res) => print!("{res}"),
-        Err(_) => {},
+        Err(_) => return false,
     }
-
-    Ok(())
+    true
 }
