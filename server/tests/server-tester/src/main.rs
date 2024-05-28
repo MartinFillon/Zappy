@@ -1,7 +1,7 @@
 use std::{fs::File, io::BufReader, path::Path};
 
 use clap::Parser;
-use client::{Client, Mode};
+use client::Client;
 use connection::Connection;
 use parser::Opts;
 use serde::Deserialize;
@@ -14,6 +14,7 @@ mod connection;
 mod parser;
 mod server;
 mod test;
+mod tile;
 
 #[derive(Deserialize)]
 struct Tester {

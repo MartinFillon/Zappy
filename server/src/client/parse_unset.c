@@ -54,8 +54,8 @@ static void send_ais(client_t *c, ai_t *ai)
 static int init_gui(client_t *c, game_t *game)
 {
     map_size("", c, game);
-    map_content_full("", c, game);
     request_time("", c, game);
+    map_content_full("", c, game);
     team_names("", c, game);
     for (__auto_type i = 0ul; i < game->teams->size; i++)
         send_eggs(c, &game->teams->data[i]);
