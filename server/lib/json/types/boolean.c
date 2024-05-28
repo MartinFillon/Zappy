@@ -5,7 +5,7 @@
 ** main
 */
 
-#include "json_parser.h"
+#include "json/json_parser.h"
 
 int parse_boolean(json_parser_t *p)
 {

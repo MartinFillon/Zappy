@@ -5,7 +5,8 @@
 ** main
 */
 
-#include "json_parser.h"
+#include "vector.h"
+#include "json/json_parser.h"
 
 static void json_init_array(json_parser_t *p)
 {

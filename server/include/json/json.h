@@ -59,3 +59,4 @@ double json_get_number(json_data_t const *this, char *key);
 str_t *json_get_string(json_data_t const *this, char *key);
 struct vec_json_t *json_get_array(json_data_t const *this, char *key);
 struct map_json_data_t *json_get_object(json_data_t const *this, char *key);
+void json_free(json_data_t *json);

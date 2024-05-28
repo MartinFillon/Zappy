@@ -6,7 +6,7 @@
 */
 
 #include <stdio.h>
-#include "json_parser.h"
+#include "json/json_parser.h"
 
 static int parse_object_inner(json_parser_t *p)
 {
@@ -37,6 +37,7 @@ int parse_object(json_parser_t *p)
     json_data_t *parent = p->self;
 
     init_object(p);
+    dprintf(1, "parsing object\n");
     if (skip_whitespace(p) == -1)
         return -1;
     if (get(p) == '{')

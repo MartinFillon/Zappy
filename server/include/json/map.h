@@ -9,6 +9,7 @@
     #define MAP
 
     #include <stdbool.h>
+#include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
     #include "str.h"
@@ -71,6 +72,7 @@ static inline void FN_NAME(map_push, TYPE)(
     }
     for (size_t i = 0; i < map->size; i++) {
         if (str_cmp(map->data[i].key, key) == 0) {
+            dprintf(2, "found key %s\n", key->data);
             elem.data = data;
             return;
         }
