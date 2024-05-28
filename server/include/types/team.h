@@ -17,12 +17,12 @@ typedef struct {
 } egg_t;
 
 #define TYPE egg_t *
-#define NAME vec_egg_t
-#include "vector.h"
+#define NAME queue_egg_t
+#include "queue.h"
 
 typedef struct {
     char *name;
-    struct vec_egg_t *eggs;
+    struct queue_egg_t *eggs;
 } team_t;
 
 team_t create_team(args_infos_t *args, char const *name);

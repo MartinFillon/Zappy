@@ -43,12 +43,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						game 				\
 					)\
-          			$(addprefix queue/,   \
-          			  	create              \
-          			  	delete              \
-          			  	push                \
-          			  	pop                 \
-          			)\
 					$(addprefix server/, 	\
 						accept				\
 					  	init_server			\
