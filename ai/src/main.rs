@@ -17,8 +17,8 @@ const SUCCESS_CODE: i32 = 0;
 
 #[tokio::main]
 async fn main() {
-    if open_file(String::from("config.json")).is_err() {
-        println!("Error: Cannot open file {}", "config.json");
+    if std::env::var("RUST_LOG").is_ok() {
+        env_logger::init();
     }
     match flags::check_flags() {
         Ok(res) => {
