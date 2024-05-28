@@ -10,11 +10,7 @@
 use crate::tcp::TcpClient;
 
 fn read_output(raw: String) {
-    let tmp = if raw.contains('[') {
-        &raw[1..raw.len() - 2]
-    } else {
-        &raw
-    };
+    let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     print!("Inventory: [ ");
     for tile in tmp.split(',') {
         if let Some(idex) = tile.rfind(' ') {

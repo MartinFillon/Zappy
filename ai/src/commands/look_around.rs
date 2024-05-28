@@ -10,11 +10,8 @@
 use crate::tcp::TcpClient;
 
 fn read_output(raw: String) {
-    let tmp = if raw.contains('[') {
-        &raw[1..raw.len() - 2]
-    } else {
-        &raw
-    };
+    let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
+    println!("{tmp}");
     for (i, tile) in tmp.split(',').enumerate() {
         print!("Tile {}: [ ", i);
         for item in tile.split(' ') {
