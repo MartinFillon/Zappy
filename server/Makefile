@@ -26,6 +26,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						free_box		\
 						va_free			\
 						mod				\
+						vec_cmp 		\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
