@@ -38,6 +38,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							send_info_tile 	\
 						)\
 						$(addprefix team/,	\
+							egg				\
 							team			\
 						)\
 						game 				\
