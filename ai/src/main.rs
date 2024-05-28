@@ -17,8 +17,9 @@ static SUCCESS_CODE: i32 = 0;
 async fn main() {
     match flags::check_flags() {
         Ok(res) => {
-            dbg!(res.clone());
-            if let Err(e) = tcp::tcp_client(res.clone().get_machine(), res.get_port()).await {
+            let address: String = format!("{}:{}", res.clone().get_machine(), res.get_port());
+            let tcp_client = tcp::TcpClient::new(address.as_str());
+            if let Err(e) = tcp_client.run().await {
                 eprintln!("Error: {}", e);
             }
             process::exit(SUCCESS_CODE)

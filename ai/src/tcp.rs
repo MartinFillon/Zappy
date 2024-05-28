@@ -7,68 +7,87 @@
 
 #![allow(dead_code)]
 
-use std::sync::Arc;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+use tokio::io::{self, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
-use tokio::sync::Mutex;
-use tokio::io::AsyncReadExt;
+use tokio::select;
 
-struct TcpClient {
-    stream: Arc<Mutex<TcpStream>>,
+pub struct TcpClient {
+    addr: String,
 }
 
 impl TcpClient {
-    async fn new(address: &str, port: usize) -> std::io::Result<Self> {
-        let addr = format!("{}:{}", address, port);
-        let stream = TcpStream::connect(addr).await?;
-        stream.set_nodelay(true)?;
-
-        Ok(Self {
-            stream: Arc::new(Mutex::new(stream)),
-        })
+    pub fn new(addr: &str) -> Self {
+        Self {
+            addr: addr.to_string(),
+        }
     }
 
-    async fn read_stream(self: Arc<Self>) {
-        let stream = self.stream.clone();
-        tokio::spawn(async move {
-            let mut buf = [0; 1024];
-            loop {
-                let mut stream = stream.lock().await;
-                match stream.read(&mut buf).await {
-                    Ok(0) => break, // EOF
-                    Ok(n) => {
-                        if let Ok(s) = std::str::from_utf8(&buf[..n]) {
-                            println!("{}", s);
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!("Error reading from stream: {e}");
+    pub async fn run(&self) -> io::Result<()> {
+        let stream = TcpStream::connect(&self.addr).await?;
+        println!("Connected to the server at {}", self.addr);
+
+        let (read_half, write_half) = stream.into_split();
+        let reader = BufReader::new(read_half);
+
+        let input_handle = tokio::spawn(Self::handle_input(write_half));
+
+        self.read_from_server(reader, input_handle).await
+    }
+
+    async fn handle_input(mut write_half: tokio::net::tcp::OwnedWriteHalf) {
+        let stdin = io::stdin();
+        let mut stdin_reader = BufReader::new(stdin);
+
+        loop {
+            let mut input = String::new();
+            match stdin_reader.read_line(&mut input).await {
+                Ok(0) => break, // EOF
+                Ok(_) => {
+                    if let Err(e) = write_half.write_all(input.as_bytes()).await {
+                        eprintln!("Failed to write to socket: {}", e);
                         break;
                     }
                 }
+                Err(e) => {
+                    eprintln!("Failed to read from stdin: {}", e);
+                    break;
+                }
             }
-        });
+        }
     }
 
-    async fn write_stream(&self, message: String) -> std::io::Result<()> {
-        let mut stream = self.stream.lock().await;
-        stream.write_all(message.as_bytes()).await?;
-        stream.flush().await?;
+    async fn read_from_server(
+        &self,
+        mut reader: BufReader<tokio::net::tcp::OwnedReadHalf>,
+        mut input_handle: tokio::task::JoinHandle<()>,
+    ) -> io::Result<()> {
+        let mut buffer = vec![0; 1024];
+
+        loop {
+            select! {
+                result = reader.read(&mut buffer) => {
+                    match result {
+                        Ok(0) => {
+                            println!("Connection closed by the server.");
+                            break;
+                        }
+                        Ok(n) => {
+                            print!("{}", String::from_utf8_lossy(&buffer[..n]));
+                        }
+                        Err(e) => {
+                            println!("Failed to read from socket: {}", e);
+                            break;
+                        }
+                    }
+                }
+                _ = &mut input_handle => {
+                    break;
+                }
+            }
+        }
+
+        input_handle.await.expect("Input handle task failed");
+
         Ok(())
     }
-}
-
-pub async fn tcp_client(address: String, port: usize) -> std::io::Result<()> {
-    let client = Arc::new(TcpClient::new(&address, port).await?);
-    client.clone().read_stream().await;
-
-    let mut stdin = tokio::io::BufReader::new(tokio::io::stdin());
-    let mut line = String::new();
-
-    while stdin.read_line(&mut line).await.unwrap_or(0) > 0 {
-        client.clone().write_stream(line.clone()).await?;
-        line.clear();
-    }
-
-    Ok(())
 }
