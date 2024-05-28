@@ -13,12 +13,12 @@ use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::io::AsyncReadExt;
 
-struct TcpClient {
+pub struct TcpClient {
     stream: Arc<Mutex<TcpStream>>,
 }
 
 impl TcpClient {
-    async fn new(address: &str, port: usize) -> std::io::Result<Self> {
+    pub async fn new(address: &str, port: usize) -> std::io::Result<Self> {
         let addr = format!("{}:{}", address, port);
         let stream = TcpStream::connect(addr).await?;
         stream.set_nodelay(true)?;
@@ -28,9 +28,10 @@ impl TcpClient {
         })
     }
 
-    async fn read_stream(self: Arc<Self>) {
+    pub async fn read_stream(self: Arc<Self>) -> std::io::Result<String> {
         let stream = self.stream.clone();
         tokio::spawn(async move {
+            let mut res = String::new();
             let mut buf = [0; 1024];
             loop {
                 let mut stream = stream.lock().await;
@@ -38,7 +39,11 @@ impl TcpClient {
                     Ok(0) => break, // EOF
                     Ok(n) => {
                         if let Ok(s) = std::str::from_utf8(&buf[..n]) {
-                            println!("{}", s);
+                            print!("{}", s);
+                            res.push_str(s);
+                            if s.ends_with('\n') {
+                                break;
+                            }
                         }
                     }
                     Err(e) => {
@@ -48,9 +53,10 @@ impl TcpClient {
                 }
             }
         });
+        Ok(String::from("toto"))
     }
 
-    async fn write_stream(&self, message: String) -> std::io::Result<()> {
+    pub async fn write_stream(&self, message: String) -> std::io::Result<()> {
         let mut stream = self.stream.lock().await;
         stream.write_all(message.as_bytes()).await?;
         stream.flush().await?;
@@ -66,6 +72,7 @@ pub async fn tcp_client(address: String, port: usize) -> std::io::Result<()> {
     let mut line = String::new();
 
     while stdin.read_line(&mut line).await.unwrap_or(0) > 0 {
+        print!("{line}");
         client.clone().write_stream(line.clone()).await?;
         line.clear();
     }

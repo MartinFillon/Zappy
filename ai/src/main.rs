@@ -9,6 +9,7 @@ use std::process;
 
 mod flags;
 mod tcp;
+mod commands;
 
 static ERROR_CODE: i32 = 84;
 static SUCCESS_CODE: i32 = 0;
