@@ -16,7 +16,12 @@ pub async fn broadcast(client: Arc<TcpClient>, msg: &str) -> bool {
         Err(_) => return false,
     }
     match client.clone().read_stream().await {
-        Ok(res) => print!("{res}"),
+        Ok(res) => {
+            print!("{res}");
+            if res == "dead\n" {
+                return false
+            }
+        },
         Err(_) => return false,
     }
     true

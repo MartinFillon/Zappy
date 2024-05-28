@@ -22,13 +22,19 @@ fn read_output(raw: String) {
     }
 }
 
-pub async fn look_around(client: Arc<TcpClient>) -> std::io::Result<()> {
-    client.clone().write_stream(String::from("Look\n")).await?;
-
-    match client.clone().read_stream().await {
-        Ok(res) => read_output(res),
-        Err(_) => {},
+pub async fn look_around(client: Arc<TcpClient>) -> Result<(), bool> {
+    match client.clone().write_stream(String::from("Look\n")).await {
+        Ok(_) => {},
+        Err(_) => return Err(true),
     }
-
+    match client.clone().read_stream().await {
+        Ok(res) => {
+            if res == "dead\n" {
+                return Err(false)
+            }
+            read_output(res);
+        },
+        Err(_) => return Err(true),
+    }
     Ok(())
 }
