@@ -54,9 +54,12 @@ json_data_t *json_from_file(const char *path);
 json_data_t *json_from_fd(const int fd);
 json_data_t *json_from_str(const char *str);
 
-bool json_get_bool(json_data_t const *this, char *key);
-double json_get_number(json_data_t const *this, char *key);
-str_t *json_get_string(json_data_t const *this, char *key);
-struct vec_json_t *json_get_array(json_data_t const *this, char *key);
-struct map_json_data_t *json_get_object(json_data_t const *this, char *key);
+bool json_get_bool(json_data_t const *this, str_t const *key);
+double json_get_number(json_data_t const *this, str_t const *key);
+str_t *json_get_string(json_data_t const *this, str_t const *key);
+struct vec_json_t *json_get_array(json_data_t const *this, str_t const *key);
+struct map_json_data_t *json_get_object(
+    json_data_t const *this,
+    str_t const *key
+);
 void json_free(json_data_t *json);

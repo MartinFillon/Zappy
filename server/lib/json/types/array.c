@@ -5,6 +5,8 @@
 ** main
 */
 
+#include <assert.h>
+
 #include "vector.h"
 #include "json/json_parser.h"
 
@@ -40,4 +42,10 @@ int parse_array(json_parser_t *p)
     if (parent != NULL)
         p->self = parent;
     return get(p);
+}
+
+struct vec_json_t *json_get_array(json_data_t const *this, str_t const *key)
+{
+    assert(this->t == OBJECT);
+    return map_get_json_data_t(this->data.obj, key)->data.arr;
 }
