@@ -9,6 +9,7 @@ use std::process;
 
 pub mod commands;
 pub mod flags;
+mod json;
 pub mod tcp;
 
 const ERROR_CODE: i32 = 84;
@@ -16,6 +17,9 @@ const SUCCESS_CODE: i32 = 0;
 
 #[tokio::main]
 async fn main() {
+    if open_file(String::from("config.json")).is_err() {
+        println!("Error: Cannot open file {}", "config.json");
+    }
     match flags::check_flags() {
         Ok(res) => {
             let address: String =
