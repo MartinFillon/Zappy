@@ -39,7 +39,7 @@ pub struct Server {
 }
 
 impl ServerOptions {
-    fn new(path: Option<String>) -> Result<Self, String> {
+    pub fn new(path: Option<String>) -> Result<Self, String> {
         path.map_or(Ok(ServerOptions::default()), |p| {
             let file = File::open(p);
             if file.is_ok() {
@@ -81,8 +81,8 @@ impl ServerOptions {
 }
 
 impl Server {
-    pub fn new(path: Option<String>, binary: Option<String>) -> Result<Self, String> {
-        ServerOptions::new(path).and_then(|options| options.run(binary))
+    pub fn new(options: &ServerOptions, binary: Option<String>) -> Result<Self, String> {
+        options.run(binary)
     }
 
     pub fn kill(&mut self) -> Result<(), String> {

@@ -74,6 +74,12 @@
                     "expected": [
                         "sgt 2"
                     ]
+                },
+                {
+                    "command": "sst 1",
+                    "expected": [
+                        "sst 1"
+                    ]
                 }
             ]
         },

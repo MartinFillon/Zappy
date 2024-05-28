@@ -34,9 +34,15 @@ pub trait Client {
         &mut self,
         sock: &mut Connection,
         server_options: &ServerOptions,
+        verbose: bool,
     ) -> Result<(), String>;
 
-    fn test(&mut self, sock: &mut Connection, test: &Test) -> Result<Vec<String>, String>;
+    fn test(
+        &mut self,
+        sock: &mut Connection,
+        test: &Test,
+        verbose: bool,
+    ) -> Result<Vec<String>, String>;
 }
 
 impl Client for Ai {
@@ -44,11 +50,17 @@ impl Client for Ai {
         &mut self,
         _sock: &mut Connection,
         _server_options: &ServerOptions,
+        _verbose: bool,
     ) -> Result<(), String> {
         todo!()
     }
 
-    fn test(&mut self, _sock: &mut Connection, _test: &Test) -> Result<Vec<String>, String> {
+    fn test(
+        &mut self,
+        _sock: &mut Connection,
+        _test: &Test,
+        _verbose: bool,
+    ) -> Result<Vec<String>, String> {
         todo!()
     }
 }

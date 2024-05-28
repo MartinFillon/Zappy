@@ -99,12 +99,16 @@ impl Graphic {
         Ok(tile)
     }
 
-    fn read_map(&self, sock: &mut Connection) -> Result<Vec<Tile>, String> {
+    fn read_map(&self, sock: &mut Connection, verbose: bool) -> Result<Vec<Tile>, String> {
         let mut tiles = Vec::new();
 
         for _ in 0..self.map_size.0 * self.map_size.1 {
             let mut line = sock.get_line().map_err(|e| e.to_string())?;
             line = line.trim_end().to_string();
+
+            if verbose {
+                println!("Received: {}", line);
+            }
             let tile = self.read_tile(&line)?;
             tiles.push(tile);
         }
@@ -162,25 +166,40 @@ impl Client for Graphic {
         &mut self,
         sock: &mut Connection,
         server_options: &ServerOptions,
+        verbose: bool,
     ) -> Result<(), String> {
         sock.send("GRAPHIC".to_string())
             .map_err(|e| e.to_string())?;
 
+        if verbose {
+            println!("Sent: GRAPHIC");
+        }
+
         let mp_size = sock.get_line().map_err(|e| e.to_string())?;
+
+        if verbose {
+            print!("Received: {mp_size}");
+        }
+
         self.set_map_size(self.read_map_size(&mp_size)?);
         if self.map_size != (server_options.x, server_options.y) {
             return Err("Invalid map size".to_string());
         }
 
         let tms = sock.get_line().map_err(|e| e.to_string())?;
+
+        if verbose {
+            print!("Received: {tms}");
+        }
         self.set_time(self.read_time(&tms)?);
         if self.time != server_options.frequency {
             return Err("Bad time response".to_string());
         }
 
-        self.set_map(self.read_map(sock)?);
+        self.set_map(self.read_map(sock, verbose)?);
         for _ in 0..server_options.teams.len() {
             let line = sock.get_line().map_err(|e| e.to_string())?;
+            print!("Received: {line}");
             self.set_teams(self.read_teams(&line)?);
         }
 
@@ -190,6 +209,7 @@ impl Client for Graphic {
 
         for _ in 0..server_options.count_per_team {
             let line = sock.get_line().map_err(|e| e.to_string())?;
+            print!("Received: {line}");
             let (id, pos) = self.read_egg(&line)?;
             self.eggs.insert(id, pos);
         }
@@ -200,16 +220,28 @@ impl Client for Graphic {
         Ok(())
     }
 
-    fn test(&mut self, sock: &mut Connection, test: &Test) -> Result<Vec<String>, String> {
+    fn test(
+        &mut self,
+        sock: &mut Connection,
+        test: &Test,
+        verbose: bool,
+    ) -> Result<Vec<String>, String> {
         test.get_commands().iter().try_fold(Vec::new(), |mut r, c| {
             sock.send(c.get_command().to_string())
                 .map_err(|e| e.to_string())?;
+
+            if verbose {
+                println!("Sent: {}", c.get_command());
+            }
 
             c.get_expected()
                 .iter()
                 .try_for_each(|e| {
                     let line = sock.get_line().map_err(|e| e.to_string())?;
                     let trimmed = line.trim_end().to_string();
+                    if verbose {
+                        println!("Received: {}", trimmed);
+                    }
                     if trimmed != *e {
                         Err(format!("Expected: {}, got: {}", e, trimmed))
                     } else {
