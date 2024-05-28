@@ -101,9 +101,9 @@ impl Graphic {
             return Err("Invalid tile".to_string());
         }
 
-        let x = tile_trimmed[0].parse::<u32>().map_err(|e| e.to_string())?;
-        let y = tile_trimmed[1].parse::<u32>().map_err(|e| e.to_string())?;
-        let resources: Vec<(String, u32)> = tile_trimmed[2..]
+        let x = tile_trimmed[1].parse::<u32>().map_err(|e| e.to_string())?;
+        let y = tile_trimmed[2].parse::<u32>().map_err(|e| e.to_string())?;
+        let resources: Vec<(String, u32)> = tile_trimmed[3..]
             .iter()
             .map(|s| s.parse::<u32>().unwrap())
             .zip(tile::RESOURCES.iter())
@@ -123,7 +123,8 @@ impl Graphic {
         let mut tiles = Vec::new();
 
         for _ in 0..self.map_size.0 * self.map_size.1 {
-            let line = sock.get_line().map_err(|e| e.to_string())?;
+            let mut line = sock.get_line().map_err(|e| e.to_string())?;
+            line = line.trim_end().to_string();
             let tile = self.read_tile(&line)?;
             tiles.push(tile);
         }
@@ -150,7 +151,11 @@ impl Graphic {
             return Err("Invalid teams".to_string());
         }
 
-        Ok(teams_trimmed.iter().skip(1).map(|s| s.to_string()).collect())
+        Ok(teams_trimmed
+            .iter()
+            .skip(1)
+            .map(|s| s.to_string())
+            .collect())
     }
 }
 
@@ -184,7 +189,6 @@ impl Client for Graphic {
         }
 
         self.set_map(self.read_map(sock)?);
-
         for _ in 0..server_options.teams.len() {
             let line = sock.get_line().map_err(|e| e.to_string())?;
             self.set_teams(self.read_teams(&line)?);
