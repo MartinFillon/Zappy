@@ -17,19 +17,19 @@ struct ConfigFile {
 }
 
 impl ConfigFile {
-    fn new(file_path: String) -> Self {
+    pub fn new(file_path: String) -> Self {
         Self {
             file_path,
             file: None,
         }
     }
 
-    fn open_file(&mut self) -> io::Result<()> {
+    pub fn open_file(&mut self) -> io::Result<()> {
         self.file = Some(File::open(self.file_path.clone())?);
         Ok(())
     }
 
-    fn read_file(&mut self) -> io::Result<String> {
+    pub fn read_file(&mut self) -> io::Result<String> {
         let mut contents = String::new();
         if let Some(mut file) = self.file {
             file.read_to_string(&mut contents)?;
@@ -242,4 +242,14 @@ impl JsonValue {
         }
         Err(String::from("Invalid null value"))
     }
+}
+
+pub fn parse_file(file_path: &str) -> Result<JsonValue, String> {
+    let mut config_file = ConfigFile::new(file_path.to_string());
+    if config_file.open_file().is_ok() {
+        if let Ok(file_contents) = config_file.read_file() {
+            return parse(&file_contents);
+        }
+    }
+    Err(String::from("Error reading file"))
 }
