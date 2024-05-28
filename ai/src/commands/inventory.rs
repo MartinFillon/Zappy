@@ -22,7 +22,11 @@ fn read_output(raw: String) {
 }
 
 pub async fn inventory(client: &mut TcpClient) -> Result<(), bool> {
-    if let Err(_) = client.send_request(String::from("Inventory\n")).await {
+    if client
+        .send_request(String::from("Inventory\n"))
+        .await
+        .is_err()
+    {
         return Err(true);
     }
     match client.get_response().await {

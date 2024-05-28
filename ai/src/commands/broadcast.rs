@@ -10,9 +10,10 @@
 use crate::tcp::TcpClient;
 
 pub async fn broadcast(client: &mut TcpClient, msg: &str) -> bool {
-    if let Err(_) = client
+    if client
         .send_request(String::from("Broadcast ") + msg + "\n")
         .await
+        .is_err()
     {
         return false;
     }
