@@ -8,3 +8,5 @@
 pub mod broadcast;
 pub mod inventory;
 pub mod look_around;
+pub mod move_up;
+pub mod turn;
