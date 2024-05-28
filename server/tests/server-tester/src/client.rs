@@ -12,8 +12,8 @@ use crate::{
 
 #[derive(Debug, Deserialize)]
 pub enum Mode {
-    GRAPHIC,    // "GRAPHIC"
-    AI(String), // {"AI": "team_name"}
+    Graphic,    // "GRAPHIC"
+    Ai(String), // {"AI": "team_name"}
 }
 
 #[derive(Debug)]
@@ -83,7 +83,7 @@ impl Graphic {
             return Err("Bad time response".to_string());
         }
 
-        Ok(tms_trimmed[1].parse::<u32>().map_err(|e| e.to_string())?)
+        tms_trimmed[1].parse::<u32>().map_err(|e| e.to_string())
     }
 
     fn set_time(&mut self, t: u32) {

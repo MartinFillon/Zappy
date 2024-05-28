@@ -17,7 +17,7 @@ impl Tile {
     }
 
     pub fn new_resource(&mut self, resource: String, amount: u32) {
-        let entry = self.resources.insert(resource, amount);
+        self.resources.insert(resource, amount);
     }
 }
 
