@@ -1,33 +1,13 @@
-#![allow(dead_code)]
-
 use std::collections::HashMap;
-
-use serde::Deserialize;
 
 use crate::{
     connection::Connection,
     server::ServerOptions,
+    test::Test,
     tile::{self, Tile},
 };
 
-#[derive(Debug, Deserialize)]
-pub enum Mode {
-    Graphic,    // "Graphic"
-    Ai(String), // {"Ai": "team_name"}
-}
-
-#[derive(Debug)]
-struct Position {
-    x: u32,
-    y: u32,
-}
-
-#[derive(Debug)]
-pub struct Ai {
-    position: Position,
-    level: u32,
-    inventory: HashMap<String, u32>,
-}
+use super::{Ai, Client, Position};
 
 #[derive(Debug, Default)]
 pub struct Graphic {
@@ -177,14 +157,6 @@ impl Graphic {
     }
 }
 
-pub trait Client {
-    fn connect(
-        &mut self,
-        sock: &mut Connection,
-        server_options: &ServerOptions,
-    ) -> Result<(), String>;
-}
-
 impl Client for Graphic {
     fn connect(
         &mut self,
@@ -226,5 +198,28 @@ impl Client for Graphic {
             return Err("Invalid eggs".to_string());
         }
         Ok(())
+    }
+
+    fn test(&mut self, sock: &mut Connection, test: &Test) -> Result<Vec<String>, String> {
+        test.get_commands().iter().try_fold(Vec::new(), |mut r, c| {
+            sock.send(c.get_command().to_string())
+                .map_err(|e| e.to_string())?;
+
+            c.get_expected()
+                .iter()
+                .try_for_each(|e| {
+                    let line = sock.get_line().map_err(|e| e.to_string())?;
+                    let trimmed = line.trim_end().to_string();
+                    if trimmed != *e {
+                        Err(format!("Expected: {}, got: {}", e, trimmed))
+                    } else {
+                        Ok(())
+                    }
+                })
+                .map_err(|e| r.push(e))
+                .unwrap_or(());
+
+            Ok(r)
+        })
     }
 }

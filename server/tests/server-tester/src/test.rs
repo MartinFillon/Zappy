@@ -37,6 +37,10 @@ impl Test {
     pub fn get_name(&self) -> &str {
         &self.name
     }
+
+    pub fn get_mode(&self) -> Mode {
+        self.mode.clone()
+    }
 }
 
 impl Command {
