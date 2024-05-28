@@ -22,9 +22,8 @@ fn read_output(raw: String) {
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<(), bool> {
-    match client.send_request(String::from("Look\n")).await {
-        Ok(_) => {}
-        Err(_) => return Err(true),
+    if let Err(_) = client.send_request(String::from("Look\n")).await {
+        return Err(true);
     }
     match client.get_response().await {
         Some(res) => {
