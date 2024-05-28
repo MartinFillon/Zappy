@@ -7,23 +7,29 @@
 
 use std::process;
 
-mod flags;
-mod tcp;
+pub mod commands;
+pub mod flags;
+pub mod tcp;
 
-static ERROR_CODE: i32 = 84;
-static SUCCESS_CODE: i32 = 0;
+const ERROR_CODE: i32 = 84;
+const SUCCESS_CODE: i32 = 0;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     match flags::check_flags() {
         Ok(res) => {
-            dbg!(res.clone());
-            if let Err(e) = tcp::tcp(res.clone().get_machine(), res.get_port()) {
-                eprintln!("Error: {}", e);
+            let address: String =
+                format!("{}:{}", res.clone().get_machine(), res.clone().get_port());
+            match tcp::handle_tcp(address, res.get_name()).await {
+                Ok(_) => process::exit(SUCCESS_CODE),
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    process::exit(ERROR_CODE);
+                }
             }
-            process::exit(SUCCESS_CODE)
         }
         Err(e) => {
-            println!("Error: {}", e);
+            eprintln!("Error: {}", e);
             flags::usage();
             process::exit(ERROR_CODE)
         }
