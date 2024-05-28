@@ -7,8 +7,8 @@
 
 #![allow(dead_code)]
 
-use std::sync::Arc;
 use crate::tcp::TcpClient;
+use std::sync::Arc;
 
 fn read_output(raw: String) {
     let mut i = 0;
@@ -24,16 +24,16 @@ fn read_output(raw: String) {
 
 pub async fn look_around(client: Arc<TcpClient>) -> Result<(), bool> {
     match client.clone().write_stream(String::from("Look\n")).await {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(_) => return Err(true),
     }
     match client.clone().read_stream().await {
         Ok(res) => {
             if res == "dead\n" {
-                return Err(false)
+                return Err(false);
             }
             read_output(res);
-        },
+        }
         Err(_) => return Err(true),
     }
     Ok(())

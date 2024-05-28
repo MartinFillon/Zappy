@@ -5,6 +5,6 @@
 // modules import
 //
 
-mod look_around;
-mod inventory;
 mod broadcast;
+mod inventory;
+mod look_around;
