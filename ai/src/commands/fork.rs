@@ -1,20 +1,16 @@
 //
 // EPITECH PROJECT, 2024
-// move_up
+// fork
 // File description:
-// move command
+// fork command
 //
 
 #![allow(dead_code)]
 
 use crate::tcp::TcpClient;
 
-pub async fn move_up(client: &mut TcpClient) -> bool {
-    if client
-        .send_request(String::from("Forward\n"))
-        .await
-        .is_err()
-    {
+pub async fn fork(client: &mut TcpClient) -> bool {
+    if client.send_request(String::from("Fork\n")).await.is_err() {
         return false;
     }
     match client.get_response().await {
