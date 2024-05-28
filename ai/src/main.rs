@@ -19,10 +19,13 @@ async fn main() {
         Ok(res) => {
             let address: String = format!("{}:{}", res.clone().get_machine(), res.get_port());
             let tcp_client = tcp::TcpClient::new(address.as_str());
-            if let Err(e) = tcp_client.run().await {
-                eprintln!("Error: {}", e);
+            // if let Err(e) = tcp_client.run().await {
+            //     eprintln!("Error: {}", e);
+            // }
+            if let Ok(response) = tcp_client.send_request("Team1").await {
+                println!("{}", response);
             }
-            process::exit(SUCCESS_CODE)
+            process::exit(SUCCESS_CODE);
         }
         Err(e) => {
             println!("Error: {}", e);

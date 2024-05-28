@@ -41,7 +41,7 @@ impl TcpClient {
         loop {
             let mut input = String::new();
             match stdin_reader.read_line(&mut input).await {
-                Ok(0) => break, // EOF
+                Ok(0) => break,
                 Ok(_) => {
                     if let Err(e) = write_half.write_all(input.as_bytes()).await {
                         eprintln!("Failed to write to socket: {}", e);
@@ -86,8 +86,21 @@ impl TcpClient {
             }
         }
 
-        input_handle.await.expect("Input handle task failed");
+        input_handle.await.expect("Input handle task failed"); // a changer
 
         Ok(())
+    }
+
+    pub async fn send_request(&self, request: &'static str) -> io::Result<String> {
+        let stream = TcpStream::connect(&self.addr).await?;
+        let (read_half, mut write_half) = stream.into_split();
+
+        write_half.write_all(request.as_bytes()).await?;
+
+        let mut reader = BufReader::new(read_half);
+        let mut response = String::new();
+        reader.read_to_string(&mut response).await?;
+
+        Ok(response)
     }
 }
