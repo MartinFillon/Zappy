@@ -18,11 +18,10 @@ static SUCCESS_CODE: i32 = 0;
 async fn main() {
     match flags::check_flags() {
         Ok(res) => {
-            dbg!(res.clone());
-            if let Err(e) = tcp::tcp_client(res.clone().get_machine(), res.get_port()).await {
-                eprintln!("Error: {}", e);
+            let address: String = format!("{}:{}", res.clone().get_machine(), res.get_port());
+            if let Ok(_) = tcp::handle_tcp(address).await {
+                process::exit(SUCCESS_CODE);
             }
-            process::exit(SUCCESS_CODE)
         }
         Err(e) => {
             println!("Error: {}", e);
