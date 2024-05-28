@@ -25,6 +25,6 @@ pub async fn eject(client: &mut TcpClient) -> Result<bool, bool> {
                 Ok(false)
             }
         }
-        None => return Err(true),
+        None => Err(true),
     }
 }

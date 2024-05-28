@@ -28,6 +28,6 @@ pub async fn unused_slots(client: &mut TcpClient) -> Result<usize, bool> {
                 Err(_) => Err(true),
             }
         }
-        None => return Err(true),
+        None => Err(true),
     }
 }
