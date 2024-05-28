@@ -1,0 +1,64 @@
+{
+    "commands": [
+        {
+            "command": "Forward",
+            "time_limit": 7,
+            "has_argument": false
+        },
+        {
+            "command": "Right",
+            "time_limit": 7,
+            "has_argument": false
+        },
+        {
+            "command": "Left",
+            "time_limit": 7,
+            "has_argument": false
+        },
+        {
+            "command": "Look",
+            "time_limit": 7,
+            "has_argument": false
+        },
+        {
+            "command": "Inventory",
+            "time_limit": 1,
+            "has_argument": false
+        },
+        {
+            "command": "Broadcast",
+            "time_limit": 7,
+            "has_argument": true
+        },
+        {
+            "command": "Connect_nbr",
+            "time_limit": 0,
+            "has_argument": false
+        },
+        {
+            "command": "Fork",
+            "time_limit": 42,
+            "has_argument": false
+        },
+        {
+            "command": "Eject",
+            "time_limit": 7,
+            "has_argument": false
+        },
+        {
+            "command": "Take",
+            "time_limit": 7,
+            "has_argument": true
+        },
+        {
+            "command": "Set",
+            "time_limit": 7,
+            "has_argument": true
+        },
+        {
+            "command": "Incantation",
+            "time_limit": 300,
+            "has_argument": false
+        }
+    ]
+}
