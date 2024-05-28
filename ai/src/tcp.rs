@@ -7,60 +7,80 @@
 
 #![allow(dead_code)]
 
-use tokio::io::{self, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::select;
+use tokio::sync::mpsc::{self, Receiver, Sender};
+use tokio::task::JoinHandle;
 
 pub struct TcpClient {
     addr: String,
+    request_sender: Option<Sender<String>>,
+    response_receiver: Option<Receiver<String>>,
+    connection_handle: Option<JoinHandle<()>>,
 }
 
 impl TcpClient {
     pub fn new(addr: &str) -> Self {
         Self {
             addr: addr.to_string(),
+            request_sender: None,
+            response_receiver: None,
+            connection_handle: None,
         }
     }
 
-    pub async fn run(&self) -> io::Result<()> {
+    pub async fn connect(&mut self) -> io::Result<()> {
         let stream = TcpStream::connect(&self.addr).await?;
         println!("Connected to the server at {}", self.addr);
 
         let (read_half, write_half) = stream.into_split();
         let reader = BufReader::new(read_half);
+        let (request_sender, request_receiver) = mpsc::channel(100);
+        let (response_sender, response_receiver) = mpsc::channel(100);
 
-        let input_handle = tokio::spawn(Self::handle_input(write_half));
+        self.request_sender = Some(request_sender);
+        self.response_receiver = Some(response_receiver);
 
-        self.read_from_server(reader, input_handle).await
+        let connection_handle = tokio::spawn(Self::handle_connection(
+            reader,
+            write_half,
+            request_receiver,
+            response_sender,
+        ));
+        self.connection_handle = Some(connection_handle);
+
+        Ok(())
     }
 
-    async fn handle_input(mut write_half: tokio::net::tcp::OwnedWriteHalf) {
-        let stdin = io::stdin();
-        let mut stdin_reader = BufReader::new(stdin);
-
-        loop {
-            let mut input = String::new();
-            match stdin_reader.read_line(&mut input).await {
-                Ok(0) => break,
-                Ok(_) => {
-                    if let Err(e) = write_half.write_all(input.as_bytes()).await {
-                        eprintln!("Failed to write to socket: {}", e);
-                        break;
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Failed to read from stdin: {}", e);
-                    break;
-                }
-            }
+    pub async fn send_request(&self, request: String) -> io::Result<()> {
+        if let Some(sender) = &self.request_sender {
+            sender
+                .send(request)
+                .await
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::NotConnected,
+                "Not connected to server",
+            ))
         }
     }
 
-    async fn read_from_server(
-        &self,
+    pub async fn get_response(&mut self) -> Option<String> {
+        if let Some(receiver) = &mut self.response_receiver {
+            receiver.recv().await
+        } else {
+            None
+        }
+    }
+
+    async fn handle_connection(
         mut reader: BufReader<tokio::net::tcp::OwnedReadHalf>,
-        mut input_handle: tokio::task::JoinHandle<()>,
-    ) -> io::Result<()> {
+        mut write_half: tokio::net::tcp::OwnedWriteHalf,
+        mut request_receiver: Receiver<String>,
+        response_sender: Sender<String>,
+    ) {
         let mut buffer = vec![0; 1024];
 
         loop {
@@ -72,7 +92,11 @@ impl TcpClient {
                             break;
                         }
                         Ok(n) => {
-                            print!("{}", String::from_utf8_lossy(&buffer[..n]));
+                            let response = String::from_utf8_lossy(&buffer[..n]).to_string();
+                            if let Err(e) = response_sender.send(response).await {
+                                eprintln!("Failed to send response: {}", e);
+                                break;
+                            }
                         }
                         Err(e) => {
                             println!("Failed to read from socket: {}", e);
@@ -80,27 +104,40 @@ impl TcpClient {
                         }
                     }
                 }
-                _ = &mut input_handle => {
-                    break;
+                request = request_receiver.recv() => {
+                    match request {
+                        Some(req) => {
+                            if let Err(e) = write_half.write_all(req.as_bytes()).await {
+                                eprintln!("Failed to write to socket: {}", e);
+                                break;
+                            }
+                        }
+                        None => {
+                            break;
+                        }
+                    }
                 }
             }
         }
+    }
+}
 
-        input_handle.await.expect("Input handle task failed"); // a changer
+pub async fn handle_tcp(address: String) -> io::Result<()> {
+    let mut client = TcpClient::new(address.as_str());
+    client.connect().await?;
 
-        Ok(())
+    client.send_request("Team1".to_string()).await?;
+    if let Some(response) = client.get_response().await {
+        println!("Response: {}", response);
+    } else {
+        println!("bruh");
     }
 
-    pub async fn send_request(&self, request: &'static str) -> io::Result<String> {
-        let stream = TcpStream::connect(&self.addr).await?;
-        let (read_half, mut write_half) = stream.into_split();
-
-        write_half.write_all(request.as_bytes()).await?;
-
-        let mut reader = BufReader::new(read_half);
-        let mut response = String::new();
-        reader.read_to_string(&mut response).await?;
-
-        Ok(response)
+    client.send_request("Team1".to_string()).await?;
+    if let Some(response) = client.get_response().await {
+        println!("Response: {}", response);
+    } else {
+        println!("bruh");
     }
+    Ok(())
 }
