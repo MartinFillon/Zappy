@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "logger.h"
 #include "types/client.h"
 #include "ai/ai_cmds.h"
-#include "utils.h"
 
 int ai_entrypoint(char const *line, client_t *c, game_t *game)
 {
@@ -20,7 +20,7 @@ int ai_entrypoint(char const *line, client_t *c, game_t *game)
             return 0;
         }
     }
-    logger_info("Unknown command from client [%d]\n", c->fd);
+    logs(INFO, "Unknown command from client [%d]\n", c->fd);
     dprintf(c->fd, "ko\n");
     return 0;
 }

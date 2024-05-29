@@ -11,8 +11,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "logger.h"
 #include "types/clock.h"
-#include "utils.h"
 
 static ztime_t get_current_time(void)
 {
@@ -45,9 +45,9 @@ void wait_n_ticks(zclock_t *this, uint n)
 {
     int i = 0;
 
-    logger_info("Elapsed time %llu microsseconds\n", get_elapsed_time(this));
+    logs(INFO, "Elapsed time %llu microsseconds\n", get_elapsed_time(this));
     while (!has_n_ticks_passed(this, n)) {
-        logger_debug("tick: %lu\n", i);
+        logs(DEBUG, "tick: %lu\n", i);
         usleep(this->frequency);
         i++;
     }

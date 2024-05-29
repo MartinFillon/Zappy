@@ -14,7 +14,7 @@
 static struct logger_s *get_mut_logger(void)
 {
     static struct logger_s logger = {
-        ERROR, 2, {"", "ERROR", "WARNING", "INFO", "DEBUG"}
+        ERROR_LEVEL, 2, {"", "ERROR", "WARNING", "INFO", "DEBUG"}
     };
 
     return &logger;

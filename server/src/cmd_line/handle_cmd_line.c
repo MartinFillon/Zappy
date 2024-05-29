@@ -5,12 +5,13 @@
 ** handle_cmd_line
 */
 
-#include "parsing_handler.h"
+#include "logger.h"
 #include "utils.h"
+#include "parsing_handler.h"
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /// @brief All args will be init to -1 or NULL, to check in continue
@@ -30,9 +31,9 @@ static bool check_args(args_infos_t *args)
 {
     if (args->freq == -1)
         args->freq = 100;
-    if (args->clients_nb == -1 || args->height == -1 ||
-        args->width == -1 || args->port == -1 || args->names == NULL) {
-        logger_error("Options are missing.\n");
+    if (args->clients_nb == -1 || args->height == -1 || args->width == -1 ||
+        args->port == -1 || args->names == NULL) {
+        logs(ERROR_LEVEL, "Options are missing.\n");
         return false;
     }
     return true;

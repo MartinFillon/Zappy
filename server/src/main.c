@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "logger.h"
 #include "macros.h"
 #include "server.h"
 #include "utils.h"
@@ -36,6 +37,6 @@ int main(int ac, char const **av)
     if (loop_server(&args) == ERROR)
         return EPI_ERROR;
     my_free_box(args.names);
-    logger_info("Server stopped\n");
+    logs(INFO, "Server stopped\n");
     return SUCCESS;
 }
