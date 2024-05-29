@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 
+use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
 fn read_output(raw: String) {
@@ -22,17 +23,8 @@ fn read_output(raw: String) {
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<(), bool> {
-    if client.send_request(String::from("Look\n")).await.is_err() {
-        return Err(true);
-    }
-    match client.get_response().await {
-        Some(res) => {
-            if res == "dead\n" {
-                return Err(false);
-            }
-            read_output(res);
-        }
-        None => return Err(true),
-    }
+    let response = client.check_dead("Look\n").await?;
+    read_output(response); // to implement
+
     Ok(())
 }

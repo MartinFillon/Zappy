@@ -7,24 +7,12 @@
 
 #![allow(dead_code)]
 
+use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
 pub async fn broadcast(client: &mut TcpClient, msg: &str) -> bool {
-    if client
-        .send_request(String::from("Broadcast ") + msg + "\n")
-        .await
-        .is_err()
-    {
-        return false;
+    match client.check_dead(&format!("Broadcast {}\n", msg)).await {
+        Ok(_) => true,
+        Err(_) => false,
     }
-    match client.get_response().await {
-        Some(res) => {
-            print!("{res}");
-            if res == "dead\n" {
-                return false;
-            }
-        }
-        None => return false,
-    }
-    true
 }
