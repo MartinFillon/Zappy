@@ -12,9 +12,9 @@
 #include <sys/socket.h>
 
 #include "client.h"
+#include "logger.h"
 #include "macros.h"
 #include "server.h"
-#include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
 #include <bits/types/struct_timeval.h>
@@ -102,6 +102,6 @@ int loop_server(args_infos_t *args)
         exec_clients(&z);
         check_eating(&z.server);
     }
-    logger_info("Server shutting down\n");
+    logs(INFO, "Server shutting down\n");
     return SUCCESS;
 }

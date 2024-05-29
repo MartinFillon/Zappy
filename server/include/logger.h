@@ -7,11 +7,9 @@
 
 #pragma once
 
-void logger_error(char *fmt, ...);
-
 enum log_level {
     DISABLE,
-    ERROR,
+    ERROR_LEVEL,
     WARNING,
     INFO,
     DEBUG,

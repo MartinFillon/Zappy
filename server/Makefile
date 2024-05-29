@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
-LDLIBS = -L. -liblogger
+LDLIBS = -L. -llogger
 
 NAME = ../zappy_server
 
@@ -23,7 +23,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_name_flag		\
 					)\
 					$(addprefix utils/,	\
-						logger_error	\
 						free_box		\
 						va_free			\
 						mod				\
@@ -95,7 +94,7 @@ TEST_SRC =
 all: lib $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDLIBS)
 
 lib:
 	make -C ./logger

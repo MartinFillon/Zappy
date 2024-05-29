@@ -72,15 +72,15 @@ static int init_gui(client_t *c, game_t *game)
 int unset_entrypoint(char const *line, client_t *c, game_t *game)
 {
     if (strcmp(line, "GRAPHIC") == 0) {
-        logger_info("Client %d is a GUI\n", c->fd);
+        logs(INFO, "Client %d is a GUI\n", c->fd);
         c->type = GUI;
         c->entrypoint = &gui_entrypoint;
         vec_pushback_vector_int(game->guis, c->fd);
         return init_gui(c, game);
     }
     if (game->teams == NULL) {
-        logger_warn("No teams set\n");
-        return ERROR;
+        logs(WARNING, "No teams set\n");
+        return 1;
     }
     for (size_t i = 0; i < game->teams->size; i++)
         if (strcmp(line, game->teams->data[i].name) == 0)

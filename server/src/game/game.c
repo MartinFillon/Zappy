@@ -6,9 +6,9 @@
 */
 
 #include "types/game.h"
+#include "logger.h"
 #include "map.h"
 #include "types/team.h"
-#include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
 
@@ -16,13 +16,11 @@ game_t init_game(args_infos_t *args)
 {
     game_t game = {0};
 
-    logger_info(
-        "Initailizing map with size %d %d\n", args->width, args->height
-    );
+    logs(INFO, "Initailizing map with size %d %d\n", args->width, args->height);
     game.map = create_map(args->width, args->height);
     fill_map(game.map);
-    logger_info("Map initialized successfully\n");
-    logger_info("Creating teams\n");
+    logs(INFO, "Map initialized successfully\n");
+    logs(INFO, "Creating teams\n");
     game.teams = vec_create_vector_team_t(10);
     game.ais = vec_create_vector_ai_t(10);
     game.guis = vec_create_vector_int(10);
@@ -32,6 +30,6 @@ game_t init_game(args_infos_t *args)
             game.teams, create_team(args, args->names[i])
         );
     }
-    logger_info("Team created successfully\n");
+    logs(INFO, "Team created successfully\n");
     return game;
 }

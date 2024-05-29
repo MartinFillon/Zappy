@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
+#include "logger.h"
 #include "args_info.h"
 
 static size_t get_nb_team(char const **av, size_t idx)
@@ -49,12 +49,12 @@ bool parse_names(char const **av, size_t *idx, args_infos_t *args)
     size_t nb_team = get_nb_team(av, *idx);
 
     if (!nb_team) {
-        logger_error("No team provided for '-n' option.\n");
+        logs(ERROR_LEVEL, "No team provided for '-n' option.\n");
         return false;
     }
     args->names = calloc((nb_team + 1), sizeof(*args->names));
     if (!args->names || !get_names(av, idx, nb_team, args)) {
-        logger_error("Allocation error.\n");
+        logs(ERROR_LEVEL, "Allocation error.\n");
         return false;
     }
     args->team_count = nb_team;
