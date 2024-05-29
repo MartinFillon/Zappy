@@ -9,6 +9,7 @@ pub mod broadcast;
 pub mod drop_object;
 pub mod eject;
 pub mod fork;
+pub mod incantation;
 pub mod inventory;
 pub mod look_around;
 pub mod move_up;
