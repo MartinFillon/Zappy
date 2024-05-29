@@ -10,6 +10,7 @@
 
 #include "client.h"
 #include "gui/defs.h"
+#include "macros.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
@@ -17,12 +18,16 @@
 
 static int put_in_team(client_t *c, game_t *game, size_t i)
 {
-    logger_info("Client %d is an AI\n", c->fd);
+    logger_info("Client %d is trying to be an AI\n", c->fd);
     c->type = AI;
     c->entrypoint = &ai_entrypoint;
-    init_ai(game, c, &game->teams->data[i]);
+    if (init_ai(game, c, &game->teams->data[i])) {
+        send_client(c, "ko\n");
+        logger_info("No more eggs to place %d\n", c->fd);
+        return ERROR;
+    }
     logger_info("AI inited\n");
-    return 0;
+    return SUCCESS;
 }
 
 static void send_eggs(client_t *c, team_t *team)
@@ -75,11 +80,11 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
     }
     if (game->teams == NULL) {
         logger_warn("No teams set\n");
-        return 1;
+        return ERROR;
     }
     for (size_t i = 0; i < game->teams->size; i++)
         if (strcmp(line, game->teams->data[i].name) == 0)
             return put_in_team(c, game, i);
     send_client(c, "ko\n");
-    return 1;
+    return ERROR;
 }

@@ -38,8 +38,11 @@ static void send_infos(int fd, game_t *game, ai_t const *new)
 bool init_ai(game_t *game, client_t *client, team_t *team)
 {
     ai_t new = {0};
-    egg_t *egg = queue_pop_queue_egg_t(team->eggs);
+    egg_t *egg = NULL;
 
+    if (team->eggs->size == 0)
+        return true;
+    egg = queue_pop_queue_egg_t(team->eggs);
     new.clock = clock_new(game->frequency);
     new.team = team;
     new.food_clock = clock_new(game->frequency);
