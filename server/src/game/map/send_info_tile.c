@@ -29,7 +29,7 @@ static void log_map_error(int y, int x, int y_max, int x_max)
 {
     logs(
         ERROR_LEVEL,
-        "Be careful coordinates (%d, %d)"
+        "Be careful coordinates (%d, %d) "
         "is out of range of map of size (%d, %d)\n",
         y,
         x,
