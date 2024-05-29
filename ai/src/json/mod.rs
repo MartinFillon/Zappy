@@ -39,6 +39,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_value(&mut self) -> Result<JsonValue, ParserError> {
+        self.skip();
         match self.buffer.peek() {
             Some(&c) => match c {
                 'n' => self.parse_null(),
@@ -70,19 +71,51 @@ impl<'a> Parser<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub enum JsonValue {
     Number(f64),
     String(String),
     Bool(bool),
     Array(Vec<JsonValue>),
     Object(HashMap<String, JsonValue>),
+    #[default]
     Null,
 }
 
-impl Default for JsonValue {
-    fn default() -> Self {
-        JsonValue::Object(HashMap::new())
+impl JsonValue {
+    pub fn as_number(&self) -> Option<f64> {
+        match self {
+            JsonValue::Number(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn as_string(&self) -> Option<&str> {
+        match self {
+            JsonValue::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            JsonValue::Bool(b) => Some(*b),
+            _ => None,
+        }
+    }
+
+    pub fn as_array(&self) -> Option<&Vec<JsonValue>> {
+        match self {
+            JsonValue::Array(a) => Some(a),
+            _ => None,
+        }
+    }
+
+    pub fn as_object(&self) -> Option<&HashMap<String, JsonValue>> {
+        match self {
+            JsonValue::Object(o) => Some(o),
+            _ => None,
+        }
     }
 }
 
