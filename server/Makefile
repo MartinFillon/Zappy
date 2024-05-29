@@ -21,6 +21,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_cmd_line 		\
 						handle_nb_flags			\
 						handle_name_flag		\
+						log_level				\
 					)\
 					$(addprefix utils/,	\
 						free_box		\

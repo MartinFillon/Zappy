@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "internal.h"
 #include "logger.h"
@@ -52,4 +53,13 @@ void set_log_fd(int fd)
     struct logger_s *l = get_mut_logger();
 
     l->fd = fd;
+}
+
+void set_log_level_from_str(char const *str)
+{
+    for (__auto_type i = 0; LEVELS[i].str; i++)
+        if (strcmp(str, LEVELS[i].str) == 0)
+            return set_log_level(LEVELS[i].level);
+    set_log_level(ERROR_LEVEL);
+    logs(ERROR_LEVEL, "Unknown level setting back to default: ERROR\n");
 }

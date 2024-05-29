@@ -17,3 +17,4 @@ enum log_level {
 
 void logs(enum log_level level, char *fmt, ...);
 void set_log_level(enum log_level level);
+void set_log_level_from_str(char const *str);
