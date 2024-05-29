@@ -148,6 +148,6 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
             "Couldn't reach host.",
         ));
     }
-    command_handle::start_ai(client).await?;
+    // command_handle::start_ai(client).await?;
     Ok(())
 }

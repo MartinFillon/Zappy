@@ -24,7 +24,7 @@ fn read_output(raw: String) {
 
 pub async fn look_around(client: &mut TcpClient) -> Result<(), bool> {
     let response = client.check_dead("Look\n").await?;
-    read_output(response); // to implement
+    read_output(response);
 
     Ok(())
 }
