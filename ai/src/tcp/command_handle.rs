@@ -5,19 +5,18 @@
 // commands
 //
 
+use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
 
-use take_object::take_object;
-use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
-
-mod take_object;
+use tokio::io::{self};
 
 #[async_trait]
 pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, bool>;
     async fn check_dead(&mut self, command: &str) -> Result<String, bool>;
+    async fn handle_response(&mut self, response: String) -> Result<bool, bool>;
 }
 
 #[async_trait::async_trait]
@@ -39,19 +38,27 @@ impl CommandHandler for TcpClient {
         }
         Ok(response)
     }
+
+    async fn handle_response(&mut self, response: String) -> Result<bool, bool> {
+        match dbg!(response.as_str()) {
+            "ok\n" => Ok(true),
+            "error\n" => Ok(false),
+            _ => Ok(false),
+        }
+    }
 }
 
-pub async fn start_ai(client: TcpClient) -> io::Result<()> {
-    match take_object_two(client, "Linemate") {
+pub async fn start_ai(mut client: TcpClient) -> io::Result<()> {
+    match commands::take_object::take_object_two(&mut client, "Linemate").await {
         Ok(yo) => {
             if yo == true {
                 print!("yoo1");
             } else {
                 print!("nop1")
             }
-        },
+        }
         Err(no) => {
-            if yo == true {
+            if no == true {
                 print!("noo2")
             } else {
                 print!("ya!2")
