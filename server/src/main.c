@@ -27,7 +27,7 @@ int main(int ac, char const **av)
     args_infos_t args = {0};
 
     srand(time(NULL));
-    if (ac == 2 && strcmp(av[1], "-help") == 0) {
+    if (ac == 2 && (!strcmp(av[1], "--help") || !strcmp(av[1], "-h"))) {
         display_help();
         return SUCCESS;
     }
