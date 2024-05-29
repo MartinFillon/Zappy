@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use crate::commands;
+// use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
@@ -50,7 +50,8 @@ impl CommandHandler for TcpClient {
     }
 }
 
-pub async fn start_ai(mut client: TcpClient) -> io::Result<()> {
+#[warn(unused_mut)]
+pub async fn start_ai(mut _client: TcpClient) -> io::Result<()> {
     // commands here to test and such
     Ok(())
 }

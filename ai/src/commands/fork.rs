@@ -11,8 +11,5 @@ use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
 pub async fn fork(client: &mut TcpClient) -> bool {
-    match client.check_dead("Fork\n").await {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    client.check_dead("Fork\n").await.is_ok()
 }
