@@ -6,8 +6,6 @@
 */
 
 #include <unistd.h>
-#include "server.h"
-#include "types/client.h"
 
 #include "map.h"
 #include "types/map.h"

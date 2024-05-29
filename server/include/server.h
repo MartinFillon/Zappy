@@ -19,7 +19,7 @@ typedef struct server_s {
     fd_set read_fds;
     fd_set write_fds;
 
-    client_t clients[SOMAXCONN];
+    client_t clients[SOMAXCONN]; // Mettre dans zappy_t
 } server_t;
 
 /**

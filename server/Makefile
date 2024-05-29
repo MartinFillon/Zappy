@@ -27,6 +27,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						va_free			\
 						mod				\
 						vec_cmp 		\
+						is_empty 		\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
@@ -57,6 +58,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
+							handle_ais_info	\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -84,6 +86,9 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_look			\
 						handle_forward		\
 						handle_rotate		\
+						handle_broadcast 	\
+						handle_take_object 	\
+						handle_set_object 	\
 					)\
 				)\
 			)\

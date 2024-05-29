@@ -58,10 +58,12 @@ static void look_line(
     }
 }
 
-void handle_look(client_t *cli, game_t *game)
+void handle_look(char const *arg, client_t *cli, game_t *game)
 {
     pos_t pos = {cli->ai->pos.x, cli->ai->pos.y};
 
+    if (!is_empty(arg))
+        return send_client(cli, "ko\n");
     send_client(cli, "[");
     for (size_t i = 0; i <= cli->ai->level; i++) {
         look_line(&pos, i, cli, game->map);
