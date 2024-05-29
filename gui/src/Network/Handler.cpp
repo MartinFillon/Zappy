@@ -53,8 +53,8 @@ void Handler::sendMessage(const std::string &message)
 
 void Handler::run()
 {
-    std::cout << "Connecting to " << machine << " on port " << port << std::endl;
     std::string message;
+
     try {
         asio::ip::tcp::resolver resolver(io_context);
         asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(machine, std::to_string(port));
@@ -101,7 +101,8 @@ void Handler::receiveMessages()
                     line.pop_back();
                 }
                 std::scoped_lock lock(mutex);
-                std::cout << line << std::endl;
+                // debug print
+                // std::cout << line << std::endl;
                 mQ.push(line);
                 cv.notify_one();
                 data.erase(0, pos + 1);

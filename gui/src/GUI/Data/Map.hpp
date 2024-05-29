@@ -18,7 +18,7 @@ namespace GUI {
 namespace Data {
 class Map {
   public:
-    Map(int &x, int &y) : m_size(Pos<int, 2>({x, y})){};
+    Map(int x, int y) : m_size(Pos<int, 2>({x, y})){};
     Map(Pos<int, 2> &pos) : m_size(pos){};
     ~Map() = default;
 

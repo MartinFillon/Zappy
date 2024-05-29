@@ -9,8 +9,10 @@
 
 #include <raylib.h>
 #include <string>
+#include <memory>
 
 #include "../Network/Handler.hpp"
+#include "Data/Map.hpp"
 #include "ServerMessageHandler.hpp"
 
 namespace GUI {
@@ -23,11 +25,17 @@ class Display {
     ~Display();
     void run();
 
+    Data::Map &getMap()
+    {
+        return map;
+    }
+
   private:
     void handleServerMessage(std::string &message);
 
     Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
     bool debug;
+    Data::Map map;
 };
 }; // namespace GUI
