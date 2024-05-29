@@ -1,7 +1,10 @@
 use std::{collections::HashMap, iter::Peekable, str::Chars};
 
+mod array;
+mod bool;
 mod null;
 mod number;
+mod object;
 mod string;
 
 struct Parser<'a> {
@@ -32,6 +35,9 @@ impl<'a> Parser<'a> {
                 'n' => self.parse_null(),
                 '0'..='9' => self.parse_number(),
                 '"' => self.parse_string(),
+                '[' => self.parse_array(),
+                '{' => self.parse_object(),
+                't' | 'f' => self.parse_bool(),
                 _ => Err(ParserError::InvalidValue(self.buffer.clone().collect())),
             },
             None => Err(ParserError::UnexpectedEOF),
