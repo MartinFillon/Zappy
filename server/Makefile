@@ -120,7 +120,7 @@ $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
 	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS) $(LDLIBS)
 
-tests_run:	$(TEST_NAME)
+tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
 
 re: fclean all
