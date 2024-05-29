@@ -15,8 +15,5 @@ pub async fn move_up(client: &mut TcpClient) -> bool {
         Ok(res) => res,
         Err(_) => return false,
     };
-    match response.as_str() {
-        "ok\n" => true,
-        _ => false,
-    }
+    matches!(response.as_str(), "ok\n")
 }

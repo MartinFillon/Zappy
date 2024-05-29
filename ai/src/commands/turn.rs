@@ -25,8 +25,5 @@ pub async fn turn(client: &mut TcpClient, dir: Direction) -> bool {
         Ok(res) => res,
         Err(_) => return false,
     };
-    match response.as_str() {
-        "ok\n" => true,
-        _ => false,
-    }
+    matches!(response.as_str(), "ok\n")
 }
