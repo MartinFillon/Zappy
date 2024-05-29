@@ -7,6 +7,7 @@
 
 use std::process;
 
+pub mod commands;
 pub mod flags;
 pub mod tcp;
 
