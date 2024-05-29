@@ -24,6 +24,12 @@ struct buffer_s {
     size_t size;
 };
 
+typedef struct io_s {
+    struct buffer_s req;
+    struct buffer_s res;
+    bool is_ready;
+} io_t;
+
 typedef struct client_s {
     int fd;
     struct buffer_s buffer;

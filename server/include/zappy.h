@@ -13,6 +13,7 @@
 typedef struct zappy_s {
     game_t game;
     server_t server;
+    // Clients here
 } zappy_t;
 
 /**
