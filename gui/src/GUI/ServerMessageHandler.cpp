@@ -63,6 +63,7 @@ void ServerMessageHandler::handleMapSize(const std::string &message)
     iss >> width >> height;
     if (debug)
         std::cout << "Map size: " << width << "x" << height << std::endl;
+    display.getMap().resize(width, height);
 }
 
 void ServerMessageHandler::handleTileContent(const std::string &message)
