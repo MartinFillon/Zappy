@@ -95,6 +95,19 @@
                     ]
                 }
             ]
+        },
+        {
+            "mode": "Unset",
+            "name": "unset mode error",
+            "description": "Test unset mode error",
+            "commands": [
+                {
+                    "command": "a dumb command",
+                    "expected": [
+                        "ko"
+                    ]
+                }
+            ]
         }
     ]
 }

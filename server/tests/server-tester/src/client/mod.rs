@@ -2,11 +2,14 @@
 
 use std::collections::HashMap;
 
+use graphic::Graphic;
 use serde::Deserialize;
+use unset::Unset;
 
 use crate::{connection::Connection, server::ServerOptions, test::Test};
 
-pub mod graphic;
+mod graphic;
+mod unset;
 
 #[derive(Debug, Deserialize, Default, Clone, PartialEq, Eq)]
 pub enum Mode {
@@ -23,7 +26,7 @@ struct Position {
 }
 
 #[derive(Debug, Default)]
-pub struct Ai {
+struct Ai {
     position: Position,
     level: u32,
     inventory: HashMap<String, u32>,
@@ -67,8 +70,8 @@ impl Client for Ai {
 
 pub fn new_cli(mode: Mode) -> Box<dyn Client> {
     match mode {
-        Mode::Graphic => Box::new(graphic::Graphic::default()),
+        Mode::Graphic => Box::new(Graphic::default()),
         Mode::Ai(_) => Box::new(Ai::default()),
-        Mode::Unset => panic!("Mode not set"),
+        Mode::Unset => Box::new(Unset::default()),
     }
 }

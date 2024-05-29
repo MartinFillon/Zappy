@@ -10,7 +10,7 @@ use crate::{
 use super::{Ai, Client, Position};
 
 #[derive(Debug, Default)]
-pub struct Graphic {
+pub(super) struct Graphic {
     map_size: (u32, u32),
     teams: Vec<String>,
     eggs: HashMap<u32, Position>,

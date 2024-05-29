@@ -80,5 +80,6 @@ int unset_entrypoint(char const *line, client_t *c, game_t *game)
     for (size_t i = 0; i < game->teams->size; i++)
         if (strcmp(line, game->teams->data[i].name) == 0)
             return put_in_team(c, game, i);
+    send_client(c, "ko\n");
     return 1;
 }
