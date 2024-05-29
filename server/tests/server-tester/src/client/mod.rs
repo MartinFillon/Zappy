@@ -70,8 +70,8 @@ impl Client for Ai {
 
 pub fn new_cli(mode: Mode) -> Box<dyn Client> {
     match mode {
-        Mode::Graphic => Box::new(Graphic::default()),
-        Mode::Ai(_) => Box::new(Ai::default()),
-        Mode::Unset => Box::new(Unset::default()),
+        Mode::Graphic => Box::<Graphic>::default(),
+        Mode::Ai(_) => Box::<Ai>::default(),
+        Mode::Unset => Box::<Unset>::default(),
     }
 }

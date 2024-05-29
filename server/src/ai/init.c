@@ -17,7 +17,7 @@ static void send_infos(int fd, game_t *game, ai_t const *new)
 {
     dprintf(
         fd,
-        "%s\n%lu\n%lu %lu\n",
+        "%s\n%d\n%lu %lu\n",
         new->team->name,
         new->id,
         game->map->x,

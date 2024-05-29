@@ -72,6 +72,9 @@ fn main() -> Result<(), String> {
 
     run_tests(&opts, &svr_opts, tests.tests)?;
 
-    svr.map(|mut s| s.kill().unwrap());
+    svr.map(|mut s| {
+        s.kill().unwrap();
+        s
+    });
     Ok(())
 }
