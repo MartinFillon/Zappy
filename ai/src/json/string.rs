@@ -44,24 +44,40 @@ pub mod tests {
     #[test]
     fn basic_json_string() {
         let result: Result<JsonDocument, ParserError> = JsonDocument::try_from(r#""hello""#);
-        assert_eq!(result, Ok(JsonDocument(JsonValue::String("hello".to_string()))));
+        assert_eq!(
+            result,
+            Ok(JsonDocument(JsonValue::String("hello".to_string())))
+        );
     }
 
     #[test]
     fn json_string_with_escaped_characters() {
         let result: Result<JsonDocument, ParserError> = JsonDocument::try_from(r#""hello\nworld""#);
-        assert_eq!(result, Ok(JsonDocument(JsonValue::String("hello\nworld".to_string()))));
+        assert_eq!(
+            result,
+            Ok(JsonDocument(JsonValue::String("hello\nworld".to_string())))
+        );
     }
 
     #[test]
     fn json_string_with_escaped_quotes() {
-        let result: Result<JsonDocument, ParserError> = JsonDocument::try_from(r#""hello \"world\"""#);
-        assert_eq!(result, Ok(JsonDocument(JsonValue::String("hello \"world\"".to_string()))));
+        let result: Result<JsonDocument, ParserError> =
+            JsonDocument::try_from(r#""hello \"world\"""#);
+        assert_eq!(
+            result,
+            Ok(JsonDocument(JsonValue::String(
+                "hello \"world\"".to_string()
+            )))
+        );
     }
 
     #[test]
     fn json_string_with_escaped_backslashes() {
-        let result: Result<JsonDocument, ParserError> = JsonDocument::try_from(r#""hello \\world""#);
-        assert_eq!(result, Ok(JsonDocument(JsonValue::String("hello \\world".to_string()))));
+        let result: Result<JsonDocument, ParserError> =
+            JsonDocument::try_from(r#""hello \\world""#);
+        assert_eq!(
+            result,
+            Ok(JsonDocument(JsonValue::String("hello \\world".to_string())))
+        );
     }
 }
