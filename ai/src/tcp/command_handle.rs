@@ -5,6 +5,8 @@
 // commands
 //
 
+#![allow(dead_code)]
+
 use crate::commands;
 use crate::tcp::TcpClient;
 
@@ -49,21 +51,6 @@ impl CommandHandler for TcpClient {
 }
 
 pub async fn start_ai(mut client: TcpClient) -> io::Result<()> {
-    match commands::take_object::take_object(&mut client, "Linemate").await {
-        Ok(yo) => {
-            if yo == true {
-                print!("yoo1");
-            } else {
-                print!("nop1")
-            }
-        }
-        Err(no) => {
-            if no == true {
-                print!("noo2")
-            } else {
-                print!("ya!2")
-            }
-        }
-    }
+    // commands here to test and such
     Ok(())
 }
