@@ -49,7 +49,7 @@ impl CommandHandler for TcpClient {
 }
 
 pub async fn start_ai(mut client: TcpClient) -> io::Result<()> {
-    match commands::take_object::take_object_two(&mut client, "Linemate").await {
+    match commands::take_object::take_object(&mut client, "Linemate").await {
         Ok(yo) => {
             if yo == true {
                 print!("yoo1");
