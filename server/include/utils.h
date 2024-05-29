@@ -67,3 +67,21 @@ int modulo(int nb, int m);
  * @return true if success, false if error
  */
 [[nodiscard]] bool parse_number(char *restrict args, long *restrict n);
+
+
+
+/************************************************************************
+ * Those are vectors comparison functions used for vector functions that
+ * needs predicate as parameter
+ *
+ * NOTE: Whenever you need to define a predicate put the prototype here.
+*************************************************************************/
+
+/**
+ * @brief Compare 2 integers
+ *
+ * @param a first integer
+ * @param b second integer
+ * @return true if equal else false
+ */
+bool cmp_int(int a, int b);

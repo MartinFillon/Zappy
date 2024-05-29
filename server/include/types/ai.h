@@ -37,5 +37,5 @@ typedef struct {
     zclock_t *food_clock;
 
     bool alive;
-    size_t id;
+    int id;
 } ai_t;
