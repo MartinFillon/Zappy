@@ -82,43 +82,6 @@ pub enum JsonValue {
     Null,
 }
 
-impl JsonValue {
-    pub fn as_number(&self) -> Option<f64> {
-        match self {
-            JsonValue::Number(n) => Some(*n),
-            _ => None,
-        }
-    }
-
-    pub fn as_string(&self) -> Option<&str> {
-        match self {
-            JsonValue::String(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn as_bool(&self) -> Option<bool> {
-        match self {
-            JsonValue::Bool(b) => Some(*b),
-            _ => None,
-        }
-    }
-
-    pub fn as_array(&self) -> Option<&Vec<JsonValue>> {
-        match self {
-            JsonValue::Array(a) => Some(a),
-            _ => None,
-        }
-    }
-
-    pub fn as_object(&self) -> Option<&HashMap<String, JsonValue>> {
-        match self {
-            JsonValue::Object(o) => Some(o),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Debug, PartialEq)]
 pub struct JsonDocument(JsonValue);
 
