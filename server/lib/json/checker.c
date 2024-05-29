@@ -10,7 +10,7 @@
 
 static bool find_key(
     json_data_t const *this,
-    const str_t *key,
+    str_t const *key,
     types_t const type
 )
 {
