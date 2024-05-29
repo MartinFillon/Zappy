@@ -1,3 +1,10 @@
+//
+// EPITECH PROJECT, 2024
+// Zappy
+// File description:
+// mod
+//
+
 use std::{collections::HashMap, iter::Peekable, str::Chars};
 
 mod array;
@@ -11,6 +18,7 @@ struct Parser<'a> {
     buffer: Peekable<Chars<'a>>,
     current: JsonValue,
     key: String,
+    buffer_str: String,
 }
 
 #[derive(Debug, PartialEq)]
@@ -23,6 +31,7 @@ pub enum ParserError {
 impl<'a> Parser<'a> {
     fn new(input: &'a str) -> Self {
         Parser {
+            buffer_str: input.to_string(),
             current: JsonValue::default(),
             buffer: input.chars().peekable(),
             key: String::new(),
