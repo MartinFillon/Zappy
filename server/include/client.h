@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "server.h"
 #include "types/client.h"
 
 /**
@@ -75,11 +74,11 @@ void close_client(client_t *c);
 /**
  * @brief Make an ai eat
  *
- * @param cli the client structure
- * @param server the server structure
+ * @param cli the client that will eat.
+ * @param clients All the clients connected in the server.
  * @param n the number of the client
  */
-void make_ai_eat(client_t *cli, server_t *server, int n);
+void make_ai_eat(client_t *cli, client_t *clients, int n);
 
 /**
  * @brief init the ai
