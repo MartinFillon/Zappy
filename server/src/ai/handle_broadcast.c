@@ -11,9 +11,9 @@
 #include "types/client.h"
 #include "client.h"
 
-static inline bool valid_client(client_t *cli1, client_t *cli2)
+static bool valid_client(client_t *to_check, client_t *banned)
 {
-    return cli1->fd != 0 && cli1->ai->id != cli2->ai->id;
+    return to_check->fd != 0 && to_check->ai->id != banned->ai->id;
 }
 
 static void send_to_everyone(char const *msg, client_t *clients, client_t *cli)
