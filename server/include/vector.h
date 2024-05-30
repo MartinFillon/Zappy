@@ -74,16 +74,64 @@ static inline void FN_NAME(vec_pushback, NAME)(
 
 /**
 ** @brief remove last elem in a vector
-** @param the vector to remove from
+** @param vec vector to remove from
 **/
 static inline void FN_NAME(vec_popback, NAME)(struct NAME *vec)
 {
-    if (vec->size == vec->capacity) {
-        vec->capacity *= 2;
-        vec->data = (TYPE *)realloc(vec->data, vec->capacity * sizeof(TYPE));
-    }
     vec->size--;
     memset(&vec->data[vec->size], 0, sizeof(TYPE));
+}
+
+/**
+** @brief remove an element of the vector at the index @param idx
+** @param vec vector where we will remove an element
+** @param idx index of the element to be removed
+** @return bool if the operation was successfull
+**/
+static inline bool FN_NAME(vec_erase_at, NAME)(struct NAME *vec, size_t idx)
+{
+    if (idx >= vec->size) {
+        return false;
+    }
+    memmove(
+        &vec->data + idx,
+        vec->data + (idx + 1),
+        (vec->size - (idx + 1)) * sizeof(TYPE)
+    );
+    vec->size--;
+    return true;
+}
+
+/**
+** @brief remove an element @param elem of the vector if it exist
+** @param vec vector where we will remove an element
+** @param elem element to be removed
+** @param cmp comparison function used as predicate
+**            to check which value to delete
+** @return bool if the operation was successfull
+**/
+static inline bool FN_NAME(vec_erase, NAME)(
+    struct NAME *vec,
+    TYPE elem,
+    bool (*cmp) (TYPE, TYPE)
+)
+{
+    for (size_t i = 0; i < vec->size; i++) {
+        if (cmp(vec->data[i], elem)) {
+            return FN_NAME(vec_erase_at, NAME)(vec, i);
+        }
+    }
+    return false;
+}
+
+static inline void FN_NAME(vec_foreach, NAME)(
+    struct NAME *vec,
+    void (*func) (TYPE *)
+)
+{
+    for (size_t i = 0; i < vec->size; i++) {
+        func(vec->data + i);
+    }
 }
 
     #undef TYPE

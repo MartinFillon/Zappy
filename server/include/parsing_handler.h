@@ -71,6 +71,8 @@ bool parse_frequency(char const **av, size_t *idx, args_infos_t *args);
  */
 bool parse_names(char const **av, size_t *idx, args_infos_t *args);
 
+bool parse_log_level(char const **av, size_t *idx, args_infos_t *args);
+
 static const flags_handler_t handlers[] = {
     {"-p", parse_port},
     {"-x", parse_width},
@@ -78,5 +80,6 @@ static const flags_handler_t handlers[] = {
     {"-n", parse_names},
     {"-c", parse_clients_nb},
     {"-f", parse_frequency},
+    {"-l", parse_log_level},
     {NULL, NULL}
 };

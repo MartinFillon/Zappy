@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "logger.h"
 #include "server.h"
 #include "types/client.h"
 #include "utils.h"
@@ -23,7 +24,7 @@ static int handle_buffer_internal(size_t idx, client_t *c, game_t *game)
     free(c->buffer.buffer);
     c->buffer.buffer = tmp;
     c->buffer.size = strlen(tmp);
-    logger_info("Client %d sent command: %s\n", c->fd, com);
+    logs(INFO, "Client %d sent command: %s\n", c->fd, com);
     c->entrypoint(com, c, game);
     return handle_buffer(c, game);
 }

@@ -10,9 +10,9 @@
 #include <sys/socket.h>
 
 #include "client.h"
+#include "logger.h"
 #include "macros.h"
 #include "server.h"
-#include "utils.h"
 
 static int fill_client(server_t *s, int fd, struct sockaddr_in *addr)
 {
@@ -20,7 +20,8 @@ static int fill_client(server_t *s, int fd, struct sockaddr_in *addr)
         if (s->clients[i].fd == 0) {
             init_client(&s->clients[i], fd);
             send_client(&s->clients[i], "WELCOME\n");
-            logger_info(
+            logs(
+                INFO,
                 "New client %s:%d with fd %d\n",
                 inet_ntoa(addr->sin_addr),
                 ntohs(addr->sin_port),
@@ -39,7 +40,7 @@ int accept_new_client(server_t *s)
     int fd = accept(s->fd, (struct sockaddr *)&addr, &addr_size);
 
     if (fd == -1) {
-        logger_error("Accept failed\n");
+        logs(ERROR, "Accept failed\n");
         return ERROR;
     }
     return fill_client(s, fd, &addr);
