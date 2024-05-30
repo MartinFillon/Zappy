@@ -7,8 +7,14 @@
 
 #include "client.h"
 
-void map_size(char *args, client_t *cli, game_t *game)
+void map_size(
+    char *args,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
+    (void) clients;
     if (cli->type != GUI)
         return;
     if (args[0] != '\0') {

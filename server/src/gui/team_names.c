@@ -9,8 +9,14 @@
 #include "client.h"
 #include "types/client.h"
 
-void team_names(char *args, client_t *c, game_t *g)
+void team_names(
+    char *args,
+    client_t *c,
+    game_t *g,
+    client_t *clients
+)
 {
+    (void) clients;
     if (c->type != GUI)
         return;
     if (args[0] != '\0')

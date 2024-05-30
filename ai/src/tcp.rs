@@ -15,6 +15,8 @@ use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
 use tokio::task::JoinHandle;
 
+pub mod command_handle;
+
 pub struct TcpClient {
     addr: String,
     request_sender: Option<Sender<String>>,
@@ -64,7 +66,7 @@ impl TcpClient {
         } else {
             Err(io::Error::new(
                 io::ErrorKind::NotConnected,
-                "Not connected to server",
+                "Not connected to server.",
             ))
         }
     }
@@ -129,7 +131,7 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {
-        print!("Response: {}", response);
+        print!("server> {}", response);
     } else {
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
@@ -139,12 +141,13 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
 
     client.send_request(team + "\n").await?;
     if let Some(response) = client.get_response().await {
-        print!("Response: {}", response);
+        print!("server> {}", response);
     } else {
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
         ));
     }
+    // command_handle::start_ai(client).await?;
     Ok(())
 }

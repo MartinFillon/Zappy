@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "types/map.h"
+#include "types/object.h"
 
 static void drop_food(map_t *map, size_t x, size_t y)
 {

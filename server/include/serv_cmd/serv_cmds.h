@@ -16,8 +16,12 @@ typedef struct serv_cmds_s {
 } serv_cmds_t;
 
 void handle_display_map(zappy_t *z);
+void handle_display_ais(zappy_t *z);
+void handle_ressources_ais(zappy_t *z);
 
 static const serv_cmds_t SERV_CMDS[] = {
     {"display", handle_display_map},
+    {"ais", handle_display_ais},
+    {"res-ais", handle_ressources_ais},
     {NULL, NULL}
 };

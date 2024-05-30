@@ -5,25 +5,24 @@
 ** handle_look
 */
 
-
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "client.h"
 #include "map.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/map.h"
 #include "utils.h"
-#include "client.h"
 #include "ai/ai_cmds.h"
 
-static void update_start(pos_t *pos, enum Direction dir)
+static void update_start(pos_t *pos, enum direction dir)
 {
     pos->y += (dir == UP || dir == RIGHT) ? -1 : 1;
     pos->x += (dir == UP || dir == LEFT) ? -1 : 1;
 }
 
-static void init_add_pos(pos_t *pos, enum Direction dir)
+static void init_add_pos(pos_t *pos, enum direction dir)
 {
     if (dir == LEFT)
         pos->y = -1;
@@ -58,10 +57,18 @@ static void look_line(
     }
 }
 
-void handle_look(client_t *cli, game_t *game)
+void handle_look(
+    char const *arg,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
     pos_t pos = {cli->ai->pos.x, cli->ai->pos.y};
 
+    (void) clients;
+    if (!is_empty(arg))
+        return send_client(cli, "ko\n");
     send_client(cli, "[");
     for (size_t i = 0; i <= cli->ai->level; i++) {
         look_line(&pos, i, cli, game->map);

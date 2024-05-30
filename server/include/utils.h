@@ -37,6 +37,14 @@ int modulo(int nb, int m);
 [[nodiscard]] bool parse_number(char *restrict args, long *restrict n);
 
 
+/**
+ * @brief Check if there is not any args
+ *
+ * @param arg the string parameter to check
+ * @return true if string is empty
+ */
+bool is_empty(char const *arg);
+
 
 /************************************************************************
  * Those are vectors comparison functions used for vector functions that

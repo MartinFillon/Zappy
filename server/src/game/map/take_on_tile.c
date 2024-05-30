@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "types/map.h"
+#include "types/object.h"
 
 static bool take_food(map_t *map, size_t x, size_t y)
 {

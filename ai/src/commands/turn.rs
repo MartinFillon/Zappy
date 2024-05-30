@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 
+use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
 pub enum Direction {
@@ -17,21 +18,12 @@ pub enum Direction {
 const DIRECTIONS: [&str; 2] = ["Left", "Right"];
 
 pub async fn turn(client: &mut TcpClient, dir: Direction) -> bool {
-    if client
-        .send_request(String::from(DIRECTIONS[dir as usize]) + "\n")
+    let response = match client
+        .check_dead(&format!("{}\n", DIRECTIONS[dir as usize]))
         .await
-        .is_err()
     {
-        return false;
-    }
-    match client.get_response().await {
-        Some(res) => {
-            print!("{res}");
-            if res == "dead\n" {
-                return false;
-            }
-        }
-        None => return false,
-    }
-    true
+        Ok(res) => res,
+        Err(_) => return false,
+    };
+    matches!(response.as_str(), "ok\n")
 }

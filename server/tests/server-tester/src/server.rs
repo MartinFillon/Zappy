@@ -9,14 +9,14 @@ use std::{
 };
 
 #[derive(Debug, Clone, Deserialize)]
-struct ServerOptions {
-    port: u32,
-    x: u32,
-    y: u32,
-    teams: Vec<String>,
-    count_per_team: u32,
-    frequency: u32,
-    path: Option<String>,
+pub struct ServerOptions {
+    pub port: u32,
+    pub x: u32,
+    pub y: u32,
+    pub teams: Vec<String>,
+    pub count_per_team: u32,
+    pub frequency: u32,
+    pub path: Option<String>,
 }
 
 impl Default for ServerOptions {
@@ -35,21 +35,21 @@ impl Default for ServerOptions {
 
 pub struct Server {
     process: Child,
+    options: ServerOptions,
 }
 
 impl ServerOptions {
-    fn new(path: Option<String>) -> Result<Self, String> {
-        if path.is_none() {
-            return Ok(ServerOptions::default());
-        }
-        let file = File::open(path.unwrap());
-        if file.is_ok() {
-            let file = file.unwrap();
-            let reader = BufReader::new(file);
-            from_reader(reader).map_err(|e| e.to_string())
-        } else {
-            Ok(ServerOptions::default())
-        }
+    pub fn new(path: Option<String>) -> Result<Self, String> {
+        path.map_or(Ok(ServerOptions::default()), |p| {
+            let file = File::open(p);
+            if file.is_ok() {
+                let file = file.unwrap();
+                let reader = BufReader::new(file);
+                from_reader(reader).map_err(|e| e.to_string())
+            } else {
+                Ok(ServerOptions::default())
+            }
+        })
     }
 
     fn run(&self, bin: Option<String>) -> Result<Server, String> {
@@ -72,17 +72,24 @@ impl ServerOptions {
             .arg("-f")
             .arg(format!("{}", self.frequency))
             .spawn()
-            .map(|process| Server { process })
+            .map(|process| Server {
+                process,
+                options: self.clone(),
+            })
             .map_err(|e| e.to_string())
     }
 }
 
 impl Server {
-    pub fn new(path: Option<String>, binary: Option<String>) -> Result<Self, String> {
-        ServerOptions::new(path).and_then(|options| options.run(binary))
+    pub fn new(options: &ServerOptions, binary: Option<String>) -> Result<Self, String> {
+        options.run(binary)
     }
 
     pub fn kill(&mut self) -> Result<(), String> {
         self.process.kill().map_err(|e| e.to_string())
+    }
+
+    pub fn get_options(&self) -> &ServerOptions {
+        &self.options
     }
 }
