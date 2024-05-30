@@ -5,25 +5,24 @@
 ** handle_look
 */
 
-
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "client.h"
 #include "map.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/map.h"
 #include "utils.h"
-#include "client.h"
 #include "ai/ai_cmds.h"
 
-static void update_start(pos_t *pos, enum Direction dir)
+static void update_start(pos_t *pos, enum direction dir)
 {
     pos->y += (dir == UP || dir == RIGHT) ? -1 : 1;
     pos->x += (dir == UP || dir == LEFT) ? -1 : 1;
 }
 
-static void init_add_pos(pos_t *pos, enum Direction dir)
+static void init_add_pos(pos_t *pos, enum direction dir)
 {
     if (dir == LEFT)
         pos->y = -1;

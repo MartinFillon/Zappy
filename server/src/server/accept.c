@@ -13,6 +13,8 @@
 #include "logger.h"
 #include "macros.h"
 #include "server.h"
+#include "types/client.h"
+#include "utils.h"
 
 static int fill_client(
     client_t *clients,
@@ -24,8 +26,7 @@ static int fill_client(
         if (clients[i].fd == 0) {
             init_client(&clients[i], fd);
             send_client(&clients[i], "WELCOME\n");
-            logs(
-                INFO,
+            logs(INFO,
                 "New client %s:%d with fd %d\n",
                 inet_ntoa(addr->sin_addr),
                 ntohs(addr->sin_port),

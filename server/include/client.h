@@ -105,4 +105,12 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
  * @param team the team structure
  * @return true if success, false if error
  */
-bool init_ai(game_t *game, client_t *client, team_t const *team);
+bool init_ai(game_t *game, client_t *client, team_t *team);
+
+/**
+ * @brief Broadcast a message to all fds
+ *
+ * @param v the vector of fds
+ * @param fmt the message to send
+ */
+void broadcast(struct vector_int *v, char *fmt, ...);
