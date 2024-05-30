@@ -37,7 +37,6 @@ json_data_t *json_parse(str_t *str)
 {
     json_parser_t p = {NULL, str_snew(" "), 0, str};
 
-    dprintf(1, "%s\n", str->data);
     parse_value(&p);
     free(p.current_key->data);
     free(p.current_key);

@@ -33,7 +33,7 @@ void logs(enum log_level level, char *fmt, ...)
 
     if (logger->level == DISABLE)
         return;
-    if (logger->level >= level && level >= INFO && level <= DEBUG) {
+    if (logger->level >= level && level >= ERROR_LEVEL && level <= DEBUG) {
         va_start(l, fmt);
         dprintf(logger->fd, "[%s]: ", logger->names[level]);
         vdprintf(logger->fd, fmt, l);

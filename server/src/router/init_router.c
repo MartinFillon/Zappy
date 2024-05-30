@@ -13,7 +13,7 @@
 
 static str_t *get_path(str_t const *name)
 {
-    str_t *path = str_snew("config/router/");
+    str_t *path = str_snew("server/config/router/");
 
     str_sadd(path, name);
     str_scadd(path, ".json");
@@ -32,8 +32,8 @@ static void load_routes(struct vec_json_t *routes, struct router *router)
         current = get_path(routes->data[i]->data.str);
         if (!current)
             continue;
-        logs(INFO, "%s\n", str_cstr(current));
-        // load_route(router, current);
+        logs(INFO, "%s\n", current->data);
+        load_route(router, current);
         va_free(2, current->data, current);
     }
     (void)router;
@@ -41,7 +41,6 @@ static void load_routes(struct vec_json_t *routes, struct router *router)
 
 struct router *init_router(char const *file)
 {
-    logs(DEBUG, "Initing with file %s\n", file);
     struct router *router = vec_create_router(10);
     json_data_t *json = json_from_file(file);
     str_t *route_key = str_snew("routes");
@@ -50,8 +49,9 @@ struct router *init_router(char const *file)
         logs(ERROR_LEVEL, "ROUTER INIT ERROR\n");
         return NULL;
     }
-    logs(DEBUG, "JSON read\n");
     load_routes(json_get_array(json, route_key), router);
+    logs(INFO, "Router successfully inited\n");
+    va_free(2, route_key->data, route_key);
     json_free(json);
     return router;
 }

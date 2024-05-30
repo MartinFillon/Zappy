@@ -14,6 +14,10 @@ typedef struct {
     size_t capacity;
 } str_t;
 
+#define TYPE str_t *
+#define NAME vector_str_t
+#include "vector.h"
+
 /**
 ** @brief create a str
 ** @param the base string to use as data
@@ -52,3 +56,5 @@ str_t *str_dup(str_t const *str);
 void str_scadd(str_t *this, char const *s);
 void str_sadd(str_t *this, str_t const *s);
 char *str_cstr(str_t const *s);
+struct vector_str_t *split(char *s, char *delim);
+void str_free(str_t *s);

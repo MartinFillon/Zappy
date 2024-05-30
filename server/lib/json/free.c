@@ -22,7 +22,7 @@ static void free_not_allowed(json_data_t *s)
 
 static void free_arr(json_data_t *s)
 {
-    for (__auto_type i = 0ul; s->data.arr->size; i++)
+    for (__auto_type i = 0ul; i < s->data.arr->size; i++)
         json_free(s->data.arr->data[i]);
     free(s->data.arr->data);
     free(s->data.arr);
