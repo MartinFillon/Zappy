@@ -5,12 +5,13 @@
 ** handle_ais_info
 */
 
+#include "logger.h"
 #include "zappy.h"
-#include "utils.h"
 
 static void display_ai(ai_t *ai)
 {
-    logger_info(
+    logs(
+        INFO,
         "AI [%d][Team: %s] (%s) pos (%d, %d) | level %d\n",
         ai->id,
         ai->team->name,
@@ -25,7 +26,8 @@ static void display_ai_ressources(ai_t *ai)
 {
     inventory_t *inventory = &ai->inventory;
 
-    logger_info(
+    logs(
+        INFO,
         "AI [%d][Team: %s] (%s)\n"
         "Ressources: %d %d %d %d %d %d %d\n",
         ai->id,
