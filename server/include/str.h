@@ -48,3 +48,7 @@ int str_cmp(str_t const *this, str_t const *other);
 
 str_t *str_new(size_t size);
 str_t *str_dup(str_t const *str);
+
+void str_scadd(str_t *this, char const *s);
+void str_sadd(str_t *this, str_t const *s);
+char *str_cstr(str_t const *s);

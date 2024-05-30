@@ -8,7 +8,7 @@
 #include <string.h>
 #include "str.h"
 
-void str_scadd(str_t *this, char *s)
+void str_scadd(str_t *this, char const *s)
 {
     size_t len = strlen(s);
 

@@ -9,6 +9,8 @@ CC = gcc
 
 SRC =   str/str.c\
 		str/new.c\
+		str/add.c\
+		str/convert.c\
 		json/parser.c\
 		json/utils.c\
 		json/types/array.c\
