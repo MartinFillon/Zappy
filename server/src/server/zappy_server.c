@@ -22,11 +22,17 @@
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
-    if (z->clients[i].fd != 0 &&
-        FD_ISSET(z->clients[i].fd, &z->server.read_fds)) {
-        if (read_client(&z->clients[i]) == ERROR) {
+    if (z->clients[i].fd == 0)
+        return;
+    if (FD_ISSET(z->clients[i].fd, &z->server.read_fds)) {
+        if (read_client(&z->clients[i]) == ERROR)
             close_client(&z->clients[i]);
-        }
+    }
+    if (FD_ISSET(z->clients[i].fd, &z->server.write_fds)
+        && z->clients[i].io.is_ready) {
+        z->clients[i].io.is_ready = false;
+        if (z->clients[i].io.res.size != 0)
+            send_client(&z->clients[i], z->clients[i].io.res.buffer);
     }
 }
 
@@ -69,6 +75,9 @@ static void fill_fd_set(zappy_t *z)
         if (z->clients[i].fd != 0) {
             FD_SET(z->clients[i].fd, &z->server.read_fds);
         }
+        if (z->clients[i].fd != 0 && z->clients[i].io.is_ready) {
+            FD_SET(z->clients[i].fd, &z->server.write_fds);
+        }
     }
 }
 
@@ -76,7 +85,7 @@ static void exec_clients(zappy_t *z)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
         if (z->clients[i].fd != 0 &&
-            z->clients[i].buffer.size > 0) {
+            z->clients[i].io.req.size > 0) {
             handle_buffer(&z->clients[i], &z->game, z->clients);
         }
     }

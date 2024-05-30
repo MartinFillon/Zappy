@@ -24,6 +24,7 @@ struct buffer_s {
     size_t size;
 };
 
+// Next step is putting a queue on request
 typedef struct io_s {
     struct buffer_s req;
     struct buffer_s res;
@@ -32,7 +33,7 @@ typedef struct io_s {
 
 typedef struct client_s {
     int fd;
-    struct buffer_s buffer;
+    io_t io;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
     int (*entrypoint)(
