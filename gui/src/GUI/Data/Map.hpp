@@ -32,7 +32,7 @@ class Map {
         return m_map.at(y * x + x);
     };
 
-    std::vector<Player> getPlayers() const
+    std::vector<Player> &getPlayers()
     {
         return m_players;
     };
