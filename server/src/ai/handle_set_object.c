@@ -53,12 +53,18 @@ static void set_object_down(
     send_client(cli, "ok\n");
 }
 
-void handle_set_object(char const *arg, client_t *cli, game_t *game)
+void handle_set_object(
+    char const *arg,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
     map_t *map = game->map;
 
     if (is_empty(arg))
         return send_client(cli, "ko\n");
+    (void) clients;
     for (size_t i = 0; i < NB_OBJ; i++) {
         if (strcmp(arg, all_obj[i].name) == 0) {
             set_object_down(cli, map, &all_obj[i]);

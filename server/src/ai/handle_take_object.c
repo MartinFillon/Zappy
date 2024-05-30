@@ -41,10 +41,16 @@ static void take_object_down(
     }
 }
 
-void handle_take_object(char const *arg, client_t *cli, game_t *game)
+void handle_take_object(
+    char const *arg,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
     map_t *map = game->map;
 
+    (void) clients;
     if (is_empty(arg))
         return send_client(cli, "ko\n");
     for (size_t i = 0; i < NB_OBJ; i++) {

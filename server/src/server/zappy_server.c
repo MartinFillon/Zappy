@@ -77,7 +77,7 @@ static void exec_clients(zappy_t *z)
     for (int i = 0; i < SOMAXCONN; i++) {
         if (z->clients[i].fd != 0 &&
             z->clients[i].buffer.size > 0) {
-            handle_buffer(&z->clients[i], &z->game);
+            handle_buffer(&z->clients[i], &z->game, z->clients);
         }
     }
 }
