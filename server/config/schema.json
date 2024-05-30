@@ -3,5 +3,6 @@
     "description": "a schema to describe a route",
     "command": "the command to receive",
     "callback": "the function to be called",
-    "mode": "the mode to be used (AI, GUI)"
+    "mode": "the mode to be used (AI, GUI)",
+    "duration": 0
 }

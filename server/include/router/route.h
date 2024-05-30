@@ -21,9 +21,5 @@ typedef struct {
     callback_t f;
 } route_t;
 
-#define TYPE route_t *
-#define NAME router
-#include "vector.h"
-
 enum client_type_e get_mode(char const *mode);
 callback_t get_callback(char const *name);
