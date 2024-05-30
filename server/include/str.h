@@ -56,5 +56,5 @@ str_t *str_dup(str_t const *str);
 void str_scadd(str_t *this, char const *s);
 void str_sadd(str_t *this, str_t const *s);
 char *str_cstr(str_t const *s);
-struct vector_str_t *split(char *s, char *delim);
+struct vector_str_t *str_split(str_t *s, char *delim);
 void str_free(str_t *s);

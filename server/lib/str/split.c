@@ -8,9 +8,9 @@
 #include "str.h"
 #include "vector.h"
 
-struct vector_str_t *split(char *s, char *delim)
+struct vector_str_t *str_split(str_t *s, char *delim)
 {
-    char *tmp = strtok(s, delim);
+    char *tmp = strtok(s->data, delim);
     struct vector_str_t *v = vec_create_vector_str_t(10);
 
     while (tmp) {

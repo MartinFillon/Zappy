@@ -40,7 +40,7 @@ int main(int ac, char const **av)
     // my_free_box(args.names);
     // logs(INFO, "Server stopped\n");
     struct router *r = init_router("server/config/router.json");
-    run_router(r, strdup("msz hello"));
+    run_router(r, str_snew("msz hello"));
     destroy_router(r);
     return SUCCESS;
 }

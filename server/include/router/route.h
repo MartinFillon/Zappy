@@ -11,7 +11,13 @@
 #include "types/client.h"
 #include "types/game.h"
 
-typedef void (*callback_t)(char *, client_t *, game_t *, client_t const *);
+typedef struct {
+    struct vector_str_t *args;
+    client_t *clients;
+    game_t *game;
+} command_state_t;
+
+typedef void (*callback_t)(client_t *, command_state_t *);
 
 typedef struct {
     str_t *name;

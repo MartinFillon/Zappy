@@ -5,6 +5,7 @@
 ** callback
 */
 
+#include "logger.h"
 #include "router/callbacks.h"
 #include "router/route.h"
 #include "types/client.h"
@@ -19,7 +20,8 @@ callback_t get_callback(char const *name)
     return NULL;
 }
 
-void placeholder(char *, client_t *, game_t *, const client_t *)
+void placeholder(client_t *, command_state_t *s)
 {
+    logs(INFO, "Placeholder %d\n", s->args->size);
     return;
 }

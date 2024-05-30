@@ -17,12 +17,7 @@ struct callback_map_s {
     callback_t f;
 };
 
-void placeholder(
-    char *,
-    client_t *,
-    game_t *,
-    client_t const *
-);
+void placeholder(client_t *, command_state_t *);
 
 static const struct callback_map_s CALLBACKS[] = {
     {"map_size", &placeholder},
