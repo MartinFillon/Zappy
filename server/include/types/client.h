@@ -35,5 +35,10 @@ typedef struct client_s {
     struct buffer_s buffer;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
-    int (*entrypoint)(char const *, struct client_s *, game_t *);
+    int (*entrypoint)(
+        char const *,
+        struct client_s *,
+        game_t *,
+        struct client_s *
+    );
 } client_t;

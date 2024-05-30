@@ -10,10 +10,16 @@
 #include "client.h"
 
 // Send to everyone the message and set the distance broadcast sound.
-void handle_broadcast(char const *arg, client_t *cli, game_t *game)
+void handle_broadcast(
+    char const *arg,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
     struct vector_ai_t *ais = game->ais;
 
+    (void) clients;
     (void) ais;
     if (is_empty(arg))
         return send_client(cli, "ko\n");

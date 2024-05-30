@@ -42,10 +42,16 @@ static void move_x(ai_t *ai, map_t *map)
     vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
-void handle_forward(char const *arg, client_t *cli, game_t *game)
+void handle_forward(
+    char const *arg,
+    client_t *cli,
+    game_t *game,
+    client_t *clients
+)
 {
     ai_t *ai = cli->ai;
 
+    (void) clients;
     if (!is_empty(arg))
         return send_client(cli, "ko\n");
     if (ai->dir == UP || ai->dir == DOWN) {
