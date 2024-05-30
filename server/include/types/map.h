@@ -12,16 +12,6 @@
 
 #include "vector.h"
 
-enum object_e {
-    FOOD,
-    LINEMATE,
-    DERAUMERE,
-    SIBUR,
-    MENDIANE,
-    PHIRAS,
-    THYSTAME,
-};
-
 struct tile_s {
     struct vector_int *players;
 

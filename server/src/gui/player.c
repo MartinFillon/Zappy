@@ -33,10 +33,16 @@ static void send_infos(client_t *c, ai_t *ai, size_t nb)
     );
 }
 
-void player_position(char *args, client_t *c, game_t *g)
+void player_position(
+    char *args,
+    client_t *c,
+    game_t *g,
+    client_t *clients
+)
 {
     long nb = -1;
 
+    (void) clients;
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
@@ -44,10 +50,16 @@ void player_position(char *args, client_t *c, game_t *g)
     return send_infos(c, &g->ais->data[nb], nb);
 }
 
-void player_level(char *args, client_t *c, game_t *g)
+void player_level(
+    char *args,
+    client_t *c,
+    game_t *g,
+    client_t *clients
+)
 {
     long nb = -1;
 
+    (void) clients;
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
@@ -73,10 +85,16 @@ static void send_inventory(client_t *c, ai_t *ai, size_t nb)
     );
 }
 
-void player_inventory(char *args, client_t *c, game_t *g)
+void player_inventory(
+    char *args,
+    client_t *c,
+    game_t *g,
+    client_t *clients
+)
 {
     long nb = -1;
 
+    (void) clients;
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)

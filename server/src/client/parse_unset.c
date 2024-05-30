@@ -23,8 +23,14 @@ static int put_in_team(client_t *c, game_t *game, size_t i)
     return 0;
 }
 
-int unset_entrypoint(char const *line, client_t *c, game_t *game)
+int unset_entrypoint(
+    char const *line,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+)
 {
+    (void) clients;
     if (strcmp(line, "GRAPHIC") == 0) {
         logs(INFO, "Client %d is a GUI\n", c->fd);
         c->type = GUI;

@@ -48,13 +48,19 @@ static bool get_tile_pos(char *arg, long *x, long *y)
     return true;
 }
 
-void map_content_tile(char *args, client_t *c, game_t *game)
+void map_content_tile(
+    char *args,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+)
 {
     char *x = strtok(args, " \t");
     char *y = strtok(NULL, " \t");
     long px = 0;
     long py = 0;
 
+    (void) clients;
     if (c->type != GUI)
         return;
     if (strtok(NULL, " \t") != NULL || x == NULL || y == NULL) {
@@ -68,8 +74,14 @@ void map_content_tile(char *args, client_t *c, game_t *game)
     get_and_send_tile(px, py, game->map, c);
 }
 
-void map_content_full(char *args, client_t *c, game_t *game)
+void map_content_full(
+    char *args,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+)
 {
+    (void) clients;
     if (c->type != GUI)
         return;
     if (args[0] != '\0') {

@@ -24,10 +24,21 @@ struct buffer_s {
     size_t size;
 };
 
+typedef struct io_s {
+    struct buffer_s req;
+    struct buffer_s res;
+    bool is_ready;
+} io_t;
+
 typedef struct client_s {
     int fd;
     struct buffer_s buffer;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
-    int (*entrypoint)(char const *, struct client_s *, game_t *);
+    int (*entrypoint)(
+        char const *,
+        struct client_s *,
+        game_t *,
+        struct client_s *
+    );
 } client_t;

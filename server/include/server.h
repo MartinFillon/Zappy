@@ -18,8 +18,6 @@ typedef struct server_s {
     int fd;
     fd_set read_fds;
     fd_set write_fds;
-
-    client_t clients[SOMAXCONN];
 } server_t;
 
 /**
@@ -42,15 +40,17 @@ int loop_server(args_infos_t *args);
  * @brief Accept a new client
  *
  * @param s the server structure
+ * @param clients All the clients connected.
  * @return int 0 if success, 84 if error
  */
-int accept_new_client(server_t *s);
+int accept_new_client(server_t *s, client_t *clients);
 
 /**
  * @brief Handle the buffer
  *
  * @param c the client structure
  * @param game the game structure
+ * @param c All the clients connected
  * @return int 0 if success, 84 if error
  */
-int handle_buffer(client_t *c, game_t *game);
+int handle_buffer(client_t *c, game_t *game, client_t *clients);

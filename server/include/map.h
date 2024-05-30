@@ -8,6 +8,7 @@
 #pragma once
 
 #include "types/map.h"
+#include "types/object.h"
 
 /**
  * @brief Create a map object
@@ -43,6 +44,16 @@ void destroy_map(map_t *map);
  * @return false if the object was not taken
  */
 bool take_item(map_t *map, size_t x, size_t y, enum object_e obj);
+
+/**
+ * @brief Drop an item on a tile
+ *
+ * @param map the map object
+ * @param x x position of the tile
+ * @param y y position of the tile
+ * @param obj the object to drop
+ */
+void drop_item(map_t *map, size_t x, size_t y, enum object_e obj);
 
 /**
  * @brief Display the map in stdout

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "server.h"
 #include "types/client.h"
 
 /**
@@ -41,9 +40,15 @@ int read_client(client_t *client);
  * @param line the command to execute
  * @param c the client structure
  * @param game the game structure
+ * @param clients All the clients connected.
  * @return int 0 if success, 84 if error
  */
-int ai_entrypoint(char const *line, client_t *c, game_t *game);
+int ai_entrypoint(
+    char const *line,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+);
 
 /**
  * @brief entrypoint for gui clients
@@ -51,9 +56,15 @@ int ai_entrypoint(char const *line, client_t *c, game_t *game);
  * @param line the command to execute
  * @param c the client structure
  * @param game the game structure
+ * @param clients All the clients connected.
  * @return int 0 if success, 84 if error
  */
-int gui_entrypoint(char const *line, client_t *c, game_t *game);
+int gui_entrypoint(
+    char const *line,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+);
 
 /**
  * @brief entrypoint for unset clients
@@ -61,9 +72,15 @@ int gui_entrypoint(char const *line, client_t *c, game_t *game);
  * @param line the command to execute
  * @param c the client structure
  * @param game the game structure
+ * @param clients All the clients connected.
  * @return int 0 if success, 84 if error
  */
-int unset_entrypoint(char const *line, client_t *c, game_t *game);
+int unset_entrypoint(
+    char const *line,
+    client_t *c,
+    game_t *game,
+    client_t *clients
+);
 
 /**
  * @brief Close the client
@@ -75,11 +92,11 @@ void close_client(client_t *c);
 /**
  * @brief Make an ai eat
  *
- * @param cli the client structure
- * @param server the server structure
+ * @param cli the client that will eat.
+ * @param clients All the clients connected in the server.
  * @param n the number of the client
  */
-void make_ai_eat(client_t *cli, server_t *server, int n);
+void make_ai_eat(client_t *cli, client_t *clients, int n);
 
 /**
  * @brief init the ai
