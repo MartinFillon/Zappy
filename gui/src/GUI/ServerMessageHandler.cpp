@@ -61,9 +61,9 @@ void ServerMessageHandler::handleMapSize(const std::string &message)
     std::istringstream iss(message);
 
     iss >> width >> height;
+    display.getMap().resize(width, height);
     if (debug)
         std::cout << "Map size: " << width << "x" << height << std::endl;
-    display.getMap().resize(width, height);
 }
 
 void ServerMessageHandler::handleTileContent(const std::string &message)
@@ -75,14 +75,17 @@ void ServerMessageHandler::handleTileContent(const std::string &message)
     if (debug)
         std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
                   << " " << q5 << " " << q6 << std::endl;
+    display.getMap().getTile(x, y).updateRessources(q0, q1, q2, q3, q4, q5, q6);
 }
 
+// TODO
 void ServerMessageHandler::handleTeamNames(const std::string &message)
 {
     if (debug)
         std::cout << "Team name: " << message << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handlePlayerPosition(const std::string &message)
 {
     int playerNumber, x, y, orientation;
@@ -115,6 +118,7 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
                   << q2 << " " << q3 << " " << q4 << " " << q5 << " " << q6 << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleExpulsion(const std::string &message)
 {
     int playerNumber;
@@ -125,12 +129,14 @@ void ServerMessageHandler::handleExpulsion(const std::string &message)
         std::cout << "Player #" << playerNumber << " was expelled." << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleBroadcast(const std::string &message)
 {
     if (debug)
         std::cout << "Broadcast message: " << message << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleIncantationStart(const std::string &message)
 {
     int x, y, level;
@@ -141,6 +147,7 @@ void ServerMessageHandler::handleIncantationStart(const std::string &message)
         std::cout << "Incantation started at (" << x << ", " << y << ") for level " << level << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleIncantationEnd(const std::string &message)
 {
     int x, y, result;
@@ -151,6 +158,7 @@ void ServerMessageHandler::handleIncantationEnd(const std::string &message)
         std::cout << "Incantation ended at (" << x << ", " << y << ") with result " << result << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleEggLaying(const std::string &message)
 {
     int playerNumber;
@@ -161,6 +169,7 @@ void ServerMessageHandler::handleEggLaying(const std::string &message)
         std::cout << "Player #" << playerNumber << " laid an egg." << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleResourceDrop(const std::string &message)
 {
     int playerNumber, resourceNumber;
@@ -171,6 +180,7 @@ void ServerMessageHandler::handleResourceDrop(const std::string &message)
         std::cout << "Player #" << playerNumber << " dropped resource #" << resourceNumber << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleResourceCollect(const std::string &message)
 {
     int playerNumber, resourceNumber;
@@ -181,6 +191,7 @@ void ServerMessageHandler::handleResourceCollect(const std::string &message)
         std::cout << "Player #" << playerNumber << " collected resource #" << resourceNumber << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handlePlayerDeath(const std::string &message)
 {
     int playerNumber;
@@ -191,6 +202,7 @@ void ServerMessageHandler::handlePlayerDeath(const std::string &message)
         std::cout << "Player #" << playerNumber << " has died." << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleEggLaid(const std::string &message)
 {
     int eggNumber, playerNumber, x, y;
@@ -202,6 +214,7 @@ void ServerMessageHandler::handleEggLaid(const std::string &message)
                   << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleEggHatch(const std::string &message)
 {
     int eggNumber;
@@ -212,6 +225,7 @@ void ServerMessageHandler::handleEggHatch(const std::string &message)
         std::cout << "Egg #" << eggNumber << " has hatched." << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
 {
     int eggNumber;
@@ -222,6 +236,7 @@ void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
         std::cout << "Player connected to egg #" << eggNumber << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleEggDeath(const std::string &message)
 {
     int eggNumber;
@@ -238,10 +253,12 @@ void ServerMessageHandler::handleTimeUnit(const std::string &message)
     std::istringstream iss(message);
 
     iss >> t;
+    display.updateTimeUnit(t);
     if (debug)
         std::cout << "Time unit: " << t << std::endl;
 }
 
+// TODO
 void ServerMessageHandler::handleTimeUnitModification(const std::string &message)
 {
     int t;
