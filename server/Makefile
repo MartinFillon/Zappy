@@ -95,7 +95,7 @@ TEST_SRC =
 all: lib $(NAME)
 
 $(NAME): $(OBJ) blib
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDLIBS)
 
 blib:
 	$(MAKE) -C lib
@@ -112,7 +112,7 @@ fclean: clean
 	$(MAKE) -C lib fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
+$(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
 	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS) $(LDLIBS)
 
