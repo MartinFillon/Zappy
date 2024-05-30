@@ -18,5 +18,5 @@ void close_client(client_t *c)
     c->buffer.size = 0;
     c->ai = NULL;
     c->type = UNSET;
-    c->entrypoint = &unset_entrypoint;
+    // c->entrypoint = &unset_entrypoint;
 }

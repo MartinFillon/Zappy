@@ -8,6 +8,7 @@
 #pragma once
 
 #include "types/client.h"
+#include "types/game.h"
 
 typedef struct gui_cmd_s {
     char *cmd;

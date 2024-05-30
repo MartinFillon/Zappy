@@ -8,6 +8,7 @@
 #pragma once
 
 #include "types/client.h"
+#include "types/game.h"
 
 /**
  * @brief Initialize the client
@@ -106,7 +107,7 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
  * @return true if success, false if error
  */
 bool init_ai(game_t *game, client_t *client, team_t *team);
-
+void destroy_ai(ai_t *ai);
 /**
  * @brief Broadcast a message to all fds
  *

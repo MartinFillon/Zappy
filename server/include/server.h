@@ -12,12 +12,14 @@
 #include <sys/socket.h>
 
 #include "types/client.h"
+#include "types/game.h"
 #include "args_info.h"
 
 typedef struct server_s {
     int fd;
     fd_set read_fds;
     fd_set write_fds;
+    struct router *router;
 } server_t;
 
 /**
@@ -54,3 +56,10 @@ int accept_new_client(server_t *s, client_t *clients);
  * @return int 0 if success, 84 if error
  */
 int handle_buffer(client_t *c, game_t *game, client_t *clients);
+
+/**
+ * @brief Destroy the server
+ *
+ * @param s the server structure
+ */
+void free_wifi(server_t *s);

@@ -15,13 +15,12 @@
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
-#include "utils.h"
 
 static int put_in_team(client_t *c, game_t *game, size_t i)
 {
     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
     c->type = AI;
-    c->entrypoint = &ai_entrypoint;
+    // c->entrypoint = &ai_entrypoint;
     if (init_ai(game, c, &game->teams->data[i])) {
         send_client(c, "ko\n");
         logs(INFO, "No more eggs to place %d\n", c->fd);
@@ -81,7 +80,7 @@ int unset_entrypoint(
     if (strcmp(line, "GRAPHIC") == 0) {
         logs(INFO, "Client %d is a GUI\n", c->fd);
         c->type = GUI;
-        c->entrypoint = &gui_entrypoint;
+        // c->entrypoint = &gui_entrypoint;
         vec_pushback_vector_int(game->guis, c->fd);
         return init_gui(c, game, clients);
     }

@@ -30,7 +30,7 @@ static int handle_buffer_internal(
     c->buffer.buffer = tmp;
     c->buffer.size = strlen(tmp);
     logs(INFO, "Client %d sent command: %s\n", c->fd, com);
-    c->entrypoint(com, c, game, clients);
+    // c->entrypoint(com, c, game, clients);
     return handle_buffer(c, game, clients);
 }
 

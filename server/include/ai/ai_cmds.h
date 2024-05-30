@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include "types/client.h"
+#include "types/game.h"
 
 typedef struct ai_cmds_s {
     char const *name;

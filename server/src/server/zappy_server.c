@@ -102,6 +102,7 @@ int loop_server(args_infos_t *args)
         exec_clients(&z);
         check_eating(z.clients);
     }
+    destroy_program(&z);
     logs(INFO, "Server shutting down\n");
     return SUCCESS;
 }
