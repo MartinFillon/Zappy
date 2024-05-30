@@ -29,7 +29,7 @@ int parse_value(json_parser_t *p)
     if (chr == 't' || chr == 'f')
         return parse_boolean(p);
     if (chr == '-' || isdigit(chr))
-        return parse_number(p);
+        return parse_json_number(p);
     return -1;
 }
 

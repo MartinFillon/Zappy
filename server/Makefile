@@ -86,6 +86,11 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_forward		\
 						handle_rotate		\
 					)\
+					$(addprefix router/, 	\
+						load_route			\
+						callback			\
+						mode_parser			\
+					)\
 				)\
 			)\
 
