@@ -4,5 +4,6 @@
     "command": "msz",
     "callback": "map_size",
     "mode": "GUI",
-    "time": 0
+    "time": 0,
+    "args_number": 0
 }

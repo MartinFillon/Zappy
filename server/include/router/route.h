@@ -26,6 +26,7 @@ typedef struct {
     double time;
     enum client_type_e mode;
     callback_t f;
+    size_t args;
 } route_t;
 
 enum client_type_e get_mode(char const *mode);

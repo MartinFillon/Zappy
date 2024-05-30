@@ -10,28 +10,58 @@
 #include "logger.h"
 #include "router/router.h"
 #include "types/client.h"
+#include "zappy.h"
 #include "router/error_callbacks.h"
 
-route_t *get_route(struct router const *r, str_t *name)
+static route_t *get_route(
+    struct router const *this,
+    str_t *name,
+    enum client_type_e cli_mode
+)
 {
-    for (__auto_type i = 0ul; i < r->size; i++) {
-        logs(INFO, "command: %s\n", r->data[i]->command->data);
-        if (str_cmp(r->data[i]->command, name) == 0)
-            return r->data[i];
+    for (__auto_type i = 0ul; i < this->size; i++) {
+        logs(INFO, "command: %s\n", this->data[i]->command->data);
+        if (str_cmp(this->data[i]->command, name) == 0 &&
+            this->data[i]->mode == cli_mode)
+            return this->data[i];
     }
     return NULL;
 }
 
-void run_router(enum client_type_e cli, struct router const *r, str_t *line)
+static void run_callback(
+    client_t *cli,
+    zappy_t *zappy,
+    route_t *route,
+    struct vector_str_t *line
+)
+{
+    if (route->args + 1 != line->size) {
+        return INVALID_ARGS_CALLBACKS[cli->type](2);
+    }
+    command_state_t state = {
+        .args = line,
+        .clients = cli,
+        .game = &zappy->game,
+    };
+    route->f(cli, &state);
+}
+
+void run_router(
+    struct router const *this,
+    client_t *cli,
+    zappy_t *zappy,
+    str_t *line
+)
 {
     struct vector_str_t *v = str_split(line, " \t");
     route_t *route = NULL;
 
     if (v->size == 0)
         return;
-    route = get_route(r, v->data[0]);
-    if (route == NULL) {
-        return UNKNOWN_CALLBACKS[cli](2);
-    }
+    route = get_route(this, v->data[0], cli->type);
+    if (route == NULL)
+        UNKNOWN_CALLBACKS[cli->type](2);
+    else
+        run_callback(cli, zappy, route, v);
     vec_free_vector_str_t(v, &str_free);
 }

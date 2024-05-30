@@ -9,7 +9,6 @@
 #include "router/callbacks.h"
 #include "router/route.h"
 #include "types/client.h"
-#include "types/game.h"
 
 callback_t get_callback(char const *name)
 {
