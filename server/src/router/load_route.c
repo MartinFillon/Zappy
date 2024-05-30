@@ -100,10 +100,11 @@ static int set_callback(
     return SUCCESS;
 }
 
-int load_route(struct router *routes, char const *file)
+int load_route(struct router *routes, str_t const *file)
 {
     route_t *route = calloc(1, sizeof(route_t));
-    json_data_t *json = json_from_file(file);
+    char *file_c = str_cstr(file);
+    json_data_t *json = json_from_file(file_c);
     int (*setters[5])(route_t *restrict, json_data_t *const restrict) = {
         set_name, set_description, set_mode, set_time, set_callback
     };
@@ -118,5 +119,6 @@ int load_route(struct router *routes, char const *file)
     }
     vec_pushback_router(routes, route);
     json_free(json);
+    free(file_c);
     return SUCCESS;
 }

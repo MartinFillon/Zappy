@@ -13,6 +13,7 @@
 
 #include "logger.h"
 #include "macros.h"
+#include "router/router.h"
 #include "server.h"
 #include "utils.h"
 #include "args_info.h"
@@ -27,16 +28,19 @@ int main(int ac, char const **av)
     args_infos_t args = {0};
 
     srand(time(NULL));
-    if (ac == 2 && (!strcmp(av[1], "--help") || !strcmp(av[1], "-h"))) {
-        display_help();
-        return SUCCESS;
-    }
-    if (parse_command_line(av, &args) == false)
-        return EPI_ERROR;
-    signal(SIGINT, &sig);
-    if (loop_server(&args) == ERROR)
-        return EPI_ERROR;
-    my_free_box(args.names);
-    logs(INFO, "Server stopped\n");
+    // if (ac == 2 && (!strcmp(av[1], "--help") || !strcmp(av[1], "-h"))) {
+    //     display_help();
+    //     return SUCCESS;
+    // }
+    // if (parse_command_line(av, &args) == false)
+    //     return EPI_ERROR;
+    // signal(SIGINT, &sig);
+    // if (loop_server(&args) == ERROR)
+    //     return EPI_ERROR;
+    // my_free_box(args.names);
+    // logs(INFO, "Server stopped\n");
+    set_log_level(DEBUG);
+    logs(DEBUG, "Starting up\n");
+    init_router("config/router.json");
     return SUCCESS;
 }

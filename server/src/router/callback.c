@@ -10,7 +10,7 @@
 #include "types/client.h"
 #include "types/game.h"
 
-callback_t get_callback(char const * name)
+callback_t get_callback(char const *name)
 {
     for (int i = 0; CALLBACKS[i].name; i++) {
         if (strcmp(CALLBACKS[i].name, name) == 0)
@@ -19,12 +19,7 @@ callback_t get_callback(char const * name)
     return NULL;
 }
 
-void placeholder(
-    char *,
-    client_t *,
-    game_t *,
-    const client_t *
-)
+void placeholder(char *, client_t *, game_t *, const client_t *)
 {
     return;
 }

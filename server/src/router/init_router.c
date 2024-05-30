@@ -9,6 +9,7 @@
 #include "logger.h"
 #include "router/router.h"
 #include "str.h"
+#include "utils.h"
 
 static str_t *get_path(str_t const *name)
 {
@@ -21,22 +22,35 @@ static str_t *get_path(str_t const *name)
 
 static void load_routes(struct vec_json_t *routes, struct router *router)
 {
+    str_t *current = NULL;
+
     if (!routes)
         return logs(ERROR_LEVEL, "Failed to load routes\n");
-
     for (size_t i = 0; i < routes->size; i++) {
+        if (routes->data[i]->t != STRING)
+            continue;
+        current = get_path(routes->data[i]->data.str);
+        if (!current)
+            continue;
+        logs(INFO, "%s\n", str_cstr(current));
+        // load_route(router, current);
+        va_free(2, current->data, current);
     }
     (void)router;
 }
 
 struct router *init_router(char const *file)
 {
+    logs(DEBUG, "Initing with file %s\n", file);
     struct router *router = vec_create_router(10);
     json_data_t *json = json_from_file(file);
     str_t *route_key = str_snew("routes");
 
-    if (!json || !router)
+    if (!json || !router) {
+        logs(ERROR_LEVEL, "ROUTER INIT ERROR\n");
         return NULL;
+    }
+    logs(DEBUG, "JSON read\n");
     load_routes(json_get_array(json, route_key), router);
     json_free(json);
     return router;
