@@ -11,12 +11,7 @@
 #include "types/client.h"
 #include "types/game.h"
 
-typedef void (*callback_t)(
-    char *restrict,
-    client_t *restrict,
-    game_t *restrict,
-    client_t const *restrict
-);
+typedef void (*callback_t)(char *, client_t *, game_t *, client_t const *);
 
 typedef struct {
     str_t *name;
@@ -30,5 +25,5 @@ typedef struct {
 #define NAME router
 #include "vector.h"
 
-enum client_type_e get_mode(char const *restrict mode);
-callback_t get_callback(char const *restrict name);
+enum client_type_e get_mode(char const *mode);
+callback_t get_callback(char const *name);

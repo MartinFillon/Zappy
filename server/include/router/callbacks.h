@@ -18,10 +18,10 @@ struct callback_map_s {
 };
 
 void placeholder(
-    char *restrict,
-    client_t *restrict,
-    game_t *restrict,
-    client_t const *restrict
+    char *,
+    client_t *,
+    game_t *,
+    client_t const *
 );
 
 static const struct callback_map_s CALLBACKS[] = {
