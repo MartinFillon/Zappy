@@ -16,7 +16,6 @@
 #include "macros.h"
 #include "server.h"
 #include "types/client.h"
-#include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
 #include <bits/types/struct_timeval.h>

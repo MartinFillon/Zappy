@@ -10,6 +10,7 @@
 
 #include "client.h"
 #include "gui/defs.h"
+#include "logger.h"
 #include "macros.h"
 #include "types/client.h"
 #include "types/game.h"
@@ -18,15 +19,15 @@
 
 static int put_in_team(client_t *c, game_t *game, size_t i)
 {
-    logger_info("Client %d is trying to be an AI\n", c->fd);
+    logs(INFO, "Client %d is trying to be an AI\n", c->fd);
     c->type = AI;
     c->entrypoint = &ai_entrypoint;
     if (init_ai(game, c, &game->teams->data[i])) {
         send_client(c, "ko\n");
-        logger_info("No more eggs to place %d\n", c->fd);
+        logs(INFO, "No more eggs to place %d\n", c->fd);
         return ERROR;
     }
-    logger_info("AI inited\n");
+    logs(INFO, "AI inited\n");
     return SUCCESS;
 }
 
@@ -56,12 +57,12 @@ static void send_ais(client_t *c, ai_t *ai)
     );
 }
 
-static int init_gui(client_t *c, game_t *game)
+static int init_gui(client_t *c, game_t *game, client_t *clients)
 {
-    map_size("", c, game);
-    request_time("", c, game);
-    map_content_full("", c, game);
-    team_names("", c, game);
+    map_size("", c, game, clients);
+    request_time("", c, game, clients);
+    map_content_full("", c, game, clients);
+    team_names("", c, game, clients);
     for (__auto_type i = 0ul; i < game->teams->size; i++)
         send_eggs(c, &game->teams->data[i]);
     for (__auto_type i = 0ul; i < game->ais->size; i++)
@@ -76,13 +77,13 @@ int unset_entrypoint(
     client_t *clients
 )
 {
-    (void) clients;
+    (void)clients;
     if (strcmp(line, "GRAPHIC") == 0) {
         logs(INFO, "Client %d is a GUI\n", c->fd);
         c->type = GUI;
         c->entrypoint = &gui_entrypoint;
         vec_pushback_vector_int(game->guis, c->fd);
-        return init_gui(c, game);
+        return init_gui(c, game, clients);
     }
     if (game->teams == NULL) {
         logs(WARNING, "No teams set\n");

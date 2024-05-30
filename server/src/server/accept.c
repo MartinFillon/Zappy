@@ -26,7 +26,7 @@ static int fill_client(
         if (clients[i].fd == 0) {
             init_client(&clients[i], fd);
             send_client(&clients[i], "WELCOME\n");
-            logger_info(
+            logs(INFO,
                 "New client %s:%d with fd %d\n",
                 inet_ntoa(addr->sin_addr),
                 ntohs(addr->sin_port),
