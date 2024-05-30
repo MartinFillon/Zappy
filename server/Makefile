@@ -9,6 +9,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS = -iquote./include
 
+LDLIBS = -L./ -lmy
+
 NAME = ../zappy_server
 
 SRC = $(BASE_SRC)
@@ -97,17 +99,22 @@ TEST_SRC =
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
+$(NAME): $(OBJ) blib
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDFLAGS)
+
+blib:
+	$(MAKE) -C lib
 
 clean:
 	rm -f $(OBJ)
 	rm -f *.gcno
 	rm -f *.gcda
+	$(MAKE) -C lib clean
 
 fclean: clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
+	$(MAKE) -C lib fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): $(BASE_SRC) $(TEST_SRC)
