@@ -17,4 +17,4 @@ void destroy_router(struct router *router);
 int load_route(struct router *routes, str_t const *file);
 struct router *init_router(char const *file);
 void destroy_router(struct router *router);
-void run_router(struct router const *r, str_t *line);
+void run_router(enum client_type_e cli, struct router const *r, str_t *line);
