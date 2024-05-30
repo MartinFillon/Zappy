@@ -5,6 +5,7 @@
 ** load_route
 */
 
+#include <stdio.h>
 #include "json/json.h"
 
 #include "logger.h"
@@ -47,6 +48,26 @@ static int set_description(
         return ERROR;
     }
     va_free(2, description_key, description_key->data);
+    return SUCCESS;
+}
+
+static int set_command(
+    route_t *restrict route,
+    json_data_t *restrict const json
+)
+{
+    str_t *command_key = str_snew("command");
+
+    if (!command_key) {
+        logs(ERROR_LEVEL, "Failed to allocate memory for command_key\n");
+        return ERROR;
+    }
+    route->command = str_dup(json_get_string(json, command_key));
+    if (!route->command) {
+        logs(ERROR_LEVEL, "Failed to duplicate command\n");
+        return ERROR;
+    }
+    va_free(2, command_key, command_key->data);
     return SUCCESS;
 }
 
@@ -105,15 +126,15 @@ int load_route(struct router *routes, str_t const *file)
     route_t *route = calloc(1, sizeof(route_t));
     char *file_c = str_cstr(file);
     json_data_t *json = json_from_file(file_c);
-    int (*setters[5])(route_t *restrict, json_data_t *const restrict) = {
-        set_name, set_description, set_mode, set_time, set_callback
+    int (*setters[6])(route_t *restrict, json_data_t *const restrict) = {
+        set_name, set_description, set_command, set_mode, set_time, set_callback
     };
 
     if (!route || !json) {
         logs(ERROR_LEVEL, "Failed to allocate memory for route or json\n");
         return ERROR;
     }
-    for (__auto_type i = 0; i < 2; i++) {
+    for (__auto_type i = 0; i < 6; i++) {
         if (setters[i](route, json) == ERROR)
             return ERROR;
     }

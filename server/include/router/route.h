@@ -22,6 +22,7 @@ typedef void (*callback_t)(client_t *, command_state_t *);
 typedef struct {
     str_t *name;
     str_t *description;
+    str_t *command;
     double time;
     enum client_type_e mode;
     callback_t f;

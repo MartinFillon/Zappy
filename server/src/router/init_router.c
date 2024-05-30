@@ -7,6 +7,7 @@
 
 #include "json/json.h"
 #include "logger.h"
+#include "macros.h"
 #include "router/router.h"
 #include "str.h"
 #include "utils.h"
@@ -32,8 +33,9 @@ static void load_routes(struct vec_json_t *routes, struct router *router)
         current = get_path(routes->data[i]->data.str);
         if (!current)
             continue;
-        logs(INFO, "%s\n", current->data);
-        load_route(router, current);
+        logs(INFO, "current: %s\n", current->data);
+        if (load_route(router, current) == ERROR)
+            logs(ERROR_LEVEL, "Failed to load route\n");
         va_free(2, current->data, current);
     }
     (void)router;

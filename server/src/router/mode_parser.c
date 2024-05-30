@@ -9,9 +9,9 @@
 
 enum client_type_e get_mode(char const *restrict mode)
 {
-    if (strcmp(mode, "GRAPHIC") == 0)
+    if (strcmp(mode, "GUI") == 0)
         return GUI;
-    if (strcmp(mode, "IA") == 0)
+    if (strcmp(mode, "AI") == 0)
         return AI;
     return UNSET;
 }

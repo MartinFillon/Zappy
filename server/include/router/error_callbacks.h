@@ -27,7 +27,7 @@ static inline void default_unknown_route(int fd)
 }
 
 static const unknown_route_callback_t UNKNOWN_CALLBACKS[3] = {
-    gui_unknown_route,
-    ai_unknown_route,
     default_unknown_route,
+    ai_unknown_route,
+    gui_unknown_route,
 };

@@ -39,8 +39,9 @@ int main(int ac, char const **av)
     //     return EPI_ERROR;
     // my_free_box(args.names);
     // logs(INFO, "Server stopped\n");
+    set_log_level(DEBUG);
     struct router *r = init_router("server/config/router.json");
-    run_router(r, str_snew("msz hello"));
+    run_router(GUI, r, str_snew("msz hello"));
     destroy_router(r);
     return SUCCESS;
 }
