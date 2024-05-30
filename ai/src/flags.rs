@@ -13,7 +13,7 @@ use std::process;
 use std::ffi::OsString;
 use std::str::FromStr;
 
-use std::fmt::Display;
+use std::fmt::{Display, Formatter, Result};
 
 const LOCALHOST: &str = "127.0.0.1";
 
@@ -71,7 +71,7 @@ impl Default for Flags {
 }
 
 impl Display for Flags {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         write!(
             f,
             "Flags {{\n  Machine: {},\n  Port: {},\n  Name: {}\n}};",

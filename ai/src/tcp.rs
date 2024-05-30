@@ -138,16 +138,6 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
             "Couldn't reach host.",
         ));
     }
-
-    client.send_request(team + "\n").await?;
-    if let Some(response) = client.get_response().await {
-        print!("server> {}", response);
-    } else {
-        return Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ));
-    }
-    // command_handle::start_ai(client).await?;
+    command_handle::start_ai(client, team).await?;
     Ok(())
 }

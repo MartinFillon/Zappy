@@ -12,8 +12,5 @@ use crate::tcp::TcpClient;
 
 pub async fn drop_object(client: &mut TcpClient, obj: &str) -> Result<bool, bool> {
     let response = client.check_dead(&format!("Set {}\n", obj)).await?;
-    match response.as_str() {
-        "ok\n" => Ok(true),
-        _ => Ok(false),
-    }
+    client.handle_response(response).await
 }

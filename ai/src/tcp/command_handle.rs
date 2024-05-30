@@ -7,12 +7,14 @@
 
 #![allow(dead_code)]
 
-// use crate::commands;
+use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
 
 use tokio::io::{self};
+
+use std::io::{Error, ErrorKind};
 
 #[async_trait]
 pub trait CommandHandler {
@@ -44,14 +46,20 @@ impl CommandHandler for TcpClient {
     async fn handle_response(&mut self, response: String) -> Result<bool, bool> {
         match dbg!(response.as_str()) {
             "ok\n" => Ok(true),
-            "error\n" => Ok(false),
-            _ => Ok(false),
+            "ko\n" => Ok(false),
         }
     }
 }
 
-#[warn(unused_mut)]
-pub async fn start_ai(mut _client: TcpClient) -> io::Result<()> {
-    // commands here to test and such
+pub async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
+    client.send_request(team + "\n").await?;
+    if let Some(response) = client.get_response().await {
+        print!("server> {}", response);
+    } else {
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
+    }
     Ok(())
 }

@@ -12,8 +12,5 @@ use crate::tcp::TcpClient;
 
 pub async fn eject(client: &mut TcpClient) -> Result<bool, bool> {
     let response = client.check_dead("Eject\n").await?;
-    match response.as_str() {
-        "ok\n" => Ok(true),
-        _ => Ok(false),
-    }
+    client.handle_response(response).await
 }

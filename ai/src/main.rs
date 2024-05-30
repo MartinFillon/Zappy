@@ -7,6 +7,8 @@
 
 use std::process;
 
+use std::env::var;
+
 pub mod commands;
 pub mod flags;
 mod json;
@@ -17,7 +19,7 @@ const SUCCESS_CODE: i32 = 0;
 
 #[tokio::main]
 async fn main() {
-    if std::env::var("RUST_LOG").is_ok() {
+    if var("RUST_LOG").is_ok() {
         env_logger::init();
     }
     match flags::check_flags() {
