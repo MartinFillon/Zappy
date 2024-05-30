@@ -10,6 +10,7 @@
 use std::io::{Error, ErrorKind};
 
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
 use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
@@ -80,8 +81,8 @@ impl TcpClient {
     }
 
     async fn handle_connection(
-        mut reader: BufReader<tokio::net::tcp::OwnedReadHalf>,
-        mut write_half: tokio::net::tcp::OwnedWriteHalf,
+        mut reader: BufReader<OwnedReadHalf>,
+        mut write_half: OwnedWriteHalf,
         mut request_receiver: Receiver<String>,
         response_sender: Sender<String>,
     ) {

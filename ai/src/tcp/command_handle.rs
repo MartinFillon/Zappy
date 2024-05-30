@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use crate::commands;
+// use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
@@ -47,6 +47,7 @@ impl CommandHandler for TcpClient {
         match dbg!(response.as_str()) {
             "ok\n" => Ok(true),
             "ko\n" => Ok(false),
+            _ => Err(false),
         }
     }
 }
