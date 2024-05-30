@@ -10,15 +10,16 @@
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <bits/types/struct_timeval.h>
 
 #include "client.h"
+#include "logger.h"
 #include "macros.h"
 #include "server.h"
 #include "types/client.h"
 #include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
-#include <bits/types/struct_timeval.h>
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
@@ -102,6 +103,6 @@ int loop_server(args_infos_t *args)
         exec_clients(&z);
         check_eating(z.clients);
     }
-    logger_info("Server shutting down\n");
+    logs(INFO, "Server shutting down\n");
     return SUCCESS;
 }

@@ -9,6 +9,7 @@ use std::process;
 
 pub mod commands;
 pub mod flags;
+mod json;
 pub mod tcp;
 
 const ERROR_CODE: i32 = 84;
@@ -16,6 +17,9 @@ const SUCCESS_CODE: i32 = 0;
 
 #[tokio::main]
 async fn main() {
+    if std::env::var("RUST_LOG").is_ok() {
+        env_logger::init();
+    }
     match flags::check_flags() {
         Ok(res) => {
             let address: String =

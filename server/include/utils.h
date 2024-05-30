@@ -11,38 +11,6 @@
 #include <stddef.h>
 
 /**
- * @brief Log a debug message
- *
- * @param fmt the format string
- * @param ... the arguments to replace the format string
- */
-void logger_debug(char const *fmt, ...);
-
-/**
- * @brief Log an info message
- *
- * @param fmt the format string
- * @param ... the arguments to replace the format string
- */
-void logger_info(char const *fmt, ...);
-
-/**
- * @brief Log a warning message
- *
- * @param fmt the format string
- * @param ... the arguments to replace the format string
- */
-void logger_warn(char const *fmt, ...);
-
-/**
- * @brief Log an error message
- *
- * @param fmt the format string
- * @param ... the arguments to replace the format string
- */
-void logger_error(char const *fmt, ...);
-
-/**
  * @brief frees a double char array
  *
  * @param arr the array to free
