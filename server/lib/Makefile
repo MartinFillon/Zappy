@@ -19,7 +19,8 @@ SRC =   str/str.c\
 		json/dump.c\
 		json/checker.c\
 		json/file.c\
-		json/free.c
+		json/free.c\
+		logger/logger.c\
 
 NAME = ../libmy.a
 
