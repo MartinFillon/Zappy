@@ -49,9 +49,9 @@ static void look_line(
     for (size_t k = 0; k < nb_tile; k++) {
         cpy_pos.y = modulo(cpy_pos.y, map->y);
         cpy_pos.x = modulo(cpy_pos.x, map->x);
-        send_info_tile(cli->fd, map, cpy_pos.y, cpy_pos.x);
+        prepare_info_tile(&cli->io, map, cpy_pos.y, cpy_pos.x);
         if (k + 1 != nb_tile)
-            send_client(cli, ",");
+            prepare_response_cat(&cli->io, ",");
         cpy_pos.x += add_pos.x;
         cpy_pos.y += add_pos.y;
     }
@@ -68,13 +68,13 @@ void handle_look(
 
     (void) clients;
     if (!is_empty(arg))
-        return send_client(cli, "ko\n");
-    send_client(cli, "[");
+        return prepare_response(&cli->io, "ko\n");
+    prepare_response_cat(&cli->io, "[");
     for (size_t i = 0; i <= cli->ai->level; i++) {
         look_line(&pos, i, cli, game->map);
         update_start(&pos, cli->ai->dir);
         if (i != cli->ai->level)
-            send_client(cli, ",");
+            prepare_response_cat(&cli->io, ",");
     }
-    send_client(cli, "]\n");
+    prepare_response_cat(&cli->io, "]\n");
 }

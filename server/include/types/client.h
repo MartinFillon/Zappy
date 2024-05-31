@@ -8,9 +8,10 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "ai.h"
+#include "types/buffer.h"
+#include "types/game.h"
 
 enum client_type_e {
     UNSET,
@@ -18,20 +19,9 @@ enum client_type_e {
     GUI,
 };
 
-struct buffer_s {
-    char *buffer;
-    size_t size;
-};
-
-typedef struct io_s {
-    struct buffer_s req;
-    struct buffer_s res;
-    bool is_ready;
-} io_t;
-
 typedef struct client_s {
     int fd;
-    struct buffer_s buffer;
-    ai_t *ai;
+    io_t io;
+    ai_t *ai; // only for AI clients
     enum client_type_e type;
 } client_t;

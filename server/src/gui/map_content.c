@@ -20,11 +20,12 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
 {
     struct tile_s *tile = get_tile(map, x, y);
 
-    if (tile == NULL)
-        return send_invalid_args(c);
-    logs(DEBUG, "Retrieving tile %ld %ld\n", x, y);
-    send_client(
-        c,
+    if (tile == NULL) {
+        prepare_response(&c->io, "sbp\n");
+        return;
+    }
+    prepare_response(
+        &c->io,
         "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         x,
         y,

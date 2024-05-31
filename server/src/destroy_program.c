@@ -15,7 +15,7 @@ void destroy_program(zappy_t *z)
     for (__auto_type i = 0; i < SOMAXCONN; i++) {
         if (z->clients[i].fd > 0) {
             close(z->clients[i].fd);
-            free(z->clients[i].buffer.buffer);
+            // free(z->clients[i].buffer.buffer);
         }
     }
 }

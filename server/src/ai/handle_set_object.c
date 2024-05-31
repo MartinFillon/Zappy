@@ -48,9 +48,9 @@ static void set_object_down(
 )
 {
     if (!check_item(cli->ai, obj->obj))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     drop_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj);
-    send_client(cli, "ok\n");
+    prepare_response(&cli->io, "ok\n");
 }
 
 void handle_set_object(
@@ -63,7 +63,7 @@ void handle_set_object(
     map_t *map = game->map;
 
     if (is_empty(arg))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     (void) clients;
     for (size_t i = 0; i < NB_OBJ; i++) {
         if (strcmp(arg, all_obj[i].name) == 0) {
@@ -71,5 +71,5 @@ void handle_set_object(
             return;
         }
     }
-    send_client(cli, "ko\n");
+    prepare_response(&cli->io, "ko\n");
 }

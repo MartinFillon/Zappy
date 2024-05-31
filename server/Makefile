@@ -74,6 +74,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
