@@ -1,9 +1,0 @@
-{
-    "name": "player position",
-    "description": "Command to retrieve the position of a player",
-    "command": "ppo",
-    "callback": "player_position",
-    "mode": "GUI",
-    "time": 0,
-    "args_number": 1
-}

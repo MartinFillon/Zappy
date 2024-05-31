@@ -1,9 +1,0 @@
-{
-    "name": "map size",
-    "description": "Command to retrieve the size of the map",
-    "command": "msz",
-    "callback": "map_size",
-    "mode": "GUI",
-    "time": 0,
-    "args_number": 0
-}

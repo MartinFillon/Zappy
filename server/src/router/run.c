@@ -20,7 +20,7 @@ static route_t *get_route(
 )
 {
     for (__auto_type i = 0ul; i < this->size; i++) {
-        if (str_cmp(this->data[i]->command, name) == 0 &&
+        if (strcmp(this->data[i]->command, name->data) == 0 &&
             this->data[i]->mode == cli_mode)
             return this->data[i];
     }
@@ -40,13 +40,10 @@ static void run_callback(
         .game = &zappy->game,
     };
 
-    logs(DEBUG, "running command %p\n", route->f);
     if (route->args + 1 != line->size) {
         return INVALID_ARGS_CALLBACKS[cli->type](cli);
     }
-    logs(DEBUG, "GOOD args\n");
     route->f(cli, &state);
-    logs(DEBUG, "End of exec\n");
 }
 
 void run_router(
@@ -58,7 +55,7 @@ void run_router(
 {
     struct vector_str_t *v = str_split(line, " \t");
     route_t *route = {0};
-    static route_t unset = {NULL, NULL, NULL, 0, UNSET, &unset_command, 0};
+    static route_t unset = {NULL, 0, UNSET, &unset_command, 0};
 
     if (v->size == 0)
         return;

@@ -17,7 +17,7 @@ int init_program(args_infos_t *args, zappy_t *z)
     z->server.fd = server_init(args->port);
     if (z->server.fd == ERROR)
         return ERROR;
-    z->server.router = init_router("server/config/router.json");
+    z->server.router = init_router();
     if (z->server.router == NULL)
         return ERROR;
     logs(INFO, "Server up and running on port %d\n", args->port);

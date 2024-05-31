@@ -90,8 +90,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						destroy				\
 					)\
 					$(addprefix router/, 	\
-						load_route			\
-						callback			\
 						mode_parser			\
 						init_router			\
 						destroy_router		\

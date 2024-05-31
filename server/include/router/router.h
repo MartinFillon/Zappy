@@ -21,7 +21,7 @@ typedef struct router_s {
 
 void destroy_router(router_t *router);
 int load_route(struct router *routes, str_t const *file);
-router_t *init_router(char const *file);
+router_t *init_router(void);
 void destroy_router(router_t *router);
 void run_router(
     router_t const *this,
