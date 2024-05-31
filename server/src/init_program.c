@@ -9,6 +9,7 @@
 #include "macros.h"
 #include "zappy.h"
 #include "args_info.h"
+#include "router/router.h"
 
 int init_program(args_infos_t *args, zappy_t *z)
 {

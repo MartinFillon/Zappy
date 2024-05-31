@@ -1,0 +1,9 @@
+{
+    "name": "player inventory",
+    "description": "Command to retrieve the inventory of a player",
+    "command": "ppo",
+    "callback": "player_inventory",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 1
+}

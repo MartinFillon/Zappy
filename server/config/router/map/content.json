@@ -1,0 +1,9 @@
+{
+    "name": "map content",
+    "description": "Command to retrieve the content of the map",
+    "command": "mct",
+    "callback": "map_content_full",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 0
+}

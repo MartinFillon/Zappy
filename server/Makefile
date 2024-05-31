@@ -98,6 +98,9 @@ BASE_SRC = $(addsuffix .c, 				\
 						destroy_router		\
 						run 				\
 					)\
+					$(addprefix middleware/,\
+						invalid				\
+					)\
 				)\
 			)\
 

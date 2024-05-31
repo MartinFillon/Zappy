@@ -14,12 +14,17 @@
 #define NAME router
 #include "vector.h"
 
-void destroy_router(struct router *router);
+typedef struct router_s {
+    struct router *self;
+    str_t *routes_path;
+} router_t;
+
+void destroy_router(router_t *router);
 int load_route(struct router *routes, str_t const *file);
-struct router *init_router(char const *file);
-void destroy_router(struct router *router);
+router_t *init_router(char const *file);
+void destroy_router(router_t *router);
 void run_router(
-    struct router const *this,
+    router_t const *this,
     client_t *cli,
     zappy_t *zappy,
     str_t *line

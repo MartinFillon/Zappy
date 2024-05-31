@@ -1,0 +1,9 @@
+{
+    "name": "player level",
+    "description": "Command to retrieve the level of a player",
+    "command": "plv",
+    "callback": "player_level",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 1
+}

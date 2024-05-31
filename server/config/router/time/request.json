@@ -1,0 +1,9 @@
+{
+    "name": "time request",
+    "description": "Command to retrieve the frequecy of the game",
+    "command": "sgt",
+    "callback": "request_time",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 0
+}

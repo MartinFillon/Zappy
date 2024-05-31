@@ -48,7 +48,7 @@ static void run_callback(
 }
 
 void run_router(
-    struct router const *this,
+    router_t const *this,
     client_t *cli,
     zappy_t *zappy,
     str_t *line
@@ -59,7 +59,7 @@ void run_router(
 
     if (v->size == 0)
         return;
-    route = get_route(this, v->data[0], cli->type);
+    route = get_route(this->self, v->data[0], cli->type);
     if (route == NULL)
         UNKNOWN_CALLBACKS[cli->type](2);
     else

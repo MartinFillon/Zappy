@@ -15,11 +15,13 @@
 #include "types/game.h"
 #include "args_info.h"
 
+typedef struct router_s router_t;
+
 typedef struct server_s {
     int fd;
     fd_set read_fds;
     fd_set write_fds;
-    struct router *router;
+    router_t *router;
 } server_t;
 
 /**

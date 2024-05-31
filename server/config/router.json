@@ -1,9 +1,18 @@
 {
     "routes": [
-        "map_size"
+        "map/size",
+        "map/content",
+        "map/tile_content",
+        "player/inventory",
+        "player/level",
+        "player/position",
+        "time/update",
+        "time/request",
+        "team_names"
     ],
     "modes": [
         "GUI",
         "AI"
-    ]
+    ],
+    "path": "router/"
 }

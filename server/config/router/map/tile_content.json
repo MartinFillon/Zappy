@@ -1,0 +1,9 @@
+{
+    "name": "tile content",
+    "description": "Command to retrieve the content of the tile",
+    "command": "bct",
+    "callback": "map_content_tile",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 2
+}

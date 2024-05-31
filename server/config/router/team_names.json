@@ -1,0 +1,9 @@
+{
+    "name": "team names",
+    "description": "Command to retrieve the names of the teams",
+    "command": "tna",
+    "callback": "team_names",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 0
+}

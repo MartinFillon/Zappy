@@ -1,0 +1,9 @@
+{
+    "name": "time update",
+    "description": "Command to update the frequecy of the game",
+    "command": "sst",
+    "callback": "update_time",
+    "mode": "GUI",
+    "time": 0,
+    "args_number": 1
+}

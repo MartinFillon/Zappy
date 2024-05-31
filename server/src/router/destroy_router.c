@@ -20,8 +20,9 @@ static void delete_route(route_t **route)
     );
 }
 
-void destroy_router(struct router *router)
+void destroy_router(router_t *router)
 {
-    vec_foreach_router(router, delete_route);
-    vec_destroy_router(router);
+    vec_foreach_router(router->self, delete_route);
+    vec_destroy_router(router->self);
+    va_free(3, router->routes_path->data, router->routes_path, router);
 }
