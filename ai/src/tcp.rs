@@ -78,8 +78,10 @@ impl TcpClient {
     pub async fn get_response(&mut self) -> Option<String> {
         info!("Getting response...");
         if let Some(receiver) = &mut self.response_receiver {
+            info!("Response received.");
             receiver.recv().await
         } else {
+            debug!("No response received.");
             None
         }
     }
