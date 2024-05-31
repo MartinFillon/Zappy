@@ -57,21 +57,13 @@ static void look_line(
     }
 }
 
-void handle_look(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_look(client_t *cli, command_state_t *s)
 {
     pos_t pos = {cli->ai->pos.x, cli->ai->pos.y};
 
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
     prepare_response_cat(&cli->io, "[");
     for (size_t i = 0; i <= cli->ai->level; i++) {
-        look_line(&pos, i, cli, game->map);
+        look_line(&pos, i, cli, s->game->map);
         update_start(&pos, cli->ai->dir);
         if (i != cli->ai->level)
             prepare_response_cat(&cli->io, ",");

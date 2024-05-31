@@ -5,9 +5,9 @@
 ** handle_take_object
 */
 
-#include "utils.h"
 #include "client.h"
 #include "map.h"
+#include "router/route.h"
 
 static void increment_item(client_t *cli, size_t *item_quantity)
 {
@@ -41,20 +41,12 @@ static void take_object_down(
     }
 }
 
-void handle_take_object(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_take_object(client_t *cli, command_state_t *s)
 {
-    map_t *map = game->map;
+    map_t *map = s->game->map;
 
-    (void) clients;
-    if (is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
     for (size_t i = 0; i < NB_OBJ; i++) {
-        if (strcmp(arg, all_obj[i].name) == 0) {
+        if (strcmp(s->args->data[1]->data, all_obj[i].name) == 0) {
             take_object_down(cli, map, all_obj + i);
             return;
         }

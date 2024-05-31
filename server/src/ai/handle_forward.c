@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include "client.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/map.h"
 
@@ -43,21 +44,16 @@ static void move_x(ai_t *ai, map_t *map)
 }
 
 void handle_forward(
-    char const *arg,
     client_t *cli,
-    game_t *game,
-    client_t *clients
+    command_state_t *s
 )
 {
     ai_t *ai = cli->ai;
 
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
     if (ai->dir == UP || ai->dir == DOWN) {
-        move_y(ai, game->map);
+        move_y(ai, s->game->map);
     } else {
-        move_x(ai, game->map);
+        move_x(ai, s->game->map);
     }
     prepare_response(&cli->io, "ok\n");
 }

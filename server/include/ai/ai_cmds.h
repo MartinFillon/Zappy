@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include "router/route.h"
 #include "types/client.h"
 #include "types/game.h"
 
@@ -24,12 +24,7 @@ typedef struct ai_cmds_s {
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_forward(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_forward(client_t *cli, command_state_t *s);
 
 /**
  * @brief Rotate player's direction of 90° in right side.
@@ -38,12 +33,7 @@ void handle_forward(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_rotate_right(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_rotate_right(client_t *cli, command_state_t *s);
 
 /**
  * @brief Rotate player's direction of 90° in left side.
@@ -52,12 +42,7 @@ void handle_rotate_right(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_rotate_left(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_rotate_left(client_t *cli, command_state_t *s);
 
 /**
  * @brief Look at tiles in front of the player and send it.
@@ -66,12 +51,7 @@ void handle_rotate_left(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_look(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_look(client_t *cli, command_state_t *s);
 
 /**
  * @brief Send a message to all the players in the map.
@@ -80,12 +60,7 @@ void handle_look(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_broadcast(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_broadcast(client_t *cli, command_state_t *s);
 
 /**
  * @brief Take an object specified in @param arg and store it in
@@ -95,12 +70,7 @@ void handle_broadcast(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_take_object(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
+void handle_take_object(client_t *cli, command_state_t *s);
 
 /**
  * @brief Drop an object specified in @param arg from player's inventory in
@@ -110,30 +80,4 @@ void handle_take_object(
  * @param game Game object with all the current game state.
  * @param clients All the clients connected.
  */
-void handle_set_object(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-);
-
-static const ai_cmds_t AI_CMDS[] = {
-    {"Forward", handle_forward},
-
-    {"Right", handle_rotate_right},
-    {"Left", handle_rotate_left},
-
-    {"Look", handle_look},
-    // {"Inventory", NULL},
-    {"Broadcast ", handle_broadcast},
-
-    // {"Connect_nbr", NULL},
-    // {"Fork", NULL},
-    // {"Eject", NULL},
-
-    {"Take ", handle_take_object},
-    {"Set ", handle_set_object},
-    // {"Incantation", NULL},
-
-    {NULL, NULL}
-};
+void handle_set_object(client_t *cli, command_state_t *s);
