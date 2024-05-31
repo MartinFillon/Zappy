@@ -8,8 +8,8 @@
 use std::env::var;
 use std::process;
 
-use log::info;
 use env_logger::{Builder, Env};
+use log::info;
 
 pub mod ai;
 pub mod commands;
