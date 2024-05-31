@@ -23,7 +23,7 @@ static int fill_client(
     for (int i = 0; i < SOMAXCONN; i++) {
         if (clients[i].fd == 0) {
             init_client(&clients[i], fd);
-            send_client(&clients[i], "WELCOME\n");
+            prepare_response(&clients[i].io, "WELCOME\n");
             logs(
                 INFO,
                 "New client %s:%d with fd %d\n",

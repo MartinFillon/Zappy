@@ -9,7 +9,7 @@
 #include "client.h"
 #include "types/client.h"
 
-static void free_buffer(struct buffer_s *buffer)
+void free_buffer(struct buffer_s *buffer)
 {
     free(buffer->buffer);
     buffer->buffer = NULL;

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "types/buffer.h"
 #include "types/map.h"
 #include "types/object.h"
 
@@ -66,14 +67,15 @@ void display_map(map_t *map, size_t width, size_t height);
 
 
 /**
- * @brief Send informations about a tile in a client with @param fd
+ * @brief Putting information from map into the buffer inside @param io
+ *        response buffer
  *
- * @param fd File descriptor of the client
+ * @param io Input/Output structure containing response buffer
  * @param map the map object
  * @param y y coordinates of the tile
  * @param x x coordinates of the tile
  */
-void send_info_tile(int fd, map_t *map, size_t y, size_t x);
+void prepare_info_tile(io_t *io, map_t *map, size_t y, size_t x);
 
 /**
  * @brief retieves a tile from the map

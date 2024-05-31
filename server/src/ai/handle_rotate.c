@@ -20,11 +20,11 @@ void handle_rotate_right(
 )
 {
     if (!is_empty(arg))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     (void) clients;
     (void) game;
     cli->ai->dir = (cli->ai->dir + 1) % NB_DIR;
-    send_client(cli, "ok\n");
+    prepare_response(&cli->io, "ok\n");
 }
 
 void handle_rotate_left(
@@ -35,9 +35,9 @@ void handle_rotate_left(
 )
 {
     if (!is_empty(arg))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     (void) clients;
     (void) game;
     cli->ai->dir = modulo((cli->ai->dir - 1), NB_DIR);
-    send_client(cli, "ok\n");
+    prepare_response(&cli->io, "ok\n");
 }

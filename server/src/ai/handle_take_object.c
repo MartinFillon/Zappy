@@ -12,7 +12,7 @@
 static void increment_item(client_t *cli, size_t *item_quantity)
 {
     (*item_quantity)++;
-    send_client(cli, "ok\n");
+    prepare_response(&cli->io, "ok\n");
 }
 
 static void take_object_down(
@@ -22,7 +22,7 @@ static void take_object_down(
 )
 {
     if (!take_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     switch (obj->obj) {
         case FOOD:
             return increment_item(cli, &cli->ai->inventory.food);
@@ -52,12 +52,12 @@ void handle_take_object(
 
     (void) clients;
     if (is_empty(arg))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     for (size_t i = 0; i < NB_OBJ; i++) {
         if (strcmp(arg, all_obj[i].name) == 0) {
             take_object_down(cli, map, all_obj + i);
             return;
         }
     }
-    send_client(cli, "ko\n");
+    prepare_response(&cli->io, "ko\n");
 }

@@ -31,8 +31,11 @@ static void handle_cli_isset(zappy_t *z, int i)
     if (FD_ISSET(z->clients[i].fd, &z->server.write_fds)
         && z->clients[i].io.is_ready) {
         z->clients[i].io.is_ready = false;
-        if (z->clients[i].io.res.size != 0)
+        if (z->clients[i].io.res.size != 0
+            && z->clients[i].io.res.buffer != NULL) {
             send_client(&z->clients[i], z->clients[i].io.res.buffer);
+            free_buffer(&z->clients[i].io.res);
+        }
     }
 }
 
