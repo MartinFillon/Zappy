@@ -7,13 +7,13 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
-pub async fn eject(client: &mut TcpClient) -> Result<bool, bool> {
+use log::info;
+
+pub async fn eject(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    info!("Ejecting...");
     let response = client.check_dead("Eject\n").await?;
-    match response.as_str() {
-        "ok\n" => Ok(true),
-        _ => Ok(false),
-    }
+    client.handle_response(response).await
 }

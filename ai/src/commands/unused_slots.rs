@@ -7,13 +7,16 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
-pub async fn unused_slots(client: &mut TcpClient) -> Result<usize, bool> {
+use log::info;
+
+pub async fn unused_slots(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    info!("Checking unused slots...");
     let response = client.check_dead("Connect_nbr\n").await?;
     match response.parse::<usize>() {
-        Ok(nb) => Ok(nb),
-        Err(_) => Err(true),
+        Ok(nb) => Ok(ResponseResult::Value(nb)),
+        Err(_) => Err(CommandError::InvalidResponse),
     }
 }

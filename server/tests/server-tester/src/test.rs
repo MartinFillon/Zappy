@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use serde::Deserialize;
-use std::fmt::Display;
+use std::fmt::{Display, Formatter, Result};
 
 use crate::client::Mode;
 
@@ -20,7 +20,7 @@ pub struct Test {
 }
 
 impl Display for Command {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{} -> {{", self.command)?;
         self.expected
             .iter()
