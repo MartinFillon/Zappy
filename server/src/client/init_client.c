@@ -10,8 +10,10 @@
 void init_client(client_t *c, int fd)
 {
     c->fd = fd;
-    c->buffer.buffer = NULL;
-    c->buffer.size = 0;
+    c->io.req.buffer = NULL;
+    c->io.req.size = 0;
+    c->io.res.buffer = NULL;
+    c->io.res.size = 0;
     c->ai = NULL;
     c->type = UNSET;
     c->entrypoint = &unset_entrypoint;

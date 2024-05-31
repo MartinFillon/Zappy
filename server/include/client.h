@@ -18,6 +18,25 @@
 void init_client(client_t *c, int fd);
 
 /**
+ * @brief Prepare the response of the client in his @param io parameter.
+ *
+ * @param io Input/Output structure containing the response buffer/size
+ * @param fmt the message to send
+ * @param ... the arguments to replace in the message
+ */
+void prepare_response(io_t *io, char *fmt, ...);
+
+/**
+ * @brief Add the formatted string from @param fmt and @param ... in the
+ *        io response buffer
+ *
+ * @param io Input/Output structure containing the response buffer/size
+ * @param fmt the message to use for concat
+ * @param ... the arguments to replace in the message
+ */
+void prepare_response_cat(io_t *io, char *fmt, ...);
+
+/**
  * @brief Send a message to the client
  *
  * @param client the client structure
@@ -83,6 +102,13 @@ int unset_entrypoint(
 );
 
 /**
+ * @brief Free and reset a buffer at 0
+ *
+ * @param buffer the buffer to be reseted
+ */
+void free_buffer(struct buffer_s *buffer);
+
+/**
  * @brief Close the client
  *
  * @param c the client structure
@@ -105,4 +131,12 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
  * @param team the team structure
  * @return true if success, false if error
  */
-bool init_ai(game_t *game, client_t *client, team_t const *team);
+bool init_ai(game_t *game, client_t *client, team_t *team);
+
+/**
+ * @brief Broadcast a message to all fds
+ *
+ * @param v the vector of fds
+ * @param fmt the message to send
+ */
+void broadcast(struct vector_int *v, char *fmt, ...);

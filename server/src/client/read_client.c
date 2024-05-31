@@ -23,15 +23,15 @@ int read_client(client_t *c)
         return -1;
     }
     logs(DEBUG, "Read %ld bytes from client %d\n", bytes_read, c->fd);
-    if (c->buffer.buffer == NULL) {
-        c->buffer.buffer = strdup(buffer);
-        c->buffer.size = strlen(c->buffer.buffer);
+    if (c->io.req.buffer == NULL) {
+        c->io.req.buffer = strdup(buffer);
+        c->io.req.size = strlen(c->io.req.buffer);
     } else {
-        c->buffer.buffer =
-            realloc(c->buffer.buffer, c->buffer.size + bytes_read + 1);
-        strcat(c->buffer.buffer, buffer);
-        c->buffer.size = strlen(c->buffer.buffer);
+        c->io.req.buffer =
+            realloc(c->io.req.buffer, c->io.req.size + bytes_read + 1);
+        strcat(c->io.req.buffer, buffer);
+        c->io.req.size = strlen(c->io.req.buffer);
     }
-    logs(DEBUG, "Buffer: %s\n", c->buffer.buffer);
+    logs(DEBUG, "Buffer: %s\n", c->io.req.buffer);
     return 0;
 }

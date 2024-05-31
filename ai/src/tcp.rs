@@ -8,7 +8,6 @@
 #![allow(dead_code)]
 
 use std::io::{Error, ErrorKind};
-
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
@@ -134,7 +133,7 @@ impl TcpClient {
     }
 }
 
-pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
+pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> {
     let mut client = TcpClient::new(address.as_str());
     client.connect().await?;
 
@@ -146,6 +145,25 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<()> {
             "Couldn't reach host.",
         ));
     }
-    command_handle::start_ai(client, team).await?;
-    Ok(())
+
+    client.send_request(team + "\n").await?;
+    if let Some(response) = client.get_response().await {
+        match response.as_str() {
+            "ko\n" => {
+                print!("server> {}", response);
+                return Err(Error::new(
+                    ErrorKind::ConnectionRefused,
+                    "No room for player.",
+                ));
+            }
+            _ => print!("server> {}", response),
+        }
+    } else {
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
+    }
+
+    Ok(client)
 }

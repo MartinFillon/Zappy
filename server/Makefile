@@ -41,16 +41,12 @@ BASE_SRC = $(addsuffix .c, 				\
 							send_info_tile 	\
 						)\
 						$(addprefix team/,	\
+							egg				\
 							team			\
 						)\
+						broadcast			\
 						game 				\
 					)\
-          			$(addprefix queue/,   \
-          			  	create              \
-          			  	delete              \
-          			  	push                \
-          			  	pop                 \
-          			)\
 					$(addprefix server/, 	\
 						accept				\
 					  	init_server			\
@@ -77,6 +73,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\
 						clock				\

@@ -20,7 +20,7 @@ void team_names(
     if (c->type != GUI)
         return;
     if (args[0] != '\0')
-        return send_client(c, "sbp\n");
+        return prepare_response(&c->io, "sbp\n");
     for (size_t i = 0; i < g->teams->size; i++)
-        send_client(c, "tna %s\n", g->teams->data[i].name);
+        prepare_response(&c->io, "tna %s\n", g->teams->data[i].name);
 }

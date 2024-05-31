@@ -20,8 +20,8 @@ void request_time(
     if (c->type != GUI)
         return;
     if (args[0] != '\0')
-        return send_client(c, "sbp\n");
-    send_client(c, "sgt %d\n", g->frequency);
+        return prepare_response(&c->io, "sbp\n");
+    prepare_response(&c->io, "sgt %d\n", g->frequency);
 }
 
 void update_time(
@@ -37,9 +37,9 @@ void update_time(
     if (c->type != GUI)
         return;
     if (parse_number(args, (long *)&nfreq) == false || nfreq < 0)
-        return send_client(c, "sbp\n");
+        return prepare_response(&c->io, "sbp\n");
     g->frequency = nfreq;
-    send_client(c, "sst %d\n", nfreq);
+    prepare_response(&c->io, "sst %d\n", nfreq);
     for (__auto_type i = 0ul; i < g->ais->size; i++) {
         g->ais->data[i].clock->frequency = nfreq;
         g->ais->data[i].food_clock->frequency = nfreq;

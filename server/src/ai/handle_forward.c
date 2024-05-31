@@ -53,11 +53,11 @@ void handle_forward(
 
     (void) clients;
     if (!is_empty(arg))
-        return send_client(cli, "ko\n");
+        return prepare_response(&cli->io, "ko\n");
     if (ai->dir == UP || ai->dir == DOWN) {
         move_y(ai, game->map);
     } else {
         move_x(ai, game->map);
     }
-    send_client(cli, "ok\n");
+    prepare_response(&cli->io, "ok\n");
 }
