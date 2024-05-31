@@ -12,16 +12,16 @@
 #include "gui/defs.h"
 #include "logger.h"
 #include "map.h"
+#include "middlewares.h"
 #include "str.h"
 #include "types/map.h"
-#include "router/error_callbacks.h"
 
 static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
 {
     struct tile_s *tile = get_tile(map, x, y);
 
     if (tile == NULL)
-        return INVALID_ARGS_CALLBACKS[c->type](c->fd);
+        return send_invalid_args(c);
     logs(DEBUG, "Retrieving tile %ld %ld\n", x, y);
     send_client(
         c,
@@ -44,7 +44,7 @@ void map_content_tile(client_t *cli, command_state_t *com)
     long y = 0;
 
     if (str_toint(&x, com->args->data[1]) || str_toint(&y, com->args->data[1]))
-        return INVALID_ARGS_CALLBACKS[cli->type](cli->fd);
+        return send_invalid_args(cli);
     get_and_send_tile(x, y, com->game->map, cli);
 }
 

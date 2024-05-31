@@ -7,17 +7,9 @@
 
 #include <stdlib.h>
 #include "client.h"
+#include "middlewares.h"
+#include "router/route.h"
 #include "types/client.h"
-
-bool parse_number(char *args, long *n)
-{
-    char *end;
-
-    *n = strtol(args, &end, 10);
-    if (end[0] != '\0' || *n < 0)
-        return false;
-    return true;
-}
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {
@@ -33,38 +25,22 @@ static void send_infos(client_t *c, ai_t *ai, size_t nb)
     );
 }
 
-void player_position(
-    char *args,
-    client_t *c,
-    game_t *g,
-    client_t *clients
-)
+void player_position(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
-    return send_infos(c, &g->ais->data[nb], nb);
+    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+        return send_invalid_args(c);
+    return send_infos(c, &com->game->ais->data[nb], nb);
 }
 
-void player_level(
-    char *args,
-    client_t *c,
-    game_t *g,
-    client_t *clients
-)
+void player_level(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
-    return send_client(c, "plv %ld %d", nb, g->ais->data[nb].level);
+    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+        return send_invalid_args(c);
+    return send_client(c, "plv %ld %d", nb, com->game->ais->data[nb].level);
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
@@ -85,19 +61,11 @@ static void send_inventory(client_t *c, ai_t *ai, size_t nb)
     );
 }
 
-void player_inventory(
-    char *args,
-    client_t *c,
-    game_t *g,
-    client_t *clients
-)
+void player_inventory(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
-    return send_inventory(c, &g->ais->data[nb], nb);
+    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+        return send_invalid_args(c);
+    return send_inventory(c, &com->game->ais->data[nb], nb);
 }
