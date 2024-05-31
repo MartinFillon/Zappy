@@ -15,6 +15,7 @@ use async_trait::async_trait;
 use tokio::io::{self};
 
 use std::fmt::Display;
+use std::io::{Error, ErrorKind};
 
 use log::info;
 
@@ -143,8 +144,26 @@ impl Display for ResponseResult {
     }
 }
 
-#[warn(dead_code)]
-pub async fn start_ai(mut _client: TcpClient) -> io::Result<()> {
+#[warn(unused_mut)]
+pub async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
     info!("Starting AI...");
+    client.send_request(team + "\n").await?;
+    if let Some(response) = client.get_response().await {
+        match response.as_str() {
+            "ko\n" => {
+                print!("server> {}", response);
+                return Err(Error::new(
+                    ErrorKind::ConnectionRefused,
+                    "No room for player.",
+                ));
+            }
+            _ => print!("server> {}", response),
+        }
+    } else {
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
+    }
     Ok(())
 }
