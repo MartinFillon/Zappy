@@ -20,11 +20,11 @@ pub async fn incantation(client: &mut TcpClient) -> Result<Option<usize>, bool> 
                     "ko\n" => Ok(None),
                     "dead\n" => Err(false),
                     level if res2.starts_with("Current level:") => match level
-                    .trim_end()
-                    .split_once(": ")
-                    .unwrap_or_default()
-                    .1
-                    .parse::<usize>()
+                        .trim_end()
+                        .split_once(": ")
+                        .unwrap_or_default()
+                        .1
+                        .parse::<usize>()
                     {
                         Ok(k) => Ok(Some(k)),
                         Err(_) => Err(true),
