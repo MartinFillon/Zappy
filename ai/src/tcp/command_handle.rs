@@ -18,6 +18,29 @@ use std::io::{Error, ErrorKind};
 
 use log::info;
 
+enum Direction {
+    North,
+    NorthWest,
+    West,
+    SouthWest,
+    South,
+    SouthEast,
+    East,
+    NorthEast
+}
+
+enum ResponseResult {
+    ok,
+    ko,
+    dead,
+    Value(i32),
+    Text(String),
+    Tiles(Vec<String>),
+    Inventory(Vec<String>),
+    Incantation(i32),
+    Message((Direction, String))
+}
+
 #[async_trait]
 pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, bool>;
