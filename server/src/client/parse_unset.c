@@ -70,7 +70,7 @@
 
 void unset_command(client_t *c, command_state_t *s)
 {
-    if (strcmp(s->args->data[1]->data, "GRAPHIC") == 0) {
+    if (strcmp(s->args->data[0]->data, "GRAPHIC") == 0) {
         c->type = GUI;
         return logs(INFO, "Client %d is a GUI\n", c->fd);
     }
@@ -78,7 +78,7 @@ void unset_command(client_t *c, command_state_t *s)
         return logs(WARNING, "No teams set\n");
     }
     for (size_t i = 0; i < s->game->teams->size; i++)
-        if (strcmp(s->args->data[1]->data, s->game->teams->data[i].name) == 0) {
+        if (strcmp(s->args->data[0]->data, s->game->teams->data[i].name) == 0) {
             c->type = AI;
             return logs(
                 INFO,

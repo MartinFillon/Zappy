@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 
-#include "logger.h"
 #include "router/router.h"
 #include "types/client.h"
 #include "zappy.h"
@@ -20,7 +19,6 @@ static route_t *get_route(
 )
 {
     for (__auto_type i = 0ul; i < this->size; i++) {
-        logs(INFO, "command: %s\n", this->data[i]->command->data);
         if (str_cmp(this->data[i]->command, name) == 0 &&
             this->data[i]->mode == cli_mode)
             return this->data[i];
@@ -56,7 +54,7 @@ void run_router(
 {
     struct vector_str_t *v = str_split(line, " \t");
     route_t *route = {0};
-    static route_t unset = {NULL, NULL, NULL, 0, UNSET, &unset_command, 1};
+    static route_t unset = {NULL, NULL, NULL, 0, UNSET, &unset_command, 0};
 
     if (v->size == 0)
         return;
