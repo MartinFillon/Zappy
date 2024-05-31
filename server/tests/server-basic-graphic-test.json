@@ -1,7 +1,7 @@
 {
     "tests": [
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "map size",
             "description": "This is a sample test that tests map size",
             "commands": [
@@ -14,7 +14,7 @@
             ]
         },
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "frequency",
             "description": "Check if frequency is retrieved right",
             "commands": [
@@ -27,7 +27,7 @@
             ]
         },
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "unknown command",
             "description": "Test an unknown command",
             "commands": [
@@ -40,7 +40,7 @@
             ]
         },
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "team name",
             "description": "Test team name",
             "commands": [
@@ -53,7 +53,7 @@
             ]
         },
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "set frequency",
             "description": "Test set frequency",
             "commands": [
@@ -74,11 +74,17 @@
                     "expected": [
                         "sgt 2"
                     ]
+                },
+                {
+                    "command": "sst 1",
+                    "expected": [
+                        "sst 1"
+                    ]
                 }
             ]
         },
         {
-            "mode": "GRAPHIC",
+            "mode": "Graphic",
             "name": "bad argument",
             "description": "Test bad argument",
             "commands": [
@@ -86,6 +92,19 @@
                     "command": "msz 1",
                     "expected": [
                         "sbp"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "Unset",
+            "name": "unset mode error",
+            "description": "Test unset mode error",
+            "commands": [
+                {
+                    "command": "a dumb command",
+                    "expected": [
+                        "ko"
                     ]
                 }
             ]

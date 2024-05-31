@@ -13,6 +13,8 @@
 #include "logger.h"
 #include "macros.h"
 #include "server.h"
+#include "types/client.h"
+#include "utils.h"
 
 static int fill_client(
     client_t *clients,

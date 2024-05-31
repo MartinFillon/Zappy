@@ -5,64 +5,87 @@
 ** queue
 */
 
-#pragma once
+#ifndef QUEUE
+    #define QUEUE
 
-#include <stdlib.h>
-#include "command.h"
+    #include <stdbool.h>
+    #include <stdlib.h>
+    #include <string.h>
 
-struct queue_node_s {
-    command_t command;
-    struct queue_node_s *next;
+    #ifndef TYPE
+        #define TYPE int
+    #endif
+
+    #define FN_NAME_INNER(x, t) x##_##t
+    #define FN_NAME(x, t) FN_NAME_INNER(x, t)
+
+    #ifndef NAME
+        #define NAME FN_NAME(queue, TYPE)
+    #endif
+
+struct NAME {
+    TYPE *data;
+    size_t size;
+    size_t capacity;
 };
 
-typedef struct {
-    struct queue_node_s *node;
-    size_t size_max;
-    size_t len;
-} queue_t;
+/**
+** @brief creates a queue
+** @param the initial capacity
+**/
+static inline struct NAME *FN_NAME(queue_create, NAME)(size_t capacity)
+{
+    struct NAME *vec =
+        (struct NAME *)calloc(1, sizeof(struct NAME));
 
-enum queue_error_e {
-    QUEUE_SUCCESS = 0,
-    QUEUE_ERROR = 1,
-    QUEUE_ALLOC_FAILED = 2
-};
+    vec->data = (TYPE *)calloc(capacity, sizeof(TYPE));
+    vec->size = 0;
+    vec->capacity = capacity;
+    return vec;
+}
 
 /**
- * @brief creates a new queue with a max size specified
- *
- * @param size_max the max size of the queue
- * @return the new queue
- */
-queue_t *new_queue(size_t size_max);
+** @brief destroys a queue
+** @param the queue to destroy
+**/
+static inline void FN_NAME(queue_destroy, NAME)(struct NAME *vec)
+{
+    free(vec->data);
+    free(vec);
+}
 
 /**
- * @brief free a queue
- *
- * @param q the queue to free
- */
-void free_queue(queue_t *q);
+** @brief push a new value to a queue
+** @param the queue to push into
+** @param the elem to push
+**/
+static inline void FN_NAME(queue_pushback, NAME)(
+    struct NAME *vec,
+    TYPE elem
+)
+{
+    if (vec->size == vec->capacity) {
+        vec->capacity *= 2;
+        vec->data = (TYPE *)realloc(vec->data, vec->capacity * sizeof(TYPE));
+    }
+    vec->data[vec->size] = elem;
+    vec->size++;
+}
 
 /**
- * @brief push a command to the back of the queue
- *
- * @param q the queue
- * @param command the command to push
- * @return QUEUE_SUCESS or QUEUE_ERROR or QUEUE_ALLOC_FAILED
- */
-enum queue_error_e queue_push_back(queue_t *q, command_t *command);
+** @brief remove last elem in a queue
+** @param the queue to remove from
+**/
+static inline TYPE FN_NAME(queue_pop, NAME)(struct NAME *queue)
+{
+    TYPE elem = queue->data[0];
 
-/**
- * @brief pop the first command of the queue
- *
- * @param q the queue
- * @return the command (which is a stack allocation) or NULL
- */
-command_t *queue_pop(queue_t *q);
+    memmove(queue->data, queue->data + 1, (queue->size - 1) * sizeof(TYPE));
+    queue->size--;
+    return elem;
+}
 
-/**
- * @brief display the queue
- *
- * @param q the queue
- * @param f the function to display the command
- */
-void queue_display(queue_t *q, void (*f)(command_t *));
+    #undef TYPE
+    #undef NAME
+    #undef QUEUE
+#endif
