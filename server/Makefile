@@ -16,6 +16,7 @@ SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					init_program 			\
+					destroy_program 		\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -52,6 +53,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					  	init_server			\
 						zappy_server		\
 						buffer 				\
+						destroy_server		\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
@@ -68,8 +70,6 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix client/, 	\
 						init_client			\
 						send	 			\
-						ai_entrypoint	 	\
-						gui_entrypoint	 	\
 						parse_unset			\
 						read_client			\
 						close_client		\
@@ -87,6 +87,16 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_broadcast 	\
 						handle_take_object 	\
 						handle_set_object 	\
+						destroy				\
+					)\
+					$(addprefix router/, 	\
+						mode_parser			\
+						init_router			\
+						destroy_router		\
+						run 				\
+					)\
+					$(addprefix middleware/,\
+						invalid				\
 					)\
 				)\
 			)\

@@ -35,8 +35,7 @@ struct NAME {
 **/
 static inline struct NAME *FN_NAME(vec_create, NAME)(size_t capacity)
 {
-    struct NAME *vec =
-        (struct NAME *)calloc(1, sizeof(struct NAME));
+    struct NAME *vec = (struct NAME *)calloc(1, sizeof(struct NAME));
 
     vec->data = (TYPE *)calloc(capacity, sizeof(TYPE));
     vec->size = 0;
@@ -59,10 +58,7 @@ static inline void FN_NAME(vec_destroy, NAME)(struct NAME *vec)
 ** @param the vector to push into
 ** @param the elem to push
 **/
-static inline void FN_NAME(vec_pushback, NAME)(
-    struct NAME *vec,
-    TYPE elem
-)
+static inline void FN_NAME(vec_pushback, NAME)(struct NAME *vec, TYPE elem)
 {
     if (vec->size == vec->capacity) {
         vec->capacity *= 2;
@@ -113,7 +109,7 @@ static inline bool FN_NAME(vec_erase_at, NAME)(struct NAME *vec, size_t idx)
 static inline bool FN_NAME(vec_erase, NAME)(
     struct NAME *vec,
     TYPE elem,
-    bool (*cmp) (TYPE, TYPE)
+    bool (*cmp)(TYPE, TYPE)
 )
 {
     for (size_t i = 0; i < vec->size; i++) {
@@ -126,12 +122,23 @@ static inline bool FN_NAME(vec_erase, NAME)(
 
 static inline void FN_NAME(vec_foreach, NAME)(
     struct NAME *vec,
-    void (*func) (TYPE *)
+    void (*func)(TYPE *)
 )
 {
     for (size_t i = 0; i < vec->size; i++) {
         func(vec->data + i);
     }
+}
+
+static inline void FN_NAME(vec_free, NAME)(
+    struct NAME *vec,
+    void (*free_func)(TYPE)
+)
+{
+    for (__auto_type i = 0ul; i < vec->size; i++)
+        if (free_func)
+            free_func(vec->data[i]);
+    FN_NAME(vec_destroy, NAME)(vec);
 }
 
     #undef TYPE

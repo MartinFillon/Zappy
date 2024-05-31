@@ -39,7 +39,6 @@ int append_value(json_parser_t *p, json_data_t *elem)
         return 0;
     }
     if (p->self->t == OBJECT) {
-        dprintf(2, "pushing %s\n", p->current_key->data);
         map_push_json_data_t(p->self->data.obj, str_dup(p->current_key), elem);
         return 0;
     }

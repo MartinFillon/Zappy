@@ -6,6 +6,7 @@
 */
 
 #include <stdio.h>
+#include <sys/socket.h>
 #include "client.h"
 #include "clock.h"
 #include "queue.h"
@@ -13,7 +14,7 @@
 #include "types/client.h"
 #include "types/team.h"
 
-static void send_infos(int fd, game_t *game, ai_t const *new)
+static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
 {
     dprintf(
         fd,
@@ -23,19 +24,26 @@ static void send_infos(int fd, game_t *game, ai_t const *new)
         game->map->x,
         game->map->y
     );
-    broadcast(
-        game->guis,
-        "pnw %d %d %d %d %d %s\n",
-        new->id,
-        new->pos.x,
-        new->pos.y,
-        new->dir + 1,
-        new->level,
-        new->team->name
-    );
+    for (__auto_type i = 0; i < SOMAXCONN; i++)
+        if (clis[i].fd > 0 && clis[i].type == GUI)
+            prepare_response_cat(
+                &clis[i].io,
+                "pnw %d %d %d %d %d %s\n",
+                new->id,
+                new->pos.x,
+                new->pos.y,
+                new->dir + 1,
+                new->level,
+                new->team->name
+            );
 }
 
-bool init_ai(game_t *game, client_t *client, team_t *team)
+bool init_ai(
+    game_t *game,
+    client_t *restrict client,
+    team_t *team,
+    client_t *restrict clients
+)
 {
     ai_t new = {0};
     egg_t *egg = NULL;
@@ -55,6 +63,6 @@ bool init_ai(game_t *game, client_t *client, team_t *team)
     free(egg);
     vec_pushback_vector_ai_t(game->ais, new);
     client->ai = &game->ais->data[game->ais->size - 1];
-    send_infos(client->fd, game, &new);
+    send_infos(client->fd, game, &new, clients);
     return false;
 }

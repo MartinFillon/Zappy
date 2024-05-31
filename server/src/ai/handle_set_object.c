@@ -5,11 +5,12 @@
 ** handle_set_object
 */
 
-#include "types/ai.h"
-#include "types/object.h"
-#include "utils.h"
 #include "client.h"
 #include "map.h"
+#include "router/route.h"
+#include "str.h"
+#include "types/ai.h"
+#include "types/object.h"
 
 static bool try_decrement_item(size_t *item_quantity)
 {
@@ -48,28 +49,20 @@ static void set_object_down(
 )
 {
     if (!check_item(cli->ai, obj->obj))
-        return prepare_response(&cli->io, "ko\n");
+        return prepare_response_cat(&cli->io, "ko\n");
     drop_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj);
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
 }
 
-void handle_set_object(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_set_object(client_t *cli, command_state_t *s)
 {
-    map_t *map = game->map;
+    map_t *map = s->game->map;
 
-    if (is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    (void) clients;
     for (size_t i = 0; i < NB_OBJ; i++) {
-        if (strcmp(arg, all_obj[i].name) == 0) {
+        if (strcmp(s->args->data[1]->data, all_obj[i].name) == 0) {
             set_object_down(cli, map, &all_obj[i]);
             return;
         }
     }
-    prepare_response(&cli->io, "ko\n");
+    prepare_response_cat(&cli->io, "ko\n");
 }

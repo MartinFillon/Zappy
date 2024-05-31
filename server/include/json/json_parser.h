@@ -27,7 +27,7 @@ int parse_boolean(json_parser_t *p);
 ** @brief to be called when encountering a number
 ** @param the parser to use
 **/
-int parse_number(json_parser_t *p);
+int parse_json_number(json_parser_t *p);
 
 /**
 ** @brief to be called when encountering a string

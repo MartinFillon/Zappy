@@ -199,7 +199,6 @@ impl Client for Graphic {
         self.set_map(self.read_map(sock, verbose)?);
         for _ in 0..server_options.teams.len() {
             let line = sock.get_line().map_err(|e| e.to_string())?;
-            print!("Received: {line}");
             self.set_teams(self.read_teams(&line)?);
         }
 
@@ -209,7 +208,6 @@ impl Client for Graphic {
 
         for _ in 0..server_options.count_per_team {
             let line = sock.get_line().map_err(|e| e.to_string())?;
-            print!("Received: {line}");
             let (id, pos) = self.read_egg(&line)?;
             self.eggs.insert(id, pos);
         }
