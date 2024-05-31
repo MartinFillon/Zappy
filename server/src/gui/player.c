@@ -9,8 +9,8 @@
 #include "client.h"
 #include "middlewares.h"
 #include "router/route.h"
-#include "types/client.h"
 #include "str.h"
+#include "types/client.h"
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {
@@ -30,7 +30,9 @@ void player_position(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+    if (str_toint(&nb, com->args->data[1]))
+        return send_invalid_args(c);
+    if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
     return send_infos(c, &com->game->ais->data[nb], nb);
 }
@@ -39,9 +41,13 @@ void player_level(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+    if (str_toint(&nb, com->args->data[1]))
         return send_invalid_args(c);
-    return prepare_response(&c->io, "plv %ld %d", nb, com->game->ais->data[nb].level);
+    if ((size_t)nb >= com->game->ais->size)
+        return send_invalid_args(c);
+    return prepare_response(
+        &c->io, "plv %ld %d", nb, com->game->ais->data[nb].level
+    );
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
@@ -66,7 +72,9 @@ void player_inventory(client_t *c, command_state_t *com)
 {
     long nb = -1;
 
-    if (str_toint(&nb, com->args->data[1]) || (size_t)nb > com->game->ais->size)
+    if (str_toint(&nb, com->args->data[1]))
+        return send_invalid_args(c);
+    if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
     return send_inventory(c, &com->game->ais->data[nb], nb);
 }

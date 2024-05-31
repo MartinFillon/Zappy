@@ -24,7 +24,7 @@ static void load_routes(router_t *router)
         create_route(router->self, &ROUTES[i]);
 }
 
-static router_t *alloc_router()
+static router_t *alloc_router(void)
 {
     router_t *r = calloc(1, sizeof(router_t));
 
@@ -37,6 +37,7 @@ static router_t *alloc_router()
 router_t *init_router(void)
 {
     router_t *r = alloc_router();
+
     if (!r) {
         logs(ERROR_LEVEL, "ROUTER INIT ERROR\n");
         return NULL;

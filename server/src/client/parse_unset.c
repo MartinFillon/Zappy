@@ -84,7 +84,7 @@ void unset_command(client_t *c, command_state_t *s)
     if (s->game->teams == NULL)
         return logs(WARNING, "No teams set\n");
     for (size_t i = 0; i < s->game->teams->size; i++)
-        if (strcmp(s->args->data[0]->data, s->game->teams->data[i].name) == 0) {
+        if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
             c->type = AI;
             logs(
                 INFO,

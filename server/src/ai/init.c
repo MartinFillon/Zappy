@@ -14,7 +14,7 @@
 #include "types/client.h"
 #include "types/team.h"
 
-static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clients)
+static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
 {
     dprintf(
         fd,
@@ -25,9 +25,9 @@ static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clients)
         game->map->y
     );
     for (__auto_type i = 0; i < SOMAXCONN; i++)
-        if (clients[i].fd > 0 && clients[i].type == GUI)
+        if (clis[i].fd > 0 && clis[i].type == GUI)
             prepare_response(
-                &clients[i].io,
+                &clis[i].io,
                 "pnw %d %d %d %d %d %s\n",
                 new->id,
                 new->pos.x,

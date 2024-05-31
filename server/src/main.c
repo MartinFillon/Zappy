@@ -22,11 +22,6 @@ static void sig(int signum)
     (void)signum;
 }
 
-// set_log_level(DEBUG);
-// struct router *r = init_router("server/config/router.json");
-// run_router(GUI, r, str_snew("msz hello"));
-// destroy_router(r);
-
 int main(int ac, char const **av)
 {
     args_infos_t args = {0};
