@@ -11,9 +11,7 @@
 #include "clock.h"
 #include "types/ai.h"
 #include "types/client.h"
-#include "utils.h"
 #include "logger.h"
-#include "server.h"
 
 static void send_death(int n, client_t *clients)
 {
