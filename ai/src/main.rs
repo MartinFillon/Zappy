@@ -9,6 +9,7 @@ use std::process;
 
 pub mod ai;
 pub mod commands;
+pub mod elevation;
 pub mod flags;
 pub mod json;
 pub mod tcp;
