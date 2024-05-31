@@ -114,7 +114,6 @@ impl Display for Direction {
             Direction::NorthEast => write!(f, "NorthEast"),
         }
     }
-
 }
 
 impl Display for ResponseResult {
