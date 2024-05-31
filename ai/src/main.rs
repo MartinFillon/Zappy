@@ -5,9 +5,8 @@
 // main
 //
 
-use std::process;
-
 use std::env::var;
+use std::process;
 
 use log::info;
 

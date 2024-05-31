@@ -10,7 +10,7 @@
 use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
-use std::fmt::Display;
+use std::fmt::{Display, Formatter, Result};
 
 use log::info;
 
@@ -21,7 +21,7 @@ pub enum Direction {
 }
 
 impl Display for Direction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", DIRECTIONS[(*self) as usize])
     }
 }
