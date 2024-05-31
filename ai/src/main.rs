@@ -7,9 +7,10 @@
 
 use std::process;
 
+pub mod ai;
 pub mod commands;
 pub mod flags;
-mod json;
+pub mod json;
 pub mod tcp;
 
 const ERROR_CODE: i32 = 84;
@@ -24,7 +25,7 @@ async fn main() {
         Ok(res) => {
             let address: String =
                 format!("{}:{}", res.clone().get_machine(), res.clone().get_port());
-            match tcp::handle_tcp(address, res.get_name()).await {
+            match ai::launch(address, res.get_name()).await {
                 Ok(_) => process::exit(SUCCESS_CODE),
                 Err(e) => {
                     eprintln!("Error: {}", e);
