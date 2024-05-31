@@ -16,6 +16,7 @@ static bool valid_client(client_t *to_check, client_t *banned)
     return to_check->fd != 0 && to_check->ai->id != banned->ai->id;
 }
 
+/// Tile distance to determinate
 static void send_to_everyone(char const *msg, client_t *clients, client_t *cli)
 {
     for (int i = 0; i < SOMAXCONN; i++) {

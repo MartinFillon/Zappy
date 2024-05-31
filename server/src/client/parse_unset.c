@@ -15,7 +15,6 @@
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
-#include "utils.h"
 
 static int put_in_team(client_t *c, game_t *game, size_t i)
 {

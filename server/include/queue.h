@@ -85,6 +85,29 @@ static inline TYPE FN_NAME(queue_pop, NAME)(struct NAME *queue)
     return elem;
 }
 
+/**
+** @brief remove elem at index @param idx in a queue
+** @param queue the queue to remove from
+** @param idx the index of the element
+**/
+static inline bool FN_NAME(queue_erase_at, NAME)(
+    struct NAME *queue,
+    size_t idx
+)
+{
+    if (idx >= queue->size) {
+        return false;
+    }
+    memmove(
+        &queue->data + idx,
+        queue->data + (idx + 1),
+        (queue->size - (idx + 1)) * sizeof(TYPE)
+    );
+    queue->size--;
+    return true;
+}
+
+
     #undef TYPE
     #undef NAME
     #undef QUEUE

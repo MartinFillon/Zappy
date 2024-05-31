@@ -13,6 +13,8 @@
 #include "types/client.h"
 #include "types/team.h"
 
+#warning "prepare_response here"
+
 static void send_infos(int fd, game_t *game, ai_t const *new)
 {
     dprintf(
@@ -35,6 +37,20 @@ static void send_infos(int fd, game_t *game, ai_t const *new)
     );
 }
 
+static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
+{
+    new->inventory.food = 20;
+    new->alive = true;
+    new->id = egg->id;
+    new->pos = egg->pos;
+    new->level = 1;
+    new->dir = rand() % 4;
+    vec_pushback_vector_int(
+        map->arena[new->pos.y][new->pos.x].players,
+        new->id
+    );
+}
+
 bool init_ai(game_t *game, client_t *client, team_t *team)
 {
     ai_t new = {0};
@@ -46,12 +62,7 @@ bool init_ai(game_t *game, client_t *client, team_t *team)
     new.clock = clock_new(game->frequency);
     new.team = team;
     new.food_clock = clock_new(game->frequency);
-    new.inventory.food = 20;
-    new.alive = true;
-    new.id = egg->id;
-    new.pos = egg->pos;
-    new.level = 1;
-    new.dir = rand() % 4;
+    init_ai_info(&new, egg, game->map);
     free(egg);
     vec_pushback_vector_ai_t(game->ais, new);
     client->ai = &game->ais->data[game->ais->size - 1];
