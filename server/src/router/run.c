@@ -55,11 +55,15 @@ void run_router(
 )
 {
     struct vector_str_t *v = str_split(line, " \t");
-    route_t *route = NULL;
+    route_t *route = {0};
+    static route_t unset = {NULL, NULL, NULL, 0, UNSET, &unset_command, 1};
 
     if (v->size == 0)
         return;
-    route = get_route(this->self, v->data[0], cli->type);
+    if (cli->type != UNSET)
+        route = get_route(this->self, v->data[0], cli->type);
+    else
+        route = &unset;
     if (route == NULL)
         UNKNOWN_CALLBACKS[cli->type](2);
     else

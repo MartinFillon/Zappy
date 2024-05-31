@@ -71,7 +71,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						init_client			\
 						send	 			\
 						ai_entrypoint	 	\
-						gui_entrypoint	 	\
 						parse_unset			\
 						read_client			\
 						close_client		\

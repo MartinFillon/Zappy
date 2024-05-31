@@ -29,3 +29,4 @@ void run_router(
     zappy_t *zappy,
     str_t *line
 );
+void unset_command(client_t *c, command_state_t *s);

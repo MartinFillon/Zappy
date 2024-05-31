@@ -16,6 +16,7 @@
 #include "args_info.h"
 
 typedef struct router_s router_t;
+typedef struct zappy_s zappy_t;
 
 typedef struct server_s {
     int fd;
@@ -53,11 +54,10 @@ int accept_new_client(server_t *s, client_t *clients);
  * @brief Handle the buffer
  *
  * @param c the client structure
- * @param game the game structure
- * @param c All the clients connected
+ * @param z The zappy
  * @return int 0 if success, 84 if error
  */
-int handle_buffer(client_t *c, game_t *game, client_t *clients);
+int handle_buffer(client_t *c, zappy_t *z);
 
 /**
  * @brief Destroy the server
