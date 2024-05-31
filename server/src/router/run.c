@@ -35,14 +35,15 @@ static void run_callback(
     struct vector_str_t *line
 )
 {
-    if (route->args + 1 != line->size) {
-        return INVALID_ARGS_CALLBACKS[cli->type](2);
-    }
     command_state_t state = {
         .args = line,
-        .clients = cli,
+        .clients = zappy->clients,
         .game = &zappy->game,
     };
+
+    if (route->args + 1 != line->size) {
+        return INVALID_ARGS_CALLBACKS[cli->type](cli->fd);
+    }
     route->f(cli, &state);
 }
 

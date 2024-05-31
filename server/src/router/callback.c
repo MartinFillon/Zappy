@@ -22,5 +22,4 @@ callback_t get_callback(char const *name)
 void placeholder(client_t *, command_state_t *s)
 {
     logs(INFO, "Placeholder %d\n", s->args->size);
-    return;
 }

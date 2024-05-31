@@ -5,7 +5,6 @@
 ** load_route
 */
 
-#include <stdio.h>
 #include "json/json.h"
 
 #include "logger.h"
@@ -121,20 +120,39 @@ static int set_callback(
     return SUCCESS;
 }
 
+static int set_args(route_t *restrict route, json_data_t *restrict const json)
+{
+    str_t *args_key = str_snew("args_number");
+
+    if (!args_key) {
+        logs(ERROR_LEVEL, "Failed to allocate memory for args_key\n");
+        return ERROR;
+    }
+    route->args = json_get_number(json, args_key);
+    va_free(2, args_key, args_key->data);
+    return SUCCESS;
+}
+
 int load_route(struct router *routes, str_t const *file)
 {
     route_t *route = calloc(1, sizeof(route_t));
     char *file_c = str_cstr(file);
     json_data_t *json = json_from_file(file_c);
-    int (*setters[6])(route_t *restrict, json_data_t *const restrict) = {
-        set_name, set_description, set_command, set_mode, set_time, set_callback
+    int (*setters[7])(route_t *restrict, json_data_t *const restrict) = {
+        set_name,
+        set_description,
+        set_command,
+        set_mode,
+        set_time,
+        set_callback,
+        set_args
     };
 
     if (!route || !json) {
         logs(ERROR_LEVEL, "Failed to allocate memory for route or json\n");
         return ERROR;
     }
-    for (__auto_type i = 0; i < 6; i++) {
+    for (__auto_type i = 0; i < 7; i++) {
         if (setters[i](route, json) == ERROR)
             return ERROR;
     }

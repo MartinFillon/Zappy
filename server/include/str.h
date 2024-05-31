@@ -58,3 +58,4 @@ void str_sadd(str_t *this, str_t const *s);
 char *str_cstr(str_t const *s);
 struct vector_str_t *str_split(str_t *s, char *delim);
 void str_free(str_t *s);
+bool str_toint(long *dest, str_t const *s);

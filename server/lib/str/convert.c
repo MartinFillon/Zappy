@@ -15,3 +15,13 @@ char *str_cstr(str_t const *s)
     memcpy(cstr, s->data, s->size);
     return cstr;
 }
+
+bool str_toint(long *dest, const str_t *s)
+{
+    char *err;
+
+    *dest = strtol(s->data, &err, 10);
+    if (err == NULL || err[0] != '\0')
+        return true;
+    return false;
+}

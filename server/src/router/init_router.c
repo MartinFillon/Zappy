@@ -38,7 +38,6 @@ static void load_routes(struct vec_json_t *routes, struct router *router)
             logs(ERROR_LEVEL, "Failed to load route\n");
         va_free(2, current->data, current);
     }
-    (void)router;
 }
 
 struct router *init_router(char const *file)
