@@ -41,7 +41,7 @@ It is advised to run `zappy_server` first
 The AI has a logging system that can be enabled by setting the `RUST_LOG` environment variable to `debug`, `trace` or `info` before running the binary.
 
 ```sh
-RUST_LOG=info ./zappy_ai
+ZAPPY_LOG=info ./zappy_ai
 ```
 
 ## Our team

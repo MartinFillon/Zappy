@@ -9,6 +9,7 @@ use std::env::var;
 use std::process;
 
 use log::info;
+use env_logger::{Builder, Env};
 
 pub mod ai;
 pub mod commands;
@@ -21,9 +22,9 @@ const SUCCESS_CODE: i32 = 0;
 
 #[tokio::main]
 async fn main() {
-    if var("RUST_LOG").is_ok() {
-        env_logger::init();
-    }
+    let env = Env::new().filter("ZAPPY_LOG");
+    Builder::from_env(env).init();
+
     match flags::check_flags() {
         Ok(res) => {
             info!("Arguments set:\n{}", res.clone());
