@@ -21,8 +21,8 @@ bool parse_number(char *args, long *n)
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {
-    send_client(
-        c,
+    prepare_response(
+        &c->io,
         "ppo %lu %lu %lu %d %d %s\n",
         nb,
         ai->pos.x,
@@ -46,7 +46,7 @@ void player_position(
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
+        return prepare_response(&c->io, "sbp\n");
     return send_infos(c, &g->ais->data[nb], nb);
 }
 
@@ -63,14 +63,14 @@ void player_level(
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
-    return send_client(c, "plv %ld %d", nb, g->ais->data[nb].level);
+        return prepare_response(&c->io, "sbp\n");
+    return prepare_response(&c->io, "plv %ld %d", nb, g->ais->data[nb].level);
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
 {
-    send_client(
-        c,
+    prepare_response(
+        &c->io,
         "pin %lu %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         nb,
         ai->pos.x,
@@ -98,6 +98,6 @@ void player_inventory(
     if (c->type != GUI)
         return;
     if (parse_number(args, &nb) == false || (size_t)nb > g->ais->size)
-        return send_client(c, "sbp\n");
+        return prepare_response(&c->io, "sbp\n");
     return send_inventory(c, &g->ais->data[nb], nb);
 }
