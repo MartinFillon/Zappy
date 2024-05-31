@@ -8,6 +8,8 @@
 #pragma once
 
 #include "route.h"
+#include "str.h"
+#include "types/client.h"
 #include "zappy.h"
 
 #define TYPE route_t *
@@ -16,11 +18,9 @@
 
 typedef struct router_s {
     struct router *self;
-    str_t *routes_path;
 } router_t;
 
 void destroy_router(router_t *router);
-int load_route(struct router *routes, str_t const *file);
 router_t *init_router(void);
 void destroy_router(router_t *router);
 void run_router(

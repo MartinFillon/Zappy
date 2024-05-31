@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "str.h"
 #include "types/client.h"
 #include "types/game.h"
 
