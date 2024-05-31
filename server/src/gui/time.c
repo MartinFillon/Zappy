@@ -6,42 +6,32 @@
 */
 
 #include "client.h"
+#include "middlewares.h"
+#include "router/route.h"
+#include "str.h"
+#include "types/ai.h"
 #include "types/client.h"
-#include "utils.h"
 
-void request_time(
-    char *args,
-    client_t *c,
-    game_t *g,
-    client_t *clients
-)
+void request_time(client_t *c, command_state_t *s)
 {
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (args[0] != '\0')
-        return send_client(c, "sbp\n");
-    send_client(c, "sgt %d\n", g->frequency);
+    send_client(c, "sgt %d\n", s->game->frequency);
 }
 
-void update_time(
-    char *args,
-    client_t *c,
-    game_t *g,
-    client_t *clients
-)
+static void update_clock(ai_t *ai, double nfreq)
+{
+    ai->clock->frequency = nfreq;
+    ai->food_clock->frequency = nfreq;
+}
+
+void update_time(client_t *c, command_state_t *s)
 {
     int nfreq = 0;
 
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (parse_number(args, (long *)&nfreq) == false || nfreq < 0)
-        return send_client(c, "sbp\n");
-    g->frequency = nfreq;
+    if (str_toint((long *)&nfreq, s->args->data[1]) || nfreq < 0)
+        return send_invalid_args(c);
+    s->game->frequency = nfreq;
     send_client(c, "sst %d\n", nfreq);
-    for (__auto_type i = 0ul; i < g->ais->size; i++) {
-        g->ais->data[i].clock->frequency = nfreq;
-        g->ais->data[i].food_clock->frequency = nfreq;
+    for (__auto_type i = 0ul; i < s->game->ais->size; i++) {
+        update_clock(&s->game->ais->data[i], nfreq);
     }
 }
