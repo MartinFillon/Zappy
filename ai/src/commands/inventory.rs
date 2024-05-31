@@ -10,6 +10,8 @@
 use crate::tcp::command_handle::CommandHandler;
 use crate::tcp::TcpClient;
 
+use log::info;
+
 fn read_output(raw: String) {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     print!("Inventory: [ ");
@@ -23,6 +25,7 @@ fn read_output(raw: String) {
 }
 
 pub async fn inventory(client: &mut TcpClient) -> Result<(), bool> {
+    info!("Checking inventory...");
     let response = client.check_dead("Inventory\n").await?;
     read_output(response);
 

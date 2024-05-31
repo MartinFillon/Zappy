@@ -16,6 +16,8 @@ use std::str::FromStr;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use log::info;
+
 const LOCALHOST: &str = "127.0.0.1";
 
 const SUCCESS_CODE: i32 = 0;
@@ -85,6 +87,7 @@ impl Display for Flags {
 }
 
 fn parse_arg<T: FromStr>(arg_type: &str, arg: Option<OsString>) -> Result<T, String> {
+    info!("Parsing argument for {}...", arg_type);
     arg.ok_or_else(|| format!("Flag `{}` argument is missing.", arg_type))
         .and_then(|arg| {
             arg.into_string()
@@ -101,7 +104,8 @@ fn get_port_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let port: usize = dbg!(parse_arg(arg_type, args.next())?);
+    let port: usize = parse_arg(arg_type, args.next())?;
+    info!("Setting port to: {}.", port);
     flags_struct.set_port(port);
     Ok(())
 }
@@ -111,7 +115,8 @@ fn get_name_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let name: String = dbg!(parse_arg(arg_type, args.next())?);
+    let name: String = parse_arg(arg_type, args.next())?;
+    info!("Setting name to: {}.", name);
     flags_struct.set_name(name);
     Ok(())
 }
@@ -121,8 +126,9 @@ fn get_machine_from_args(
     args: &mut ArgsOs,
     flags_struct: &mut Flags,
 ) -> Result<(), String> {
-    let machine: String = dbg!(parse_arg(arg_type, args.next())?);
-    dbg!(flags_struct.set_machine(machine));
+    let machine: String = parse_arg(arg_type, args.next())?;
+    info!("Setting machine to: {}.", machine);
+    flags_struct.set_machine(machine);
     Ok(())
 }
 

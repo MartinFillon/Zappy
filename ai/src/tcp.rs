@@ -16,6 +16,8 @@ use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
 use tokio::task::JoinHandle;
 
+use log::{debug, info};
+
 pub mod command_handle;
 
 pub struct TcpClient {
@@ -37,7 +39,7 @@ impl TcpClient {
 
     pub async fn connect(&mut self) -> io::Result<()> {
         let stream = TcpStream::connect(&self.addr).await?;
-        println!("Connected to the server at {}", self.addr);
+        info!("Connected to the server at {}", self.addr);
 
         let (read_half, write_half) = stream.into_split();
         let reader = BufReader::new(read_half);
@@ -59,6 +61,7 @@ impl TcpClient {
     }
 
     pub async fn send_request(&self, request: String) -> io::Result<()> {
+        info!("Sending request: {}", request);
         if let Some(sender) = &self.request_sender {
             sender
                 .send(request)
@@ -73,6 +76,7 @@ impl TcpClient {
     }
 
     pub async fn get_response(&mut self) -> Option<String> {
+        info!("Getting response...");
         if let Some(receiver) = &mut self.response_receiver {
             receiver.recv().await
         } else {
@@ -93,18 +97,18 @@ impl TcpClient {
                 result = reader.read(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            println!("Connection closed by the server.");
+                            info!("Connection closed by the server.");
                             break;
                         }
                         Ok(n) => {
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
-                                eprintln!("Failed to send response: {}", e);
+                                debug!("Failed to send response: {}", e);
                                 break;
                             }
                         }
                         Err(e) => {
-                            println!("Failed to read from socket: {}", e);
+                            debug!("Failed to read from socket: {}", e);
                             break;
                         }
                     }
@@ -113,11 +117,12 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                eprintln!("Failed to write to socket: {}", e);
+                                debug!("Failed to write to socket: {}", e);
                                 break;
                             }
                         }
                         None => {
+                            debug!("Request channel closed.");
                             break;
                         }
                     }

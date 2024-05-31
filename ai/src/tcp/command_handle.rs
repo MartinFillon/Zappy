@@ -16,6 +16,8 @@ use tokio::io::{self};
 
 use std::io::{Error, ErrorKind};
 
+use log::info;
+
 #[async_trait]
 pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, bool>;
@@ -26,6 +28,7 @@ pub trait CommandHandler {
 #[async_trait::async_trait]
 impl CommandHandler for TcpClient {
     async fn send_command(&mut self, command: &str) -> Result<String, bool> {
+        info!("Sending command: ({})...", command);
         if self.send_request(command.to_string()).await.is_err() {
             return Err(true);
         }
@@ -36,15 +39,19 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_dead(&mut self, command: &str) -> Result<String, bool> {
+        info!("Checking if request receives dead...");
         let response = self.send_command(command).await?;
         if response == "dead\n" {
+            info!("Dead received.");
             return Err(false);
         }
+        info!("Not dead received, response is forwarded.");
         Ok(response)
     }
 
     async fn handle_response(&mut self, response: String) -> Result<bool, bool> {
-        match dbg!(response.as_str()) {
+        info!("Handling response: ({})...", response);
+        match response.as_str() {
             "ok\n" => Ok(true),
             "ko\n" => Ok(false),
             _ => Err(false),

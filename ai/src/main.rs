@@ -9,6 +9,8 @@ use std::process;
 
 use std::env::var;
 
+use log::info;
+
 pub mod commands;
 pub mod flags;
 mod json;
@@ -24,18 +26,20 @@ async fn main() {
     }
     match flags::check_flags() {
         Ok(res) => {
+            info!("Arguments set:\n{}", res.clone());
             let address: String =
                 format!("{}:{}", res.clone().get_machine(), res.clone().get_port());
+            info!("Connecting to {}...", address);
             match tcp::handle_tcp(address, res.get_name()).await {
                 Ok(_) => process::exit(SUCCESS_CODE),
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("Error: {}.", e);
                     process::exit(ERROR_CODE);
                 }
             }
         }
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Error: {}.", e);
             flags::usage();
             process::exit(ERROR_CODE)
         }
