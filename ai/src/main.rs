@@ -5,7 +5,6 @@
 // main
 //
 
-use std::env::var;
 use std::process;
 
 use env_logger::{Builder, Env};
