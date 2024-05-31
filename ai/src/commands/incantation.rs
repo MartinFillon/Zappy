@@ -7,34 +7,31 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
-pub async fn incantation(client: &mut TcpClient) -> Result<Option<usize>, bool> {
-    let res1 = client.check_dead("Incantation\n").await?;
-    match res1.as_str() {
-        "ko\n" => Ok(None),
-        "Elevation underway\n" => {
-            if let Some(res2) = client.get_response().await {
-                match res2.as_str() {
-                    "ko\n" => Ok(None),
-                    "dead\n" => Err(false),
-                    level if res2.starts_with("Current level:") => match level
-                        .trim_end()
+pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    let checkpoint = client.check_dead("Incantation\n").await?;
+    match checkpoint.trim_end() {
+        "ko" => Ok(ResponseResult::KO),
+        "Elevation underway" => {
+            let response = client
+                .get_response()
+                .await
+                .ok_or(CommandError::NoResponseReceived)?;
+            match response.trim_end() {
+                "ko" => Ok(ResponseResult::KO),
+                "dead" => Err(CommandError::DeadReceived),
+                level if level.starts_with("Current level:") => {
+                    let level_str = level
                         .split_once(": ")
-                        .unwrap_or_default()
-                        .1
-                        .parse::<usize>()
-                    {
-                        Ok(k) => Ok(Some(k)),
-                        Err(_) => Err(true),
-                    },
-                    _ => Err(true),
+                        .and_then(|(_, l)| l.parse::<usize>().ok())
+                        .ok_or(CommandError::InvalidResponse)?;
+                    Ok(ResponseResult::Incantation(level_str))
                 }
-            } else {
-                Err(true)
+                _ => Err(CommandError::InvalidResponse),
             }
         }
-        _ => Err(true),
+        _ => Err(CommandError::InvalidResponse),
     }
 }
