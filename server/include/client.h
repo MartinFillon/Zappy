@@ -130,9 +130,15 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
  * @param game the game structure
  * @param client the client structure
  * @param team the team structure
+ * @param the clients
  * @return true if success, false if error
  */
-bool init_ai(game_t *game, client_t *client, team_t *team);
+bool init_ai(
+    game_t *game,
+    client_t *restrict client,
+    team_t *team,
+    client_t *restrict clients
+);
 void destroy_ai(ai_t *ai);
 /**
  * @brief Broadcast a message to all fds

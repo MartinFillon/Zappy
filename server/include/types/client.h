@@ -11,7 +11,6 @@
 
 #include "ai.h"
 #include "types/buffer.h"
-#include "types/game.h"
 
 enum client_type_e {
     UNSET,

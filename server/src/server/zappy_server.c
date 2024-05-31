@@ -28,11 +28,11 @@ static void handle_cli_isset(zappy_t *z, int i)
         if (read_client(&z->clients[i]) == ERROR)
             close_client(&z->clients[i]);
     }
-    if (FD_ISSET(z->clients[i].fd, &z->server.write_fds)
-        && z->clients[i].io.is_ready) {
+    if (FD_ISSET(z->clients[i].fd, &z->server.write_fds) &&
+        z->clients[i].io.is_ready) {
         z->clients[i].io.is_ready = false;
-        if (z->clients[i].io.res.size != 0
-            && z->clients[i].io.res.buffer != NULL) {
+        if (z->clients[i].io.res.size != 0 &&
+            z->clients[i].io.res.buffer != NULL) {
             send_client(&z->clients[i], z->clients[i].io.res.buffer);
             free_buffer(&z->clients[i].io.res);
         }
@@ -87,8 +87,7 @@ static void fill_fd_set(zappy_t *z)
 static void exec_clients(zappy_t *z)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
-        if (z->clients[i].fd != 0 &&
-            z->clients[i].io.req.size > 0) {
+        if (z->clients[i].fd != 0 && z->clients[i].io.req.size > 0) {
             handle_buffer(&z->clients[i], z);
         }
     }

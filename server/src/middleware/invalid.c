@@ -26,7 +26,7 @@ void send_invalid_args(client_t *c)
         c->fd,
         mode_to_str(c->type)
     );
-    INVALID_ARGS_CALLBACKS[c->type](c->fd);
+    INVALID_ARGS_CALLBACKS[c->type](c);
 }
 
 void send_unknown_command(client_t *c)
@@ -37,5 +37,5 @@ void send_unknown_command(client_t *c)
         c->fd,
         mode_to_str(c->type)
     );
-    UNKNOWN_CALLBACKS[c->type](c->fd);
+    UNKNOWN_CALLBACKS[c->type](c);
 }

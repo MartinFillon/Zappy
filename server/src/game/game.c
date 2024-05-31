@@ -23,7 +23,6 @@ game_t init_game(args_infos_t *ag)
     logs(INFO, "Creating teams\n");
     game.teams = vec_create_vector_team_t(10);
     game.ais = vec_create_vector_ai_t(10);
-    game.guis = vec_create_vector_int(10);
     game.frequency = ag->freq;
     for (__auto_type i = 0; ag->names[i]; i++) {
         vec_pushback_vector_team_t(game.teams, create_team(ag, ag->names[i]));

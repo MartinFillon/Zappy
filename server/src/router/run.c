@@ -42,7 +42,7 @@ static void run_callback(
 
     logs(DEBUG, "running command %p\n", route->f);
     if (route->args + 1 != line->size) {
-        return INVALID_ARGS_CALLBACKS[cli->type](cli->fd);
+        return INVALID_ARGS_CALLBACKS[cli->type](cli);
     }
     logs(DEBUG, "GOOD args\n");
     route->f(cli, &state);
@@ -67,7 +67,7 @@ void run_router(
     else
         route = &unset;
     if (route == NULL)
-        UNKNOWN_CALLBACKS[cli->type](2);
+        UNKNOWN_CALLBACKS[cli->type](cli);
     else
         run_callback(cli, zappy, route, v);
     vec_free_vector_str_t(v, &str_free);

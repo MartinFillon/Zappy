@@ -11,25 +11,28 @@
 #include "client.h"
 #include "gui/defs.h"
 #include "logger.h"
+#include "macros.h"
 #include "middlewares.h"
 #include "router/route.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
 
-// static int put_in_team(client_t *c, game_t *game, size_t i)
-// {
-//     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
-//     c->type = AI;
-//     // c->entrypoint = &ai_entrypoint;
-//     if (init_ai(game, c, &game->teams->data[i])) {
-//         send_client(c, "ko\n");
-//         logs(INFO, "No more eggs to place %d\n", c->fd);
-//         return ERROR;
-//     }
-//     logs(INFO, "AI inited\n");
-//     return SUCCESS;
-// }
+static void put_in_team(
+    client_t *restrict c,
+    game_t *game,
+    size_t i,
+    client_t *restrict clients
+)
+{
+    logs(INFO, "Client %d is trying to be an AI\n", c->fd);
+    c->type = AI;
+    if (init_ai(game, c, &game->teams->data[i], clients)) {
+        prepare_response(&c->io, "ko\n");
+        logs(INFO, "No more eggs to place %d\n", c->fd);
+    }
+    logs(INFO, "AI inited\n");
+}
 
 static void send_eggs(client_t *c, team_t *team)
 {
@@ -83,12 +86,13 @@ void unset_command(client_t *c, command_state_t *s)
     for (size_t i = 0; i < s->game->teams->size; i++)
         if (strcmp(s->args->data[0]->data, s->game->teams->data[i].name) == 0) {
             c->type = AI;
-            return logs(
+            logs(
                 INFO,
                 "Client %d is a AI of team %s\n",
                 c->fd,
                 s->game->teams->data[i].name
             );
+            return put_in_team(c, s->game, i, s->clients);
         }
     send_invalid_args(c);
 }
