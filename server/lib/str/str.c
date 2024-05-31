@@ -14,6 +14,7 @@ void str_resize(str_t *s)
 {
     s->capacity *= 2;
     s->data = realloc(s->data, s->capacity);
+    memset(s->data + s->size, 0, s->capacity - s->size);
 }
 
 void str_cadd(str_t *s, char const c)

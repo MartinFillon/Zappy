@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 
+#include "logger.h"
 #include "router/router.h"
 #include "types/client.h"
 #include "zappy.h"
@@ -39,10 +40,13 @@ static void run_callback(
         .game = &zappy->game,
     };
 
+    logs(DEBUG, "running command %p\n", route->f);
     if (route->args + 1 != line->size) {
         return INVALID_ARGS_CALLBACKS[cli->type](cli->fd);
     }
+    logs(DEBUG, "GOOD args\n");
     route->f(cli, &state);
+    logs(DEBUG, "End of exec\n");
 }
 
 void run_router(

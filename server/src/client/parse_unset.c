@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "client.h"
+#include "gui/defs.h"
 #include "logger.h"
 #include "middlewares.h"
 #include "router/route.h"
@@ -29,54 +31,55 @@
 //     return SUCCESS;
 // }
 
-// static void send_eggs(client_t *c, team_t *team)
-// {
-//     for (__auto_type i = 0ul; i < team->eggs->size; i++)
-//         send_client(
-//             c,
-//             "smg eni %d %d %d\n",
-//             team->eggs->data[i]->id,
-//             team->eggs->data[i]->pos.x,
-//             team->eggs->data[i]->pos.y
-//         );
-// }
+static void send_eggs(client_t *c, team_t *team)
+{
+    for (__auto_type i = 0ul; i < team->eggs->size; i++)
+        send_client(
+            c,
+            "smg eni %d %d %d\n",
+            team->eggs->data[i]->id,
+            team->eggs->data[i]->pos.x,
+            team->eggs->data[i]->pos.y
+        );
+}
 
-// static void send_ais(client_t *c, ai_t *ai)
-// {
-//     send_client(
-//         c,
-//         "pnw %d %d %d %d %d %s\n",
-//         ai->id,
-//         ai->pos.x,
-//         ai->pos.y,
-//         ai->dir + 1,
-//         ai->level,
-//         ai->team->name
-//     );
-// }
+static void send_ais(client_t *c, ai_t *ai)
+{
+    send_client(
+        c,
+        "pnw %d %d %d %d %d %s\n",
+        ai->id,
+        ai->pos.x,
+        ai->pos.y,
+        ai->dir + 1,
+        ai->level,
+        ai->team->name
+    );
+}
 
-// static int init_gui(client_t *c, game_t *game, client_t *clients)
-// {
-//     // map_size("", c, game, clients);
-//     // request_time("", c, game, clients);
-//     // map_content_full("", c, game, clients);
-//     // team_names("", c, game, clients);
-//     for (__auto_type i = 0ul; i < game->teams->size; i++)
-//         send_eggs(c, &game->teams->data[i]);
-//     for (__auto_type i = 0ul; i < game->ais->size; i++)
-//         send_ais(c, &game->ais->data[i]);
-//     return 0;
-// }
+static void init_gui(client_t *c, game_t *game, client_t *clients)
+{
+    command_state_t s = {NULL, clients, game};
+
+    map_size(c, &s);
+    request_time(c, &s);
+    map_content_full(c, &s);
+    team_names(c, &s);
+    for (__auto_type i = 0ul; i < game->teams->size; i++)
+        send_eggs(c, &game->teams->data[i]);
+    for (__auto_type i = 0ul; i < game->ais->size; i++)
+        send_ais(c, &game->ais->data[i]);
+}
 
 void unset_command(client_t *c, command_state_t *s)
 {
     if (strcmp(s->args->data[0]->data, "GRAPHIC") == 0) {
         c->type = GUI;
+        init_gui(c, s->game, s->clients);
         return logs(INFO, "Client %d is a GUI\n", c->fd);
     }
-    if (s->game->teams == NULL) {
+    if (s->game->teams == NULL)
         return logs(WARNING, "No teams set\n");
-    }
     for (size_t i = 0; i < s->game->teams->size; i++)
         if (strcmp(s->args->data[0]->data, s->game->teams->data[i].name) == 0) {
             c->type = AI;

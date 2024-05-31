@@ -26,7 +26,7 @@ static const struct callback_map_s CALLBACKS[] = {
     {"player_position", &player_position},
     {"player_level", &player_level},
     {"player_inventory", &player_inventory},
-    {"request_time", &update_time},
-    {"update_time", &request_time},
+    {"request_time", &request_time},
+    {"update_time", &update_time},
     {NULL, NULL},
 };

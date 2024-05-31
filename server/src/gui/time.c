@@ -6,6 +6,7 @@
 */
 
 #include "client.h"
+#include "logger.h"
 #include "middlewares.h"
 #include "router/route.h"
 #include "str.h"
@@ -14,6 +15,7 @@
 
 void request_time(client_t *c, command_state_t *s)
 {
+    logs(DEBUG, "Entering time request\n");
     send_client(c, "sgt %d\n", s->game->frequency);
 }
 
