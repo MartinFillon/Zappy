@@ -22,10 +22,10 @@ static void move_y(ai_t *ai, map_t *map)
     if (ai->dir == DOWN)
         y = (y + 1) % map->y;
     vec_erase_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int);
+        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int
+    );
     ai->pos.y = y;
-    vec_pushback_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id);
+    vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
 static void move_x(ai_t *ai, map_t *map)
@@ -37,15 +37,13 @@ static void move_x(ai_t *ai, map_t *map)
     if (ai->dir == RIGHT)
         x = (x + 1) % map->x;
     vec_erase_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int);
+        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int
+    );
     ai->pos.x = x;
     vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
-void handle_forward(
-    client_t *cli,
-    command_state_t *s
-)
+void handle_forward(client_t *cli, command_state_t *s)
 {
     ai_t *ai = cli->ai;
 
@@ -54,5 +52,5 @@ void handle_forward(
     } else {
         move_x(ai, s->game->map);
     }
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
 }

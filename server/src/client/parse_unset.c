@@ -11,9 +11,9 @@
 #include "client.h"
 #include "gui/defs.h"
 #include "logger.h"
-#include "str.h"
 #include "middlewares.h"
 #include "router/route.h"
+#include "str.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
@@ -28,7 +28,7 @@ static void put_in_team(
     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
     c->type = AI;
     if (init_ai(game, c, &game->teams->data[i], clients)) {
-        prepare_response(&c->io, "ko\n");
+        prepare_response_cat(&c->io, "ko\n");
         logs(INFO, "No more eggs to place %d\n", c->fd);
     }
     logs(INFO, "AI inited\n");
@@ -37,8 +37,8 @@ static void put_in_team(
 static void send_eggs(client_t *c, team_t *team)
 {
     for (__auto_type i = 0ul; i < team->eggs->size; i++)
-        send_client(
-            c,
+        prepare_response_cat(
+            &c->io,
             "smg eni %d %d %d\n",
             team->eggs->data[i]->id,
             team->eggs->data[i]->pos.x,
@@ -48,8 +48,8 @@ static void send_eggs(client_t *c, team_t *team)
 
 static void send_ais(client_t *c, ai_t *ai)
 {
-    send_client(
-        c,
+    prepare_response_cat(
+        &c->io,
         "pnw %d %d %d %d %d %s\n",
         ai->id,
         ai->pos.x,

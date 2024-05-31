@@ -15,22 +15,22 @@ typedef void (*invalid_args_callback_t)(client_t *);
 
 static inline void gui_unknown_route(client_t *c)
 {
-    prepare_response(&c->io, "suc\n");
+    prepare_response_cat(&c->io, "suc\n");
 }
 
 static inline void default_unknown_route(client_t *c)
 {
-    prepare_response(&c->io, "ko\n");
+    prepare_response_cat(&c->io, "ko\n");
 }
 
 static inline void default_invalid_args(client_t *c)
 {
-    prepare_response(&c->io, "ko\n");
+    prepare_response_cat(&c->io, "ko\n");
 }
 
 static inline void gui_invalid_args(client_t *c)
 {
-    prepare_response(&c->io, "sbp\n");
+    prepare_response_cat(&c->io, "sbp\n");
 }
 
 static const unknown_route_callback_t UNKNOWN_CALLBACKS[3] = {

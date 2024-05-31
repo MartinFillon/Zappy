@@ -8,9 +8,9 @@
 #include "client.h"
 #include "map.h"
 #include "router/route.h"
+#include "str.h"
 #include "types/ai.h"
 #include "types/object.h"
-#include "str.h"
 
 static bool try_decrement_item(size_t *item_quantity)
 {
@@ -49,9 +49,9 @@ static void set_object_down(
 )
 {
     if (!check_item(cli->ai, obj->obj))
-        return prepare_response(&cli->io, "ko\n");
+        return prepare_response_cat(&cli->io, "ko\n");
     drop_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj);
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
 }
 
 void handle_set_object(client_t *cli, command_state_t *s)
@@ -64,5 +64,5 @@ void handle_set_object(client_t *cli, command_state_t *s)
             return;
         }
     }
-    prepare_response(&cli->io, "ko\n");
+    prepare_response_cat(&cli->io, "ko\n");
 }

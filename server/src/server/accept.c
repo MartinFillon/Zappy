@@ -16,16 +16,12 @@
 #include "types/client.h"
 #include "utils.h"
 
-static int fill_client(
-    client_t *clients,
-    int fd,
-    struct sockaddr_in *addr
-)
+static int fill_client(client_t *clients, int fd, struct sockaddr_in *addr)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
         if (clients[i].fd == 0) {
             init_client(&clients[i], fd);
-            prepare_response(&clients[i].io, "WELCOME\n");
+            prepare_response_cat(&clients[i].io, "WELCOME\n");
             logs(
                 INFO,
                 "New client %s:%d with fd %d\n",

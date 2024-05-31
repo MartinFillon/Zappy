@@ -26,7 +26,7 @@ static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
     );
     for (__auto_type i = 0; i < SOMAXCONN; i++)
         if (clis[i].fd > 0 && clis[i].type == GUI)
-            prepare_response(
+            prepare_response_cat(
                 &clis[i].io,
                 "pnw %d %d %d %d %d %s\n",
                 new->id,

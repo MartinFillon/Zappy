@@ -21,10 +21,10 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     struct tile_s *tile = get_tile(map, x, y);
 
     if (tile == NULL) {
-        prepare_response(&c->io, "sbp\n");
+        prepare_response_cat(&c->io, "sbp\n");
         return;
     }
-    prepare_response(
+    prepare_response_cat(
         &c->io,
         "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         x,

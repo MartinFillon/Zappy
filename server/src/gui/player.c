@@ -14,7 +14,7 @@
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {
-    prepare_response(
+    prepare_response_cat(
         &c->io,
         "ppo %lu %lu %lu %d %d %s\n",
         nb,
@@ -45,14 +45,14 @@ void player_level(client_t *c, command_state_t *com)
         return send_invalid_args(c);
     if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
-    return prepare_response(
+    return prepare_response_cat(
         &c->io, "plv %ld %d", nb, com->game->ais->data[nb].level
     );
 }
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
 {
-    prepare_response(
+    prepare_response_cat(
         &c->io,
         "pin %lu %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         nb,
