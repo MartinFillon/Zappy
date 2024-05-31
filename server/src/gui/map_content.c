@@ -17,11 +17,11 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     struct tile_s *tile = get_tile(map, x, y);
 
     if (tile == NULL) {
-        send_client(c, "sbp\n");
+        prepare_response(&c->io, "sbp\n");
         return;
     }
-    send_client(
-        c,
+    prepare_response(
+        &c->io,
         "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         x,
         y,
@@ -64,11 +64,11 @@ void map_content_tile(
     if (c->type != GUI)
         return;
     if (strtok(NULL, " \t") != NULL || x == NULL || y == NULL) {
-        send_client(c, "sbp\n");
+        prepare_response(&c->io, "sbp\n");
         return;
     }
     if (!get_tile_pos(x, &px, &py)) {
-        send_client(c, "sbp\n");
+        prepare_response(&c->io, "sbp\n");
         return;
     }
     get_and_send_tile(px, py, game->map, c);
@@ -85,7 +85,7 @@ void map_content_full(
     if (c->type != GUI)
         return;
     if (args[0] != '\0') {
-        send_client(c, "sbp\n");
+        prepare_response(&c->io, "sbp\n");
         return;
     }
     for (size_t y = 0; y < game->map->y; y++) {

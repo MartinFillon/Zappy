@@ -20,7 +20,7 @@ static void send_to_everyone(char const *msg, client_t *clients, client_t *cli)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
         if (valid_client(&clients[i], cli)) {
-            send_client(&clients[i], "message %d, %s\n", 0, msg);
+            prepare_response(&clients[i].io, "message %d, %s\n", 0, msg);
         }
     }
 }
@@ -37,7 +37,7 @@ void handle_broadcast(
     (void) clients;
     (void) ais;
     if (is_empty(arg))
-        return send_client(cli, "ko\n");
-    send_client(cli, "ok\n");
+        return prepare_response(&cli->io, "ko\n");
+    prepare_response(&cli->io, "ok\n");
     send_to_everyone(arg, clients, cli);
 }

@@ -18,8 +18,8 @@ void map_size(
     if (cli->type != GUI)
         return;
     if (args[0] != '\0') {
-        send_client(cli, "sbp\n");
+        prepare_response(&cli->io, "sbp\n");
         return;
     }
-    send_client(cli, "msz %lu %lu\n", game->map->x, game->map->y);
+    prepare_response(&cli->io, "msz %lu %lu\n", game->map->x, game->map->y);
 }
