@@ -8,6 +8,7 @@
 #include "client.h"
 #include "map.h"
 #include "router/route.h"
+#include "str.h"
 
 static void increment_item(client_t *cli, size_t *item_quantity)
 {

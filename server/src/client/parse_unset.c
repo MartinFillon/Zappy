@@ -11,7 +11,7 @@
 #include "client.h"
 #include "gui/defs.h"
 #include "logger.h"
-#include "macros.h"
+#include "str.h"
 #include "middlewares.h"
 #include "router/route.h"
 #include "types/client.h"

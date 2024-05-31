@@ -12,7 +12,6 @@
 #include "types/map.h"
 
 #include "utils.h"
-#include "ai/ai_cmds.h"
 
 static void move_y(ai_t *ai, map_t *map)
 {

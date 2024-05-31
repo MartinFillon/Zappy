@@ -10,6 +10,7 @@
 #include "middlewares.h"
 #include "router/route.h"
 #include "types/client.h"
+#include "str.h"
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {

@@ -10,7 +10,7 @@
 #include "router/route.h"
 #include "types/ai.h"
 #include "types/object.h"
-#include "utils.h"
+#include "str.h"
 
 static bool try_decrement_item(size_t *item_quantity)
 {

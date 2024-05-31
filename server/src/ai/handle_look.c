@@ -10,11 +10,11 @@
 
 #include "client.h"
 #include "map.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/map.h"
 #include "utils.h"
-#include "ai/ai_cmds.h"
 
 static void update_start(pos_t *pos, enum direction dir)
 {

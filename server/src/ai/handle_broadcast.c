@@ -10,7 +10,7 @@
 #include "client.h"
 #include "router/route.h"
 #include "types/client.h"
-#include "utils.h"
+#include "str.h"
 
 static bool valid_client(client_t *to_check, client_t *banned)
 {
