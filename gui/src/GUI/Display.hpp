@@ -7,13 +7,17 @@
 
 #pragma once
 
+#include <ctime>
 #include <raylib.h>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "../Network/Handler.hpp"
 #include "Data/Map.hpp"
 #include "ServerMessageHandler.hpp"
+#include "define.hpp"
+
 
 namespace GUI {
 
@@ -41,6 +45,16 @@ class Display {
         endGameMessage = message;
     }
 
+    int getTimeUnit() const
+    {
+        return timeUnit;
+    }
+    
+    void addMessage(std::string message, int user = SERVER)
+    {
+        messages.push_back(std::make_tuple(std::chrono::steady_clock::now(), user, message));
+    }
+
     std::vector<std::string> team;
 
   private:
@@ -53,6 +67,7 @@ class Display {
     int timeUnit;
     bool endGame;
     std::vector<std::string> endGameMessage;
+    std::vector<std::tuple<std::chrono::time_point<std::chrono::steady_clock>, int, std::string>> messages;
 };
 
 } // namespace GUI
