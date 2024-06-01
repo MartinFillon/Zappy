@@ -13,8 +13,6 @@
 #include "types/client.h"
 #include "types/team.h"
 
-#warning "prepare_response here"
-
 static void send_infos(int fd, game_t *game, ai_t const *new)
 {
     dprintf(

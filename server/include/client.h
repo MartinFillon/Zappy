@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "types/ai.h"
 #include "types/client.h"
 
 /**
@@ -134,20 +135,21 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
 bool init_ai(game_t *game, client_t *client, team_t *team);
 
 /**
- * @brief Move the @param ai in y axis
+ * @brief Move the @param ai with respect with his direction
  * @param ai the ai to move
- * @param dir the direction where to move it
+ * @param dir Direction where to move
  * @param map The map where to move the ai
  */
-void move_ai_y(ai_t *ai, enum direction dir, map_t *map);
+void move_ai(ai_t *ai, enum direction dir, map_t *map);
 
 /**
- * @brief Move the @param ai in x axis
- * @param ai the ai to move
- * @param dir the direction where to move it
+ * @brief Move the position @param pos with respect of his direction
+ * @param pos the position to move
+ * @param dir The direction where to move
  * @param map The map where to move the ai
  */
-void move_ai_x(ai_t *ai, enum direction dir, map_t *map);
+void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
+
 
 /**
  * @brief Broadcast a message to all fds

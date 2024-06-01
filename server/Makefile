@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy
+LDLIBS += -L./ -lmy -lm
 
 NAME = ../zappy_server
 
@@ -29,6 +29,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\

@@ -10,36 +10,42 @@
 #include "types/ai.h"
 #include "types/map.h"
 
+#include "types/position.h"
 #include "utils.h"
 #include "ai/ai_cmds.h"
 
-void move_ai_y(ai_t *ai, enum direction dir, map_t *map)
+static void move_pos_y(pos_t *pos, enum direction dir, map_t *map)
 {
-    int y = ai->pos.y;
-
     if (dir == UP)
-        y = modulo(ai->pos.y - 1, map->y);
+        pos->y = modulo(pos->y - 1, map->y);
     if (dir == DOWN)
-        y = (y + 1) % map->y;
-    vec_erase_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int);
-    ai->pos.y = y;
-    vec_pushback_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id);
+        pos->y = (pos->y + 1) % map->y;
 }
 
-void move_ai_x(ai_t *ai, enum direction dir, map_t *map)
+static void move_pos_x(pos_t *pos, enum direction dir, map_t *map)
 {
-    int x = ai->pos.x;
-
     if (dir == LEFT)
-        x = modulo(ai->pos.x - 1, map->x);
+        pos->x = modulo(pos->x - 1, map->x);
     if (dir == RIGHT)
-        x = (x + 1) % map->x;
+        pos->x = (pos->x + 1) % map->x;
+}
+
+void move_by_dir(pos_t *pos, enum direction dir, map_t *map)
+{
+    if (dir == UP || dir == DOWN) {
+        move_pos_y(pos, dir, map);
+    } else {
+        move_pos_x(pos, dir, map);
+    }
+}
+
+void move_ai(ai_t *ai, enum direction dir, map_t *map)
+{
     vec_erase_vector_int(
         map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int);
-    ai->pos.x = x;
-    vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);
+    move_by_dir(&ai->pos, dir, map);
+    vec_pushback_vector_int(
+        map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
 void handle_forward(
@@ -54,10 +60,6 @@ void handle_forward(
     (void) clients;
     if (!is_empty(arg))
         return prepare_response(&cli->io, "ko\n");
-    if (ai->dir == UP || ai->dir == DOWN) {
-        move_ai_y(ai, ai->dir, game->map);
-    } else {
-        move_ai_x(ai, ai->dir, game->map);
-    }
+    move_ai(ai, ai->dir, game->map);
     prepare_response(&cli->io, "ok\n");
 }

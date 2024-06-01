@@ -14,8 +14,6 @@
 #include "utils.h"
 #include "client.h"
 
-// TEST IT PITIE
-
 static void freeze_ais(game_t *game, pos_t *pos, int id)
 {
     struct vector_ai_t *ais = game->ais;
