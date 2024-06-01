@@ -30,7 +30,7 @@ class Display {
         return map;
     }
 
-    void updateTimeUnit(int time)
+    void setTimeUnit(int time)
     {
         timeUnit = time;
     }
