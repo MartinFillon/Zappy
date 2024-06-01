@@ -35,6 +35,12 @@ class Display {
         timeUnit = time;
     }
 
+    void setEndGame(std::vector<std::string> message, bool end = true)
+    {
+        endGame = end;
+        endGameMessage = message;
+    }
+
     std::vector<std::string> team;
 
   private:
@@ -45,6 +51,8 @@ class Display {
     bool debug;
     Data::Map map;
     int timeUnit;
+    bool endGame;
+    std::vector<std::string> endGameMessage;
 };
 
 } // namespace GUI

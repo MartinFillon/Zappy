@@ -13,7 +13,7 @@
 namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
-    : networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}), timeUnit(100) {
+    : networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}), timeUnit(100), endGame(false), endGameMessage() {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
     } else {
