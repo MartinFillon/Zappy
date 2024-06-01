@@ -23,7 +23,7 @@ class ServerMessageHandler;
 
 class Display {
   public:
-    Display(Network::Handler &networkHandler, bool debug, int width = 800, int height = 450);
+    Display(Network::Handler &networkHandler, bool debug, int width = 1920, int height = 1080);
     ~Display();
     void run();
 
@@ -57,6 +57,7 @@ class Display {
 
   private:
     void handleServerMessage(std::string &message);
+    void resize();
 
     Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
@@ -66,6 +67,8 @@ class Display {
     bool endGame;
     std::vector<std::string> endGameMessage;
     std::vector<std::tuple<std::chrono::time_point<std::chrono::steady_clock>, int, std::string>> messages;
+
+    int offsetX, offsetY, newWidth, newHeight;
 };
 
 } // namespace GUI
