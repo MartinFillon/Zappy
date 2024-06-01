@@ -9,7 +9,11 @@
 #include <string.h>
 
 #include "client.h"
+#include "gui/defs.h"
+#include "logger.h"
 #include "map.h"
+#include "middlewares.h"
+#include "str.h"
 #include "types/map.h"
 
 static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
@@ -17,10 +21,10 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     struct tile_s *tile = get_tile(map, x, y);
 
     if (tile == NULL) {
-        prepare_response(&c->io, "sbp\n");
+        prepare_response_cat(&c->io, "sbp\n");
         return;
     }
-    prepare_response(
+    prepare_response_cat(
         &c->io,
         "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
         x,
@@ -35,62 +39,19 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
     );
 }
 
-static bool get_tile_pos(char *arg, long *x, long *y)
+void map_content_tile(client_t *cli, command_state_t *com)
 {
-    char *end = NULL;
+    long x = 0;
+    long y = 0;
 
-    *x = strtol(arg, &end, 10);
-    if (*end != ' ' || *x < 0)
-        return false;
-    *y = strtol(end, &end, 10);
-    if (*end != '\0' || *y < 0)
-        return false;
-    return true;
+    if (str_toint(&x, com->args->data[1]) || str_toint(&y, com->args->data[1]))
+        return send_invalid_args(cli);
+    get_and_send_tile(x, y, com->game->map, cli);
 }
 
-void map_content_tile(
-    char *args,
-    client_t *c,
-    game_t *game,
-    client_t *clients
-)
+void map_content_full(client_t *cli, command_state_t *com)
 {
-    char *x = strtok(args, " \t");
-    char *y = strtok(NULL, " \t");
-    long px = 0;
-    long py = 0;
-
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (strtok(NULL, " \t") != NULL || x == NULL || y == NULL) {
-        prepare_response(&c->io, "sbp\n");
-        return;
-    }
-    if (!get_tile_pos(x, &px, &py)) {
-        prepare_response(&c->io, "sbp\n");
-        return;
-    }
-    get_and_send_tile(px, py, game->map, c);
-}
-
-void map_content_full(
-    char *args,
-    client_t *c,
-    game_t *game,
-    client_t *clients
-)
-{
-    (void) clients;
-    if (c->type != GUI)
-        return;
-    if (args[0] != '\0') {
-        prepare_response(&c->io, "sbp\n");
-        return;
-    }
-    for (size_t y = 0; y < game->map->y; y++) {
-        for (size_t x = 0; x < game->map->x; x++) {
-            get_and_send_tile(x, y, game->map, c);
-        }
-    }
+    for (size_t y = 0; y < com->game->map->y; y++)
+        for (size_t x = 0; x < com->game->map->x; x++)
+            get_and_send_tile(x, y, com->game->map, cli);
 }

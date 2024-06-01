@@ -5,20 +5,12 @@
 ** handle_connect_nbr
 */
 
+#include "router/route.h"
 #include "types/client.h"
 #include "client.h"
-#include "utils.h"
 
-void handle_connect_nbr(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_connect_nbr(client_t *cli, command_state_t *s)
 {
-    (void) game;
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
+    (void) s;
     prepare_response(&cli->io, "%d\n", cli->ai->team->eggs->size);
 }

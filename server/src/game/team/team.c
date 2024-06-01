@@ -28,3 +28,9 @@ team_t create_team(args_infos_t *args, char const *name)
     }
     return team;
 }
+
+void destroy_team(team_t *team)
+{
+    free(team->name);
+    queue_destroy_queue_egg_t(team->eggs);
+}

@@ -7,24 +7,16 @@
 
 #include <stdio.h>
 #include "logger.h"
+#include "router/route.h"
 #include "types/team.h"
-#include "utils.h"
 #include "types/client.h"
 #include "client.h"
 
-void handle_fork(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_fork(client_t *cli, command_state_t *s)
 {
     egg_t *egg = NULL;
 
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    egg = create_egg(game->map->x, game->map->y);
+    egg = create_egg(s->game->map->x, s->game->map->y);
     if (!egg) {
         logs(ERROR_LEVEL, "Allocation error on fork handling");
         return;

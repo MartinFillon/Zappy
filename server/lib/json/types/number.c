@@ -10,7 +10,7 @@
 
 #include "json/json_parser.h"
 
-int parse_number(json_parser_t *p)
+int parse_json_number(json_parser_t *p)
 {
     json_data_t *elem = calloc(1, sizeof(json_data_t));
     int found_dot = 0;

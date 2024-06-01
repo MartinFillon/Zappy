@@ -40,7 +40,6 @@ int parse_object(json_parser_t *p)
     json_data_t *parent = p->self;
 
     init_object(p);
-    dprintf(1, "parsing object\n");
     if (skip_whitespace(p) == -1)
         return -1;
     if (get(p) == '{')

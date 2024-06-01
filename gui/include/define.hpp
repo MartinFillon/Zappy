@@ -10,3 +10,4 @@
 #define SUCCESS 0
 #define ERROR 84
 
+#define SERVER -1

@@ -11,7 +11,6 @@
 
 #include "ai.h"
 #include "types/buffer.h"
-#include "types/game.h"
 
 enum client_type_e {
     UNSET,
@@ -24,10 +23,4 @@ typedef struct client_s {
     io_t io;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
-    int (*entrypoint)(
-        char const *,
-        struct client_s *,
-        game_t *,
-        struct client_s *
-    );
 } client_t;

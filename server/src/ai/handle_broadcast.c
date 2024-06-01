@@ -19,6 +19,9 @@
 #include "utils.h"
 #include "types/client.h"
 #include "client.h"
+#include "router/route.h"
+#include "str.h"
+#include "types/client.h"
 
 static bool valid_client(client_t *to_check, client_t *banned)
 {
@@ -111,7 +114,7 @@ static void send_to_everyone(
         if (valid_client(&clis[i], c)) {
             dir = clis[i].ai->dir;
             get_starting_pos(&pos, &clis[i].ai->pos, dir, g->map);
-            prepare_response(
+            prepare_response_cat(
                 &clis[i].io,
                 "message %d, %s\n",
                 get_shortest_distance_sound(
@@ -122,19 +125,8 @@ static void send_to_everyone(
     }
 }
 
-void handle_broadcast(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_broadcast(client_t *cli, command_state_t *s)
 {
-    struct vector_ai_t *ais = game->ais;
-
-    (void) clients;
-    (void) ais;
-    if (is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    prepare_response(&cli->io, "ok\n");
-    send_to_everyone(arg, clients, cli, game);
+    prepare_response_cat(&cli->io, "ok\n");
+    send_to_everyone(s->args->data[1]->data, s->clients, cli, s->game);
 }

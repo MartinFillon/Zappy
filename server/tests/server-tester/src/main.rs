@@ -41,7 +41,6 @@ fn run_tests(opts: &Opts, svr: &ServerOptions, tests: Vec<Test>) -> Result<(), S
             println!("Connection error: {}", con_result.unwrap_err());
             continue;
         }
-
         let res = cli.test(&mut conn, &test, opts.verbose)?;
         if res.is_empty() {
             println!("{}: OK", test.get_name());

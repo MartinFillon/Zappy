@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 
 #include "queue.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "client.h"
@@ -39,22 +40,15 @@ static void destroy_common_eggs(game_t *game, pos_t *this)
     }
 }
 
-void handle_eject(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_eject(client_t *cli, command_state_t *s)
 {
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
     for (size_t i = 0; i < SOMAXCONN; i++) {
-        if (clients[i].fd != 0 && cli->ai->id != clients[i].ai->id
-            && is_coord_equal(&cli->ai->pos, &clients[i].ai->pos)) {
-            eject_ai(cli, &clients[i], game);
-            prepare_response(&clients[i].io, "eject: %d\n", cli->ai->dir);
+        if (s->clients[i].fd != 0 && cli->ai->id != s->clients[i].ai->id
+            && is_coord_equal(&cli->ai->pos, &s->clients[i].ai->pos)) {
+            eject_ai(cli, &s->clients[i], s->game);
+            prepare_response(&s->clients[i].io, "eject: %d\n", cli->ai->dir);
         }
     }
-    destroy_common_eggs(game, &cli->ai->pos);
+    destroy_common_eggs(s->game, &cli->ai->pos);
     prepare_response(&cli->io, "ok\n");
 }

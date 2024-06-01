@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "json/json.h"
+#include "logger.h"
 #include "str.h"
 
 json_data_t *json_from_file(char const *file)
@@ -19,8 +20,10 @@ json_data_t *json_from_file(char const *file)
     int fd = open(file, O_RDONLY);
     json_data_t *res = NULL;
 
-    if (fd == -1)
+    if (fd == -1) {
+        logs(ERROR_LEVEL, "File not found\n");
         return NULL;
+    }
     res = json_from_fd(fd);
     close(fd);
     return res;

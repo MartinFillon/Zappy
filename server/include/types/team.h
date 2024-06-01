@@ -27,3 +27,4 @@ typedef struct {
 
 team_t create_team(args_infos_t *args, char const *name);
 egg_t *create_egg(int width, int height);
+void destroy_team(team_t *team);

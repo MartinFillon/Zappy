@@ -5,24 +5,16 @@
 ** handle_inventory
 */
 
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "client.h"
-#include "utils.h"
 
-void handle_inventory(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_inventory(client_t *cli, command_state_t *s)
 {
     inventory_t *inv = &cli->ai->inventory;
 
-    (void) game;
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
+    (void) s;
     prepare_response(&cli->io,
         "[%s %d, %s %d, %s %d, %s %d, %s %d, %s %d, %s %d]\n",
         "food", inv->food,

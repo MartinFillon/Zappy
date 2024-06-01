@@ -7,12 +7,12 @@
 
 #include <stdbool.h>
 #include "client.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/map.h"
 
 #include "types/position.h"
 #include "utils.h"
-#include "ai/ai_cmds.h"
 
 static void move_pos_y(pos_t *pos, enum direction dir, map_t *map)
 {
@@ -48,18 +48,10 @@ void move_ai(ai_t *ai, enum direction dir, map_t *map)
         map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
-void handle_forward(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_forward(client_t *cli, command_state_t *s)
 {
     ai_t *ai = cli->ai;
 
-    (void) clients;
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    move_ai(ai, ai->dir, game->map);
-    prepare_response(&cli->io, "ok\n");
+    move_ai(ai, ai->dir, s->game->map);
+    prepare_response_cat(&cli->io, "ok\n");
 }

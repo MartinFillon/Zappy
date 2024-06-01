@@ -11,13 +11,5 @@ coding-style-reports.log
 compile_commands.json
 *gc*
 server-tester-bin
-<<<<<<< HEAD
 liblogger.a
 libmy.a
-=======
-<<<<<<< HEAD
-liblogger.a
-=======
-libmy.a
->>>>>>> origin/main
->>>>>>> origin/main

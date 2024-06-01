@@ -20,7 +20,6 @@
 
 typedef struct {
     struct vector_ai_t *ais;
-    struct vector_int *guis;
     map_t *map;
     struct vector_team_t *teams;
     long frequency;

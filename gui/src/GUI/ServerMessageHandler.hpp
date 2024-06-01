@@ -14,12 +14,12 @@ namespace GUI {
 class Display;
 
 class ServerMessageHandler {
-public:
+  public:
     ServerMessageHandler(bool debug, Display &display);
 
     void handleServerMessage(const std::string &message);
 
-private:
+  private:
     void handleMapSize(const std::string &message);
     void handleTileContent(const std::string &message);
     void handleTeamNames(const std::string &message);
@@ -35,7 +35,6 @@ private:
     void handleResourceCollect(const std::string &message);
     void handlePlayerDeath(const std::string &message);
     void handleEggLaid(const std::string &message);
-    void handleEggHatch(const std::string &message);
     void handlePlayerConnectEgg(const std::string &message);
     void handleEggDeath(const std::string &message);
     void handleTimeUnit(const std::string &message);
@@ -44,6 +43,7 @@ private:
     void handleMessageFromServer(const std::string &message);
     void handleUnknownCommand(const std::string &message);
     void handleCommandParameter(const std::string &message);
+    void handleNewPlayer(const std::string &message);
 
     bool debug;
     Display &display;
