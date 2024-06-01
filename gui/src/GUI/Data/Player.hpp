@@ -36,17 +36,27 @@ class Player {
         Pos<int, 2> target;
     };
 
-    Player(int x, int y, int id, const std::string &team, int level = 1, bool is_hatched = false);
-    Player(const Pos<int, 2> &pos, int id, const std::string &team, int level = 1, bool is_hatched = false);
+    enum class Direction { UNDEFINED, UP, RIGHT, DOWN, LEFT };
+
+    Player(int x, int y, Direction direction, int id, const std::string &team, int level = 1, bool is_hatched = false);
+    Player(
+        const Pos<int, 2> &pos,
+        Direction direction,
+        int id,
+        const std::string &team,
+        int level = 1,
+        bool is_hatched = false
+    );
 
     Pos<int, 2> getPos() const;
     Inventory &getInventory();
     int getLevel() const;
     int getId() const;
     const std::string &getTeam() const;
+    Direction getOrientation() const;
 
     void setLevel(int level);
-    void setPosition(int x, int y);
+    void setPosition(int x, int y, Direction direction);
 
     bool isHatched() const;
     void spawn();
@@ -64,7 +74,7 @@ class Player {
     int m_level;
     bool m_is_hatched;
     Incantation m_incantation;
-    int m_orientation;
+    Direction m_orientation;
 };
 
 } // namespace Data
