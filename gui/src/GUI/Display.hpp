@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <ctime>
 #include <raylib.h>
 #include <string>
 #include <tuple>
