@@ -10,18 +10,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-enum object_e {
-    FOOD,
-    LINEMATE,
-    DERAUMERE,
-    SIBUR,
-    MENDIANE,
-    PHIRAS,
-    THYSTAME,
-};
+#include "vector.h"
 
 struct tile_s {
-    bool occupied;
+    struct vector_int *players;
 
     struct tile_content_s {
         size_t food;

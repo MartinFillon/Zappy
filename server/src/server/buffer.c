@@ -7,32 +7,39 @@
 
 #include <string.h>
 
+#include "logger.h"
+#include "router/router.h"
 #include "server.h"
 #include "types/client.h"
 #include "utils.h"
+#include "zappy.h"
 
-static int handle_buffer_internal(size_t idx, client_t *c, game_t *game)
+static int handle_buffer_internal(
+    size_t idx,
+    client_t *c,
+    zappy_t *z
+)
 {
-    char *tmp = strdup(c->buffer.buffer + idx + 1);
-    char *com = strndup(c->buffer.buffer, idx);
+    char *tmp = strdup(c->io.req.buffer + idx + 1);
+    char *com = strndup(c->io.req.buffer, idx);
 
     if (!tmp || !com) {
         va_free(2, tmp, com);
         return 1;
     }
-    free(c->buffer.buffer);
-    c->buffer.buffer = tmp;
-    c->buffer.size = strlen(tmp);
-    logger_info("Client %d sent command: %s\n", c->fd, com);
-    c->entrypoint(com, c, game);
-    return handle_buffer(c, game);
+    free(c->io.req.buffer);
+    c->io.req.buffer = tmp;
+    c->io.req.size = strlen(tmp);
+    logs(INFO, "Client %d sent command: %s\n", c->fd, com);
+    run_router(z->server.router, c, z, str_snew(com));
+    return handle_buffer(c, z);
 }
 
-int handle_buffer(client_t *c, game_t *game)
+int handle_buffer(client_t *c, zappy_t *z)
 {
-    size_t idx = (size_t)(strstr(c->buffer.buffer, "\n") - c->buffer.buffer);
+    size_t idx = (size_t)(strstr(c->io.req.buffer, "\n") - c->io.req.buffer);
 
-    if (idx > c->buffer.size)
+    if (idx > c->io.req.size)
         return 1;
-    return handle_buffer_internal(idx, c, game);
+    return handle_buffer_internal(idx, c, z);
 }

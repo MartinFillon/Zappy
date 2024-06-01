@@ -11,3 +11,5 @@ coding-style-reports.log
 compile_commands.json
 *gc*
 server-tester-bin
+liblogger.a
+libmy.a

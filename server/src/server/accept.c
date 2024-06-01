@@ -10,17 +10,20 @@
 #include <sys/socket.h>
 
 #include "client.h"
+#include "logger.h"
 #include "macros.h"
 #include "server.h"
+#include "types/client.h"
 #include "utils.h"
 
-static int fill_client(server_t *s, int fd, struct sockaddr_in *addr)
+static int fill_client(client_t *clients, int fd, struct sockaddr_in *addr)
 {
     for (int i = 0; i < SOMAXCONN; i++) {
-        if (s->clients[i].fd == 0) {
-            init_client(&s->clients[i], fd);
-            send_client(&s->clients[i], "WELCOME\n");
-            logger_info(
+        if (clients[i].fd == 0) {
+            init_client(&clients[i], fd);
+            prepare_response_cat(&clients[i].io, "WELCOME\n");
+            logs(
+                INFO,
                 "New client %s:%d with fd %d\n",
                 inet_ntoa(addr->sin_addr),
                 ntohs(addr->sin_port),
@@ -32,15 +35,15 @@ static int fill_client(server_t *s, int fd, struct sockaddr_in *addr)
     return ERROR;
 }
 
-int accept_new_client(server_t *s)
+int accept_new_client(server_t *s, client_t *clients)
 {
     struct sockaddr_in addr = {0};
     socklen_t addr_size = sizeof(addr);
     int fd = accept(s->fd, (struct sockaddr *)&addr, &addr_size);
 
     if (fd == -1) {
-        logger_error("Accept failed\n");
+        logs(ERROR, "Accept failed\n");
         return ERROR;
     }
-    return fill_client(s, fd, &addr);
+    return fill_client(clients, fd, &addr);
 }

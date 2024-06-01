@@ -7,23 +7,38 @@
 
 use std::process;
 
-mod flags;
-mod tcp;
+use env_logger::{Builder, Env};
+use log::info;
 
-static ERROR_CODE: i32 = 84;
-static SUCCESS_CODE: i32 = 0;
+pub mod ai;
+pub mod commands;
+pub mod flags;
+pub mod json;
+pub mod tcp;
 
-fn main() {
+const ERROR_CODE: i32 = 84;
+const SUCCESS_CODE: i32 = 0;
+
+#[tokio::main]
+async fn main() {
+    let env = Env::new().filter("ZAPPY_LOG");
+    Builder::from_env(env).init();
+
     match flags::check_flags() {
         Ok(res) => {
-            dbg!(res.clone());
-            if let Err(e) = tcp::tcp(res.clone().get_machine(), res.get_port()) {
-                eprintln!("Error: {}", e);
+            info!("Arguments set:\n{}", res.clone());
+            let address: String =
+                format!("{}:{}", res.clone().get_machine(), res.clone().get_port());
+            match ai::launch(address, res.get_name()).await {
+                Ok(_) => process::exit(SUCCESS_CODE),
+                Err(e) => {
+                    eprintln!("Error: {}.", e);
+                    process::exit(ERROR_CODE);
+                }
             }
-            process::exit(SUCCESS_CODE)
         }
         Err(e) => {
-            println!("Error: {}", e);
+            eprintln!("Error: {}.", e);
             flags::usage();
             process::exit(ERROR_CODE)
         }

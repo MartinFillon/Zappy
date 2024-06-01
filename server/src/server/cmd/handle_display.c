@@ -6,13 +6,13 @@
 */
 
 #include <unistd.h>
-#include "server.h"
-#include "types/client.h"
+
 
 #include "map.h"
 #include "types/map.h"
+#include "zappy.h"
 
-void handle_display_map(server_t *serv)
+void handle_display_map(zappy_t *serv)
 {
     map_t *map = serv->game.map;
 

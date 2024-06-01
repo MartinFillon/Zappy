@@ -1,6 +1,9 @@
-use std::fmt::Display;
+#![allow(dead_code)]
 
 use serde::Deserialize;
+use std::fmt::{Display, Formatter, Result};
+
+use crate::client::Mode;
 
 #[derive(Debug, Deserialize)]
 pub struct Command {
@@ -13,23 +16,16 @@ pub struct Test {
     name: String,
     description: String,
     commands: Vec<Command>,
+    mode: Mode,
 }
 
 impl Display for Command {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{} -> {{", self.command)?;
         self.expected
             .iter()
             .try_for_each(|e| writeln!(f, "\t{e}"))?;
         write!(f, "}}")
-    }
-}
-
-impl Display for Test {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}: {}", self.name, self.description)?;
-        writeln!(f, "Commands and their expected output:")?;
-        self.commands.iter().try_for_each(|c| writeln!(f, "{c}"))
     }
 }
 
@@ -40,6 +36,10 @@ impl Test {
 
     pub fn get_name(&self) -> &str {
         &self.name
+    }
+
+    pub fn get_mode(&self) -> Mode {
+        self.mode.clone()
     }
 }
 

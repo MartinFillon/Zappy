@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include "types/buffer.h"
 #include "types/map.h"
+#include "types/object.h"
 
 /**
  * @brief Create a map object
@@ -45,6 +47,16 @@ void destroy_map(map_t *map);
 bool take_item(map_t *map, size_t x, size_t y, enum object_e obj);
 
 /**
+ * @brief Drop an item on a tile
+ *
+ * @param map the map object
+ * @param x x position of the tile
+ * @param y y position of the tile
+ * @param obj the object to drop
+ */
+void drop_item(map_t *map, size_t x, size_t y, enum object_e obj);
+
+/**
  * @brief Display the map in stdout
  *
  * @param map the map object
@@ -55,14 +67,15 @@ void display_map(map_t *map, size_t width, size_t height);
 
 
 /**
- * @brief Send informations about a tile in a client with @param fd
+ * @brief Putting information from map into the buffer inside @param io
+ *        response buffer
  *
- * @param fd File descriptor of the client
+ * @param io Input/Output structure containing response buffer
  * @param map the map object
  * @param y y coordinates of the tile
  * @param x x coordinates of the tile
  */
-void send_info_tile(int fd, map_t *map, size_t y, size_t x);
+void prepare_info_tile(io_t *io, map_t *map, size_t y, size_t x);
 
 /**
  * @brief retieves a tile from the map
