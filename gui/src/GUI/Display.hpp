@@ -18,7 +18,6 @@
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 
-
 namespace GUI {
 
 class ServerMessageHandler;
@@ -49,7 +48,7 @@ class Display {
     {
         return timeUnit;
     }
-    
+
     void addMessage(std::string message, int user = SERVER)
     {
         messages.push_back(std::make_tuple(std::chrono::steady_clock::now(), user, message));
