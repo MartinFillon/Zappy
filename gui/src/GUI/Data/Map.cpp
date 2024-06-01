@@ -90,14 +90,26 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) co
 
     for (int y = 0; y < m_size.y(); y++) {
         for (int x = 0; x < m_size.x(); x++) {
-            //auto &ressources = getTile(x, y).getRessources();
-
+            auto &ressources = getTile(x, y).getRessources();
 
             float tileX = x * tileSize + start_x;
             float tileY = y * tileSize + start_y;
 
+            for (int i = 0; i < 7; i++) {
+                float ressourceX = tileX + (i % 3) * tileSize / 3;
+                float ressourceY = tileY + (i / 3) * tileSize / 3;
+
+                if (ressources[i] > 0 && ressources[i] < 1) {
+                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, ORANGE);
+                } else if (ressources[i] >= 2) {
+                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, GREEN);
+                } else {
+                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, RED);
+                }
+            }
+
             if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
-                DrawRectangle(tileX, tileY, tileSize, tileSize, LIGHTGRAY);
+                DrawRectangle(tileX, tileY, tileSize, tileSize, {0, 0, 0, 100});
             }
             DrawRectangleLines(tileX, tileY, tileSize, tileSize, BLACK);
         }
@@ -107,14 +119,14 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) co
         int playerX = player.getPos().x() * tileSize + start_x;
         int playerY = player.getPos().y() * tileSize + start_y;
 
-        DrawCircle(playerX + tileSize / 2, playerY + tileSize / 2, tileSize / 3, BLUE);
+        DrawCircle(playerX + tileSize / 2, playerY + tileSize / 2, tileSize / 6, Color{0, 121, 241, 150});
     }
 
     for (const auto &egg : m_eggs) {
         int eggX = egg.getPosition().x() * tileSize + start_x;
         int eggY = egg.getPosition().y() * tileSize + start_y;
 
-        DrawCircle(eggX + tileSize / 2, eggY + tileSize / 2, tileSize / 4, YELLOW);
+        DrawCircle(eggX + tileSize / 2, eggY + tileSize / 2, tileSize / 8, Color{253, 249, 0, 150});
     }
 }
 

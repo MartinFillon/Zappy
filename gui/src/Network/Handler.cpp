@@ -77,8 +77,8 @@ void Handler::run()
 
         while (running) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            // requestMapSize();
-            requestTeamNames();
+            requestMapSize();
+            requestMapContent();
         }
 
         receiver.join();
