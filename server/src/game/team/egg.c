@@ -8,16 +8,15 @@
 #include <stdlib.h>
 
 #include "types/team.h"
-#include "args_info.h"
 
-egg_t *create_egg(args_infos_t *args)
+egg_t *create_egg(int width, int height)
 {
     static int idx = 0;
     egg_t *egg = calloc(1, sizeof(egg_t));
 
     egg->id = idx;
-    egg->pos.x = rand() % args->width;
-    egg->pos.y = rand() % args->height;
+    egg->pos.x = rand() % width;
+    egg->pos.y = rand() % height;
     idx++;
     return egg;
 }

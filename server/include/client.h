@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "types/ai.h"
 #include "types/client.h"
 #include "types/game.h"
 
@@ -140,6 +141,23 @@ bool init_ai(
     client_t *restrict clients
 );
 void destroy_ai(ai_t *ai);
+/**
+ * @brief Move the @param ai with respect with his direction
+ * @param ai the ai to move
+ * @param dir Direction where to move
+ * @param map The map where to move the ai
+ */
+void move_ai(ai_t *ai, enum direction dir, map_t *map);
+
+/**
+ * @brief Move the position @param pos with respect of his direction
+ * @param pos the position to move
+ * @param dir The direction where to move
+ * @param map The map where to move the ai
+ */
+void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
+
+
 /**
  * @brief Broadcast a message to all fds
  *

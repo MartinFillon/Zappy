@@ -120,6 +120,14 @@ static inline bool FN_NAME(vec_erase, NAME)(
     return false;
 }
 
+/**
+** @brief remove an element @param elem of the vector if it exist
+** @param vec vector where we will remove an element
+** @param elem element to be removed
+** @param cmp comparison function used as predicate
+**            to check which value to delete
+** @return bool if the operation was successfull
+**/
 static inline void FN_NAME(vec_foreach, NAME)(
     struct NAME *vec,
     void (*func)(TYPE *)

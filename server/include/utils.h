@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "types/position.h"
 
 /**
  * @brief frees a double char array
@@ -45,6 +46,14 @@ int modulo(int nb, int m);
  */
 bool is_empty(char const *arg);
 
+/**
+ * @brief Compare if 2 positions are equals
+ *
+ * @param this Position1 to compare
+ * @param oth Position2 to compare
+ * @return true if pos are equals
+ */
+bool is_coord_equal(pos_t *this, pos_t *oth);
 
 /************************************************************************
  * Those are vectors comparison functions used for vector functions that
