@@ -9,6 +9,7 @@
 
 #include "Inventory.hpp"
 #include "Pos.hpp"
+#include "Tile.hpp"
 
 namespace GUI {
 namespace Data {
@@ -62,6 +63,16 @@ public:
     void spawn()
     {
         m_is_hatched = true;
+    }
+
+    void loot(Tile &tile, int ressourceType, size_t quantity = 1)
+    {
+        m_inv.loot(ressourceType, tile.getRessources(), quantity);
+    }
+
+    void drop(Tile &tile, int ressourceType, size_t quantity = 1)
+    {
+        m_inv.drop(ressourceType, tile.getRessources(), quantity);
     }
 
 private:

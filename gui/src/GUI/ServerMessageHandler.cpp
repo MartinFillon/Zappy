@@ -162,13 +162,23 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
                   << q2 << " " << q3 << " " << q4 << " " << q5 << " " << q6 << std::endl;
 }
 
-// TODO: handle expulsion
 void ServerMessageHandler::handleExpulsion(const std::string &message)
 {
     int playerNumber;
     std::istringstream iss(message);
 
     iss >> playerNumber;
+
+    std::vector<Data::Player> &players = display.getMap().getPlayers();
+    players.erase(
+        std::remove_if(
+            players.begin(),
+            players.end(),
+            [playerNumber](const Data::Player &player) { return player.getId() == playerNumber; }
+        ),
+        players.end()
+    );
+
     if (debug)
         std::cout << "Player #" << playerNumber << " is expelled" << std::endl;
 }
@@ -221,37 +231,43 @@ void ServerMessageHandler::handleIncantationEnd(const std::string &message)
                   << std::endl;
 }
 
-// TODO: handle egg laying
 void ServerMessageHandler::handleEggLaying(const std::string &message)
 {
     int playerNumber;
     std::istringstream iss(message);
 
     iss >> playerNumber;
+    Data::Player player = display.getMap().getPlayers().at(playerNumber);
+    display.getMap().getEggs().emplace_back(player.getPos(), playerNumber);
+
     if (debug)
         std::cout << "Player #" << playerNumber << " has laid an egg" << std::endl;
 }
 
-// TODO: handle resource drop
 void ServerMessageHandler::handleResourceDrop(const std::string &message)
 {
     int playerNumber, resourceType;
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
+    Data::Player &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player.getPos());
 
+    player.drop(tile, resourceType);
     if (debug)
         std::cout << "Player #" << playerNumber << " dropped resource type " << resourceType << std::endl;
 }
 
-// TODO: handle resource collect
 void ServerMessageHandler::handleResourceCollect(const std::string &message)
 {
     int playerNumber, resourceType;
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
+    Data::Player &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player.getPos());
 
+    player.loot(tile, resourceType);
     if (debug)
         std::cout << "Player #" << playerNumber << " collected resource type " << resourceType << std::endl;
 }
