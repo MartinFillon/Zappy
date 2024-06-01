@@ -1,16 +1,23 @@
+/*
+** EPITECH PROJECT, 2024
+** Zappy
+** File description:
+** Display
+*/
+
+#include <raylib.h>
+
+#include "Data/Map.hpp"
 #include "Display.hpp"
 #include "MessageBox.hpp"
-#include <iomanip>
-#include <raylib.h>
-#include "Data/Map.hpp"
 #include "ServerMessageHandler.hpp"
 
 namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
-      timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width),
-      newHeight(height), messageBox(0, 0, 400, 300)
+      timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height),
+      messageBox()
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -40,15 +47,12 @@ void Display::run()
             resize();
         }
 
-        if (messageBox.isMouseOver()) {
-            messageBox.handleInput();
-        }
-
         BeginDrawing();
         ClearBackground(BLACK);
         DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-        map.displayTacticalView(offsetX, offsetY, newWidth + offsetX, newHeight + offsetY);
-        messageBox.display();
+        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY);
+        messageBox.display(offsetX, offsetY + newHeight - 300, 400, 300);
+        messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);
         EndDrawing();
     }
 }
