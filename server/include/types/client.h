@@ -12,6 +12,11 @@
 #include "ai.h"
 #include "types/buffer.h"
 
+#include "str.h"
+#define TYPE str_t *
+#define NAME queue_command_t
+#include "queue.h"
+
 enum client_type_e {
     UNSET,
     AI,
@@ -23,4 +28,5 @@ typedef struct client_s {
     io_t io;
     ai_t *ai; // only for AI clients
     enum client_type_e type;
+    struct queue_command_t *commands;
 } client_t;

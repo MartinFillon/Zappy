@@ -91,6 +91,7 @@ static void exec_clients(zappy_t *z)
             handle_buffer(&z->clients[i], z);
         }
     }
+    execute_commands(z);
 }
 
 static void check_eating(client_t *clients)

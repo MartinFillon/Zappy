@@ -10,15 +10,12 @@
 #include "logger.h"
 #include "router/router.h"
 #include "server.h"
+#include "str.h"
 #include "types/client.h"
 #include "utils.h"
 #include "zappy.h"
 
-static int handle_buffer_internal(
-    size_t idx,
-    client_t *c,
-    zappy_t *z
-)
+static int handle_buffer_internal(size_t idx, client_t *c, zappy_t *z)
 {
     char *tmp = strdup(c->io.req.buffer + idx + 1);
     char *com = strndup(c->io.req.buffer, idx);
@@ -31,7 +28,7 @@ static int handle_buffer_internal(
     c->io.req.buffer = tmp;
     c->io.req.size = strlen(tmp);
     logs(INFO, "Client %d sent command: %s\n", c->fd, com);
-    run_router(z->server.router, c, z, str_snew(com));
+    queue_pushback_queue_command_t(c->commands, str_snew(com));
     return handle_buffer(c, z);
 }
 

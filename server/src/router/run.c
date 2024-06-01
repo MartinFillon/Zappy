@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 
+#include "clock.h"
 #include "logger.h"
+#include "router/route.h"
 #include "router/router.h"
 #include "types/client.h"
 #include "zappy.h"
@@ -27,6 +29,14 @@ static route_t *get_route(
     return NULL;
 }
 
+static void update_waiting(client_t *cli, route_t *route)
+{
+    if (cli->type == AI) {
+        cli->ai->cycles_to_wait = route->time;
+        reset_clock(cli->ai->clock);
+    }
+}
+
 static void run_callback(
     client_t *cli,
     zappy_t *zappy,
@@ -44,6 +54,7 @@ static void run_callback(
         return INVALID_ARGS_CALLBACKS[cli->type](cli);
     }
     route->f(cli, &state);
+    update_waiting(cli, route);
 }
 
 void run_router(

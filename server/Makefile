@@ -54,6 +54,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						zappy_server		\
 						buffer 				\
 						destroy_server		\
+						execute 			\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
