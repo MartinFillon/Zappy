@@ -193,11 +193,11 @@ void ServerMessageHandler::handleBroadcast(const std::string &message)
     iss >> playerNumber;
     getline(iss, broadcastMessage);
 
+    
     if (debug)
         std::cout << "Player #" << playerNumber << " broadcasted: " << broadcastMessage << std::endl;
 }
 
-// TODO: handle incantation start
 void ServerMessageHandler::handleIncantationStart(const std::string &message)
 {
     std::istringstream iss(message);
@@ -210,21 +210,38 @@ void ServerMessageHandler::handleIncantationStart(const std::string &message)
         players.push_back(playerNumber);
     }
 
+    std::vector<Data::Player> &playerList = display.getMap().getPlayers();
+    for (int &playerId : players) {
+        for (Data::Player &player : playerList) {
+            if (player.getId() == playerId) {
+                player.getIncantation().start(300 / display.getTimeUnit(), x, y);
+                break;
+            }
+        }
+    }
+
     if (debug) {
         std::cout << "Incantation started at (" << x << ", " << y << ") with level " << level << " by players: ";
-        for (auto p : players) {
+        for (int p : players) {
             std::cout << p << " ";
         }
         std::cout << std::endl;
     }
 }
 
-// TODO: handle incantation end
 void ServerMessageHandler::handleIncantationEnd(const std::string &message)
 {
     std::istringstream iss(message);
     int x, y, result;
     iss >> x >> y >> result;
+
+    auto &playerList = display.getMap().getPlayers();
+    for (auto &player : playerList) {
+        Data::Player::Incantation incantation = player.getIncantation();
+        if (incantation.isStarted() && incantation.getTarget().x() == x && incantation.getTarget().y() == y) {
+            incantation.end();
+        }
+    }
 
     if (debug)
         std::cout << "Incantation ended at (" << x << ", " << y << ") with result: " << (result ? "success" : "failure")
