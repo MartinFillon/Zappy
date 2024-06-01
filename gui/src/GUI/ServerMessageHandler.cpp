@@ -183,7 +183,6 @@ void ServerMessageHandler::handleExpulsion(const std::string &message)
         std::cout << "Player #" << playerNumber << " is expelled" << std::endl;
 }
 
-// TODO: handle broadcast
 void ServerMessageHandler::handleBroadcast(const std::string &message)
 {
     int playerNumber;
@@ -193,7 +192,7 @@ void ServerMessageHandler::handleBroadcast(const std::string &message)
     iss >> playerNumber;
     getline(iss, broadcastMessage);
 
-    
+    display.addMessage(broadcastMessage, playerNumber);
     if (debug)
         std::cout << "Player #" << playerNumber << " broadcasted: " << broadcastMessage << std::endl;
 }
@@ -402,9 +401,9 @@ void ServerMessageHandler::handleEndGame(const std::string &message)
         std::cout << "Game over. Message: " << message << std::endl;
 }
 
-// TODO: handle message from server
 void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 {
+    display.addMessage(message);
     if (debug)
         std::cout << "Message from server: " << message << std::endl;
 }
