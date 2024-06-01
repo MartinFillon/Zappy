@@ -13,7 +13,9 @@
 namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
-    : team (), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}), timeUnit(100), endGame(false), endGameMessage(), messages() {
+    : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
+      timeUnit(100), endGame(false), endGameMessage(), messages()
+{
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
     } else {
@@ -22,11 +24,13 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
     InitWindow(width, height, "Zappy");
 }
 
-Display::~Display() {
+Display::~Display()
+{
     CloseWindow();
 }
 
-void Display::run() {
+void Display::run()
+{
     std::string message;
 
     while (!WindowShouldClose()) {
@@ -39,7 +43,8 @@ void Display::run() {
     }
 }
 
-void Display::handleServerMessage(std::string &message) {
+void Display::handleServerMessage(std::string &message)
+{
     if (!networkHandler.getMessage(message)) {
         return;
     }
