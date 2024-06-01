@@ -104,15 +104,15 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) co
     }
 
     for (const auto &player : m_players) {
-        int playerX = player.getPos().x() * tileSize;
-        int playerY = player.getPos().y() * tileSize;
+        int playerX = player.getPos().x() * tileSize + start_x;
+        int playerY = player.getPos().y() * tileSize + start_y;
 
         DrawCircle(playerX + tileSize / 2, playerY + tileSize / 2, tileSize / 3, BLUE);
     }
 
     for (const auto &egg : m_eggs) {
-        int eggX = egg.getPosition().x() * tileSize;
-        int eggY = egg.getPosition().y() * tileSize;
+        int eggX = egg.getPosition().x() * tileSize + start_x;
+        int eggY = egg.getPosition().y() * tileSize + start_y;
 
         DrawCircle(eggX + tileSize / 2, eggY + tileSize / 2, tileSize / 4, YELLOW);
     }
