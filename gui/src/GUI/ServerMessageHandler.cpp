@@ -378,9 +378,9 @@ void ServerMessageHandler::handleTimeUnitModification(const std::string &message
         std::cout << "Time unit modified to " << timeUnit << std::endl;
 }
 
-// TODO: handle end game
 void ServerMessageHandler::handleEndGame(const std::string &message)
 {
+    display.setEndGame({message});
     if (debug)
         std::cout << "Game over. Message: " << message << std::endl;
 }
