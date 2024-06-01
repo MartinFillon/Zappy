@@ -9,7 +9,6 @@
 
 #include <raylib.h>
 #include <string>
-#include <memory>
 #include <vector>
 
 #include "../Network/Handler.hpp"
@@ -37,6 +36,7 @@ class Display {
     }
 
     std::vector<std::string> team;
+
   private:
     void handleServerMessage(std::string &message);
 
@@ -46,4 +46,5 @@ class Display {
     Data::Map map;
     int timeUnit;
 };
-}; // namespace GUI
+
+} // namespace GUI
