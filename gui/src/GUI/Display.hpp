@@ -14,6 +14,7 @@
 
 #include "../Network/Handler.hpp"
 #include "Data/Map.hpp"
+#include "MessageBox.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 
@@ -50,7 +51,7 @@ class Display {
 
     void addMessage(std::string message, int user = SERVER)
     {
-        messages.push_back(std::make_tuple(std::chrono::steady_clock::now(), user, message));
+        messageBox.addMessage(message, user);
     }
 
     std::vector<std::string> team;
@@ -58,6 +59,7 @@ class Display {
   private:
     void handleServerMessage(std::string &message);
     void resize();
+    void displayMessages(int x, int y, int width, int height);
 
     Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
@@ -66,9 +68,8 @@ class Display {
     int timeUnit;
     bool endGame;
     std::vector<std::string> endGameMessage;
-    std::vector<std::tuple<std::chrono::time_point<std::chrono::steady_clock>, int, std::string>> messages;
-
     int offsetX, offsetY, newWidth, newHeight;
+    MessageBox messageBox;
 };
 
 } // namespace GUI
