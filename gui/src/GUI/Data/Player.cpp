@@ -53,13 +53,13 @@ Pos<int, 2> Player::Incantation::getTarget() const
     return target;
 }
 
-Player::Player(int x, int y, int id, const std::string &team, int level, bool is_hatched)
-    : m_pos({x, y}), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched)
+Player::Player(int x, int y, Direction direction, int id, const std::string &team, int level, bool is_hatched)
+    : m_pos({x, y}), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
 {
 }
 
-Player::Player(const Pos<int, 2> &pos, int id, const std::string &team, int level, bool is_hatched)
-    : m_pos(pos), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched)
+Player::Player(const Pos<int, 2> &pos, Direction direction, int id, const std::string &team, int level, bool is_hatched)
+    : m_pos(pos), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
 {
 }
 
@@ -93,9 +93,15 @@ const std::string &Player::getTeam() const
     return m_team;
 }
 
-void Player::setPosition(int x, int y)
+Player::Direction Player::getOrientation() const
+{
+    return m_orientation;
+}
+
+void Player::setPosition(int x, int y, Direction direction)
 {
     m_pos = Pos<int, 2>({x, y});
+    m_orientation = direction;
 }
 
 bool Player::isHatched() const

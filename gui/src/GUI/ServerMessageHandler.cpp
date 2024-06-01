@@ -8,6 +8,7 @@
 #include "ServerMessageHandler.hpp"
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include "Data/Player.hpp"
 #include "Display.hpp"
 
@@ -94,8 +95,8 @@ void ServerMessageHandler::handleNewPlayer(const std::string &message)
 
     iss >> playerNumber >> x >> y >> orientation >> level >> teamName;
 
-    auto &players = display.getMap().getPlayers();
-    players.emplace_back(x, y, playerNumber, teamName);
+    std::vector<Data::Player> &players = display.getMap().getPlayers();
+    players.emplace_back(x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level);
 
     if (debug)
         std::cout << "New player #" << playerNumber << " joined at (" << x << ", " << y << ") with orientation "
@@ -112,7 +113,7 @@ void ServerMessageHandler::handlePlayerPosition(const std::string &message)
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
         if (player.getId() == playerNumber) {
-            player.setPosition(x, y);
+            player.setPosition(x, y, static_cast<Data::Player::Direction>(orientation));
             break;
         }
     }
@@ -151,7 +152,7 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
         if (player.getId() == playerNumber) {
-            player.setPosition(x, y);
+            player.setPosition(x, y, player.getOrientation());
             player.getInventory().update(q0, q1, q2, q3, q4, q5, q6);
             break;
         }
@@ -343,7 +344,7 @@ void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
             if (player.isHatched())
                 continue;
             player.spawn();
-            player.setPosition(x, y);
+            player.setPosition(x, y, Data::Player::Direction::UNDEFINED);
             break;
         }
         eggs.erase(eggIter, eggs.end());
