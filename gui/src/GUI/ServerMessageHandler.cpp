@@ -67,7 +67,6 @@ void ServerMessageHandler::handleMapSize(const std::string &message)
 }
 
 
-// TODO
 void ServerMessageHandler::handleTileContent(const std::string &message)
 {
     int x, y, q0, q1, q2, q3, q4, q5, q6;
@@ -77,7 +76,7 @@ void ServerMessageHandler::handleTileContent(const std::string &message)
     if (debug)
         std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
                   << " " << q5 << " " << q6 << std::endl;
-    //display.getMap().getTile(x, y).updateRessources(q0, q1, q2, q3, q4, q5, q6);
+    display.getMap().getTile(x, y).updateRessources(q0, q1, q2, q3, q4, q5, q6);
 }
 
 // TODO
