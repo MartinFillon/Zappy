@@ -5,19 +5,31 @@
 ** MessageBox
 */
 
-#include "MessageBox.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
 
-MessageBox::MessageBox(int x, int y, int width, int height)
-    : x(x), y(y), width(width), height(height), scrollOffset(0), lineHeight(20)
-{
-}
+#include "MessageBox.hpp"
+#include "define.hpp"
+
+MessageBox::MessageBox() : m_scrollOffset(0), m_lineHeight(20) {}
 
 void MessageBox::addMessage(const std::string &message, int user)
 {
-    messages.push_back(std::make_tuple(std::chrono::steady_clock::now(), user, message));
+    auto now = std::chrono::steady_clock::now();
+    std::string userStr;
+
+    if (user == SERVER) {
+        userStr = "Server";
+    } else {
+        userStr = m_team[user];
+    }
+
+    std::string timeStr = formatTime(now);
+    std::stringstream formattedMessage;
+    formattedMessage << "[" << timeStr << "] " << userStr << ": " << message;
+
+    m_formattedMessages.push_back({now, userStr, {formattedMessage.str()}});
 }
 
 std::string MessageBox::formatTime(const std::chrono::steady_clock::time_point &tp) const
@@ -38,13 +50,17 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
     std::istringstream wordStream(text);
     std::string word;
     while (wordStream >> word) {
-        std::string testLine = currentLine + (currentLine.empty() ? "" : " ") + word;
-        int textWidth = MeasureText(testLine.c_str(), fontSize);
-        if (textWidth > width) {
-            lines.push_back(currentLine);
+        if (currentLine.empty()) {
             currentLine = word;
         } else {
-            currentLine = testLine;
+            std::string testLine = currentLine + " " + word;
+            int textWidth = MeasureText(testLine.c_str(), fontSize);
+            if (textWidth > width) {
+                lines.push_back(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
         }
     }
 
@@ -55,7 +71,7 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
     return lines;
 }
 
-bool MessageBox::isMouseOver() const
+bool MessageBox::isMouseOver(int x, int y, int width, int height) const
 {
     return CheckCollisionPointRec(
         GetMousePosition(),
@@ -65,12 +81,12 @@ bool MessageBox::isMouseOver() const
 
 void MessageBox::scroll(int amount)
 {
-    scrollOffset = std::max(0, scrollOffset + amount);
+    m_scrollOffset = std::max(0, m_scrollOffset + amount);
 }
 
-void MessageBox::handleInput()
+void MessageBox::handleInput(int x, int y, int width, int height)
 {
-    if (!isMouseOver()) {
+    if (!isMouseOver(x, y, width, height)) {
         return;
     }
     int scrollAmount = GetMouseWheelMove();
@@ -79,46 +95,29 @@ void MessageBox::handleInput()
     }
 }
 
-void MessageBox::display() const
+void MessageBox::display(int x, int y, int width, int height) const
 {
     DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
-    int maxLines = height / lineHeight;
-    int messageCount = messages.size();
+    int maxLines = height / m_lineHeight;
     int totalLines = 0;
-    for (const auto &message : messages) {
-        auto time = std::get<0>(message);
-        auto user = std::get<1>(message);
-        auto text = std::get<2>(message);
 
-        std::string timeStr = formatTime(time);
-        std::stringstream formattedMessage;
-        formattedMessage << "[" << timeStr << "] " << user << ": " << text;
-
-        std::vector<std::string> wrappedText = wrapText(formattedMessage.str(), width, lineHeight);
-        totalLines += wrappedText.size();
+    std::vector<std::vector<std::string>> wrappedMessages;
+    for (const auto &msg : m_formattedMessages) {
+        wrappedMessages.push_back(wrapText(msg.lines[0], width, m_lineHeight));
+        totalLines += wrappedMessages.back().size();
     }
 
-    int startLine = std::max(0, totalLines - maxLines - scrollOffset);
+    int startLine = std::max(0, totalLines - maxLines - m_scrollOffset);
     int currentLine = 0;
     int lineCount = 0;
 
-    for (int i = messageCount - 1; i >= 0 && lineCount < maxLines; --i) {
-        auto &message = messages[i];
+    for (auto it = wrappedMessages.rbegin(); it != wrappedMessages.rend() && lineCount < maxLines; ++it) {
+        const auto &msgLines = *it;
 
-        std::chrono::time_point time = std::get<0>(message);
-        int user = std::get<1>(message);
-        std::string text = std::get<2>(message);
-
-        std::string timeStr = formatTime(time);
-        std::stringstream formattedMessage;
-        formattedMessage << "[" << timeStr << "] " << user << ": " << text;
-
-        std::vector<std::string> wrappedText = wrapText(formattedMessage.str(), width, lineHeight);
-
-        for (const auto &line : wrappedText) {
+        for (const auto &line : msgLines) {
             if (currentLine >= startLine && lineCount < maxLines) {
-                DrawText(line.c_str(), x, y + (lineCount * lineHeight), lineHeight, WHITE);
+                DrawText(line.c_str(), x, y + (lineCount * m_lineHeight), m_lineHeight, WHITE);
                 lineCount++;
             }
             currentLine++;
