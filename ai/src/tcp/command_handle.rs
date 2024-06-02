@@ -84,9 +84,11 @@ impl CommandHandler for TcpClient {
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
         info!("Handling response: ({})...", response);
-        if response.starts_with("message ") && response.ends_with("\n") {
+
+        if response.starts_with("message ") && response.ends_with('\n') {
             return handle_message_response(response);
         }
+
         match response.trim_end() {
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
@@ -97,7 +99,7 @@ impl CommandHandler for TcpClient {
 
 fn handle_message_response(response: String) -> Result<ResponseResult, CommandError> {
     info!("Handling message response...");
-    let parts: Vec<&str> = response.trim_end().split_whitespace().collect();
+    let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() >= 3 && parts[0] == "message" {
         match parts[1].trim_end_matches(',').parse::<usize>() {

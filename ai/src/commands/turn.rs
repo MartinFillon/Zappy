@@ -15,12 +15,12 @@ use std::fmt::{Display, Formatter, Result};
 use log::info;
 
 #[derive(Debug, Clone, Copy)]
-pub enum Direction {
+pub enum DirectionTurn {
     Left,
     Right,
 }
 
-impl Display for Direction {
+impl Display for DirectionTurn {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", DIRECTIONS[(*self) as usize])
     }
@@ -28,7 +28,7 @@ impl Display for Direction {
 
 const DIRECTIONS: [&str; 2] = ["Left", "Right"];
 
-pub async fn turn(client: &mut TcpClient, dir: Direction) -> bool {
+pub async fn turn(client: &mut TcpClient, dir: DirectionTurn) -> bool {
     info!("Turning {}...", dir);
     let response = match client
         .check_dead(&format!("{}\n", DIRECTIONS[dir as usize]))
