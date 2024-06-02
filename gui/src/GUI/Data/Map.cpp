@@ -19,8 +19,8 @@ Map::Map(int x, int y) : m_size({x, y})
 Map::Map(const Pos<int, 2> &pos) : m_size(pos)
 {
     m_map = std::vector<std::shared_ptr<Tile>>(pos.x() * pos.y(), std::make_shared<Tile>());
-    // std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
-    // m_players.push_back(test);
+    std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
+    m_players.push_back(test);
 }
 
 Tile &Map::getTile(const Pos<int, 2> &pos)

@@ -20,6 +20,7 @@ class ISelectItem {
   public:
     virtual std::vector<std::string> getStringInfo() const = 0;
     virtual Inventory &getInventory() = 0;
+    virtual Inventory getInventory() const = 0;
     virtual Pos<int, 2> getPos() const = 0;
 };
 

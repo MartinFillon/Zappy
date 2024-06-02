@@ -41,5 +41,7 @@ namespace GUI
             std::shared_ptr<Data::ISelectItem> m_item;
             Pos<float, 2> m_posTile;
             float m_size;
+
+            int m_lineHeight;
     };
 }

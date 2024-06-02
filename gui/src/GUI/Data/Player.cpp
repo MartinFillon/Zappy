@@ -119,13 +119,16 @@ Player::Incantation &Player::getIncantation()
     return m_incantation;
 }
 
+#include <unistd.h>
+
 std::vector<std::string> Player::getStringInfo() const
 {
     std::vector<std::string> infoList = {
         "Player Info:",
-        std::string("  Team = ").append(m_team),
-        std::string("  Id = ").append(std::to_string(m_id)),
-        std::string("  Level = ").append(std::to_string(m_level))
+        "",
+        std::string("\tTeam: ").append(m_team),
+        std::string("\tId: ").append(std::to_string(m_id)),
+        std::string("\tLevel: ").append(std::to_string(m_level))
     };
     return infoList;
 }

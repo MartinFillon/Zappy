@@ -17,10 +17,14 @@ class ASelectItem : public ISelectItem {
     ASelectItem(const Pos<int, 2> &pos) : m_pos(pos) {};
     ASelectItem(int x, int y) : m_pos({x, y}) {};
 
-    virtual std::vector<std::string> getStringInfo() const = 0;
-    Inventory &getInventory() override{
+    Inventory &getInventory() override {
         return m_inv;
     };
+
+    Inventory getInventory() const override {
+        return m_inv;
+    };
+
     Pos<int, 2> getPos() const override
     {
         return m_pos;
