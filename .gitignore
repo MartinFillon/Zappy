@@ -8,6 +8,7 @@ Cargo.lock
 target/
 coding-style-reports.log
 .cache
+.vscode
 compile_commands.json
 *gc*
 server-tester-bin

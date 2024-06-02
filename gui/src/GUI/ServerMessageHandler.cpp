@@ -95,8 +95,8 @@ void ServerMessageHandler::handleNewPlayer(const std::string &message)
 
     iss >> playerNumber >> x >> y >> orientation >> level >> teamName;
 
-    std::vector<Data::Player> &players = display.getMap().getPlayers();
-    players.emplace_back(x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level);
+    std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
+    players.emplace_back(std::make_shared<Data::Player>(x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level));
 
     if (debug)
         std::cout << "New player #" << playerNumber << " joined at (" << x << ", " << y << ") with orientation "
@@ -112,8 +112,8 @@ void ServerMessageHandler::handlePlayerPosition(const std::string &message)
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
-        if (player.getId() == playerNumber) {
-            player.setPosition(x, y, static_cast<Data::Player::Direction>(orientation));
+        if (player->getId() == playerNumber) {
+            player->setPosition(x, y, static_cast<Data::Player::Direction>(orientation));
             break;
         }
     }
@@ -132,8 +132,8 @@ void ServerMessageHandler::handlePlayerLevel(const std::string &message)
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
-        if (player.getId() == playerNumber) {
-            player.setLevel(level);
+        if (player->getId() == playerNumber) {
+            player->setLevel(level);
             break;
         }
     }
@@ -151,9 +151,9 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
-        if (player.getId() == playerNumber) {
-            player.setPosition(x, y, player.getOrientation());
-            player.getInventory().update(q0, q1, q2, q3, q4, q5, q6);
+        if (player->getId() == playerNumber) {
+            player->setPosition(x, y, player->getOrientation());
+            player->getInventory().update(q0, q1, q2, q3, q4, q5, q6);
             break;
         }
     }
@@ -170,12 +170,12 @@ void ServerMessageHandler::handleExpulsion(const std::string &message)
 
     iss >> playerNumber;
 
-    std::vector<Data::Player> &players = display.getMap().getPlayers();
+    std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
     players.erase(
         std::remove_if(
             players.begin(),
             players.end(),
-            [playerNumber](const Data::Player &player) { return player.getId() == playerNumber; }
+            [playerNumber](const std::shared_ptr<Data::Player> &player) { return player->getId() == playerNumber; }
         ),
         players.end()
     );
@@ -210,11 +210,11 @@ void ServerMessageHandler::handleIncantationStart(const std::string &message)
         players.push_back(playerNumber);
     }
 
-    std::vector<Data::Player> &playerList = display.getMap().getPlayers();
+    std::vector<std::shared_ptr<Data::Player>> &playerList = display.getMap().getPlayers();
     for (int &playerId : players) {
-        for (Data::Player &player : playerList) {
-            if (player.getId() == playerId) {
-                player.getIncantation().start(300 / display.getTimeUnit(), x, y);
+        for (std::shared_ptr<Data::Player> &player : playerList) {
+            if (player->getId() == playerId) {
+                player->getIncantation().start(300 / display.getTimeUnit(), x, y);
                 break;
             }
         }
@@ -237,7 +237,7 @@ void ServerMessageHandler::handleIncantationEnd(const std::string &message)
 
     auto &playerList = display.getMap().getPlayers();
     for (auto &player : playerList) {
-        Data::Player::Incantation incantation = player.getIncantation();
+        Data::Player::Incantation incantation = player->getIncantation();
         if (incantation.isStarted() && incantation.getTarget().x() == x && incantation.getTarget().y() == y) {
             incantation.end();
         }
@@ -254,8 +254,8 @@ void ServerMessageHandler::handleEggLaying(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber;
-    Data::Player player = display.getMap().getPlayers().at(playerNumber);
-    display.getMap().getEggs().emplace_back(player.getPos(), playerNumber);
+    std::shared_ptr<Data::Player> player = display.getMap().getPlayers().at(playerNumber);
+    display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
 
     if (debug)
         std::cout << "Player #" << playerNumber << " has laid an egg" << std::endl;
@@ -267,10 +267,10 @@ void ServerMessageHandler::handleResourceDrop(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
-    Data::Player &player = display.getMap().getPlayers().at(playerNumber);
-    Data::Tile &tile = display.getMap().getTile(player.getPos());
+    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player->getPos());
 
-    player.drop(tile, resourceType);
+    player->drop(tile, resourceType);
     if (debug)
         std::cout << "Player #" << playerNumber << " dropped resource type " << resourceType << std::endl;
 }
@@ -281,10 +281,10 @@ void ServerMessageHandler::handleResourceCollect(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
-    Data::Player &player = display.getMap().getPlayers().at(playerNumber);
-    Data::Tile &tile = display.getMap().getTile(player.getPos());
+    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player->getPos());
 
-    player.loot(tile, resourceType);
+    player->loot(tile, resourceType);
     if (debug)
         std::cout << "Player #" << playerNumber << " collected resource type " << resourceType << std::endl;
 }
@@ -301,7 +301,7 @@ void ServerMessageHandler::handlePlayerDeath(const std::string &message)
         std::remove_if(
             players.begin(),
             players.end(),
-            [playerNumber](const Data::Player &player) { return player.getId() == playerNumber; }
+            [playerNumber](const std::shared_ptr<Data::Player> &player) { return player->getId() == playerNumber; }
         ),
         players.end()
     );
@@ -317,8 +317,8 @@ void ServerMessageHandler::handleEggLaid(const std::string &message)
 
     iss >> eggNumber >> playerNumber >> x >> y;
 
-    std::vector<Data::Egg> &eggs = display.getMap().getEggs();
-    eggs.emplace_back(Pos<int, 2>{x, y}, eggNumber);
+    std::vector<std::shared_ptr<Data::Egg>> &eggs = display.getMap().getEggs();
+    eggs.emplace_back(std::make_shared<Data::Egg>(Pos<int, 2>{x, y}, eggNumber));
 
     if (debug)
         std::cout << "Egg #" << eggNumber << " was laid by player #" << playerNumber << " at (" << x << ", " << y << ")"
@@ -333,18 +333,18 @@ void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
     iss >> eggNumber;
 
     auto &eggs = display.getMap().getEggs();
-    auto eggIter = std::remove_if(eggs.begin(), eggs.end(), [eggNumber](const Data::Egg &egg) {
-        return egg.getId() == eggNumber;
+    auto eggIter = std::remove_if(eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) {
+        return egg->getId() == eggNumber;
     });
     if (eggIter != eggs.end()) {
-        int x = eggIter->getPosition().x();
-        int y = eggIter->getPosition().y();
+        int x = (*eggIter)->getPosition().x();
+        int y = (*eggIter)->getPosition().y();
 
         for (auto &player : display.getMap().getPlayers()) {
-            if (player.isHatched())
+            if (player->isHatched())
                 continue;
-            player.spawn();
-            player.setPosition(x, y, Data::Player::Direction::UNDEFINED);
+            player->spawn();
+            player->setPosition(x, y, Data::Player::Direction::UNDEFINED);
             break;
         }
         eggs.erase(eggIter, eggs.end());
@@ -364,7 +364,7 @@ void ServerMessageHandler::handleEggDeath(const std::string &message)
     auto &eggs = display.getMap().getEggs();
     eggs.erase(
         std::remove_if(
-            eggs.begin(), eggs.end(), [eggNumber](const Data::Egg &egg) { return egg.getId() == eggNumber; }
+            eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) { return egg->getId() == eggNumber; }
         ),
         eggs.end()
     );

@@ -36,6 +36,13 @@ Display::~Display()
     CloseWindow();
 }
 
+void Display::handleEvent()
+{
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+    }
+}
+
 void Display::run()
 {
     std::string message;
@@ -47,10 +54,12 @@ void Display::run()
             resize();
         }
 
+        handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);
         DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
         map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY);
+        infoBox.display(offsetX, offsetY, 400, 300);
         messageBox.display(offsetX, offsetY + newHeight - 300, 400, 300);
         messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);
         EndDrawing();
