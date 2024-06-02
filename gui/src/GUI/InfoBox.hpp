@@ -11,28 +11,35 @@
 #include <raylib.h>
 #include <string>
 #include <vector>
+#include <memory>
+
+#include "Data/ISelectItem.hpp"
 
 namespace GUI
 {
-  class InfoBox {
-    public:
-      InfoBox();
-      void display(int x, int y, int width, int height) const;
+    class InfoBox {
+        public:
+            InfoBox();
 
-      bool isPrint() const {
-        return m_print;
-      };
+            bool isPrint() const;
+            void setPrint(bool print);
 
-      void setPrint(bool val) {
-        m_print = val;
-      };
+            Pos<float, 2> getPosTile() const;
+            void setPosTile(Pos<float, 2> posTile);
+            void setPosTile(float x, float y);
 
-      int getSize() const {
-        return m_size;
-      };
+            float getSize() const;
+            void setSize(float size);
 
-    private:
-      bool m_print;
-      int m_size;
-  };
+            std::shared_ptr<Data::ISelectItem> &getItem();
+            std::shared_ptr<Data::ISelectItem> getItem() const;
+
+            void display(int x, int y, int width, int height) const;
+
+        private:
+            bool m_isPrint;
+            std::shared_ptr<Data::ISelectItem> m_item;
+            Pos<float, 2> m_posTile;
+            float m_size;
+    };
 }

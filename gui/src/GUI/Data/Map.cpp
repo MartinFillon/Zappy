@@ -7,8 +7,6 @@
 
 #include "Map.hpp"
 #include <raylib.h>
-#include "Pos.hpp"
-#include "Tile.hpp"
 
 namespace GUI {
 namespace Data {
@@ -21,6 +19,8 @@ Map::Map(int x, int y) : m_size({x, y})
 Map::Map(const Pos<int, 2> &pos) : m_size(pos)
 {
     m_map = std::vector<std::shared_ptr<Tile>>(pos.x() * pos.y(), std::make_shared<Tile>());
+    // std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
+    // m_players.push_back(test);
 }
 
 Tile &Map::getTile(const Pos<int, 2> &pos)
@@ -109,13 +109,19 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
         float playerCenterX = player->getPos().x() * tileSize + start_x + tileSize / 2;
         float playerCenterY = player->getPos().y() * tileSize + start_y + tileSize / 2;
         if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterY}, tileSize / 6)) {
-            infoBox.setPrint(true);
-            // DrawCircleLines(playerCenterX, playerCenterY, tileSize / 6 + 5.0, GREEN);
+            auto &item = infoBox.getItem();
+            if (item == player) {
+                infoBox.setPrint(!infoBox.isPrint());
+            } else {
+                item = player;
+                infoBox.setPosTile(0.25, 0.25);
+                infoBox.setSize(0.5);
+            }
         }
     }
 }
 
-void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) const
+void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
 {
     int mapWidth = end_x - start_x;
     int mapHeight = end_y - start_y;
@@ -140,9 +146,6 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) co
                     DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, RED);
                 }
             }
-            if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
-                DrawRectangle(tileX, tileY, tileSize, tileSize, {0, 0, 0, 100});
-            }
             DrawRectangleLines(tileX, tileY, tileSize, tileSize, BLACK);
         }
     }
@@ -158,6 +161,13 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y) co
 
         DrawCircle(eggX + tileSize / 2, eggY + tileSize / 2, tileSize / 8, Color{253, 249, 0, 150});
     }
+    if (info.isPrint() && info.getItem() != nullptr) {
+        auto item = info.getItem();
+        float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize + start_x;
+        float itemY = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
+        DrawRectangleLines(itemX, itemY, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
+    }
+
 }
 
 } // namespace Data
