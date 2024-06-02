@@ -54,23 +54,13 @@ Pos<int, 2> Player::Incantation::getTarget() const
 }
 
 Player::Player(int x, int y, Direction direction, int id, const std::string &team, int level, bool is_hatched)
-    : m_pos({x, y}), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
+    : ASelectItem({x, y}), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
 {
 }
 
 Player::Player(const Pos<int, 2> &pos, Direction direction, int id, const std::string &team, int level, bool is_hatched)
-    : m_pos(pos), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
+    : ASelectItem(pos), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
 {
-}
-
-Pos<int, 2> Player::getPos() const
-{
-    return m_pos;
-}
-
-Inventory &Player::getInventory()
-{
-    return m_inv;
 }
 
 int Player::getLevel() const
@@ -127,6 +117,17 @@ void Player::drop(Tile &tile, int ressourceType, size_t quantity)
 Player::Incantation &Player::getIncantation()
 {
     return m_incantation;
+}
+
+std::vector<std::string> Player::getStringInfo() const
+{
+    std::vector<std::string> infoList = {
+        "Player Info:",
+        std::string("  Team = ").append(m_team),
+        std::string("  Id = ").append(std::to_string(m_id)),
+        std::string("  Level = ").append(std::to_string(m_level))
+    };
+    return infoList;
 }
 
 } // namespace Data
