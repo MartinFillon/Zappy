@@ -31,8 +31,10 @@ pub enum ResponseResult {
     Message((Direction, String)),
 }
 
+#[derive(Debug)]
+#[repr(u8)]
 pub enum Direction {
-    North,
+    North = 1,
     NorthWest,
     West,
     SouthWest,
@@ -71,21 +73,64 @@ impl CommandHandler for TcpClient {
 
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError> {
         info!("Checking if request receives dead...");
-        let response = self.send_command(command).await?;
+        let response: String = self.send_command(command).await?;
         if response == "dead\n" {
             info!("Dead received.");
             return Err(CommandError::DeadReceived);
         }
-        info!("Not dead received, response is forwarded.");
+        info!("Dead not received, response is forwarded.");
         Ok(response)
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
         info!("Handling response: ({})...", response);
-        match response.as_str() {
-            "ok\n" => Ok(ResponseResult::OK),
-            "ko\n" => Ok(ResponseResult::KO),
+        if response.starts_with("message ") && response.ends_with("\n") {
+            return handle_message_response(response);
+        }
+        match response.trim_end() {
+            "ok" => Ok(ResponseResult::OK),
+            "ko" => Ok(ResponseResult::KO),
             _ => Err(CommandError::InvalidResponse),
+        }
+    }
+}
+
+fn handle_message_response(response: String) -> Result<ResponseResult, CommandError> {
+    info!("Handling message response...");
+    let parts: Vec<&str> = response.trim_end().split_whitespace().collect();
+
+    if parts.len() >= 3 && parts[0] == "message" {
+        match parts[1].trim_end_matches(',').parse::<usize>() {
+            Ok(direction) => {
+                if let Some(dir_enum) = Direction::from_usize(direction) {
+                    let final_msg = parts[2..].join(" ");
+                    info!(
+                        "Message received from direction {} (aka {}): {}",
+                        dir_enum, direction, final_msg
+                    );
+                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                }
+                debug!("Failed to parse direction {}.", direction);
+            }
+            Err(_) => debug!("Failed to parse direction from message: {}", response),
+        }
+    }
+
+    Err(CommandError::InvalidResponse)
+}
+
+impl Direction {
+    pub fn from_usize(value: usize) -> Option<Self> {
+        match value {
+            1 => Some(Direction::North),
+            2 => Some(Direction::NorthWest),
+            3 => Some(Direction::West),
+            4 => Some(Direction::SouthWest),
+            5 => Some(Direction::South),
+            6 => Some(Direction::SouthEast),
+            7 => Some(Direction::East),
+            8 => Some(Direction::NorthEast),
+            _ => None,
         }
     }
 }
