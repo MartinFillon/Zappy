@@ -58,7 +58,7 @@ void Display::run()
         BeginDrawing();
         ClearBackground(BLACK);
         DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY);
+        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
         infoBox.display(offsetX, offsetY, 400, 300);
         messageBox.display(offsetX, offsetY + newHeight - 300, 400, 300);
         messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);

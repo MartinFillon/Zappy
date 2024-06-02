@@ -36,7 +36,7 @@ class Map {
     void resize(const Pos<int, 2> &size);
 
     void checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox);
-    void displayTacticalView(int start_x, int start_y, int end_x, int end_y) const;
+    void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const;
 
   private:
     std::vector<std::shared_ptr<Tile>> m_map;
