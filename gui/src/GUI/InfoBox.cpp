@@ -14,7 +14,7 @@
 
 namespace GUI {
 
-InfoBox::InfoBox(): m_posTile({0, 0})
+InfoBox::InfoBox(): m_posTile({0, 0}), m_lineHeight(20)
 {}
 
 bool InfoBox::isPrint() const
@@ -64,7 +64,16 @@ std::shared_ptr<Data::ISelectItem> InfoBox::getItem() const
 
 void InfoBox::display(int x, int y, int width, int height) const
 {
-    DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
+    if (m_isPrint && m_item != nullptr) {
+        DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
+        auto infoList = m_item->getStringInfo();
+        int lineCount = 0;
+
+        for (auto line : infoList) {
+            DrawText(line.c_str(), x, y + (lineCount * m_lineHeight), m_lineHeight, WHITE);
+            lineCount += 1;
+        }
+    }
 }
 
 } // namespace GUI
