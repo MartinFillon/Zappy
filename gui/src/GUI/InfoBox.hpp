@@ -42,6 +42,7 @@ namespace GUI
             Pos<float, 2> m_posTile;
             float m_size;
 
+            std::array<std::string, 7> m_itemName;
             int m_lineHeight;
     };
 }

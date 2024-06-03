@@ -52,7 +52,10 @@ Tile Map::getTile(int x, int y) const
     if (x >= m_size.x() || y >= m_size.y()) {
         throw std::out_of_range("Position out of map bounds");
     }
-    return *m_map.at(y * m_size.x() + x);
+    Tile tile = *m_map.at(y * m_size.x() + x);
+    if (x != tile.getPos().x() && y != tile.getPos().y())
+        std::cout << "wanted (" << x << ", " << y << ") | me: ()" << tile.getPos().x() << ", " << tile.getPos().y() << ")" << std::endl;
+    return tile;
 }
 
 std::vector<std::shared_ptr<Player>> &Map::getPlayers()
@@ -76,8 +79,8 @@ void Map::resize(int x, int y)
 
     if (size_map > x * y || size_map < x * y) {
         m_map.clear();
-        for (int i = 0; i < x; i++) {
-            for (int y = 0; y < x; y++) {
+        for (int y = 0; y < x; y++) {
+            for (int i = 0; i < x; i++) {
                 m_map.push_back(std::make_shared<Tile>(i, y));
             }
         }
@@ -93,8 +96,8 @@ void Map::resize(const Pos<int, 2> &size)
 
     if (size_map > x * y || size_map < x * y) {
         m_map.clear();
-        for (int i = 0; i < x; i++) {
-            for (int y = 0; y < x; y++) {
+        for (int y = 0; y < x; y++) {
+            for (int i = 0; i < x; i++) {
                 m_map.push_back(std::make_shared<Tile>(i, y));
             }
         }
@@ -147,7 +150,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
 
     for (int y = 0; y < m_size.y(); y++) {
         for (int x = 0; x < m_size.x(); x++) {
-            auto &ressources = getTile(x, y).getRessources();
+            auto &ressources = getTile(x, y).getInventory();
 
             float tileX = x * tileSize + start_x;
             float tileY = y * tileSize + start_y;

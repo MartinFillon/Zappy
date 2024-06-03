@@ -106,12 +106,12 @@ void Player::spawn()
 
 void Player::loot(Tile &tile, int ressourceType, size_t quantity)
 {
-    m_inv.loot(ressourceType, tile.getRessources(), quantity);
+    m_inv.loot(ressourceType, tile.getInventory(), quantity);
 }
 
 void Player::drop(Tile &tile, int ressourceType, size_t quantity)
 {
-    m_inv.drop(ressourceType, tile.getRessources(), quantity);
+    m_inv.drop(ressourceType, tile.getInventory(), quantity);
 }
 
 Player::Incantation &Player::getIncantation()
@@ -124,11 +124,11 @@ Player::Incantation &Player::getIncantation()
 std::vector<std::string> Player::getStringInfo() const
 {
     std::vector<std::string> infoList = {
-        "--PLAYER-INFO--",
+        "--Player-Info--",
         "",
-        std::string("[TEAM]: ").append(m_team),
-        std::string("[ID]: ").append(std::to_string(m_id)),
-        std::string("[LEVEL]: ").append(std::to_string(m_level))
+        std::string("[Team]: ").append(m_team),
+        std::string("[Id]: ").append(std::to_string(m_id)),
+        std::string("[Level]: ").append(std::to_string(m_level))
     };
     return infoList;
 }
