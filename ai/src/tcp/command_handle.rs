@@ -128,7 +128,7 @@ impl Display for ResponseResult {
                 write!(f, "Tiles: [")?;
                 for tile in tiles {
                     write!(f, "{}", tile)?;
-                    if tiles.last() != Some(&tile) {
+                    if tiles.last() != Some(tile) {
                         write!(f, ", ")?;
                     }
                 }
