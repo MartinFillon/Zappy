@@ -13,12 +13,12 @@ namespace Data {
 
 Map::Map(int x, int y) : m_size({x, y})
 {
-    m_map = std::vector<std::shared_ptr<Tile>>(x * y, std::make_shared<Tile>());
+    resize(x, y);
 }
 
 Map::Map(const Pos<int, 2> &pos) : m_size(pos)
 {
-    m_map = std::vector<std::shared_ptr<Tile>>(pos.x() * pos.y(), std::make_shared<Tile>());
+    resize(pos);
     std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
     m_players.push_back(test);
 }
@@ -74,29 +74,32 @@ void Map::resize(int x, int y)
 {
     int size_map = static_cast<int>(m_map.size());
 
-    if (size_map >= x * y) {
-        for (int i = 0; size_map - i > x * y; i++) {
-            m_map.pop_back();
+    if (size_map > x * y || size_map < x * y) {
+        m_map.clear();
+        for (int i = 0; i < x; i++) {
+            for (int y = 0; y < x; y++) {
+                m_map.push_back(std::make_shared<Tile>(i, y));
+            }
         }
-    } else {
-        for (int i = 0; size_map + i < x * y; i++) {
-            m_map.push_back(std::make_shared<Tile>());
-        }
+        m_size = {x, y};
     }
-    m_size = {x, y};
 }
 
 void Map::resize(const Pos<int, 2> &size)
 {
     int size_map = static_cast<int>(m_map.size());
+    int x = size.x();
+    int y = size.y();
 
-    if (size_map >= size.x() * size.y())
-        m_map.resize(size.x() * size.y());
-    else {
-        while (size_map < size.x() * size.y())
-            m_map.push_back(std::make_shared<Tile>());
+    if (size_map > x * y || size_map < x * y) {
+        m_map.clear();
+        for (int i = 0; i < x; i++) {
+            for (int y = 0; y < x; y++) {
+                m_map.push_back(std::make_shared<Tile>(i, y));
+            }
+        }
+        m_size = {x, y};
     }
-    m_size = size;
 }
 
 void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox)
@@ -116,6 +119,21 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
                 item = player;
                 infoBox.setPosTile(0.25, 0.25);
                 infoBox.setSize(0.5);
+            }
+            return;
+        }
+    }
+    for (auto tile : m_map) {
+        float tileX = tile->getPos().x() * tileSize + start_x;
+        float tileY = tile->getPos().y() * tileSize + start_y;
+        if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
+            auto &item = infoBox.getItem();
+            if (item == tile) {
+                infoBox.setPrint(!infoBox.isPrint());
+            } else {
+                item = tile;
+                infoBox.setPosTile(0, 0);
+                infoBox.setSize(1);
             }
         }
     }

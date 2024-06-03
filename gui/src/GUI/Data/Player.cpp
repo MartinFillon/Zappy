@@ -124,11 +124,11 @@ Player::Incantation &Player::getIncantation()
 std::vector<std::string> Player::getStringInfo() const
 {
     std::vector<std::string> infoList = {
-        "Player Info:",
+        "--PLAYER-INFO--",
         "",
-        std::string("\tTeam: ").append(m_team),
-        std::string("\tId: ").append(std::to_string(m_id)),
-        std::string("\tLevel: ").append(std::to_string(m_level))
+        std::string("[TEAM]: ").append(m_team),
+        std::string("[ID]: ").append(std::to_string(m_id)),
+        std::string("[LEVEL]: ").append(std::to_string(m_level))
     };
     return infoList;
 }

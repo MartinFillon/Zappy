@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "Inventory.hpp"
+#include "ASelectItem.hpp"
 
 namespace GUI {
 namespace Data {
-class Tile {
+class Tile : public ASelectItem {
   public:
-    Tile() = default;
+    Tile(int x, int y): ASelectItem({x, y}) {};
+    Tile(const Pos<int, 2> &pos): ASelectItem(pos) {};
     ~Tile() = default;
 
     Inventory &getRessources()
@@ -26,8 +27,16 @@ class Tile {
         m_inv.update(q0, q1, q2, q3, q4, q5, q6);
     }
 
-  private:
-    Inventory m_inv;
+    std::vector<std::string> getStringInfo() const override
+    {
+        std::vector<std::string> infoList = {
+            "--TILE-INFO--",
+            "",
+            std::string("[X]: ").append(std::to_string(m_pos.x())),
+            std::string("[Y]: ").append(std::to_string(m_pos.y())),
+        };
+        return infoList;
+    }
 };
 } // namespace Data
 } // namespace GUI
