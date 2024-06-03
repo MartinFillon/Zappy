@@ -83,7 +83,7 @@ pub enum JsonValue {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct JsonDocument(JsonValue);
+pub struct JsonDocument(pub JsonValue);
 
 impl From<JsonValue> for JsonDocument {
     fn from(value: JsonValue) -> Self {

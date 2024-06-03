@@ -7,12 +7,13 @@
 
 #![allow(dead_code)]
 
+use crate::json::{JsonDocument, JsonValue, ParserError};
 use std::fmt::Display;
 use std::fs;
 
-const CONFIG_PATH: &str = "./config.json";
+pub const CONFIG_PATH: &str = "config.json";
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Elevation {
     from_lvl: usize,
     to_lvl: usize,
@@ -29,15 +30,25 @@ impl Elevation {
         Elevation::default()
     }
 
-    pub fn from_conf() -> std::io::Result<Elevation> {
+    pub fn from_conf(filepath: &str) -> Result<Elevation, ParserError> {
         let mut infos = Elevation::new();
 
-        match fs::read_to_string(CONFIG_PATH) {
-            Ok(content) => {
-                print!("{content}");
-                Ok(infos)
+        match fs::read_to_string(filepath) {
+            Ok(content) => match JsonDocument::try_from(content.as_ref()) {
+                Ok(parsed) => {
+                    match parsed {
+                        JsonDocument(JsonValue::Object(obj)) => {
+                            for (key, value) in obj.iter() {
+                                println!("{}: {:?}", key, value);
+                            }
+                        }
+                        _ => eprintln!("No objects found."),
+                    }
+                    Ok(infos)
+                }
+                Err(e) => Err(e),
             },
-            Err(e) => Err(e),
+            Err(_) => Err(ParserError::UnexpectedEOF),
         }
     }
 
