@@ -5,6 +5,7 @@
 ** zappy_server
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +59,7 @@ static int select_server(zappy_t *z)
     char *line = NULL;
     size_t n = 0;
 
-    if (retval == -1)
+    if (retval == -1 && errno == EINTR)
         return SERV_END;
     if (FD_ISSET(0, &z->server.read_fds)) {
         if (getline(&line, &n, stdin) == -1)
