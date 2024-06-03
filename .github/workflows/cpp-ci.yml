@@ -14,5 +14,5 @@ jobs:
 
       - name: compile
         run: |
-          docker run -it -v --rm $(pwd):/home/student/dev zappy-docker:latest make -C gui
+          docker run -v $(pwd):/home/student/dev zappy-docker:latest sudo make -C gui
         timeout-minutes: 5
