@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-// use crate::commands;
+use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
@@ -59,7 +59,7 @@ pub trait CommandHandler {
 #[async_trait::async_trait]
 impl CommandHandler for TcpClient {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError> {
-        info!("Sending command: ({})...", command);
+        info!("Sending command: ({})...", command.trim_end());
         if self.send_request(command.to_string()).await.is_err() {
             return Err(CommandError::RequestError);
         }
@@ -127,14 +127,20 @@ impl Display for ResponseResult {
             ResponseResult::Tiles(tiles) => {
                 write!(f, "Tiles: [")?;
                 for tile in tiles {
-                    write!(f, "{}, ", tile)?;
+                    write!(f, "{}", tile)?;
+                    if tiles.last() != Some(&tile) {
+                        write!(f, ", ")?;
+                    }
                 }
                 write!(f, "]")
             }
             ResponseResult::Inventory(inventory) => {
                 write!(f, "Inventory: [")?;
                 for (item, nb) in inventory {
-                    write!(f, "({}: x{}), ", item, nb)?;
+                    write!(f, "({}: x{})", item, nb)?;
+                    if inventory.last() != Some(&(item.to_string(), *nb)) {
+                        write!(f, ", ")?;
+                    }
                 }
                 write!(f, "]")
             }
@@ -148,7 +154,8 @@ struct AI {
     client: i32,
     map: (usize, usize),
     level: usize,
-    // state: String
+    // role
+    // goal
 }
 
 impl AI {
@@ -165,13 +172,25 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI: [client: {}, map: ({}, {}), level: {}]",
+            "Ai = [client: {}, map: ({}, {}), level: {}]",
             self.client, self.map.0, self.map.1, self.level
         )
     }
 }
 
-async fn init_ai(_client: &mut TcpClient, response: &str) -> io::Result<()> {
+async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
+    info!("Sending startup commands...");
+    match commands::inventory::inventory(client).await {
+        Ok(res) => {
+            info!("Inventory checked.");
+            println!("{}", res);
+        }
+        Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
+    }
+    Ok(())
+}
+
+async fn init_ai(client: &mut TcpClient, response: &str) -> io::Result<()> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
@@ -203,12 +222,13 @@ async fn init_ai(_client: &mut TcpClient, response: &str) -> io::Result<()> {
             };
             info!("Map size: ({}, {}).", x, y);
             let ai: AI = AI::new(client_number, x, y);
-            println!("{}", ai);
+            println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
+    startup_commands(client).await?;
     Ok(())
 }
 
