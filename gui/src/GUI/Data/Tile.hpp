@@ -17,11 +17,6 @@ class Tile : public ASelectItem {
     Tile(const Pos<int, 2> &pos): ASelectItem(pos) {};
     ~Tile() = default;
 
-    Inventory &getRessources()
-    {
-        return m_inv;
-    };
-
     void updateRessources(int q0, int q1, int q2, int q3, int q4, int q5, int q6)
     {
         m_inv.update(q0, q1, q2, q3, q4, q5, q6);
@@ -30,10 +25,10 @@ class Tile : public ASelectItem {
     std::vector<std::string> getStringInfo() const override
     {
         std::vector<std::string> infoList = {
-            "--TILE-INFO--",
+            "--Tile-Info--",
             "",
-            std::string("[X]: ").append(std::to_string(m_pos.x())),
-            std::string("[Y]: ").append(std::to_string(m_pos.y())),
+            std::string("[x]: ").append(std::to_string(m_pos.x())),
+            std::string("[y]: ").append(std::to_string(m_pos.y())),
         };
         return infoList;
     }

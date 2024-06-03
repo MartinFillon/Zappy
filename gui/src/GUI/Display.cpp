@@ -38,9 +38,13 @@ Display::~Display()
 
 void Display::handleEvent()
 {
+    if (IsWindowResized()) {
+        resize();
+    }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
     }
+    messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);
 }
 
 void Display::run()
@@ -50,10 +54,6 @@ void Display::run()
     while (!WindowShouldClose()) {
         handleServerMessage(message);
 
-        if (IsWindowResized()) {
-            resize();
-        }
-
         handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);
@@ -61,7 +61,6 @@ void Display::run()
         map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
         infoBox.display(offsetX, offsetY, 400, 300);
         messageBox.display(offsetX, offsetY + newHeight - 300, 400, 300);
-        messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);
         EndDrawing();
     }
 }
