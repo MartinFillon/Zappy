@@ -59,30 +59,30 @@ fn get_tile_coordinates(tile: usize, lvl: usize) -> Option<(i32, i32)> {
 }
 
 async fn move_left(client: &mut TcpClient, x: i32) -> bool {
-    if turn::turn(client, turn::Direction::Left).await == false {
+    if !turn::turn(client, turn::Direction::Left).await {
         return false;
     }
     for _ in 0..=(-x) {
-        if move_up::move_up(client).await == false {
+        if !move_up::move_up(client).await {
             return false;
         }
     }
-    if turn::turn(client, turn::Direction::Right).await == false {
+    if !turn::turn(client, turn::Direction::Right).await {
         return false;
     }
     true
 }
 
 async fn move_right(client: &mut TcpClient, x: i32) -> bool {
-    if turn::turn(client, turn::Direction::Right).await == false {
+    if !turn::turn(client, turn::Direction::Right).await {
         return false;
     }
     for _ in 0..=x {
-        if move_up::move_up(client).await == false {
+        if !move_up::move_up(client).await {
             return false;
         }
     }
-    if turn::turn(client, turn::Direction::Left).await == false {
+    if !turn::turn(client, turn::Direction::Left).await {
         return false;
     }
     true
@@ -92,17 +92,11 @@ pub async fn move_to_tile(client: &mut TcpClient, tile: usize, lvl: usize) -> bo
     info!("Moving to tile {}...", tile);
     match get_tile_coordinates(tile, lvl) {
         Some((x, y)) => {
-            if x < 0 {
-                if move_left(client, x).await == false {
-                    return false;
-                }
-            } else if x > 0 {
-                if move_right(client, x).await == false {
-                    return false;
-                }
+            if (x < 0 && !move_left(client, x).await) || (x > 0 && !move_right(client, x).await) {
+                return false;
             }
             for _ in 0..=y {
-                if move_up::move_up(client).await == false {
+                if !move_up::move_up(client).await {
                     return false;
                 }
             }
