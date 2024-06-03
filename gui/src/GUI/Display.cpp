@@ -36,6 +36,17 @@ Display::~Display()
     CloseWindow();
 }
 
+void Display::handleEvent()
+{
+    if (IsWindowResized()) {
+        resize();
+    }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+    }
+    messageBox.handleInput(offsetX, offsetY + newHeight - 200, 400, 200);
+}
+
 void Display::run()
 {
     std::string message;
@@ -43,16 +54,13 @@ void Display::run()
     while (!WindowShouldClose()) {
         handleServerMessage(message);
 
-        if (IsWindowResized()) {
-            resize();
-        }
-
+        handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);
         DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY);
-        messageBox.display(offsetX, offsetY + newHeight - 300, 400, 300);
-        messageBox.handleInput(offsetX, offsetY + newHeight - 300, 400, 300);
+        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        infoBox.display(offsetX, offsetY, 400, 300);
+        messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
         EndDrawing();
     }
 }
