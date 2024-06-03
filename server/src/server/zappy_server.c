@@ -13,10 +13,13 @@
 #include <bits/types/struct_timeval.h>
 
 #include "client.h"
+#include "clock.h"
 #include "logger.h"
 #include "macros.h"
+#include "map.h"
 #include "server.h"
 #include "types/client.h"
+#include "types/game.h"
 #include "zappy.h"
 #include "args_info.h"
 
@@ -100,6 +103,14 @@ static void check_eating(client_t *clients)
             make_ai_eat(&clients[i], clients, i);
 }
 
+static void refill_map(game_t *game)
+{
+    if (!has_n_ticks_passed(game->clock, REFILL_TICKS))
+        return;
+    fill_map(game->map);
+    reset_clock(game->clock);
+}
+
 int loop_server(args_infos_t *args)
 {
     zappy_t z = {0};
@@ -112,6 +123,7 @@ int loop_server(args_infos_t *args)
         retval = select_server(&z);
         exec_clients(&z);
         check_eating(z.clients);
+        refill_map(&z.game);
     }
     destroy_program(&z);
     logs(INFO, "Server shutting down\n");
