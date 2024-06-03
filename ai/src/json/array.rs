@@ -14,8 +14,9 @@ impl<'a> Parser<'a> {
         array.push(self.parse_value()?);
         loop {
             let c = self.buffer.peek();
-            match c {
+            match dbg!(c) {
                 Some(']') => {
+                    dbg!("] found");
                     self.buffer.next();
                     break;
                 }
@@ -23,6 +24,9 @@ impl<'a> Parser<'a> {
                     self.buffer.next();
                     self.skip();
                     array.push(self.parse_value()?);
+                }
+                Some(' ' | '\n' | '\t') => {
+                    self.skip();
                 }
                 _ => array.push(self.parse_value()?),
             }
