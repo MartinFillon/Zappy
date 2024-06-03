@@ -65,3 +65,23 @@ void prepare_response_cat(io_t *io, char *fmt, ...)
         io->is_ready = true;
     }
 }
+
+void prepare_response_cat_va(io_t *io, char *fmt, va_list args)
+{
+    char buff[BUFF_SIZE];
+
+    if (vsprintf(buff, fmt, args) == ERROR) {
+        logs(
+            ERROR_LEVEL, "Unable to fill the buffer to prepare client response"
+        );
+    }
+    if (io->res.buffer == NULL) {
+        fill_io(io, buff);
+    } else {
+        io->res.size = strlen(io->res.buffer) + strlen(buff) + 1;
+        io->res.buffer =
+            reallocarray(io->res.buffer, io->res.size, sizeof(char));
+        strcat(io->res.buffer, buff);
+        io->is_ready = true;
+    }
+}

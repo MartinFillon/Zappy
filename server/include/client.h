@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <stdarg.h>
+
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/game.h"
@@ -157,7 +159,6 @@ void move_ai(ai_t *ai, enum direction dir, map_t *map);
  */
 void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
 
-
 /**
  * @brief Broadcast a message to all fds
  *
@@ -165,3 +166,7 @@ void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
  * @param fmt the message to send
  */
 void broadcast(struct vector_int *v, char *fmt, ...);
+
+void prepare_response_cat_va(io_t *io, char *fmt, va_list args);
+
+void broadcast_to(enum client_type_e type, client_t *clients, char *fmt, ...);
