@@ -158,6 +158,8 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
             for (int i = 0; i < 7; i++) {
                 float ressourceX = tileX + (i % 3) * tileSize / 3;
                 float ressourceY = tileY + (i / 3) * tileSize / 3;
+
+                if (ressources[i] > 0 && ressources[i] <= 1) {
                 if (ressources[i] > 0 && ressources[i] < 2) {
                     DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, ORANGE);
                 } else if (ressources[i] >= 2) {
