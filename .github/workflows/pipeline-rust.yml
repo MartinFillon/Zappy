@@ -12,6 +12,7 @@ on:
             - "**.rs"
             - "ai/**"
             - "**.toml"
+            - ".github/workflows/**"
 
 jobs:
     build:

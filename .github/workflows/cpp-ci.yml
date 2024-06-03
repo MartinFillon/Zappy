@@ -1,0 +1,18 @@
+name: compile
+
+on: [ workflow_call, workflow_dispatch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Build the docker
+        run: |
+            docker build -t zappy-docker - < Dockerfile
+
+      - name: compile
+        run: |
+          docker run -it -v --rm $(pwd):/home/student/dev zappy-docker:latest make -C gui
+        timeout-minutes: 5

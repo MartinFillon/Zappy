@@ -9,9 +9,14 @@ on:
     pull_request:
         paths:
             - "**.cpp"
+            - ".github/workflows/**"
             - "gui/**"
 
 jobs:
     coding-style:
         name: Coding-style
         uses: ./.github/workflows/coding-style.yml
+
+    compilation:
+        name: Compilation
+        uses: ./.github/workflows/cpp-ci.yml
