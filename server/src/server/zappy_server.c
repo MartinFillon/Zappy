@@ -103,6 +103,15 @@ static void check_eating(client_t *clients)
             make_ai_eat(&clients[i], clients, i);
 }
 
+static void kill_dead_ais(client_t *clients)
+{
+    for (__auto_type i = 0; i < SOMAXCONN; i++)
+        if (clients[i].fd > 0 && clients[i].type == AI &&
+            clients[i].ai->alive == false) {
+            close_client(&clients[i]);
+        }
+}
+
 static void refill_map(game_t *game)
 {
     if (!has_n_ticks_passed(game->clock, REFILL_TICKS))
@@ -119,6 +128,7 @@ int loop_server(args_infos_t *args)
     if (init_program(args, &z))
         return ERROR;
     while (!retval) {
+        kill_dead_ais(z.clients);
         fill_fd_set(&z);
         retval = select_server(&z);
         exec_clients(&z);
