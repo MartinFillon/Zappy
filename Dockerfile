@@ -7,5 +7,6 @@ RUN dnf -y install asio-devel
 RUN adduser -G wheel student
 USER student
 RUN mkdir -p /home/student/dev
+RUN chmod 777 /home/student/dev
 WORKDIR /home/student/dev
 CMD ["bash"]
