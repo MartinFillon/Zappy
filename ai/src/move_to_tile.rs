@@ -7,10 +7,7 @@
 
 use log::info;
 
-use crate::{
-    commands::{move_up, turn},
-    tcp::TcpClient,
-};
+use crate::{commands::move_up, commands::turn, tcp::TcpClient};
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
     let mut tile_count: usize = 0;
