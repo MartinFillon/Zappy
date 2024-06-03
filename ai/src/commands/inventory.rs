@@ -32,6 +32,8 @@ fn read_output(raw: String) -> Vec<(String, i32)> {
 pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     info!("Checking inventory...");
     let response = client.check_dead("Inventory\n").await?;
-
-    Ok(ResponseResult::Inventory(read_output(response)))
+    if client.handle_response(response.clone()).await.is_err() {
+        return Ok(ResponseResult::Inventory(read_output(response)));
+    }
+    Err(CommandError::InvalidResponse)
 }
