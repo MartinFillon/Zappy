@@ -23,11 +23,18 @@ enum direction {
     NB_DIR,
 };
 
+typedef struct incant_state_s {
+    int id_incant;
+    bool is_incant;
+    bool last_verif;
+} incant_state_t;
+
 typedef struct {
     team_t *team;
 
     pos_t pos;
     size_t level;
+    incant_state_t incant;
 
     enum direction dir;
 

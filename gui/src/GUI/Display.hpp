@@ -15,6 +15,7 @@
 #include "../Network/Handler.hpp"
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
+#include "InfoBox.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 
@@ -57,6 +58,7 @@ class Display {
     std::vector<std::string> team;
 
   private:
+    void handleEvent();
     void handleServerMessage(std::string &message);
     void resize();
     void displayMessages(int x, int y, int width, int height);
@@ -70,6 +72,7 @@ class Display {
     std::vector<std::string> endGameMessage;
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
+    InfoBox infoBox;
 };
 
 } // namespace GUI

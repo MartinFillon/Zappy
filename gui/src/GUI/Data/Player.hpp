@@ -8,14 +8,14 @@
 #pragma once
 
 #include <chrono>
-#include "Inventory.hpp"
-#include "Pos.hpp"
 #include "Tile.hpp"
+
+#include "ASelectItem.hpp"
 
 namespace GUI {
 namespace Data {
 
-class Player {
+class Player : public ASelectItem {
   public:
     class Incantation {
       public:
@@ -48,8 +48,6 @@ class Player {
         bool is_hatched = false
     );
 
-    Pos<int, 2> getPos() const;
-    Inventory &getInventory();
     int getLevel() const;
     int getId() const;
     const std::string &getTeam() const;
@@ -66,9 +64,9 @@ class Player {
 
     Incantation &getIncantation();
 
+    std::vector<std::string> getStringInfo() const override;
+
   private:
-    Pos<int, 2> m_pos;
-    Inventory m_inv;
     int m_id;
     std::string m_team;
     int m_level;

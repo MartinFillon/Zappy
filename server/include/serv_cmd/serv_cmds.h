@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "server.h"
 #include "zappy.h"
 
 typedef struct serv_cmds_s {
@@ -18,10 +17,12 @@ typedef struct serv_cmds_s {
 void handle_display_map(zappy_t *z);
 void handle_display_ais(zappy_t *z);
 void handle_ressources_ais(zappy_t *z);
+void handle_display_eggs(zappy_t *serv);
 
 static const serv_cmds_t SERV_CMDS[] = {
-    {"display", handle_display_map},
-    {"ais", handle_display_ais},
-    {"res-ais", handle_ressources_ais},
+    {"/display", handle_display_map},
+    {"/ais", handle_display_ais},
+    {"/ais-res", handle_ressources_ais},
+    {"/eggs", handle_display_eggs},
     {NULL, NULL}
 };
