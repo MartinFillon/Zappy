@@ -20,6 +20,7 @@
 #include "server.h"
 #include "types/client.h"
 #include "types/game.h"
+#include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
 
@@ -103,11 +104,20 @@ static void check_eating(client_t *clients)
             make_ai_eat(&clients[i], clients, i);
 }
 
-static void kill_dead_ais(client_t *clients)
+static void erase_dead_ai(int id, struct vector_ai_t *ais)
+{
+    ai_t ai = {0};
+
+    ai.id = id;
+    vec_erase_vector_ai_t(ais, ai, &cmp_ais);
+}
+
+static void kill_dead_ais(client_t *clients, struct vector_ai_t *ais)
 {
     for (__auto_type i = 0; i < SOMAXCONN; i++)
         if (clients[i].fd > 0 && clients[i].type == AI &&
             clients[i].ai->alive == false) {
+            erase_dead_ai(clients[i].ai->id, ais);
             close_client(&clients[i]);
         }
 }
@@ -128,7 +138,7 @@ int loop_server(args_infos_t *args)
     if (init_program(args, &z))
         return ERROR;
     while (!retval) {
-        kill_dead_ais(z.clients);
+        kill_dead_ais(z.clients, z.game.ais);
         fill_fd_set(&z);
         retval = select_server(&z);
         exec_clients(&z);
