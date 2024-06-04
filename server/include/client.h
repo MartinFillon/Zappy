@@ -116,8 +116,9 @@ void free_buffer(struct buffer_s *buffer);
  * @brief Close the client
  *
  * @param c the client structure
+ * @param clients all the other clients to broadcast messages
  */
-void close_client(client_t *c);
+void close_client(client_t *c, client_t *clients);
 
 /**
  * @brief Make an ai eat

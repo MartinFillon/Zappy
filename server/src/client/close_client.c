@@ -16,8 +16,10 @@ void free_buffer(struct buffer_s *buffer)
     buffer->size = 0;
 }
 
-void close_client(client_t *c)
+void close_client(client_t *c, client_t *clients)
 {
+    if (c->type == AI)
+        broadcast_to(GUI, clients, "pdi %d\n", c->ai->id);
     close(c->fd);
     c->fd = 0;
     free_buffer(&c->io.req);
