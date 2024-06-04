@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use crate::json::{JsonDocument, JsonValue, ParserError};
+use crate::json::{JsonDocument, JsonValue};
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
@@ -26,21 +26,21 @@ pub struct Elevation {
     thystame: usize,
 }
 
-fn get_number(map: &HashMap<String, JsonValue>, key: &'static str) -> Result<f64, &'static str> {
+fn get_number(map: &HashMap<String, JsonValue>, key: &str) -> Result<f64, String> {
     match map.get(key).map(|e| match e {
         JsonValue::Number(n) => Ok(n),
-        _ => Err("Not a json number for from_lvl"),
+        _ => Err(String::from("Not a json number for from_lvl")),
     }) {
         Some(e) => e.copied(),
-        _ => Err("key not found"),
+        _ => Err(String::from("Key not found")),
     }
 }
 
 impl Elevation {
-    pub fn from_json(obj: JsonValue) -> Result<Elevation, &'static str> {
+    pub fn from_json(obj: JsonValue) -> Result<Elevation, String> {
         let map = match obj {
             JsonValue::Object(map) => map,
-            _ => return Err("Not a json object"),
+            _ => return Err(String::from("Not a json object")),
         };
 
         let from_lvl = get_number(&map, "from_lvl")?;
@@ -62,6 +62,29 @@ impl Elevation {
             phiras: phiras as usize,
             thystame: thystame as usize,
         })
+    }
+
+    pub fn from_conf(filepath: &str) -> Result<Vec<Elevation>, String> {
+        match fs::read_to_string(filepath).map(|content| {
+            match JsonDocument::try_from(content.as_ref()) {
+                Ok(JsonDocument(JsonValue::Object(map))) => match map.get("elevation") {
+                    Some(JsonValue::Array(values)) => {
+                        let mut list: Vec<Elevation> = vec![];
+                        for obj in values {
+                            list.push(Self::from_json(obj.clone())?);
+                        }
+                        Ok(list)
+                    }
+                    Some(_) => Err(String::from("Exepected array of values")),
+                    None => Err(String::from("Couldn't find \"elevation\" part in file")),
+                },
+                Err(e) => Err(e.to_string()),
+                _ => Err(String::from("Expected object \"elevation\"")),
+            }
+        }) {
+            Ok(e) => e,
+            Err(e) => Err(e.to_string()),
+        }
     }
 
     fn set_from_lvl(&mut self, from_lvl: usize) {

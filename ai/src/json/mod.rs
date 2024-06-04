@@ -5,7 +5,7 @@
 // mod
 //
 
-use std::{collections::HashMap, iter::Peekable, str::Chars};
+use std::{collections::HashMap, fmt::Display, iter::Peekable, str::Chars};
 
 mod array;
 mod bool;
@@ -26,6 +26,16 @@ pub enum ParserError {
     InvalidValue(String),
     UnexpectedEOF,
     NotANumber(String),
+}
+
+impl Display for ParserError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::InvalidValue(s) => write!(f, "Invalid value {}", s),
+            Self::UnexpectedEOF => write!(f, "Unexpected EOF"),
+            Self::NotANumber(s) => write!(f, "{} not a number", s),
+        }
+    }
 }
 
 impl<'a> Parser<'a> {
