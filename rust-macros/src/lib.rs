@@ -34,10 +34,10 @@ fn impl_bean(ast: DeriveInput) -> TokenStream {
     let getters = fields.named.iter().map(|field| {
         let name = field.ident.as_ref().unwrap();
         let ty = &field.ty;
-        let function_signature = quote!(pub fn #name (&mut self) -> #ty);
+        let function_signature = quote!(pub fn #name (&self) -> &#ty);
         quote!(
             #function_signature {
-                self.#name
+                &self.#name
             }
         )
     });

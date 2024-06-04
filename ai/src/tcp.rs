@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 
+use rust_macros::Bean;
 use std::io::{Error, ErrorKind};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
@@ -19,6 +20,7 @@ use log::{debug, info};
 
 pub mod command_handle;
 
+#[derive(Debug, Bean)]
 pub struct TcpClient {
     addr: String,
     request_sender: Option<Sender<String>>,
