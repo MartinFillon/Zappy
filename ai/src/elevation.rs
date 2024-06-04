@@ -8,6 +8,7 @@
 #![allow(dead_code)]
 
 use crate::json::{JsonDocument, JsonValue, ParserError};
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 
@@ -25,31 +26,42 @@ pub struct Elevation {
     thystame: usize,
 }
 
-impl Elevation {
-    pub fn new() -> Elevation {
-        Elevation::default()
+fn get_number(map: &HashMap<String, JsonValue>, key: &'static str) -> Result<f64, &'static str> {
+    match map.get(key).map(|e| match e {
+        JsonValue::Number(n) => Ok(n),
+        _ => Err("Not a json number for from_lvl"),
+    }) {
+        Some(e) => e.copied(),
+        _ => Err("key not found"),
     }
+}
 
-    pub fn from_conf(filepath: &str) -> Result<Elevation, ParserError> {
-        let mut infos = Elevation::new();
+impl Elevation {
+    pub fn from_json(obj: JsonValue) -> Result<Elevation, &'static str> {
+        let map = match obj {
+            JsonValue::Object(map) => map,
+            _ => return Err("Not a json object"),
+        };
 
-        match fs::read_to_string(filepath) {
-            Ok(content) => match JsonDocument::try_from(content.as_ref()) {
-                Ok(parsed) => {
-                    match parsed {
-                        JsonDocument(JsonValue::Object(obj)) => {
-                            for (key, value) in obj.iter() {
-                                println!("{}: {:?}", key, value);
-                            }
-                        }
-                        _ => eprintln!("No objects found."),
-                    }
-                    Ok(infos)
-                }
-                Err(e) => Err(e),
-            },
-            Err(_) => Err(ParserError::UnexpectedEOF),
-        }
+        let from_lvl = get_number(&map, "from_lvl")?;
+        let to_lvl = get_number(&map, "to_lvl")?;
+        let linemate = get_number(&map, "linemate")?;
+        let deraumere = get_number(&map, "deraumere")?;
+        let sibur = get_number(&map, "sibur")?;
+        let mendiane = get_number(&map, "mendiane")?;
+        let phiras = get_number(&map, "phiras")?;
+        let thystame = get_number(&map, "thystame")?;
+
+        Ok(Self {
+            from_lvl: from_lvl as usize,
+            to_lvl: to_lvl as usize,
+            linemate: linemate as usize,
+            deraumere: deraumere as usize,
+            sibur: sibur as usize,
+            mendiane: mendiane as usize,
+            phiras: phiras as usize,
+            thystame: thystame as usize,
+        })
     }
 
     fn set_from_lvl(&mut self, from_lvl: usize) {
