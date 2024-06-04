@@ -22,7 +22,8 @@ fn impl_bean(ast: DeriveInput) -> TokenStream {
     let setters = fields.named.iter().map(|field| {
         let name = field.ident.as_ref().unwrap();
         let ty = &field.ty;
-        let function_signature = quote!(pub fn #name (&mut self, input: #ty));
+        let f_name: proc_macro2::TokenStream = format!("set_{}", name).parse().unwrap();
+        let function_signature = quote!(pub fn #f_name (&mut self, input: #ty));
         quote!(
             #function_signature {
                 self.#name = input;
@@ -30,9 +31,21 @@ fn impl_bean(ast: DeriveInput) -> TokenStream {
         )
     });
 
+    let getters = fields.named.iter().map(|field| {
+        let name = field.ident.as_ref().unwrap();
+        let ty = &field.ty;
+        let function_signature = quote!(pub fn #name (&mut self) -> #ty);
+        quote!(
+            #function_signature {
+                self.#name
+            }
+        )
+    });
+
     quote! {
         impl #ident {
             #(#setters)*
+            #(#getters)*
         }
     }
     .into()

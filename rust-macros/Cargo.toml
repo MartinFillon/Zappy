@@ -11,3 +11,4 @@ proc-macro = true
 [dependencies]
 syn = {}
 quote = {}
+proc-macro2 = {}

@@ -25,18 +25,21 @@ const SUCCESS_CODE: i32 = 0;
 //     fn fields(&self) -> Vec<&'static str>;
 // }
 
-#[derive(Debug, Bean)]
+#[derive(Debug, Bean, Default)]
 struct Test {
     b: i32,
+    a: i32,
+    c: i32
 }
 
 #[tokio::main]
 async fn main() {
-    let mut t: Test = Test { b: 1 };
+    let mut t: Test = Test::default();
 
-    t.b(2);
+    t.set_b(2);
 
     println!("{:?}", t);
+    println!("{:?}", t.b);
     // let env = Env::new().filter("ZAPPY_LOG");
     // Builder::from_env(env).init();
 
