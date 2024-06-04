@@ -8,15 +8,21 @@
 #![allow(dead_code)]
 
 use crate::tcp::{self, command_handle};
+
 use std::io::{self, Error, ErrorKind};
+use std::sync::Arc;
+
 use tokio::task;
 
 pub async fn launch(address: String, team: String) -> io::Result<()> {
     let mut handles = vec![];
 
-    while let Ok(client) = tcp::handle_tcp(address.clone(), team.clone()).await {
+    let team = Arc::new(team);
+    while let Ok(client) = tcp::handle_tcp(address.clone()).await {
+        let team = Arc::clone(&team);
         let handle = task::spawn(async move {
-            match command_handle::start_ai(client).await {
+            let team_str = &*team;
+            match command_handle::start_ai(client, team_str.clone()).await {
                 Ok(_) => println!("ok"),
                 Err(_) => println!("ko"),
             }

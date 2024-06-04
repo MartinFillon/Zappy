@@ -9,15 +9,15 @@
 
 #include "client.h"
 #include "clock.h"
+#include "logger.h"
 #include "types/ai.h"
 #include "types/client.h"
-#include "logger.h"
 
 static void send_death(int n, client_t *clients)
 {
     for (__auto_type i = 0; i < SOMAXCONN; i++) {
         if (clients[i].fd > 0 && clients[i].type == GUI) {
-            prepare_response(&clients[i].io, "edi %d\n", n);
+            prepare_response_cat(&clients[i].io, "edi %d\n", n);
         }
     }
 }
@@ -29,11 +29,11 @@ void make_ai_eat(client_t *cli, client_t *clients, int n)
     }
     if (cli->ai->inventory.food == 0) {
         logs(INFO, "Ai %d is dead\n", n);
-        prepare_response(&cli->io, "dead\n");
+        prepare_response_cat(&cli->io, "dead\n");
         send_death(n, clients);
+        cli->ai->alive = false;
     }
     logs(INFO, "Cli %d is eating\n", n);
     cli->ai->inventory.food -= 1;
     reset_clock(cli->ai->food_clock);
-    cli->ai->alive = false;
 }

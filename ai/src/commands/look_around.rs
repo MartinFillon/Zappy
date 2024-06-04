@@ -7,23 +7,27 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
-fn read_output(raw: String) {
+use log::info;
+
+fn read_output(raw: String) -> Vec<String> {
+    let mut tiles = Vec::new();
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
-    for (i, tile) in tmp.split(',').enumerate() {
-        print!("Tile {}: [ ", i);
+
+    for tile in tmp.split(',') {
         for item in tile.split(' ') {
-            print!("{item} ");
+            tiles.push(item.to_string());
         }
-        println!("]");
     }
+    info!("Tiles: {:?}", tiles);
+    tiles
 }
 
-pub async fn look_around(client: &mut TcpClient) -> Result<(), bool> {
+pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    info!("Looking around...");
     let response = client.check_dead("Look\n").await?;
-    read_output(response);
 
-    Ok(())
+    Ok(ResponseResult::Tiles(read_output(response)))
 }

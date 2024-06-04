@@ -6,20 +6,11 @@
 */
 
 #include "client.h"
+#include "gui/defs.h"
 
-void map_size(
-    char *args,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void map_size(client_t *cli, command_state_t *com)
 {
-    (void) clients;
-    if (cli->type != GUI)
-        return;
-    if (args[0] != '\0') {
-        prepare_response(&cli->io, "sbp\n");
-        return;
-    }
-    prepare_response(&cli->io, "msz %lu %lu\n", game->map->x, game->map->y);
+    prepare_response_cat(
+        &cli->io, "msz %lu %lu\n", com->game->map->x, com->game->map->y
+    );
 }

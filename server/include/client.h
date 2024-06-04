@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include <stdarg.h>
+
+#include "types/ai.h"
 #include "types/client.h"
+#include "types/game.h"
 
 /**
  * @brief Initialize the client
@@ -112,8 +116,9 @@ void free_buffer(struct buffer_s *buffer);
  * @brief Close the client
  *
  * @param c the client structure
+ * @param clients all the other clients to broadcast messages
  */
-void close_client(client_t *c);
+void close_client(client_t *c, client_t *clients);
 
 /**
  * @brief Make an ai eat
@@ -129,9 +134,31 @@ void make_ai_eat(client_t *cli, client_t *clients, int n);
  * @param game the game structure
  * @param client the client structure
  * @param team the team structure
+ * @param the clients
  * @return true if success, false if error
  */
-bool init_ai(game_t *game, client_t *client, team_t *team);
+bool init_ai(
+    game_t *game,
+    client_t *restrict client,
+    team_t *team,
+    client_t *restrict clients
+);
+void destroy_ai(ai_t *ai);
+/**
+ * @brief Move the @param ai with respect with his direction
+ * @param ai the ai to move
+ * @param dir Direction where to move
+ * @param map The map where to move the ai
+ */
+void move_ai(ai_t *ai, enum direction dir, map_t *map);
+
+/**
+ * @brief Move the position @param pos with respect of his direction
+ * @param pos the position to move
+ * @param dir The direction where to move
+ * @param map The map where to move the ai
+ */
+void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
 
 /**
  * @brief Broadcast a message to all fds
@@ -140,3 +167,7 @@ bool init_ai(game_t *game, client_t *client, team_t *team);
  * @param fmt the message to send
  */
 void broadcast(struct vector_int *v, char *fmt, ...);
+
+void prepare_response_cat_va(io_t *io, char *fmt, va_list args);
+
+void broadcast_to(enum client_type_e type, client_t *clients, char *fmt, ...);

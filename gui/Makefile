@@ -22,8 +22,15 @@ SRC = $(BASE_SRC) 						\
 				Handler_queries         \
 			)							\
 			$(addprefix GUI/,			\
+				$(addprefix Data/,		\
+					Inventory			\
+					Map					\
+					Player				\
+				)						\
 				Display					\
 				ServerMessageHandler	\
+				MessageBox				\
+				InfoBox					\
 			)							\
 		)								\
 	)

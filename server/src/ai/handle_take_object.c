@@ -5,14 +5,15 @@
 ** handle_take_object
 */
 
-#include "utils.h"
 #include "client.h"
 #include "map.h"
+#include "router/route.h"
+#include "str.h"
 
 static void increment_item(client_t *cli, size_t *item_quantity)
 {
     (*item_quantity)++;
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
 }
 
 static void take_object_down(
@@ -22,7 +23,7 @@ static void take_object_down(
 )
 {
     if (!take_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj))
-        return prepare_response(&cli->io, "ko\n");
+        return prepare_response_cat(&cli->io, "ko\n");
     switch (obj->obj) {
         case FOOD:
             return increment_item(cli, &cli->ai->inventory.food);
@@ -41,23 +42,17 @@ static void take_object_down(
     }
 }
 
-void handle_take_object(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_take_object(client_t *cli, command_state_t *s)
 {
-    map_t *map = game->map;
+    map_t *map = s->game->map;
+    size_t i = 0;
 
-    (void) clients;
-    if (is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    for (size_t i = 0; i < NB_OBJ; i++) {
-        if (strcmp(arg, all_obj[i].name) == 0) {
+    for (; i < NB_OBJ; i++) {
+        if (strcmp(s->args->data[1]->data, all_obj[i].name) == 0) {
             take_object_down(cli, map, all_obj + i);
             return;
         }
     }
-    prepare_response(&cli->io, "ko\n");
+    prepare_response_cat(&cli->io, "ko\n");
+    broadcast_to(GUI, s->clients, "pgt %d %d\n", cli->ai->id, i);
 }

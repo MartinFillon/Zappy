@@ -5,11 +5,12 @@
 ** ServerMessageHandler
 */
 
+#include "ServerMessageHandler.hpp"
 #include <iostream>
 #include <sstream>
-
+#include <vector>
+#include "Data/Player.hpp"
 #include "Display.hpp"
-#include "ServerMessageHandler.hpp"
 
 namespace GUI {
 
@@ -18,6 +19,7 @@ ServerMessageHandler::ServerMessageHandler(bool debug, Display &display) : debug
     commandHandlers["msz"] = std::bind(&ServerMessageHandler::handleMapSize, this, std::placeholders::_1);
     commandHandlers["bct"] = std::bind(&ServerMessageHandler::handleTileContent, this, std::placeholders::_1);
     commandHandlers["tna"] = std::bind(&ServerMessageHandler::handleTeamNames, this, std::placeholders::_1);
+    commandHandlers["pnw"] = std::bind(&ServerMessageHandler::handleNewPlayer, this, std::placeholders::_1);
     commandHandlers["ppo"] = std::bind(&ServerMessageHandler::handlePlayerPosition, this, std::placeholders::_1);
     commandHandlers["plv"] = std::bind(&ServerMessageHandler::handlePlayerLevel, this, std::placeholders::_1);
     commandHandlers["pin"] = std::bind(&ServerMessageHandler::handlePlayerInventory, this, std::placeholders::_1);
@@ -30,7 +32,6 @@ ServerMessageHandler::ServerMessageHandler(bool debug, Display &display) : debug
     commandHandlers["pgt"] = std::bind(&ServerMessageHandler::handleResourceCollect, this, std::placeholders::_1);
     commandHandlers["pdi"] = std::bind(&ServerMessageHandler::handlePlayerDeath, this, std::placeholders::_1);
     commandHandlers["enw"] = std::bind(&ServerMessageHandler::handleEggLaid, this, std::placeholders::_1);
-    commandHandlers["eht"] = std::bind(&ServerMessageHandler::handleEggHatch, this, std::placeholders::_1);
     commandHandlers["ebo"] = std::bind(&ServerMessageHandler::handlePlayerConnectEgg, this, std::placeholders::_1);
     commandHandlers["edi"] = std::bind(&ServerMessageHandler::handleEggDeath, this, std::placeholders::_1);
     commandHandlers["sgt"] = std::bind(&ServerMessageHandler::handleTimeUnit, this, std::placeholders::_1);
@@ -45,11 +46,13 @@ void ServerMessageHandler::handleServerMessage(const std::string &message)
 {
     std::string commandType = message.substr(0, 3);
     auto it = commandHandlers.find(commandType);
+
     if (it != commandHandlers.end()) {
         std::string commandBody = message.length() > 4 ? message.substr(4) : "";
         it->second(commandBody);
     } else {
-        std::cout << "Unhandled message: " << message << std::endl;
+        if (debug)
+            std::cout << "Unhandled message: " << message << std::endl;
     }
 }
 
@@ -57,178 +60,365 @@ void ServerMessageHandler::handleMapSize(const std::string &message)
 {
     int width, height;
     std::istringstream iss(message);
+
     iss >> width >> height;
-    std::cout << "Map size: " << width << "x" << height << std::endl;
+    display.getMap().resize(width, height);
+    if (debug)
+        std::cout << "Map size: " << width << "x" << height << std::endl;
 }
 
 void ServerMessageHandler::handleTileContent(const std::string &message)
 {
     int x, y, q0, q1, q2, q3, q4, q5, q6;
     std::istringstream iss(message);
+
     iss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6;
-    std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4 << " "
-              << q5 << " " << q6 << std::endl;
+    if (debug)
+        std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
+                  << " " << q5 << " " << q6 << std::endl;
+    display.getMap().getTile(x, y).updateRessources(q0, q1, q2, q3, q4, q5, q6);
 }
 
 void ServerMessageHandler::handleTeamNames(const std::string &message)
 {
-    std::cout << "Team name: " << message << std::endl;
+    if (std::find(display.team.begin(), display.team.end(), message) == display.team.end())
+        display.team.push_back(message);
+    if (debug)
+        std::cout << "Team name: " << message << std::endl;
+}
+
+void ServerMessageHandler::handleNewPlayer(const std::string &message)
+{
+    int playerNumber, x, y, orientation, level;
+    std::string teamName;
+    std::istringstream iss(message);
+
+    iss >> playerNumber >> x >> y >> orientation >> level >> teamName;
+
+    std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
+    players.emplace_back(std::make_shared<Data::Player>(x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level));
+
+    if (debug)
+        std::cout << "New player #" << playerNumber << " joined at (" << x << ", " << y << ") with orientation "
+                  << orientation << ", level " << level << ", and team " << teamName << "." << std::endl;
 }
 
 void ServerMessageHandler::handlePlayerPosition(const std::string &message)
 {
     int playerNumber, x, y, orientation;
     std::istringstream iss(message);
+
     iss >> playerNumber >> x >> y >> orientation;
-    std::cout << "Player #" << playerNumber << " position: (" << x << ", " << y << ") orientation: " << orientation
-              << std::endl;
+
+    auto &players = display.getMap().getPlayers();
+    for (auto &player : players) {
+        if (player->getId() == playerNumber) {
+            player->setPosition(x, y, static_cast<Data::Player::Direction>(orientation));
+            break;
+        }
+    }
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " position: (" << x << ", " << y << ") orientation: " << orientation
+                  << std::endl;
 }
 
 void ServerMessageHandler::handlePlayerLevel(const std::string &message)
 {
     int playerNumber, level;
     std::istringstream iss(message);
+
     iss >> playerNumber >> level;
-    std::cout << "Player #" << playerNumber << " level: " << level << std::endl;
+
+    auto &players = display.getMap().getPlayers();
+    for (auto &player : players) {
+        if (player->getId() == playerNumber) {
+            player->setLevel(level);
+            break;
+        }
+    }
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " level: " << level << std::endl;
 }
 
 void ServerMessageHandler::handlePlayerInventory(const std::string &message)
 {
     int playerNumber, x, y, q0, q1, q2, q3, q4, q5, q6;
     std::istringstream iss(message);
+
     iss >> playerNumber >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6;
-    std::cout << "Player #" << playerNumber << " inventory: (" << x << ", " << y << ") " << q0 << " " << q1 << " " << q2
-              << " " << q3 << " " << q4 << " " << q5 << " " << q6 << std::endl;
+
+    auto &players = display.getMap().getPlayers();
+    for (auto &player : players) {
+        if (player->getId() == playerNumber) {
+            player->setPosition(x, y, player->getOrientation());
+            player->getInventory().update(q0, q1, q2, q3, q4, q5, q6);
+            break;
+        }
+    }
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " inventory: (" << x << ", " << y << ") " << q0 << " " << q1 << " "
+                  << q2 << " " << q3 << " " << q4 << " " << q5 << " " << q6 << std::endl;
 }
 
 void ServerMessageHandler::handleExpulsion(const std::string &message)
 {
     int playerNumber;
     std::istringstream iss(message);
+
     iss >> playerNumber;
-    std::cout << "Player #" << playerNumber << " was expelled." << std::endl;
+
+    std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
+    players.erase(
+        std::remove_if(
+            players.begin(),
+            players.end(),
+            [playerNumber](const std::shared_ptr<Data::Player> &player) { return player->getId() == playerNumber; }
+        ),
+        players.end()
+    );
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " is expelled" << std::endl;
 }
 
 void ServerMessageHandler::handleBroadcast(const std::string &message)
 {
-    std::cout << "Broadcast message: " << message << std::endl;
+    int playerNumber;
+    std::string broadcastMessage;
+    std::istringstream iss(message);
+
+    iss >> playerNumber;
+    getline(iss, broadcastMessage);
+
+    display.addMessage(broadcastMessage, playerNumber);
+    if (debug)
+        std::cout << "Player #" << playerNumber << " broadcasted: " << broadcastMessage << std::endl;
 }
 
 void ServerMessageHandler::handleIncantationStart(const std::string &message)
 {
-    int x, y, level;
     std::istringstream iss(message);
+    int x, y, level;
     iss >> x >> y >> level;
-    std::cout << "Incantation started at (" << x << ", " << y << ") for level " << level << std::endl;
+
+    std::vector<int> players;
+    int playerNumber;
+    while (iss >> playerNumber) {
+        players.push_back(playerNumber);
+    }
+
+    std::vector<std::shared_ptr<Data::Player>> &playerList = display.getMap().getPlayers();
+    for (int &playerId : players) {
+        for (std::shared_ptr<Data::Player> &player : playerList) {
+            if (player->getId() == playerId) {
+                player->getIncantation().start(300 / display.getTimeUnit(), x, y);
+                break;
+            }
+        }
+    }
+
+    if (debug) {
+        std::cout << "Incantation started at (" << x << ", " << y << ") with level " << level << " by players: ";
+        for (int p : players) {
+            std::cout << p << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void ServerMessageHandler::handleIncantationEnd(const std::string &message)
 {
-    int x, y, result;
     std::istringstream iss(message);
+    int x, y, result;
     iss >> x >> y >> result;
-    std::cout << "Incantation ended at (" << x << ", " << y << ") with result " << result << std::endl;
+
+    auto &playerList = display.getMap().getPlayers();
+    for (auto &player : playerList) {
+        Data::Player::Incantation incantation = player->getIncantation();
+        if (incantation.isStarted() && incantation.getTarget().x() == x && incantation.getTarget().y() == y) {
+            incantation.end();
+        }
+    }
+
+    if (debug)
+        std::cout << "Incantation ended at (" << x << ", " << y << ") with result: " << (result ? "success" : "failure")
+                  << std::endl;
 }
 
 void ServerMessageHandler::handleEggLaying(const std::string &message)
 {
     int playerNumber;
     std::istringstream iss(message);
+
     iss >> playerNumber;
-    std::cout << "Player #" << playerNumber << " laid an egg." << std::endl;
+    std::shared_ptr<Data::Player> player = display.getMap().getPlayers().at(playerNumber);
+    display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " has laid an egg" << std::endl;
 }
 
 void ServerMessageHandler::handleResourceDrop(const std::string &message)
 {
-    int playerNumber, resourceNumber;
+    int playerNumber, resourceType;
     std::istringstream iss(message);
-    iss >> playerNumber >> resourceNumber;
-    std::cout << "Player #" << playerNumber << " dropped resource #" << resourceNumber << std::endl;
+
+    iss >> playerNumber >> resourceType;
+    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player->getPos());
+
+    player->drop(tile, resourceType);
+    if (debug)
+        std::cout << "Player #" << playerNumber << " dropped resource type " << resourceType << std::endl;
 }
 
 void ServerMessageHandler::handleResourceCollect(const std::string &message)
 {
-    int playerNumber, resourceNumber;
+    int playerNumber, resourceType;
     std::istringstream iss(message);
-    iss >> playerNumber >> resourceNumber;
-    std::cout << "Player #" << playerNumber << " collected resource #" << resourceNumber << std::endl;
+
+    iss >> playerNumber >> resourceType;
+    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
+    Data::Tile &tile = display.getMap().getTile(player->getPos());
+
+    player->loot(tile, resourceType);
+    if (debug)
+        std::cout << "Player #" << playerNumber << " collected resource type " << resourceType << std::endl;
 }
 
 void ServerMessageHandler::handlePlayerDeath(const std::string &message)
 {
     int playerNumber;
     std::istringstream iss(message);
+
     iss >> playerNumber;
-    std::cout << "Player #" << playerNumber << " has died." << std::endl;
+
+    auto &players = display.getMap().getPlayers();
+    players.erase(
+        std::remove_if(
+            players.begin(),
+            players.end(),
+            [playerNumber](const std::shared_ptr<Data::Player> &player) { return player->getId() == playerNumber; }
+        ),
+        players.end()
+    );
+
+    if (debug)
+        std::cout << "Player #" << playerNumber << " has died" << std::endl;
 }
 
 void ServerMessageHandler::handleEggLaid(const std::string &message)
 {
     int eggNumber, playerNumber, x, y;
     std::istringstream iss(message);
-    iss >> eggNumber >> playerNumber >> x >> y;
-    std::cout << "Egg #" << eggNumber << " was laid by player #" << playerNumber << " at (" << x << ", " << y << ")"
-              << std::endl;
-}
 
-void ServerMessageHandler::handleEggHatch(const std::string &message)
-{
-    int eggNumber;
-    std::istringstream iss(message);
-    iss >> eggNumber;
-    std::cout << "Egg #" << eggNumber << " has hatched." << std::endl;
+    iss >> eggNumber >> playerNumber >> x >> y;
+
+    std::vector<std::shared_ptr<Data::Egg>> &eggs = display.getMap().getEggs();
+    eggs.emplace_back(std::make_shared<Data::Egg>(Pos<int, 2>{x, y}, eggNumber));
+
+    if (debug)
+        std::cout << "Egg #" << eggNumber << " was laid by player #" << playerNumber << " at (" << x << ", " << y << ")"
+                  << std::endl;
 }
 
 void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
 {
     int eggNumber;
     std::istringstream iss(message);
+
     iss >> eggNumber;
-    std::cout << "Player connected to egg #" << eggNumber << std::endl;
+
+    auto &eggs = display.getMap().getEggs();
+    auto eggIter = std::remove_if(eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) {
+        return egg->getId() == eggNumber;
+    });
+    if (eggIter != eggs.end()) {
+        int x = (*eggIter)->getPosition().x();
+        int y = (*eggIter)->getPosition().y();
+
+        for (auto &player : display.getMap().getPlayers()) {
+            if (player->isHatched())
+                continue;
+            player->spawn();
+            player->setPosition(x, y, Data::Player::Direction::UNDEFINED);
+            break;
+        }
+        eggs.erase(eggIter, eggs.end());
+
+        if (debug)
+            std::cout << "Player connected to egg #" << eggNumber << " at (" << x << ", " << y << ")." << std::endl;
+    }
 }
 
 void ServerMessageHandler::handleEggDeath(const std::string &message)
 {
     int eggNumber;
     std::istringstream iss(message);
+
     iss >> eggNumber;
-    std::cout << "Egg #" << eggNumber << " has died." << std::endl;
+
+    auto &eggs = display.getMap().getEggs();
+    eggs.erase(
+        std::remove_if(
+            eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) { return egg->getId() == eggNumber; }
+        ),
+        eggs.end()
+    );
+
+    if (debug)
+        std::cout << "Egg #" << eggNumber << " has died." << std::endl;
 }
 
 void ServerMessageHandler::handleTimeUnit(const std::string &message)
 {
-    int t;
+    int timeUnit;
     std::istringstream iss(message);
-    iss >> t;
-    std::cout << "Time unit: " << t << std::endl;
+
+    iss >> timeUnit;
+    display.setTimeUnit(timeUnit);
+    if (debug)
+        std::cout << "Time unit set to " << timeUnit << std::endl;
 }
 
 void ServerMessageHandler::handleTimeUnitModification(const std::string &message)
 {
-    int t;
+    int timeUnit;
     std::istringstream iss(message);
-    iss >> t;
-    std::cout << "Time unit modified to: " << t << std::endl;
+
+    iss >> timeUnit;
+    display.setTimeUnit(timeUnit);
+    if (debug)
+        std::cout << "Time unit modified to " << timeUnit << std::endl;
 }
 
 void ServerMessageHandler::handleEndGame(const std::string &message)
 {
-    std::cout << "End of game. Winning team: " << message << std::endl;
+    display.setEndGame({message});
+    if (debug)
+        std::cout << "Game over. Message: " << message << std::endl;
 }
 
 void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 {
-    std::cout << "Message from server: " << message << std::endl;
+    display.addMessage(message);
+    if (debug)
+        std::cout << "Message from server: " << message << std::endl;
 }
 
 void ServerMessageHandler::handleUnknownCommand(const std::string &message)
 {
-    std::cout << "Unknown command received from server: " << message << std::endl;
+    if (debug)
+        std::cout << "Unknown command: " << message << std::endl;
 }
 
 void ServerMessageHandler::handleCommandParameter(const std::string &message)
 {
-    std::cout << "Command parameter issue: " << message << std::endl;
+    if (debug)
+        std::cout << "Bad parameter for command: " << message << std::endl;
 }
 
-}; // namespace GUI
+} // namespace GUI

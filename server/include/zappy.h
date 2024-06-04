@@ -23,6 +23,7 @@ typedef struct zappy_s {
  * @return game_t the initialized game structure
  */
 game_t init_game(args_infos_t *args);
+void destroy_game(game_t *game);
 
 /**
  * @brief Initialize the server structure
@@ -33,3 +34,4 @@ game_t init_game(args_infos_t *args);
  */
 int init_program(args_infos_t *args, zappy_t *z);
 void handle_server_cmd(char const *cmd, zappy_t *serv);
+void destroy_program(zappy_t *z);

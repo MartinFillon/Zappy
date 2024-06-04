@@ -7,37 +7,39 @@
 
 #include <stdbool.h>
 
+#include "client.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "utils.h"
-#include "client.h"
 
-void handle_rotate_right(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_rotate_right(client_t *cli, command_state_t *s)
 {
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    (void) clients;
-    (void) game;
     cli->ai->dir = (cli->ai->dir + 1) % NB_DIR;
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
+    broadcast_to(
+        GUI,
+        s->clients,
+        "ppo %d %d %d %d\n",
+        cli->ai->id,
+        cli->ai->pos.x,
+        cli->ai->pos.y,
+        cli->ai->dir + 1
+    );
 }
 
-void handle_rotate_left(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_rotate_left(client_t *cli, command_state_t *s)
 {
-    if (!is_empty(arg))
-        return prepare_response(&cli->io, "ko\n");
-    (void) clients;
-    (void) game;
+    (void)s;
     cli->ai->dir = modulo((cli->ai->dir - 1), NB_DIR);
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
+    broadcast_to(
+        GUI,
+        s->clients,
+        "ppo %d %d %d %d\n",
+        cli->ai->id,
+        cli->ai->pos.x,
+        cli->ai->pos.y,
+        cli->ai->dir + 1
+    );
 }

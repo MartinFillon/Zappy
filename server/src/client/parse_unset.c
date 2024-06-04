@@ -11,31 +11,34 @@
 #include "client.h"
 #include "gui/defs.h"
 #include "logger.h"
-#include "macros.h"
+#include "middlewares.h"
+#include "router/route.h"
+#include "str.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "types/team.h"
-#include "utils.h"
 
-static int put_in_team(client_t *c, game_t *game, size_t i)
+static void put_in_team(
+    client_t *restrict c,
+    game_t *game,
+    size_t i,
+    client_t *restrict clients
+)
 {
     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
     c->type = AI;
-    c->entrypoint = &ai_entrypoint;
-    if (init_ai(game, c, &game->teams->data[i])) {
-        send_client(c, "ko\n");
+    if (init_ai(game, c, &game->teams->data[i], clients)) {
+        prepare_response_cat(&c->io, "ko\n");
         logs(INFO, "No more eggs to place %d\n", c->fd);
-        return ERROR;
     }
     logs(INFO, "AI inited\n");
-    return SUCCESS;
 }
 
 static void send_eggs(client_t *c, team_t *team)
 {
     for (__auto_type i = 0ul; i < team->eggs->size; i++)
-        send_client(
-            c,
+        prepare_response_cat(
+            &c->io,
             "smg eni %d %d %d\n",
             team->eggs->data[i]->id,
             team->eggs->data[i]->pos.x,
@@ -45,8 +48,8 @@ static void send_eggs(client_t *c, team_t *team)
 
 static void send_ais(client_t *c, ai_t *ai)
 {
-    send_client(
-        c,
+    prepare_response_cat(
+        &c->io,
         "pnw %d %d %d %d %d %s\n",
         ai->id,
         ai->pos.x,
@@ -57,41 +60,39 @@ static void send_ais(client_t *c, ai_t *ai)
     );
 }
 
-static int init_gui(client_t *c, game_t *game, client_t *clients)
+static void init_gui(client_t *c, game_t *game, client_t *clients)
 {
-    map_size("", c, game, clients);
-    request_time("", c, game, clients);
-    map_content_full("", c, game, clients);
-    team_names("", c, game, clients);
+    command_state_t s = {NULL, clients, game};
+
+    map_size(c, &s);
+    request_time(c, &s);
+    map_content_full(c, &s);
+    team_names(c, &s);
     for (__auto_type i = 0ul; i < game->teams->size; i++)
         send_eggs(c, &game->teams->data[i]);
     for (__auto_type i = 0ul; i < game->ais->size; i++)
         send_ais(c, &game->ais->data[i]);
-    return 0;
 }
 
-int unset_entrypoint(
-    char const *line,
-    client_t *c,
-    game_t *game,
-    client_t *clients
-)
+void unset_command(client_t *c, command_state_t *s)
 {
-    (void)clients;
-    if (strcmp(line, "GRAPHIC") == 0) {
-        logs(INFO, "Client %d is a GUI\n", c->fd);
+    if (strcmp(s->args->data[0]->data, "GRAPHIC") == 0) {
         c->type = GUI;
-        c->entrypoint = &gui_entrypoint;
-        vec_pushback_vector_int(game->guis, c->fd);
-        return init_gui(c, game, clients);
+        init_gui(c, s->game, s->clients);
+        return logs(INFO, "Client %d is a GUI\n", c->fd);
     }
-    if (game->teams == NULL) {
-        logs(WARNING, "No teams set\n");
-        return 1;
-    }
-    for (size_t i = 0; i < game->teams->size; i++)
-        if (strcmp(line, game->teams->data[i].name) == 0)
-            return put_in_team(c, game, i);
-    send_client(c, "ko\n");
-    return ERROR;
+    if (s->game->teams == NULL)
+        return logs(WARNING, "No teams set\n");
+    for (size_t i = 0; i < s->game->teams->size; i++)
+        if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
+            c->type = AI;
+            logs(
+                INFO,
+                "Client %d is a AI of team %s\n",
+                c->fd,
+                s->game->teams->data[i].name
+            );
+            return put_in_team(c, s->game, i, s->clients);
+        }
+    send_invalid_args(c);
 }

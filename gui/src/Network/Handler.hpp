@@ -39,8 +39,9 @@ class Handler {
 
     /**
      * @brief Starts the network communication.
+     * @return True if initialization succeeds, false otherwise.
      */
-    void start();
+    bool start();
 
     /**
      * @brief Stops the network communication.

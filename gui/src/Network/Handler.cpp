@@ -5,11 +5,11 @@
 ** NetworkHandler
 */
 
+#include "Handler.hpp"
 #include <iostream>
 
-#include "Handler.hpp"
-
 namespace Network {
+
 Handler::Handler(const std::string &machine, int port)
     : machine(machine), port(port), io_context(), socket(io_context), running(false)
 {
@@ -20,10 +20,23 @@ Handler::~Handler()
     stop();
 }
 
-void Handler::start()
+bool Handler::start()
 {
-    running = true;
-    networkThread = std::thread(&Handler::run, this);
+    if (running) {
+        return true;
+    }
+    try {
+        asio::ip::tcp::resolver resolver(io_context);
+        asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(machine, std::to_string(port));
+        asio::connect(socket, endpoints);
+        running = true;
+        networkThread = std::thread(&Handler::run, this);
+        return true;
+    } catch (const std::exception &e) {
+        std::cerr << "Network error: " << e.what() << std::endl;
+        running = false;
+        return false;
+    }
 }
 
 void Handler::stop()
@@ -53,13 +66,9 @@ void Handler::sendMessage(const std::string &message)
 
 void Handler::run()
 {
-    std::cout << "Connecting to " << machine << " on port " << port << std::endl;
     std::string message;
-    try {
-        asio::ip::tcp::resolver resolver(io_context);
-        asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(machine, std::to_string(port));
-        asio::connect(socket, endpoints);
 
+    try {
         std::thread receiver(&Handler::receiveMessages, this);
         sendMessage("GRAPHIC");
         while (message != "WELCOME") {
@@ -67,9 +76,9 @@ void Handler::run()
         }
 
         while (running) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            // requestMapSize();
-            // requestTeamNames();
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            requestMapSize();
+            requestMapContent();
         }
 
         receiver.join();
@@ -101,7 +110,8 @@ void Handler::receiveMessages()
                     line.pop_back();
                 }
                 std::scoped_lock lock(mutex);
-                std::cout << line << std::endl;
+                // debug print
+                // std::cout << line << std::endl;
                 mQ.push(line);
                 cv.notify_one();
                 data.erase(0, pos + 1);
@@ -116,4 +126,4 @@ void Handler::receiveMessages()
     }
 }
 
-}; // namespace Network
+} // namespace Network

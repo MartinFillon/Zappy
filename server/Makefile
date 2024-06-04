@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy
+LDLIBS += -L./ -lmy -lm
 
 NAME = ../zappy_server
 
@@ -16,6 +16,7 @@ SRC = $(BASE_SRC)
 BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					init_program 			\
+					destroy_program 		\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -29,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
@@ -52,10 +54,12 @@ BASE_SRC = $(addsuffix .c, 				\
 					  	init_server			\
 						zappy_server		\
 						buffer 				\
+						destroy_server		\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
 							handle_ais_info	\
+							handle_eggs_info\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -68,11 +72,10 @@ BASE_SRC = $(addsuffix .c, 				\
 					$(addprefix client/, 	\
 						init_client			\
 						send	 			\
-						ai_entrypoint	 	\
-						gui_entrypoint	 	\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						send_message_to_guis\
 						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\
@@ -87,6 +90,21 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_broadcast 	\
 						handle_take_object 	\
 						handle_set_object 	\
+						handle_inventory 	\
+						handle_connect_nbr 	\
+						handle_fork 		\
+						handle_eject 		\
+						handle_incantation 	\
+						destroy				\
+					)\
+					$(addprefix router/, 	\
+						mode_parser			\
+						init_router			\
+						destroy_router		\
+						run 				\
+					)\
+					$(addprefix middleware/,\
+						invalid				\
 					)\
 				)\
 			)\
