@@ -55,6 +55,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						zappy_server		\
 						buffer 				\
 						destroy_server		\
+						execute 			\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
@@ -142,6 +143,11 @@ $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
 
 tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
+
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
 
 re: fclean all
 
