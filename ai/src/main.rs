@@ -5,12 +5,10 @@
 // main
 //
 
-use std::{collections::HashMap, process};
+use std::process;
 
 use env_logger::{Builder, Env};
 use log::info;
-use zappy_json::{DeserializeTrait, JsonValue};
-use zappy_macros::Deserialize;
 
 pub mod ai;
 pub mod commands;

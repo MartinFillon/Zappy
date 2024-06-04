@@ -47,7 +47,7 @@ impl<T: DeserializeTrait> DeserializeTrait for Vec<T> {
             JsonValue::Array(arr) => {
                 let mut vec: Vec<T> = Vec::new();
 
-                for (_, elem) in arr.iter().enumerate() {
+                for elem in arr.iter() {
                     vec.push(T::from_value(elem)?)
                 }
 

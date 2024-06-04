@@ -32,7 +32,7 @@ impl DeserializeTrait for bool {
         Self: Sized,
     {
         match value {
-            JsonValue::Bool(b) => Ok(b.clone()),
+            JsonValue::Bool(b) => Ok(*b),
             _ => Err(String::from("Bad json value")),
         }
     }

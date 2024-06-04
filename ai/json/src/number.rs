@@ -45,7 +45,7 @@ impl DeserializeTrait for i32 {
         Self: Sized,
     {
         match value {
-            JsonValue::Number(n) => Ok(n.clone() as i32),
+            JsonValue::Number(n) => Ok(*n as i32),
             _ => Err(String::from("Bad json value")),
         }
     }
@@ -57,7 +57,7 @@ impl DeserializeTrait for f32 {
         Self: Sized,
     {
         match value {
-            JsonValue::Number(n) => Ok(n.clone() as f32),
+            JsonValue::Number(n) => Ok(*n as f32),
             _ => Err(String::from("Bad json value")),
         }
     }
@@ -69,7 +69,7 @@ impl DeserializeTrait for f64 {
         Self: Sized,
     {
         match value {
-            JsonValue::Number(n) => Ok(n.clone() as f64),
+            JsonValue::Number(n) => Ok(*n),
             _ => Err(String::from("Bad json value")),
         }
     }
@@ -81,7 +81,7 @@ impl DeserializeTrait for i64 {
         Self: Sized,
     {
         match value {
-            JsonValue::Number(n) => Ok(n.clone() as i64),
+            JsonValue::Number(n) => Ok(*n as i64),
             _ => Err(String::from("Bad json value")),
         }
     }
