@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "logger.h"
-#include "router/router.h"
 #include "server.h"
 #include "str.h"
 #include "types/client.h"
@@ -28,7 +27,10 @@ static int handle_buffer_internal(size_t idx, client_t *c, zappy_t *z)
     c->io.req.buffer = tmp;
     c->io.req.size = strlen(tmp);
     logs(INFO, "Client %d sent command: %s\n", c->fd, com);
-    queue_pushback_queue_command_t(c->commands, str_snew(com));
+    if (c->type == GUI || c->type == UNSET ||
+        (c->type == AI && c->commands->size < 10))
+        queue_pushback_queue_command_t(c->commands, str_snew(com));
+    free(com);
     return handle_buffer(c, z);
 }
 
