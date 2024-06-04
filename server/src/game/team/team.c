@@ -21,10 +21,7 @@ team_t create_team(args_infos_t *args, char const *name)
         egg = create_egg(args->width, args->height);
         if (!egg)
             continue;
-        queue_pushback_queue_egg_t(
-            team.eggs,
-            egg
-        );
+        queue_pushback_queue_egg_t(team.eggs, egg);
     }
     return team;
 }
@@ -32,5 +29,7 @@ team_t create_team(args_infos_t *args, char const *name)
 void destroy_team(team_t *team)
 {
     free(team->name);
+    for (size_t i = 0; i < team->eggs->size; i++)
+        destroy_egg(team->eggs->data[i]);
     queue_destroy_queue_egg_t(team->eggs);
 }

@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 #include "clock.h"
-#include "logger.h"
 #include "router/route.h"
 #include "router/router.h"
 #include "types/client.h"
@@ -79,4 +78,5 @@ void run_router(
     else
         run_callback(cli, zappy, route, v);
     vec_free_vector_str_t(v, &str_free);
+    str_free(line);
 }

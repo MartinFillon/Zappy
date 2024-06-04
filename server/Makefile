@@ -144,6 +144,11 @@ $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
 tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
 
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
+
 re: fclean all
 
 .PHONY: all clean fclean re tests_run
