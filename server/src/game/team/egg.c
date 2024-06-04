@@ -20,3 +20,8 @@ egg_t *create_egg(int width, int height)
     idx++;
     return egg;
 }
+
+void destroy_egg(egg_t *egg)
+{
+    free(egg);
+}

@@ -65,3 +65,5 @@ int handle_buffer(client_t *c, zappy_t *z);
  * @param s the server structure
  */
 void free_wifi(server_t *s);
+
+void execute_commands(zappy_t *z);

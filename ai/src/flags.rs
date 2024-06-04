@@ -17,50 +17,17 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use log::info;
+use rust_macros::Bean;
 
 const LOCALHOST: &str = "127.0.0.1";
 
 const SUCCESS_CODE: i32 = 0;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct Flags {
     port: Option<usize>,
     name: Option<String>,
     machine: String,
-}
-
-impl Flags {
-    fn set_port(&mut self, port: usize) {
-        self.port = Some(port)
-    }
-
-    fn set_name(&mut self, name: String) {
-        self.name = Some(name)
-    }
-
-    fn set_machine(&mut self, machine: String) {
-        self.machine = machine
-    }
-
-    fn is_port_none(&self) -> bool {
-        self.port.is_none()
-    }
-
-    fn is_name_none(&self) -> bool {
-        self.name.is_none()
-    }
-
-    pub fn get_name(self) -> String {
-        self.name.unwrap_or_default()
-    }
-
-    pub fn get_port(self) -> usize {
-        self.port.unwrap_or_default()
-    }
-
-    pub fn get_machine(self) -> String {
-        self.machine
-    }
 }
 
 impl Default for Flags {
@@ -106,7 +73,7 @@ fn get_port_from_args(
 ) -> Result<(), String> {
     let port: usize = parse_arg(arg_type, args.next())?;
     info!("Setting port to: {}.", port);
-    flags_struct.set_port(port);
+    flags_struct.set_port(Some(port));
     Ok(())
 }
 
@@ -117,7 +84,7 @@ fn get_name_from_args(
 ) -> Result<(), String> {
     let name: String = parse_arg(arg_type, args.next())?;
     info!("Setting name to: {}.", name);
-    flags_struct.set_name(name);
+    flags_struct.set_name(Some(name));
     Ok(())
 }
 
@@ -158,10 +125,10 @@ fn get_flags() -> Result<Flags, String> {
 
 pub fn check_flags() -> Result<Flags, String> {
     let flags = get_flags()?;
-    if flags.is_port_none() {
+    if flags.port().is_none() {
         return Err(String::from("Port is not set."));
     }
-    if flags.is_name_none() {
+    if flags.name().is_none() {
         return Err(String::from("Name is not set."));
     }
     Ok(flags)

@@ -29,9 +29,12 @@ async fn main() {
     match flags::check_flags() {
         Ok(res) => {
             info!("Arguments set:\n{}", res.clone());
-            let address: String =
-                format!("{}:{}", res.clone().get_machine(), res.clone().get_port());
-            match ai::launch(address, res.get_name()).await {
+            let address: String = format!(
+                "{}:{}",
+                res.clone().machine(),
+                res.clone().port().unwrap_or_default()
+            );
+            match ai::launch(address, res.name().clone().unwrap_or_default()).await {
                 Ok(_) => process::exit(SUCCESS_CODE),
                 Err(e) => {
                     eprintln!("Error: {}.", e);
