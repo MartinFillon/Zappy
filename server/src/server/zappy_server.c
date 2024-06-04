@@ -119,7 +119,7 @@ static void kill_dead_ais(client_t *clients, struct vector_ai_t *ais)
         if (clients[i].fd > 0 && clients[i].type == AI &&
             clients[i].ai->alive == false) {
             erase_dead_ai(clients[i].ai->id, ais);
-            close_client(&clients[i]);
+            close_client(&clients[i], clients);
         }
 }
 
