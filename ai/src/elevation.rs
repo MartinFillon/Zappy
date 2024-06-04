@@ -10,7 +10,7 @@
 use crate::json::{JsonDocument, JsonValue};
 use rust_macros::Bean;
 use std::collections::HashMap;
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 use std::fs;
 
 pub const CONFIG_PATH: &str = "config.json";
@@ -94,7 +94,7 @@ impl Elevation {
 }
 
 impl Display for Elevation {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
             "Elevation {{\n  Current level: {},\n  Next level: {},\n  Linemate needed: {},\n  Deraumere needed: {},\n  Sibur needed: {},\n  Mendiane needed: {},\n  Phiras needed: {},\n  Phiras needed: {}\n}};",
