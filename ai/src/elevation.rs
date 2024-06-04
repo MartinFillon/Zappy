@@ -8,13 +8,14 @@
 #![allow(dead_code)]
 
 use crate::json::{JsonDocument, JsonValue};
+use rust_macros::Bean;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 
 pub const CONFIG_PATH: &str = "config.json";
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Bean)]
 pub struct Elevation {
     from_lvl: usize,
     to_lvl: usize,
@@ -89,70 +90,6 @@ impl Elevation {
             Ok(e) => e,
             Err(e) => Err(e.to_string()),
         }
-    }
-
-    fn set_from_lvl(&mut self, from_lvl: usize) {
-        self.from_lvl = from_lvl
-    }
-
-    fn set_to_lvl(&mut self, to_lvl: usize) {
-        self.to_lvl = to_lvl
-    }
-
-    fn set_linemate(&mut self, linemate: usize) {
-        self.linemate = linemate
-    }
-
-    fn set_deraumere(&mut self, deraumere: usize) {
-        self.deraumere = deraumere
-    }
-
-    fn set_sibur(&mut self, sibur: usize) {
-        self.sibur = sibur
-    }
-
-    fn set_mendiane(&mut self, mendiane: usize) {
-        self.mendiane = mendiane
-    }
-
-    fn set_phiras(&mut self, phiras: usize) {
-        self.phiras = phiras
-    }
-
-    fn set_thystame(&mut self, thystame: usize) {
-        self.thystame = thystame
-    }
-
-    pub fn get_from_lvl(self) -> usize {
-        self.from_lvl
-    }
-
-    pub fn get_to_lvl(self) -> usize {
-        self.to_lvl
-    }
-
-    pub fn get_linemate_needed(self) -> usize {
-        self.linemate
-    }
-
-    pub fn get_deraumere_needed(self) -> usize {
-        self.deraumere
-    }
-
-    pub fn get_sibur_needed(self) -> usize {
-        self.sibur
-    }
-
-    pub fn get_mendiane_needed(self) -> usize {
-        self.mendiane
-    }
-
-    pub fn get_phiras_needed(self) -> usize {
-        self.phiras
-    }
-
-    pub fn get_thystame_needed(self) -> usize {
-        self.thystame
     }
 }
 
