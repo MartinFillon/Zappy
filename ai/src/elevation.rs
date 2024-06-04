@@ -64,22 +64,26 @@ impl Elevation {
         })
     }
 
+    fn get_elevation_infos(map: &HashMap<String, JsonValue>) -> Result<Vec<Elevation>, String> {
+        match map.get("elevation") {
+            Some(JsonValue::Array(values)) => {
+                let mut list: Vec<Elevation> = vec![];
+                for obj in values {
+                    list.push(Self::from_json(obj.clone())?);
+                }
+                Ok(list)
+            }
+            Some(_) => Err(String::from("Expected array of values")),
+            None => Err(String::from("Couldn't find \"elevation\" part in file")),
+        }
+    }
+
     pub fn from_conf(filepath: &str) -> Result<Vec<Elevation>, String> {
         match fs::read_to_string(filepath).map(|content| {
             match JsonDocument::try_from(content.as_ref()) {
-                Ok(JsonDocument(JsonValue::Object(map))) => match map.get("elevation") {
-                    Some(JsonValue::Array(values)) => {
-                        let mut list: Vec<Elevation> = vec![];
-                        for obj in values {
-                            list.push(Self::from_json(obj.clone())?);
-                        }
-                        Ok(list)
-                    }
-                    Some(_) => Err(String::from("Exepected array of values")),
-                    None => Err(String::from("Couldn't find \"elevation\" part in file")),
-                },
+                Ok(JsonDocument(JsonValue::Object(map))) => Self::get_elevation_infos(&map),
+                Ok(_) => Err(String::from("Expected object \"elevation\"")),
                 Err(e) => Err(e.to_string()),
-                _ => Err(String::from("Expected object \"elevation\"")),
             }
         }) {
             Ok(e) => e,
