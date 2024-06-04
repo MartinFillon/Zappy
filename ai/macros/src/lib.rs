@@ -52,8 +52,40 @@ fn impl_bean(ast: DeriveInput) -> TokenStream {
 }
 
 #[proc_macro_derive(Bean)]
-pub fn my_macro_here_derive(input: TokenStream) -> TokenStream {
+pub fn my_macro_bean_derive(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
 
     impl_bean(ast)
+}
+
+fn impl_deserialize(ast: DeriveInput) -> TokenStream {
+    let ident = ast.ident;
+    let fields = get_fields(&ast.data);
+
+    quote! {
+        impl zappy_json::DeserializeTrait for #ident {
+            fn from_value(value: zappy_json::JsonValue) -> Result<Self, String>
+            where
+                Self: Sized {
+                    match value {
+                        zappy_json::JsonValue::Object(obj) => todo!(),
+                        _ => return Err(String::from("Not a json object"))
+                    }
+                }
+            fn from_str(_raw: String) -> Result<Self, zappy_json::ParserError>
+                where
+                    Self: Sized,
+                {
+                    unimplemented!()
+                }
+        }
+    }
+    .into()
+}
+
+#[proc_macro_derive(Deserialize)]
+pub fn my_macro_deserialize_derive(input: TokenStream) -> TokenStream {
+    let ast: DeriveInput = syn::parse(input).unwrap();
+
+    impl_deserialize(ast)
 }

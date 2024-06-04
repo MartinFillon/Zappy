@@ -100,8 +100,18 @@ impl TryFrom<&str> for JsonDocument {
     }
 }
 
-pub trait Deserialize {
-    fn deserialize(raw: String) -> Result<Self, ParserError>
+pub trait DeserializeTrait {
+    fn from_str(_raw: String) -> Result<Self, ParserError>
     where
-        Self: Sized;
+        Self: Sized,
+    {
+        unimplemented!()
+    }
+
+    fn from_value(_value: JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        unimplemented!()
+    }
 }
