@@ -29,10 +29,13 @@ pub enum ResponseResult {
     Inventory(Vec<(String, i32)>),
     Incantation(usize),
     Message((Direction, String)),
+    Eject(Direction),
 }
 
+#[derive(Debug)]
+#[repr(u8)]
 pub enum Direction {
-    North,
+    North = 1,
     NorthWest,
     West,
     SouthWest,
@@ -71,21 +74,96 @@ impl CommandHandler for TcpClient {
 
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError> {
         info!("Checking if request receives dead...");
-        let response = self.send_command(command).await?;
+        let response: String = self.send_command(command).await?;
         if response == "dead\n" {
             info!("Dead received.");
             return Err(CommandError::DeadReceived);
         }
-        info!("Not dead received, response is forwarded.");
+        info!("Dead not received, response is forwarded.");
         Ok(response)
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
         info!("Handling response: ({})...", response);
-        match response.as_str() {
-            "ok\n" => Ok(ResponseResult::OK),
-            "ko\n" => Ok(ResponseResult::KO),
+
+        if response.starts_with("message ") && response.ends_with('\n') {
+            return handle_message_response(response);
+        }
+
+        if response.starts_with("eject: ") && response.ends_with('\n') {
+            return handle_eject_response(response);
+        }
+
+        match response.trim_end() {
+            "ok" => Ok(ResponseResult::OK),
+            "ko" => Ok(ResponseResult::KO),
             _ => Err(CommandError::InvalidResponse),
+        }
+    }
+}
+
+fn handle_message_response(response: String) -> Result<ResponseResult, CommandError> {
+    info!("Handling message response...");
+    let parts: Vec<&str> = response.split_whitespace().collect();
+
+    if parts.len() >= 3 && parts[0] == "message" {
+        match parts[1].trim_end_matches(',').parse::<usize>() {
+            Ok(direction) => {
+                if let Some(dir_enum) = Direction::from_usize(direction) {
+                    let final_msg = parts[2..].join(" ");
+                    info!(
+                        "Message received from direction {} (aka {}): {}",
+                        dir_enum, direction, final_msg
+                    );
+                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                }
+                debug!("Failed to parse direction {}.", direction);
+            }
+            Err(_) => debug!("Failed to parse direction from message: {}", response),
+        }
+    }
+
+    Err(CommandError::InvalidResponse)
+}
+
+fn handle_eject_response(response: String) -> Result<ResponseResult, CommandError> {
+    info!("Handling eject response...");
+    let parts: Vec<&str> = response.split_whitespace().collect();
+
+    if parts.len() == 2 && parts[0] == "eject:" {
+        match parts[1].trim_start().parse::<usize>() {
+            Ok(direction) => {
+                if let Some(dir_enum) = Direction::from_usize(direction) {
+                    info!(
+                        "Receiving ejection from direction {} (aka {}).",
+                        dir_enum, direction
+                    );
+                    return Ok(ResponseResult::Eject(dir_enum));
+                }
+                debug!("Failed to parse direction {}.", direction);
+            }
+            Err(_) => debug!(
+                "Failed to parse direction from eject response: {}",
+                response
+            ),
+        }
+    }
+
+    Err(CommandError::InvalidResponse)
+}
+
+impl Direction {
+    pub fn from_usize(value: usize) -> Option<Self> {
+        match value {
+            1 => Some(Direction::North),
+            2 => Some(Direction::NorthWest),
+            3 => Some(Direction::West),
+            4 => Some(Direction::SouthWest),
+            5 => Some(Direction::South),
+            6 => Some(Direction::SouthEast),
+            7 => Some(Direction::East),
+            8 => Some(Direction::NorthEast),
+            _ => None,
         }
     }
 }
@@ -140,6 +218,7 @@ impl Display for ResponseResult {
             }
             ResponseResult::Incantation(level) => write!(f, "Incantation Level: {}", level),
             ResponseResult::Message((dir, msg)) => write!(f, "Message: ({}, {})", dir, msg),
+            ResponseResult::Eject(dir) => write!(f, "Eject: {}", dir),
         }
     }
 }
@@ -152,9 +231,9 @@ struct AI {
 }
 
 impl AI {
-    fn new(client_number: i32, map_x: usize, map_y: usize) -> AI {
+    fn new(client_nbr: i32, map_x: usize, map_y: usize) -> AI {
         AI {
-            client: client_number,
+            client: client_nbr,
             map: (map_x, map_y),
             level: 1,
         }
@@ -175,14 +254,18 @@ async fn init_ai(_client: &mut TcpClient, response: &str) -> io::Result<()> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
-    let client_number = match lines.next() {
+    let client_nbr = match lines.next() {
         Some(nbr) => match nbr.parse::<i32>() {
             Ok(nbr) => nbr,
             Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid client number.")),
         },
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     };
-    info!("Client number detected as [{}].", client_number);
+    info!(
+        "Client number [{}], leftover slots: {}.",
+        client_nbr + 1,
+        client_nbr
+    );
 
     match lines.next() {
         Some(line) => {
@@ -202,7 +285,7 @@ async fn init_ai(_client: &mut TcpClient, response: &str) -> io::Result<()> {
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(client_number, x, y);
+            let ai: AI = AI::new(client_nbr, x, y);
             println!("{}", ai);
             info!("{}", ai);
             info!("AI initialized.");

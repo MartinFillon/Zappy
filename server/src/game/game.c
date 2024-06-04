@@ -7,6 +7,7 @@
 
 #include "types/game.h"
 #include "client.h"
+#include "clock.h"
 #include "logger.h"
 #include "map.h"
 #include "zappy.h"
@@ -28,6 +29,7 @@ game_t init_game(args_infos_t *ag)
         vec_pushback_vector_team_t(game.teams, create_team(ag, ag->names[i]));
     }
     logs(INFO, "Team created successfully\n");
+    game.clock = clock_new(ag->freq);
     return game;
 }
 
@@ -38,4 +40,5 @@ void destroy_game(game_t *game)
     vec_destroy_vector_team_t(game->teams);
     vec_foreach_vector_ai_t(game->ais, &destroy_ai);
     vec_destroy_vector_ai_t(game->ais);
+    free(game->clock);
 }

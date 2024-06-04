@@ -9,6 +9,8 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "types/ai.h"
+#include "types/position.h"
 
 /**
  * @brief frees a double char array
@@ -36,7 +38,6 @@ int modulo(int nb, int m);
  */
 [[nodiscard]] bool parse_number(char *restrict args, long *restrict n);
 
-
 /**
  * @brief Check if there is not any args
  *
@@ -45,13 +46,21 @@ int modulo(int nb, int m);
  */
 bool is_empty(char const *arg);
 
+/**
+ * @brief Compare if 2 positions are equals
+ *
+ * @param this Position1 to compare
+ * @param oth Position2 to compare
+ * @return true if pos are equals
+ */
+bool is_coord_equal(pos_t *this, pos_t *oth);
 
 /************************************************************************
  * Those are vectors comparison functions used for vector functions that
  * needs predicate as parameter
  *
  * NOTE: Whenever you need to define a predicate put the prototype here.
-*************************************************************************/
+ *************************************************************************/
 
 /**
  * @brief Compare 2 integers
@@ -61,3 +70,5 @@ bool is_empty(char const *arg);
  * @return true if equal else false
  */
 bool cmp_int(int a, int b);
+
+bool cmp_ais(ai_t a, ai_t b);

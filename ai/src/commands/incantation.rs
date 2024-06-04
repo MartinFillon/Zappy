@@ -13,14 +13,12 @@ use crate::tcp::TcpClient;
 pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     let checkpoint = client.check_dead("Incantation\n").await?;
     match checkpoint.trim_end() {
-        "ko" => Ok(ResponseResult::KO),
         "Elevation underway" => {
             let response = client
                 .get_response()
                 .await
                 .ok_or(CommandError::NoResponseReceived)?;
             match response.trim_end() {
-                "ko" => Ok(ResponseResult::KO),
                 "dead" => Err(CommandError::DeadReceived),
                 level if level.starts_with("Current level:") => {
                     let level_str = level
@@ -29,9 +27,9 @@ pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, Comma
                         .ok_or(CommandError::InvalidResponse)?;
                     Ok(ResponseResult::Incantation(level_str))
                 }
-                _ => Err(CommandError::InvalidResponse),
+                _ => client.handle_response(response).await,
             }
         }
-        _ => Err(CommandError::InvalidResponse),
+        _ => client.handle_response(checkpoint).await,
     }
 }

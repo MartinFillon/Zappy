@@ -30,6 +30,7 @@ SRC = $(BASE_SRC) 						\
 				Display					\
 				ServerMessageHandler	\
 				MessageBox				\
+				InfoBox					\
 			)							\
 		)								\
 	)

@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 #include "types/ai.h"
+#include "types/clock.h"
 
 #define TYPE ai_t
 #include "vector.h"
@@ -23,4 +24,6 @@ typedef struct {
     map_t *map;
     struct vector_team_t *teams;
     long frequency;
+
+    zclock_t *clock;
 } game_t;

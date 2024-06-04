@@ -24,8 +24,11 @@
 #include "defs/player/set_object.h"
 #include "defs/player/take_object.h"
 #include "defs/team_names.h"
+#include "defs/player/fork.h"
+#include "defs/player/connect_nbr.h"
+#include "defs/player/eject.h"
 
-#define BASE_ROUTE_COUNT 16
+#define BASE_ROUTE_COUNT 20
 
 static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     CONTENT_ROUTE,
@@ -44,4 +47,8 @@ static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     BROADCAST_ROUTE,
     SET_OBJECT_ROUTE,
     TAKE_OBJECT_ROUTE,
+    FORK_ROUTE,
+    CONNECT_NBR_ROUTE,
+    EJECT_ROUTE,
+    PLAYER_INVENTORY_ROUTE
 };

@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy
+LDLIBS += -L./ -lmy -lm
 
 NAME = ../zappy_server
 
@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
@@ -59,6 +60,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_cmds 	\
 							handle_display 	\
 							handle_ais_info	\
+							handle_eggs_info\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -74,6 +76,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						send_message_to_guis\
 						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\
@@ -88,6 +91,11 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_broadcast 	\
 						handle_take_object 	\
 						handle_set_object 	\
+						handle_inventory 	\
+						handle_connect_nbr 	\
+						handle_fork 		\
+						handle_eject 		\
+						handle_incantation 	\
 						destroy				\
 					)\
 					$(addprefix router/, 	\
