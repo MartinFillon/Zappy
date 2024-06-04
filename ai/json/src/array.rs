@@ -5,6 +5,8 @@
 // array
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -33,6 +35,26 @@ impl<'a> Parser<'a> {
         }
 
         Ok(JsonValue::Array(array))
+    }
+}
+
+impl<T: DeserializeTrait> DeserializeTrait for Vec<T> {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Array(arr) => {
+                let mut vec: Vec<T> = Vec::new();
+
+                for (_, elem) in arr.iter().enumerate() {
+                    vec.push(T::from_value(elem)?)
+                }
+
+                Ok(vec)
+            }
+            _ => Err(String::from("Bad json value")),
+        }
     }
 }
 

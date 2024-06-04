@@ -5,6 +5,8 @@
 // number
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -34,6 +36,54 @@ impl<'a> Parser<'a> {
                 .parse()
                 .map_err(|_| ParserError::NotANumber(number))?,
         ))
+    }
+}
+
+impl DeserializeTrait for i32 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(n.clone() as i32),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for f32 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(n.clone() as f32),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for f64 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(n.clone() as f64),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for i64 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(n.clone() as i64),
+            _ => Err(String::from("Bad json value")),
+        }
     }
 }
 

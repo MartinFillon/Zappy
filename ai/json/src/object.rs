@@ -7,6 +7,8 @@
 
 use std::collections::HashMap;
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -61,6 +63,18 @@ impl<'a> Parser<'a> {
         }
 
         Ok(key)
+    }
+}
+
+impl DeserializeTrait for HashMap<String, JsonValue> {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Object(obj) => Ok(obj.clone()),
+            _ => Err(String::from("Bad json value")),
+        }
     }
 }
 

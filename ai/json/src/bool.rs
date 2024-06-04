@@ -5,6 +5,8 @@
 // bool
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -20,6 +22,18 @@ impl<'a> Parser<'a> {
             Ok(JsonValue::Bool(false))
         } else {
             Err(ParserError::InvalidValue(self.buffer_str.clone()))
+        }
+    }
+}
+
+impl DeserializeTrait for bool {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Bool(b) => Ok(b.clone()),
+            _ => Err(String::from("Bad json value")),
         }
     }
 }

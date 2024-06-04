@@ -5,6 +5,8 @@
 // string
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -34,6 +36,18 @@ impl<'a> Parser<'a> {
             None => return Err(ParserError::UnexpectedEOF),
         };
         Ok(())
+    }
+}
+
+impl DeserializeTrait for String {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::String(s) => Ok(s.clone()),
+            _ => Err(String::from("Bad json value")),
+        }
     }
 }
 
