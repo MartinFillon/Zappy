@@ -121,6 +121,10 @@ static void send_to_everyone(
 
 void handle_broadcast(client_t *cli, command_state_t *s)
 {
+    char *msg = str_cstr(s->args->data[1]);
+
     prepare_response_cat(&cli->io, "ok\n");
-    send_to_everyone(s->args->data[1]->data, s->clients, cli, s->game);
+    send_to_everyone(msg, s->clients, cli, s->game);
+    broadcast_to(GUI, s->clients, "pbc %d %s\n", cli->ai->id, msg);
+    free(msg);
 }
