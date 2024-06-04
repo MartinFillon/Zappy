@@ -5,7 +5,12 @@
 // mod
 //
 
-use std::{collections::HashMap, fs::read_to_string, iter::Peekable, str::Chars};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+    iter::Peekable,
+    str::Chars,
+};
 
 mod array;
 mod bool;
@@ -26,6 +31,16 @@ pub enum ParserError {
     InvalidValue(String),
     UnexpectedEOF,
     NotANumber(String),
+}
+
+impl Display for ParserError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Self::InvalidValue(s) => write!(f, "Invalid value {}", s),
+            Self::UnexpectedEOF => write!(f, "Unexpected EOF"),
+            Self::NotANumber(s) => write!(f, "{} not a number", s),
+        }
+    }
 }
 
 impl<'a> Parser<'a> {
@@ -83,7 +98,7 @@ pub enum JsonValue {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct JsonDocument(JsonValue);
+pub struct JsonDocument(pub JsonValue);
 
 impl From<JsonValue> for JsonDocument {
     fn from(value: JsonValue) -> Self {
