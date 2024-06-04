@@ -45,12 +45,14 @@ static void take_object_down(
 void handle_take_object(client_t *cli, command_state_t *s)
 {
     map_t *map = s->game->map;
+    size_t i = 0;
 
-    for (size_t i = 0; i < NB_OBJ; i++) {
+    for (; i < NB_OBJ; i++) {
         if (strcmp(s->args->data[1]->data, all_obj[i].name) == 0) {
             take_object_down(cli, map, all_obj + i);
             return;
         }
     }
     prepare_response_cat(&cli->io, "ko\n");
+    broadcast_to(GUI, s->clients, "pgt %d %d\n", cli->ai->id, i);
 }

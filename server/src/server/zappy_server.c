@@ -31,7 +31,7 @@ static void handle_cli_isset(zappy_t *z, int i)
         return;
     if (FD_ISSET(z->clients[i].fd, &z->server.read_fds)) {
         if (read_client(&z->clients[i]) == ERROR)
-            close_client(&z->clients[i]);
+            close_client(&z->clients[i], z->clients);
     }
     if (FD_ISSET(z->clients[i].fd, &z->server.write_fds) &&
         z->clients[i].io.is_ready) {
@@ -119,7 +119,7 @@ static void kill_dead_ais(client_t *clients, struct vector_ai_t *ais)
         if (clients[i].fd > 0 && clients[i].type == AI &&
             clients[i].ai->alive == false) {
             erase_dead_ai(clients[i].ai->id, ais);
-            close_client(&clients[i]);
+            close_client(&clients[i], clients);
         }
 }
 

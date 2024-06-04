@@ -25,18 +25,18 @@ static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
         game->map->x,
         game->map->y
     );
-    for (__auto_type i = 0; i < SOMAXCONN; i++)
-        if (clis[i].fd > 0 && clis[i].type == GUI)
-            prepare_response_cat(
-                &clis[i].io,
-                "pnw %d %d %d %d %d %s\n",
-                new->id,
-                new->pos.x,
-                new->pos.y,
-                new->dir + 1,
-                new->level,
-                new->team->name
-            );
+    broadcast_to(
+        GUI,
+        clis,
+        "ebo %d\npnw %d %d %d %d %d %s\n",
+        new->id,
+        new->id,
+        new->pos.x,
+        new->pos.y,
+        new->dir + 1,
+        new->level,
+        new->team->name
+    );
 }
 
 static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)

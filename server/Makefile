@@ -59,7 +59,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_cmds 	\
 							handle_display 	\
 							handle_ais_info	\
-							handle_eggs_info 	\
+							handle_eggs_info\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -75,6 +75,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						send_message_to_guis\
 						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\

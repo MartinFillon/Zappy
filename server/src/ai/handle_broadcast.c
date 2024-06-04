@@ -5,23 +5,22 @@
 ** handle_broadcast
 */
 
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <float.h>
 
+#include "client.h"
+#include "router/route.h"
+#include "str.h"
 #include "types/ai.h"
+#include "types/client.h"
 #include "types/game.h"
 #include "types/map.h"
 #include "types/position.h"
 #include "utils.h"
-#include "types/client.h"
-#include "client.h"
-#include "router/route.h"
-#include "str.h"
-#include "types/client.h"
 
 static bool valid_client(client_t *to_check, client_t *banned)
 {
@@ -55,11 +54,7 @@ static void get_starting_pos(
     }
 }
 
-static bool get_min_distance(
-    pos_t *src_pos,
-    pos_t *tile_pos,
-    double *old_dist
-)
+static bool get_min_distance(pos_t *src_pos, pos_t *tile_pos, double *old_dist)
 {
     pos_t vec_dist = {0};
     double new_dist = 0.f;
@@ -111,14 +106,13 @@ static void send_to_everyone(
     pos_t pos = {0};
 
     for (int i = 0; i < SOMAXCONN; i++) {
-        if (valid_client(&clis[i], c)) {
+        if (clis[i].type == AI && valid_client(&clis[i], c)) {
             dir = clis[i].ai->dir;
             get_starting_pos(&pos, &clis[i].ai->pos, dir, g->map);
             prepare_response_cat(
                 &clis[i].io,
                 "message %d, %s\n",
-                get_shortest_distance_sound(
-                    &c->ai->pos, &pos, dir, g->map),
+                get_shortest_distance_sound(&c->ai->pos, &pos, dir, g->map),
                 msg
             );
         }
@@ -127,6 +121,10 @@ static void send_to_everyone(
 
 void handle_broadcast(client_t *cli, command_state_t *s)
 {
+    char *msg = str_cstr(s->args->data[1]);
+
     prepare_response_cat(&cli->io, "ok\n");
-    send_to_everyone(s->args->data[1]->data, s->clients, cli, s->game);
+    send_to_everyone(msg, s->clients, cli, s->game);
+    broadcast_to(GUI, s->clients, "pbc %d %s\n", cli->ai->id, msg);
+    free(msg);
 }

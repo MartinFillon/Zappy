@@ -5,6 +5,7 @@
 ** handle_incantation
 */
 
+#include "client.h"
 #include "incantation.h"
 #include "types/ai.h"
 #include "types/client.h"
@@ -12,7 +13,6 @@
 #include "types/map.h"
 #include "types/position.h"
 #include "utils.h"
-#include "client.h"
 
 static void freeze_ais(game_t *game, pos_t *pos, int id)
 {
@@ -78,12 +78,9 @@ static bool verif_level_specification(ai_t *ai, map_t *map)
     con = &map->arena[pos->y][pos->x].content;
     tile = &incant_req[idx].ressource;
     return (
-        con->linemate >= tile->linemate &&
-        con->deraumere >= tile->deraumere &&
-        con->sibur >= tile->sibur &&
-        con->mendiane >= tile->mendiane &&
-        con->phiras >= tile->phiras &&
-        con->thystame >= tile->thystame
+        con->linemate >= tile->linemate && con->deraumere >= tile->deraumere &&
+        con->sibur >= tile->sibur && con->mendiane >= tile->mendiane &&
+        con->phiras >= tile->phiras && con->thystame >= tile->thystame
     );
 }
 
@@ -96,7 +93,7 @@ void handle_end_incantation(
 {
     bool first = cli->ai->incant.last_verif;
 
-    (void) clients;
+    (void)clients;
     if (!is_empty(arg))
         return prepare_response_cat(&cli->io, "ko\n");
     cli->ai->incant.is_incant = false;
@@ -106,7 +103,8 @@ void handle_end_incantation(
         return prepare_response_cat(&cli->io, "ko\n");
     prepare_response_cat(&cli->io, "Current level: %d\n", cli->ai->level);
     consume_tile_incantation(
-        cli->ai->level, game->map, cli->ai->pos.y, cli->ai->pos.x);
+        cli->ai->level, game->map, cli->ai->pos.y, cli->ai->pos.x
+    );
     increment_all_levels(game, cli->ai->id);
 }
 
@@ -117,7 +115,7 @@ void handle_start_incantation(
     client_t *clients
 )
 {
-    (void) clients;
+    (void)clients;
     if (!is_empty(arg))
         return prepare_response_cat(&cli->io, "ko\n");
     freeze_ais(game, &cli->ai->pos, cli->ai->id);
