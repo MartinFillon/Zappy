@@ -84,12 +84,6 @@ fn impl_deserialize_struct(data: &Data, ident: Ident) -> TokenStream {
                         _ => return Err(String::from("Not a json object"))
                     }
                 }
-            fn from_str(_raw: String) -> Result<Self, zappy_json::ParserError>
-                where
-                    Self: Sized,
-                {
-                    unimplemented!()
-                }
         }
     }
     .into()

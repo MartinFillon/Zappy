@@ -8,6 +8,7 @@
 use std::{
     collections::HashMap,
     fmt::{self, Display, Formatter},
+    fs::read_to_string,
     iter::Peekable,
     str::Chars,
 };

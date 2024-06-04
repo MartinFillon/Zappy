@@ -16,9 +16,8 @@ impl<'a> Parser<'a> {
         array.push(self.parse_value()?);
         loop {
             let c = self.buffer.peek();
-            match dbg!(c) {
+            match c {
                 Some(']') => {
-                    dbg!("] found");
                     self.buffer.next();
                     break;
                 }

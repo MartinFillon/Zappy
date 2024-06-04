@@ -87,6 +87,78 @@ impl DeserializeTrait for i64 {
     }
 }
 
+impl DeserializeTrait for u32 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as u32),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for u64 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as u64),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for u128 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as u128),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for i128 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as i128),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for isize {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as isize),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for usize {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(*n as usize),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
     use crate::{JsonDocument, JsonValue, ParserError};
