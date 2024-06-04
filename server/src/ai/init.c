@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <sys/socket.h>
+
 #include "client.h"
 #include "clock.h"
 #include "queue.h"
@@ -46,8 +47,7 @@ static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
     new->level = 1;
     new->dir = rand() % 4;
     vec_pushback_vector_int(
-        map->arena[new->pos.y][new->pos.x].players,
-        new->id
+        map->arena[new->pos.y][new->pos.x].players, new->id
     );
 }
 

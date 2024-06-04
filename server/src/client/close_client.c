@@ -7,10 +7,12 @@
 
 #include <unistd.h>
 #include "client.h"
+#include "logger.h"
 #include "types/client.h"
 
 void free_buffer(struct buffer_s *buffer)
 {
+    logs(DEBUG, "Freeing buffer\n");
     free(buffer->buffer);
     buffer->buffer = NULL;
     buffer->size = 0;

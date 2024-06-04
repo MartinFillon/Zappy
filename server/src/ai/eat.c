@@ -31,9 +31,9 @@ void make_ai_eat(client_t *cli, client_t *clients, int n)
         logs(INFO, "Ai %d is dead\n", n);
         prepare_response_cat(&cli->io, "dead\n");
         send_death(n, clients);
+        cli->ai->alive = false;
     }
     logs(INFO, "Cli %d is eating\n", n);
     cli->ai->inventory.food -= 1;
     reset_clock(cli->ai->food_clock);
-    cli->ai->alive = false;
 }
