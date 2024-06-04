@@ -108,10 +108,66 @@ pub trait DeserializeTrait {
         unimplemented!()
     }
 
-    fn from_value(_value: JsonValue) -> Result<Self, String>
+    fn from_value(_value: &JsonValue) -> Result<Self, String>
     where
         Self: Sized,
     {
         unimplemented!()
+    }
+}
+
+impl DeserializeTrait for i32 {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Number(n) => Ok(n.clone() as i32),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl<T: DeserializeTrait> DeserializeTrait for Vec<T> {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Array(arr) => {
+                let mut vec: Vec<T> = Vec::new();
+
+                for (_, elem) in arr.iter().enumerate() {
+                    vec.push(T::from_value(elem)?)
+                }
+
+                Ok(vec)
+            }
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for bool {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Bool(b) => Ok(b.clone()),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
+impl DeserializeTrait for String {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::String(s) => Ok(s.clone()),
+            _ => Err(String::from("Bad json value")),
+        }
     }
 }

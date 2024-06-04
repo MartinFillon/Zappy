@@ -5,7 +5,7 @@
 // main
 //
 
-use std::process;
+use std::{collections::HashMap, process};
 
 use env_logger::{Builder, Env};
 use log::info;
@@ -21,7 +21,7 @@ pub mod tcp;
 const ERROR_CODE: i32 = 84;
 const SUCCESS_CODE: i32 = 0;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Test {
     a: i32,
     b: i32,
@@ -30,8 +30,15 @@ struct Test {
 
 #[tokio::main]
 async fn main() {
-    let Test = Test::from_value(JsonValue::Null).unwrap();
+    let mut test_object: HashMap<String, JsonValue> = HashMap::new();
 
+    test_object.insert("a".to_string(), JsonValue::Number(1.0));
+    test_object.insert("b".to_string(), JsonValue::Number(2.0));
+    test_object.insert("c".to_string(), JsonValue::Number(3.0));
+
+    let test = Test::from_value(&JsonValue::Object(test_object)).unwrap();
+
+    println!("{:?}", test);
     // let env = Env::new().filter("ZAPPY_LOG");
     // Builder::from_env(env).init();
 

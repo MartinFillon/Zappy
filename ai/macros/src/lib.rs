@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FieldsNamed};
+use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
 
 fn get_fields(data: &Data) -> FieldsNamed {
     if let Data::Struct(strct) = data {
@@ -58,17 +58,29 @@ pub fn my_macro_bean_derive(input: TokenStream) -> TokenStream {
     impl_bean(ast)
 }
 
-fn impl_deserialize(ast: DeriveInput) -> TokenStream {
-    let ident = ast.ident;
-    let fields = get_fields(&ast.data);
+fn impl_deserialize_struct(data: &Data, ident: Ident) -> TokenStream {
+    let fields = get_fields(data);
+
+    let fields_getters = fields.named.iter().map(|field| {
+        let name = field.ident.as_ref().unwrap();
+        let ty = &field.ty;
+        let param: proc_macro2::TokenStream = format!("\"{}\"", name).parse().unwrap();
+        let err_msg: proc_macro2::TokenStream =
+            format!("\"field {} not found\"", name).parse().unwrap();
+        quote!(#name: #ty::from_value(obj.get(#param).ok_or(#err_msg)?)?)
+    });
 
     quote! {
         impl zappy_json::DeserializeTrait for #ident {
-            fn from_value(value: zappy_json::JsonValue) -> Result<Self, String>
+            fn from_value(value: &zappy_json::JsonValue) -> Result<#ident, String>
             where
                 Self: Sized {
                     match value {
-                        zappy_json::JsonValue::Object(obj) => todo!(),
+                        zappy_json::JsonValue::Object(obj) => {
+                            Ok(#ident {
+                                #(#fields_getters),*
+                            })
+                        },
                         _ => return Err(String::from("Not a json object"))
                     }
                 }
@@ -81,6 +93,16 @@ fn impl_deserialize(ast: DeriveInput) -> TokenStream {
         }
     }
     .into()
+}
+
+fn impl_deserialize(ast: DeriveInput) -> TokenStream {
+    let ident = ast.ident;
+    let data = &ast.data;
+
+    match data {
+        Data::Struct(_) => impl_deserialize_struct(data, ident),
+        _ => panic!("Can only handle structs"),
+    }
 }
 
 #[proc_macro_derive(Deserialize)]
