@@ -13,7 +13,6 @@ use log::info;
 pub mod ai;
 pub mod commands;
 pub mod flags;
-pub mod json;
 pub mod move_to_tile;
 pub mod tcp;
 

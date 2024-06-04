@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use rust_macros::Bean;
+use zappy_macros::Bean;
 use std::io::{Error, ErrorKind};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};

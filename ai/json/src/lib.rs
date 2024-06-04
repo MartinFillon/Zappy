@@ -99,3 +99,9 @@ impl TryFrom<&str> for JsonDocument {
         Ok(JsonDocument(parser.parse()?))
     }
 }
+
+pub trait Deserialize {
+    fn deserialize(raw: String) -> Result<Self, ParserError>
+    where
+        Self: Sized;
+}

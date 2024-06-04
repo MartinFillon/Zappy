@@ -38,7 +38,7 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::json::JsonDocument;
+    use crate::JsonDocument;
 
     use super::*;
 

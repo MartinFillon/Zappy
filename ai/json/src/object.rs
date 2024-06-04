@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
 pub mod tests {
     use std::collections::HashMap;
 
-    use crate::json::{JsonDocument, JsonValue, ParserError};
+    use crate::{JsonDocument, JsonValue, ParserError};
 
     #[test]
     fn basic_json_object() {
