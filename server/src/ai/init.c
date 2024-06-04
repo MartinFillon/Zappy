@@ -26,16 +26,17 @@ static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
         game->map->y
     );
     broadcast_to(
-                GUI,
-                clis,
-                "pnw %d %d %d %d %d %s\n",
-                new->id,
-                new->pos.x,
-                new->pos.y,
-                new->dir + 1,
-                new->level,
-                new->team->name
-            );
+        GUI,
+        clis,
+        "ebo %d\npnw %d %d %d %d %d %s\n",
+        new->id,
+        new->id,
+        new->pos.x,
+        new->pos.y,
+        new->dir + 1,
+        new->level,
+        new->team->name
+    );
 }
 
 static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
