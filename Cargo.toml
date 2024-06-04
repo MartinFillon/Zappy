@@ -1,4 +1,4 @@
 [workspace]
 
-members = ["server/tests/server-tester", "ai"]
+members = ["server/tests/server-tester", "ai", "rust-macros/"]
 resolver = "2"

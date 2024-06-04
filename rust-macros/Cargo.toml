@@ -1,13 +1,13 @@
 [package]
-name = "ai"
+name = "rust-macros"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+proc-macro = true
+
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-async-trait = "0.1.8"
-env_logger = "0.11"
-log = "0.4"
-rust-macros = { path = "../rust-macros" }
+syn = {}
+quote = {}
