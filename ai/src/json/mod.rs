@@ -5,7 +5,12 @@
 // mod
 //
 
-use std::{collections::HashMap, fmt::{self, Display, Formatter}, iter::Peekable, str::Chars};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+    iter::Peekable,
+    str::Chars,
+};
 
 mod array;
 mod bool;
