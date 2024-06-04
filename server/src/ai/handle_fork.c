@@ -5,11 +5,11 @@
 ** handle_fork
 */
 
+#include "client.h"
 #include "logger.h"
 #include "router/route.h"
-#include "types/team.h"
 #include "types/client.h"
-#include "client.h"
+#include "types/team.h"
 
 void handle_fork(client_t *cli, command_state_t *s)
 {
@@ -23,4 +23,5 @@ void handle_fork(client_t *cli, command_state_t *s)
     egg->pos.y = cli->ai->pos.y;
     queue_pushback_queue_egg_t(cli->ai->team->eggs, egg);
     prepare_response(&cli->io, "ok\n");
+    broadcast_to(GUI, s->clients, "pfk %d\n", cli->ai->id);
 }
