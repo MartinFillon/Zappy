@@ -7,7 +7,7 @@ on:
 jobs:
   check_coding_style:
     name: "check for coding style errors from binary"
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container: ghcr.io/epitech/coding-style-checker:latest
     steps:
       - uses: actions/checkout@v3

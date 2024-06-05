@@ -4,26 +4,24 @@ on: [ workflow_call, workflow_dispatch ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container:
-      image: epitechcontent/epitest-docker:latest
+    runs-on: self-hosted
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
 
       - name: compile
         run: |
-          make -C server fclean && make zappy_server
-        timeout-minutes: 5
-  run-unit-tests:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: epitechcontent/epitest-docker:latest
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v4
+          make -C server fclean && make -C server
+          timeout-minutes: 5
       - name: compile
         run: |
           make -C server fclean && make -C server tests_run
         timeout-minutes: 5
+  # run-unit-tests:
+  #   needs: build
+  #   runs-on: self-hosted
+  #   container:
+  #     image: epitechcontent/epitest-docker:latest
+  #   steps:
+  #     - name: Checkout the repo
+  #       uses: actions/checkout@v4
