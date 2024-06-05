@@ -12,7 +12,12 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+  clean:
+    needs: checkout
+    uses: ./.github/workflows/cleanup.yml
+
   check_coding_style:
+    needs: clean
     name: "check for coding style errors from binary"
     runs-on: self-hosted
     container: ghcr.io/epitech/coding-style-checker:latest

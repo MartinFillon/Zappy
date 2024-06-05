@@ -1,4 +1,4 @@
-name: compile
+name: cleanup
 
 on: [ workflow_call, workflow_dispatch ]
 
@@ -10,17 +10,11 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-  compile:
+  cleanup:
     needs: checkout
     runs-on: self-hosted
-    container:
-      image: epitechcontent/epitest-docker:latest
     steps:
-      - name: compile
+      - name: cleanup
         run: |
-          make -C server re
+          make fclean
         timeout-minutes: 5
-
-  clean:
-    needs: compile
-    uses: ./.github/workflows/cleanup.yml
