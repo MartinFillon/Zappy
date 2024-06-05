@@ -20,7 +20,7 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::json::{JsonDocument, JsonValue, ParserError};
+    use crate::{JsonDocument, JsonValue, ParserError};
 
     #[test]
     fn basic_json_null() {

@@ -7,7 +7,6 @@
 
 #![allow(dead_code)]
 
-use rust_macros::Bean;
 use std::io::{Error, ErrorKind};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
@@ -15,6 +14,7 @@ use tokio::net::TcpStream;
 use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
 use tokio::task::JoinHandle;
+use zappy_macros::Bean;
 
 use log::{debug, info};
 

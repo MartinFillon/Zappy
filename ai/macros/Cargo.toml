@@ -1,5 +1,5 @@
 [package]
-name = "rust-macros"
+name = "zappy-macros"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,4 @@ proc-macro = true
 syn = {}
 quote = {}
 proc-macro2 = {}
+zappy-json = { path = "../json" }

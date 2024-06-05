@@ -5,6 +5,8 @@
 // array
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -14,9 +16,8 @@ impl<'a> Parser<'a> {
         array.push(self.parse_value()?);
         loop {
             let c = self.buffer.peek();
-            match dbg!(c) {
+            match c {
                 Some(']') => {
-                    dbg!("] found");
                     self.buffer.next();
                     break;
                 }
@@ -36,9 +37,29 @@ impl<'a> Parser<'a> {
     }
 }
 
+impl<T: DeserializeTrait> DeserializeTrait for Vec<T> {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Array(arr) => {
+                let mut vec: Vec<T> = Vec::new();
+
+                for elem in arr.iter() {
+                    vec.push(T::from_value(elem)?)
+                }
+
+                Ok(vec)
+            }
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::json::JsonDocument;
+    use crate::JsonDocument;
 
     use super::*;
 

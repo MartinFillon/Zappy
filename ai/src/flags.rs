@@ -17,7 +17,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use log::info;
-use rust_macros::Bean;
+use zappy_macros::Bean;
 
 const LOCALHOST: &str = "127.0.0.1";
 

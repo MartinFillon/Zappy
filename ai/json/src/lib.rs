@@ -8,6 +8,7 @@
 use std::{
     collections::HashMap,
     fmt::{self, Display, Formatter},
+    fs::read_to_string,
     iter::Peekable,
     str::Chars,
 };
@@ -112,5 +113,34 @@ impl TryFrom<&str> for JsonDocument {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let mut parser = Parser::new(value);
         Ok(JsonDocument(parser.parse()?))
+    }
+}
+
+pub fn create_from_file<T: DeserializeTrait>(path: &str) -> Result<T, String> {
+    let content = read_to_string(path).map_err(|e| e.to_string())?;
+    let json_document = JsonDocument::try_from(content.as_str()).map_err(|e| e.to_string())?;
+    T::from_value(&json_document.0)
+}
+
+pub fn create_from_file_or_default<T: DeserializeTrait + Default>(path: &str) -> T {
+    read_to_string(path)
+        .map_err(|e| e.to_string())
+        .map(|c| {
+            let json_document = JsonDocument::try_from(c.as_str()).map_err(|e| e.to_string());
+            match json_document {
+                Ok(j) => T::from_value(&j.0),
+                Err(_) => Ok(T::default()),
+            }
+        })
+        .unwrap_or_else(|_| Ok(T::default()))
+        .unwrap_or_else(|_| T::default())
+}
+
+pub trait DeserializeTrait {
+    fn from_value(_value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        unimplemented!()
     }
 }
