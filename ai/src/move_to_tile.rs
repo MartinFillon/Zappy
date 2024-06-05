@@ -7,7 +7,11 @@
 
 use log::info;
 
-use crate::{commands::move_up, commands::turn, tcp::TcpClient};
+use crate::{
+    commands::move_up,
+    commands::turn::{self, DirectionTurn},
+    tcp::TcpClient,
+};
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
     let mut tile_count: usize = 0;
@@ -56,7 +60,7 @@ fn get_tile_coordinates(tile: usize, lvl: usize) -> Option<(i32, i32)> {
 }
 
 async fn move_left(client: &mut TcpClient, x: i32) -> bool {
-    if !turn::turn(client, turn::DirectionTurn::Left).await {
+    if !turn::turn(client, DirectionTurn::Left).await {
         return false;
     }
     for _ in 0..=(-x) {
@@ -64,14 +68,14 @@ async fn move_left(client: &mut TcpClient, x: i32) -> bool {
             return false;
         }
     }
-    if !turn::turn(client, turn::DirectionTurn::Right).await {
+    if !turn::turn(client, DirectionTurn::Right).await {
         return false;
     }
     true
 }
 
 async fn move_right(client: &mut TcpClient, x: i32) -> bool {
-    if !turn::turn(client, turn::DirectionTurn::Right).await {
+    if !turn::turn(client, DirectionTurn::Right).await {
         return false;
     }
     for _ in 0..=x {
@@ -79,7 +83,7 @@ async fn move_right(client: &mut TcpClient, x: i32) -> bool {
             return false;
         }
     }
-    if !turn::turn(client, turn::DirectionTurn::Left).await {
+    if !turn::turn(client, DirectionTurn::Left).await {
         return false;
     }
     true

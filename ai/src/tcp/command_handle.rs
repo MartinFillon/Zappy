@@ -25,17 +25,18 @@ pub enum ResponseResult {
     Dead,
     Value(usize),
     Text(String),
-    Tiles(Vec<String>),
+    Tiles(Vec<Vec<String>>),
     Inventory(Vec<(String, i32)>),
     Incantation(usize),
     Message((Direction, String)),
     Eject(Direction),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 #[repr(u8)]
 pub enum Direction {
-    North = 1,
+    Center,
+    North,
     NorthWest,
     West,
     SouthWest,
@@ -153,8 +154,23 @@ fn handle_eject_response(response: String) -> Result<ResponseResult, CommandErro
 }
 
 impl Direction {
+    pub fn to_usize(&self) -> usize {
+        match self {
+            Direction::Center => 0,
+            Direction::North => 1,
+            Direction::NorthWest => 2,
+            Direction::West => 3,
+            Direction::SouthWest => 4,
+            Direction::South => 5,
+            Direction::SouthEast => 6,
+            Direction::East => 7,
+            Direction::NorthEast => 8,
+        }
+    }
+
     pub fn from_usize(value: usize) -> Option<Self> {
         match value {
+            0 => Some(Direction::Center),
             1 => Some(Direction::North),
             2 => Some(Direction::NorthWest),
             3 => Some(Direction::West),
@@ -182,6 +198,7 @@ impl Display for CommandError {
 impl Display for Direction {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Direction::Center => write!(f, "Center"),
             Direction::North => write!(f, "North"),
             Direction::NorthWest => write!(f, "NorthWest"),
             Direction::West => write!(f, "West"),
@@ -204,15 +221,31 @@ impl Display for ResponseResult {
             ResponseResult::Text(text) => write!(f, "Text: {}", text),
             ResponseResult::Tiles(tiles) => {
                 write!(f, "Tiles: [")?;
-                for tile in tiles {
-                    write!(f, "{}, ", tile)?;
+                for (i, tile) in tiles.iter().enumerate() {
+                    write!(f, "[")?;
+                    for (j, item) in tile.iter().enumerate() {
+                        if j + 1 == tile.len() {
+                            write!(f, "{}", item)?;
+                        } else {
+                            write!(f, "{}, ", item)?;
+                        }
+                    }
+                    if i + 1 == tiles.len() {
+                        write!(f, "]")?;
+                    } else {
+                        write!(f, "], ")?;
+                    }
                 }
                 write!(f, "]")
             }
             ResponseResult::Inventory(inventory) => {
                 write!(f, "Inventory: [")?;
-                for (item, nb) in inventory {
-                    write!(f, "({}: x{}), ", item, nb)?;
+                for (i, (item, nb)) in inventory.iter().enumerate() {
+                    if i + 1 == inventory.len() {
+                        write!(f, "({}: x{})", item, nb)?;
+                    } else {
+                        write!(f, "({}: x{}), ", item, nb)?;
+                    }
                 }
                 write!(f, "]")
             }
