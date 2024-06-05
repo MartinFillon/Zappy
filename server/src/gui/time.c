@@ -6,7 +6,6 @@
 */
 
 #include "client.h"
-#include "logger.h"
 #include "middlewares.h"
 #include "router/route.h"
 #include "str.h"

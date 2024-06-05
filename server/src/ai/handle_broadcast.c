@@ -97,7 +97,7 @@ static int get_shortest_distance_sound(
 
 static void send_to_everyone(
     char const *msg,
-    client_t *clis,
+    struct client_list *clis,
     client_t *c,
     game_t *g
 )
@@ -105,12 +105,12 @@ static void send_to_everyone(
     enum direction dir = UP;
     pos_t pos = {0};
 
-    for (int i = 0; i < SOMAXCONN; i++) {
-        if (clis[i].type == AI && valid_client(&clis[i], c)) {
-            dir = clis[i].ai->dir;
-            get_starting_pos(&pos, &clis[i].ai->pos, dir, g->map);
+    for (size_t i = 0; i < clis->size; i++) {
+        if (clis->data[i].type == AI && valid_client(&clis->data[i], c)) {
+            dir = clis->data[i].ai->dir;
+            get_starting_pos(&pos, &clis->data[i].ai->pos, dir, g->map);
             prepare_response_cat(
-                &clis[i].io,
+                &clis->data[i].io,
                 "message %d, %s\n",
                 get_shortest_distance_sound(&c->ai->pos, &pos, dir, g->map),
                 msg

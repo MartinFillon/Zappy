@@ -22,7 +22,7 @@ static void put_in_team(
     client_t *restrict c,
     game_t *game,
     size_t i,
-    client_t *restrict clients
+    struct client_list *restrict clients
 )
 {
     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
@@ -60,7 +60,7 @@ static void send_ais(client_t *c, ai_t *ai)
     );
 }
 
-static void init_gui(client_t *c, game_t *game, client_t *clients)
+static void init_gui(client_t *c, game_t *game, struct client_list *clients)
 {
     command_state_t s = {NULL, clients, game};
 
