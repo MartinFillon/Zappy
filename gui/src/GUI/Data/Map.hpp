@@ -37,6 +37,7 @@ class Map {
 
     void checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox);
     void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const;
+    void displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const;
 
   private:
     std::vector<std::shared_ptr<Tile>> m_map;

@@ -188,7 +188,55 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         float itemY = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
         DrawRectangleLines(itemX, itemY, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
     }
+}
 
+void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
+{
+    float tileSize = 1.0f;
+
+
+    if (IsKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+    if (IsKeyPressed('F')) isCameraFree = !isCameraFree;
+    if (IsKeyPressed('C')) {
+        if (showCursor) EnableCursor();
+        else DisableCursor();
+        showCursor = !showCursor;
+    };
+    if (isCameraFree) UpdateCamera(&cam, CAMERA_FREE);
+
+    ClearBackground(RAYWHITE);
+    BeginMode3D(cam);
+
+    DrawGrid(100, 1.0f);
+    for (int y = 0; y < m_size.y(); y++) {
+        for (int x = 0; x < m_size.x(); x++) {
+            float tileX = x * tileSize;
+            float tileY = y * tileSize;
+
+            DrawCube({tileX, 0, tileY}, tileSize, tileSize, tileSize, RED);
+            DrawCubeWires({tileX, 0, tileY}, tileSize, tileSize, tileSize, BROWN);
+        }
+    }
+    for (const auto &player : m_players) {
+        int playerX = player->getPos().x() * tileSize;
+        int playerY = player->getPos().y() * tileSize;
+
+        DrawSphere({playerX + tileSize / 2, tileSize / 6 + tileSize / 2 ,playerY + tileSize / 2}, tileSize / 6, Color{0, 121, 241, 150});
+    }
+    for (const auto &egg : m_eggs) {
+        int eggX = egg->getPosition().x() * tileSize;
+        int eggY = egg->getPosition().y() * tileSize;
+
+        DrawSphere({eggX + tileSize / 2, tileSize / 8 + tileSize / 2, eggY + tileSize / 2}, tileSize / 8, Color{253, 249, 0, 150});
+    }
+    if (info.isPrint() && info.getItem() != nullptr) {
+        auto item = info.getItem();
+        float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize;
+        float itemY = (item->getPos().y() + info.getPosTile().y()) * tileSize;
+        float sizeCube = tileSize * info.getSize() + tileSize / 5;
+        DrawCubeWires({itemX, tileSize / -10.0f, itemY}, sizeCube, sizeCube, sizeCube, GREEN);
+    }
+    EndMode3D();
 }
 
 } // namespace Data

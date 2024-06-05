@@ -61,7 +61,6 @@ class Display {
     void handleEvent();
     void handleServerMessage(std::string &message);
     void resize();
-    void displayMessages(int x, int y, int width, int height);
 
     Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
@@ -73,6 +72,9 @@ class Display {
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
     InfoBox infoBox;
+    Camera3D m_cam;
+    bool m_isCameraFree;
+    bool m_showCursor;
 };
 
 } // namespace GUI

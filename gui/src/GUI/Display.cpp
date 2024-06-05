@@ -17,7 +17,7 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height),
-      messageBox()
+      messageBox(), m_cam({}), m_isCameraFree(false), m_showCursor(true)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -29,6 +29,12 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
     SetTargetFPS(60);
     SetWindowMinSize(800, 450);
     resize();
+
+    m_cam.position = (Vector3){ 30.0f, 30.0f, 30.0f };
+    m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+    m_cam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+    m_cam.fovy = 45.0f;
+    m_cam.projection = CAMERA_PERSPECTIVE;
 }
 
 Display::~Display()
@@ -50,6 +56,7 @@ void Display::handleEvent()
 void Display::run()
 {
     std::string message;
+    bool is3D = true;
 
     while (!WindowShouldClose()) {
         handleServerMessage(message);
@@ -57,8 +64,12 @@ void Display::run()
         handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        if (is3D) {
+            map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree, m_showCursor);
+        } else {
+            DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
+            map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        }
         infoBox.display(offsetX, offsetY, 400, 300);
         messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
         EndDrawing();
