@@ -5,6 +5,7 @@
 ** init_program
 */
 
+#include "client.h"
 #include "logger.h"
 #include "macros.h"
 #include "router/router.h"

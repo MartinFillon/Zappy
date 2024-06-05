@@ -24,19 +24,22 @@ static void case_ai(zappy_t *z, client_t *c)
 
 void execute_commands(zappy_t *z)
 {
-    for (__auto_type i = 0; i < SOMAXCONN; i++) {
-        if (z->clients[i].fd <= 0 || z->clients[i].commands->size == 0)
+    for (size_t i = 0; i < z->clients->size; i++) {
+        if (z->clients->data[i].commands->size == 0)
             continue;
-        logs(DEBUG, "client com count: %d\n", z->clients[i].commands->size);
-        if (z->clients[i].type == UNSET || z->clients[i].type == GUI) {
+        logs(
+            DEBUG, "client com count: %d\n", z->clients->data[i].commands->size
+        );
+        if (z->clients->data[i].type == UNSET ||
+            z->clients->data[i].type == GUI) {
             run_router(
                 z->server.router,
-                &z->clients[i],
+                &z->clients->data[i],
                 z,
-                queue_pop_queue_command_t(z->clients[i].commands)
+                queue_pop_queue_command_t(z->clients->data[i].commands)
             );
         }
-        if (z->clients[i].type == AI)
-            case_ai(z, &z->clients[i]);
+        if (z->clients->data[i].type == AI)
+            case_ai(z, &z->clients->data[i]);
     }
 }

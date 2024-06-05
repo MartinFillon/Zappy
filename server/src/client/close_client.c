@@ -17,10 +17,8 @@ void free_buffer(struct buffer_s *buffer)
     buffer->size = 0;
 }
 
-void close_client(client_t *c, client_t *clients)
+void destroy_client(client_t *c)
 {
-    if (c->type == AI)
-        broadcast_to(GUI, clients, "pdi %d\n", c->ai->id);
     close(c->fd);
     c->fd = 0;
     free_buffer(&c->io.req);
@@ -30,4 +28,11 @@ void close_client(client_t *c, client_t *clients)
     for (size_t i = 0; i < c->commands->size; i++)
         str_free(c->commands->data[i]);
     queue_destroy_queue_command_t(c->commands);
+}
+
+void close_client(client_t *c, struct client_list *clients)
+{
+    if (c->type == AI)
+        broadcast_to(GUI, clients, "pdi %d\n", c->ai->id);
+    destroy_client(c);
 }
