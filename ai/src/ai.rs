@@ -44,12 +44,64 @@ use log::debug;
 //     Ok(())
 // }
 
+
+// pub async fn launch(address: String, team: String) -> io::Result<()> {
+//     let team = Arc::new(team);
+//     // Spawn a task to continuously accept and handle new connections
+//     let address_clone = address.clone();
+//     let team_clone = Arc::clone(&team);
+
+//     task::spawn(async move {
+//         loop {
+//             match tcp::handle_tcp(address_clone.clone()).await {
+//                 Ok(client) => {
+//                     let team_clone = Arc::clone(&team_clone);
+//                     task::spawn(async move {
+//                         let team_str = &*team_clone;
+//                         match command_handle::start_ai(client, team_str.clone()).await {
+//                             Ok(_) => println!("ok"),
+//                             Err(_) => println!("ko"),
+//                         }
+//                     });
+//                 },
+//                 Err(err) => println!("Failed to handle TCP connection: {}", err),
+//             }
+//         }
+//     }).await??;
+
+//     Ok(())
+// }
+
+use tokio::net::TcpListener;
+use tokio::select;
+
+async fn handle_connection(client: tokio::net::TcpStream, team: Arc<String>) {
+    let team_str = &*team;
+    match command_handle::start_ai(client, team_str.clone()).await {
+        Ok(_) => println!("ok"),
+        Err(_) => println!("ko"),
+    }
+}
+
 pub async fn launch(address: String, team: String) -> io::Result<()> {
-    if let Ok(client) = tcp::handle_tcp(address.clone()).await {
-        match command_handle::start_ai(client, team.clone()).await {
-            Ok(_) => println!("done."),
-            Err(_) => println!("ko."),
+    let team = Arc::new(team);
+    let listener = TcpListener::bind(&address).await?;
+
+    loop {
+        let team_clone = Arc::clone(&team);
+        select! {
+            result = listener.accept() => {
+                match result {
+                    Ok((client, _addr)) => {
+                        task::spawn(handle_connection(client, team_clone));
+                    },
+                    Err(err) => {
+                        println!("Failed to accept connection: {}", err);
+                    }
+                }
+            }
         }
     }
+
     Ok(())
 }
