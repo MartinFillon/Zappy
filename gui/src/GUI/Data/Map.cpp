@@ -142,6 +142,41 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
     }
 }
 
+// void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam)
+// {
+//     float tileSize = 1.0f;
+
+//     for (auto player : m_players) {
+//         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2;
+//         float playerCenterY = player->getPos().y() * tileSize + tileSize / 2;
+//         if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterY}, tileSize / 6)) {
+//             auto &item = infoBox.getItem();
+//             if (item == player) {
+//                 infoBox.setPrint(!infoBox.isPrint());
+//             } else {
+//                 item = player;
+//                 infoBox.setPosTile(0.25, 0.25);
+//                 infoBox.setSize(0.5);
+//             }
+//             return;
+//         }
+//     }
+//     for (auto tile : m_map) {
+//         float tileX = tile->getPos().x() * tileSize + start_x;
+//         float tileY = tile->getPos().y() * tileSize + start_y;
+//         if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
+//             auto &item = infoBox.getItem();
+//             if (item == tile) {
+//                 infoBox.setPrint(!infoBox.isPrint());
+//             } else {
+//                 item = tile;
+//                 infoBox.setPosTile(0, 0);
+//                 infoBox.setSize(1);
+//             }
+//         }
+//     }
+// }
+
 void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
 {
     int mapWidth = end_x - start_x;
@@ -198,8 +233,8 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     if (IsKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
     if (IsKeyPressed('F')) isCameraFree = !isCameraFree;
     if (IsKeyPressed('C')) {
-        if (showCursor) EnableCursor();
-        else DisableCursor();
+        if (showCursor) DisableCursor();
+        else EnableCursor();
         showCursor = !showCursor;
     };
     if (isCameraFree) UpdateCamera(&cam, CAMERA_FREE);
@@ -210,8 +245,8 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     DrawGrid(100, 1.0f);
     for (int y = 0; y < m_size.y(); y++) {
         for (int x = 0; x < m_size.x(); x++) {
-            float tileX = x * tileSize;
-            float tileY = y * tileSize;
+            float tileX = x * tileSize + tileSize / 2;
+            float tileY = y * tileSize + tileSize / 2;
 
             DrawCube({tileX, 0, tileY}, tileSize, tileSize, tileSize, RED);
             DrawCubeWires({tileX, 0, tileY}, tileSize, tileSize, tileSize, BROWN);

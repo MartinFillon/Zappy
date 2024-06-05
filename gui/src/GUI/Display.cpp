@@ -17,7 +17,7 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height),
-      messageBox(), m_cam({}), m_isCameraFree(false), m_showCursor(true)
+      messageBox(), m_cam({}), m_isCameraFree(true), m_showCursor(true)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
