@@ -15,7 +15,12 @@
 #include "types/client.h"
 #include "types/team.h"
 
-static void send_infos(int fd, game_t *game, ai_t const *new, client_t *clis)
+static void send_infos(
+    int fd,
+    game_t *game,
+    ai_t const *new,
+    struct client_list *clis
+)
 {
     dprintf(
         fd,
@@ -56,7 +61,7 @@ bool init_ai(
     game_t *game,
     client_t *restrict client,
     team_t *team,
-    client_t *restrict clients
+    struct client_list *restrict clients
 )
 {
     ai_t new = {0};

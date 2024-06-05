@@ -143,7 +143,7 @@ static inline void FN_NAME(vec_free, NAME)(
     void (*free_func)(TYPE)
 )
 {
-    for (__auto_type i = 0ul; i < vec->size; i++)
+    for (size_t i = 0ul; i < vec->size; i++)
         if (free_func)
             free_func(vec->data[i]);
     FN_NAME(vec_destroy, NAME)(vec);

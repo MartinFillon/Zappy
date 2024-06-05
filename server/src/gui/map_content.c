@@ -10,7 +10,6 @@
 
 #include "client.h"
 #include "gui/defs.h"
-#include "logger.h"
 #include "map.h"
 #include "middlewares.h"
 #include "str.h"
