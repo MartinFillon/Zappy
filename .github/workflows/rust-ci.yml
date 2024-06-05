@@ -31,3 +31,7 @@ jobs:
         run: cargo clippy -- -D warnings
       - name: Run unit tests
         run: cargo hack test
+
+  clean:
+    needs: unit-tests
+    uses: ./.github/workflows/cleanup.yml
