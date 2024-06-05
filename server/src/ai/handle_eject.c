@@ -35,7 +35,7 @@ static void eject_ai(client_t *this, client_t *oth, command_state_t *s)
 static void loop_team_eggs(
     team_t *team,
     pos_t *this,
-    client_t *clients,
+    struct client_list *clients,
     bool *has_ejected
 )
 {
@@ -52,7 +52,7 @@ static void loop_team_eggs(
 static void destroy_common_eggs(
     game_t *game,
     pos_t *this,
-    client_t *clients,
+    struct client_list *clients,
     bool *has_ejected
 )
 {
@@ -65,11 +65,13 @@ void handle_eject(client_t *cli, command_state_t *s)
 {
     bool has_ejected = false;
 
-    for (size_t i = 0; i < SOMAXCONN; i++) {
-        if (s->clients[i].fd != 0 && cli->ai->id != s->clients[i].ai->id &&
-            is_coord_equal(&cli->ai->pos, &s->clients[i].ai->pos)) {
-            eject_ai(cli, &s->clients[i], s);
-            prepare_response(&s->clients[i].io, "eject: %d\n", cli->ai->dir);
+    for (size_t i = 0; i < s->clients->size; i++) {
+        if (cli->ai->id != s->clients->data[i].ai->id &&
+            is_coord_equal(&cli->ai->pos, &s->clients->data[i].ai->pos)) {
+            eject_ai(cli, &s->clients->data[i], s);
+            prepare_response(
+                &s->clients->data[i].io, "eject: %d\n", cli->ai->dir
+            );
             has_ejected = true;
         }
     }

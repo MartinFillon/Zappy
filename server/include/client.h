@@ -144,7 +144,7 @@ bool init_ai(
     game_t *game,
     client_t *restrict client,
     team_t *team,
-    client_t *restrict clients
+    struct client_list *restrict clients
 );
 void destroy_ai(ai_t *ai);
 /**
@@ -173,5 +173,10 @@ void broadcast(struct vector_int *v, char *fmt, ...);
 
 void prepare_response_cat_va(io_t *io, char *fmt, va_list args);
 
-void broadcast_to(enum client_type_e type, client_t *clients, char *fmt, ...);
+void broadcast_to(
+    enum client_type_e type,
+    struct client_list *clients,
+    char *fmt,
+    ...
+);
 void destroy_client(client_t *c);
