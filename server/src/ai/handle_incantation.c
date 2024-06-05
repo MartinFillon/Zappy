@@ -5,8 +5,10 @@
 ** handle_incantation
 */
 
+#include <stdio.h>
 #include "client.h"
 #include "incantation.h"
+#include "logger.h"
 #include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
@@ -105,6 +107,8 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
 
 void handle_start_incantation(client_t *cli, command_state_t *s)
 {
+    str_t *end_incant = NULL;
+
     freeze_ais(s->game, &cli->ai->pos, cli->ai->id);
     cli->ai->incant.last_verif = verif_level_specification(
         cli->ai, s->game->map
@@ -112,5 +116,11 @@ void handle_start_incantation(client_t *cli, command_state_t *s)
     if (cli->ai->incant.last_verif)
         prepare_response_cat(&cli->io, "Elevation underway\n");
     else
-        prepare_response_cat(&cli->io, "ok\n");
+        prepare_response_cat(&cli->io, "ko\n");
+    end_incant = str_snew("End_Incantation");
+    if (!end_incant) {
+        logs(ERROR_LEVEL, "Allocation error\n");
+        return;
+    }
+    queue_pushfront_queue_command_t(cli->commands, end_incant);
 }

@@ -27,8 +27,9 @@
 #include "defs/player/fork.h"
 #include "defs/player/connect_nbr.h"
 #include "defs/player/eject.h"
+#include "router/defs/player/incantation.h"
 
-#define BASE_ROUTE_COUNT 20
+#define BASE_ROUTE_COUNT 22
 
 static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     CONTENT_ROUTE,
@@ -50,5 +51,7 @@ static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     FORK_ROUTE,
     CONNECT_NBR_ROUTE,
     EJECT_ROUTE,
-    PLAYER_INVENTORY_ROUTE
+    PLAYER_INVENTORY_ROUTE,
+    START_INCANTATION,
+    END_INCANTATION
 };

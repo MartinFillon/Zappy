@@ -10,7 +10,7 @@
 #include "ai/defs.h"
 #include "router/route.h"
 
-static const route_t START_ROUTE = {
+static const route_t START_INCANTATION = {
     .args = 0,
     .command = "Incantation",
     .f = &handle_start_incantation,
@@ -18,11 +18,10 @@ static const route_t START_ROUTE = {
     .time = 300,
 };
 
-static const route_t END_ROUTE = {
+static const route_t END_INCANTATION = {
     .args = 0,
     .command = "End_Incantation",
     .f = &handle_end_incantation,
     .mode = AI,
     .time = 0,
 };
-
