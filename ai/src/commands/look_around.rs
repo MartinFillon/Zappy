@@ -12,14 +12,16 @@ use crate::tcp::TcpClient;
 
 use log::info;
 
-fn read_output(raw: String) -> Vec<String> {
-    let mut tiles = Vec::new();
+fn read_output(raw: String) -> Vec<Vec<String>> {
+    let mut tiles: Vec<Vec<String>> = vec![];
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
 
     for tile in tmp.split(',') {
+        let mut tile_content: Vec<String> = vec![];
         for item in tile.split(' ') {
-            tiles.push(item.to_string());
+            tile_content.push(item.to_string());
         }
+        tiles.push(tile_content);
     }
     info!("Tiles: {:?}", tiles);
     tiles
