@@ -7,6 +7,7 @@
 
 #include "client.h"
 #include "incantation.h"
+#include "router/route.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/game.h"
@@ -84,42 +85,30 @@ static bool verif_level_specification(ai_t *ai, map_t *map)
     );
 }
 
-void handle_end_incantation(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_end_incantation(client_t *cli, command_state_t *s)
 {
     bool first = cli->ai->incant.last_verif;
 
-    (void)clients;
-    if (!is_empty(arg))
-        return prepare_response_cat(&cli->io, "ko\n");
     cli->ai->incant.is_incant = false;
-    cli->ai->incant.last_verif = verif_level_specification(cli->ai, game->map);
-    unfreeze_ais(game, cli->ai->id);
+    cli->ai->incant.last_verif = verif_level_specification(
+        cli->ai, s->game->map
+    );
+    unfreeze_ais(s->game, cli->ai->id);
     if (first == false || cli->ai->incant.last_verif == false)
         return prepare_response_cat(&cli->io, "ko\n");
     prepare_response_cat(&cli->io, "Current level: %d\n", cli->ai->level);
     consume_tile_incantation(
-        cli->ai->level, game->map, cli->ai->pos.y, cli->ai->pos.x
+        cli->ai->level, s->game->map, cli->ai->pos.y, cli->ai->pos.x
     );
-    increment_all_levels(game, cli->ai->id);
+    increment_all_levels(s->game, cli->ai->id);
 }
 
-void handle_start_incantation(
-    char const *arg,
-    client_t *cli,
-    game_t *game,
-    client_t *clients
-)
+void handle_start_incantation(client_t *cli, command_state_t *s)
 {
-    (void)clients;
-    if (!is_empty(arg))
-        return prepare_response_cat(&cli->io, "ko\n");
-    freeze_ais(game, &cli->ai->pos, cli->ai->id);
-    cli->ai->incant.last_verif = verif_level_specification(cli->ai, game->map);
+    freeze_ais(s->game, &cli->ai->pos, cli->ai->id);
+    cli->ai->incant.last_verif = verif_level_specification(
+        cli->ai, s->game->map
+    );
     if (cli->ai->incant.last_verif)
         prepare_response_cat(&cli->io, "Elevation underway\n");
     else

@@ -96,3 +96,17 @@ void handle_take_object(client_t *cli, command_state_t *s);
  * @param s state of the program.
  */
 void handle_set_object(client_t *cli, command_state_t *s);
+
+/**
+ * @brief Start the incantation in the ai inside the @param cli argument.
+ * @param cli Clients' informations/Ai that start incantation.
+ * @param s state of the program.
+ */
+void handle_start_incantation(client_t *cli, command_state_t *s);
+
+/**
+ * @brief Ending of the incantation started with @ref handle_start_incantation
+ * @param cli Clients' informations/Ai whose incantation ends.
+ * @param s state of the program.
+ */
+void handle_end_incantation(client_t *cli, command_state_t *s);

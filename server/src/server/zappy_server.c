@@ -90,6 +90,7 @@ static void fill_fd_set(zappy_t *z)
     }
 }
 
+// Mettre un booléen
 static void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
