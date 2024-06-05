@@ -9,7 +9,10 @@
 use log::info;
 
 use crate::{
-    commands::{look_around, move_up, turn},
+    commands::{
+        look_around, move_up,
+        turn::{self, DirectionTurn},
+    },
     tcp::{self, command_handle::Direction, TcpClient},
 };
 
@@ -21,26 +24,26 @@ fn get_dir_coordinates(dir: &Direction) -> (i32, i32) {
 }
 
 async fn move_left(client: &mut TcpClient) -> bool {
-    if !turn::turn(client, turn::DirectionTurn::Left).await {
+    if !turn::turn(client, DirectionTurn::Left).await {
         return false;
     }
     if !move_up::move_up(client).await {
         return false;
     }
-    if !turn::turn(client, turn::DirectionTurn::Right).await {
+    if !turn::turn(client, DirectionTurn::Right).await {
         return false;
     }
     true
 }
 
 async fn move_right(client: &mut TcpClient) -> bool {
-    if !turn::turn(client, turn::DirectionTurn::Right).await {
+    if !turn::turn(client, DirectionTurn::Right).await {
         return false;
     }
     if !move_up::move_up(client).await {
         return false;
     }
-    if !turn::turn(client, turn::DirectionTurn::Left).await {
+    if !turn::turn(client, DirectionTurn::Left).await {
         return false;
     }
     true
@@ -83,8 +86,8 @@ pub async fn move_towards_broadcast(client: &mut TcpClient, dir: Direction) -> b
     let (mut x, y) = get_dir_coordinates(&dir);
     if y < 0 {
         x = -x;
-        if !turn::turn(client, turn::DirectionTurn::Right).await
-            || !turn::turn(client, turn::DirectionTurn::Right).await
+        if !turn::turn(client, DirectionTurn::Right).await
+            || !turn::turn(client, DirectionTurn::Right).await
         {
             return false;
         }
