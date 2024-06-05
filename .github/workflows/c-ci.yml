@@ -12,7 +12,7 @@ jobs:
       - name: compile
         run: |
           make -C server fclean && make -C server
-          timeout-minutes: 5
+        timeout-minutes: 5
       - name: compile
         run: |
           make -C server fclean && make -C server tests_run

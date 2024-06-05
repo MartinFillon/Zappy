@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted
     container: ghcr.io/epitech/coding-style-checker:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           check.sh $(pwd) $(pwd)
           cat coding-style-reports.log | while read LINE; do
