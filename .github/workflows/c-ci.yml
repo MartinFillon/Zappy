@@ -3,19 +3,22 @@ name: compile
 on: [ workflow_call, workflow_dispatch ]
 
 jobs:
-  build:
+  checkout:
     runs-on: self-hosted
     steps:
       - name: Checkout the repo
+        id: checkout
         uses: actions/checkout@v4
 
+  compile:
+    needs: checkout
+    runs-on: self-hosted
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
       - name: compile
         run: |
-          make -C server fclean && make -C server
-        timeout-minutes: 5
-      - name: compile
-        run: |
-          make -C server fclean && make -C server tests_run
+          make -C server re
         timeout-minutes: 5
   # run-unit-tests:
   #   needs: build
