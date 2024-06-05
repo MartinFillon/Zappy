@@ -10,10 +10,14 @@
 #include "server.h"
 #include "types/game.h"
 
+#define TYPE client_t
+#define NAME client_list
+#include "vector.h"
+
 typedef struct zappy_s {
     game_t game;
     server_t server;
-    client_t clients[SOMAXCONN];
+    struct client_list *clients;
 } zappy_t;
 
 /**

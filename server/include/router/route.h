@@ -12,7 +12,7 @@
 
 typedef struct {
     struct vector_str_t *args;
-    client_t *clients;
+    struct client_list *clients;
     game_t *game;
 } command_state_t;
 
