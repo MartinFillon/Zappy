@@ -11,13 +11,13 @@
 
 typedef struct serv_cmds_s {
     char const *name;
-    void (*func)(zappy_t *z);
+    void (*func)(zappy_t *z, struct vector_str_t *args);
 } serv_cmds_t;
 
-void handle_display_map(zappy_t *z);
-void handle_display_ais(zappy_t *z);
-void handle_ressources_ais(zappy_t *z);
-void handle_display_eggs(zappy_t *serv);
+void handle_display_map(zappy_t *z, struct vector_str_t *args);
+void handle_display_ais(zappy_t *z, struct vector_str_t *args);
+void handle_ressources_ais(zappy_t *z, struct vector_str_t *args);
+void handle_display_eggs(zappy_t *serv, struct vector_str_t *args);
 
 static const serv_cmds_t SERV_CMDS[] = {
     {"/display", handle_display_map},

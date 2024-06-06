@@ -23,8 +23,9 @@ static void display_team_eggs(team_t *team)
     }
 }
 
-void handle_display_eggs(zappy_t *serv)
+void handle_display_eggs(zappy_t *serv, struct vector_str_t *args)
 {
+    (void)args;
     for (size_t i = 0; i < serv->game.teams->size; i++) {
         display_team_eggs(&serv->game.teams->data[i]);
     }

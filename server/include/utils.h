@@ -47,6 +47,14 @@ int modulo(int nb, int m);
 bool is_empty(char const *arg);
 
 /**
+ * @brief Check @param str is a number
+ *
+ * @param str the string parameter to check
+ * @return true if string is empty
+ */
+bool is_number(char const *str);
+
+/**
  * @brief Compare if 2 positions are equals
  *
  * @param this Position1 to compare

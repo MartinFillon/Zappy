@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_number 		\
 						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
