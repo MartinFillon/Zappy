@@ -150,21 +150,24 @@ impl Display for ResponseResult {
     }
 }
 
+enum AIState {
+    Bot(Bot),
+    Queen(Queen),
+    Knight(Knight),
+    Fetus(Fetus),
+}
+
 struct AI {
+    team: String,
     client: i32,
     map: (usize, usize),
     level: usize,
-    // role
-    // goal
+    state: AIState,
 }
 
 impl AI {
-    fn new(client_number: i32, map_x: usize, map_y: usize) -> AI {
-        AI {
-            client: client_number,
-            map: (map_x, map_y),
-            level: 1,
-        }
+    fn new(client: i32, map: (usize, usize), level: usize, state: AIState) -> Self {
+        Self { client, map, level, state }
     }
 }
 
@@ -172,8 +175,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Ai = [client: {}, map: ({}, {}), level: {}]",
-            self.client, self.map.0, self.map.1, self.level
+            "Ai {} = [team: {}, client: {}, map: ({}, {}), level: {}]",
+            self.state, self.team, self.client, self.map.0, self.map.1, self.level
         )
     }
 }

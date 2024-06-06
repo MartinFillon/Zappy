@@ -17,90 +17,42 @@ use tokio::task;
 
 use log::debug;
 
-// pub async fn launch(address: String, team: String) -> io::Result<()> {
-//     let mut handles = vec![];
-
-//     let team = Arc::new(team);
-//     while let Ok(client) = tcp::handle_tcp(address.clone()).await {
-//         let team = Arc::clone(&team);
-//         let handle = task::spawn(async move {
-//             let team_str = &*team;
-//             match command_handle::start_ai(client, team_str.clone()).await {
-//                 Ok(_) => println!("ok"),
-//                 Err(_) => println!("ko"),
-//             }
-//         });
-//         handles.push(handle);
-//     }
-//     if handles.is_empty() {
-//         return Err(Error::new(
-//             ErrorKind::ConnectionRefused,
-//             "Couldn't reach host.",
-//         ));
-//     }
-//     for handle in handles {
-//         handle.await?;
-//     }
-//     Ok(())
-// }
-
-
-// pub async fn launch(address: String, team: String) -> io::Result<()> {
-//     let team = Arc::new(team);
-//     // Spawn a task to continuously accept and handle new connections
-//     let address_clone = address.clone();
-//     let team_clone = Arc::clone(&team);
-
-//     task::spawn(async move {
-//         loop {
-//             match tcp::handle_tcp(address_clone.clone()).await {
-//                 Ok(client) => {
-//                     let team_clone = Arc::clone(&team_clone);
-//                     task::spawn(async move {
-//                         let team_str = &*team_clone;
-//                         match command_handle::start_ai(client, team_str.clone()).await {
-//                             Ok(_) => println!("ok"),
-//                             Err(_) => println!("ko"),
-//                         }
-//                     });
-//                 },
-//                 Err(err) => println!("Failed to handle TCP connection: {}", err),
-//             }
-//         }
-//     }).await??;
-
-//     Ok(())
-// }
-
-use tokio::net::TcpListener;
-use tokio::select;
-
-async fn handle_connection(client: tokio::net::TcpStream, team: Arc<String>) {
-    let team_str = &*team;
-    match command_handle::start_ai(client, team_str.clone()).await {
-        Ok(_) => println!("ok"),
-        Err(_) => println!("ko"),
-    }
-}
-
 pub async fn launch(address: String, team: String) -> io::Result<()> {
-    let team = Arc::new(team);
-    let listener = TcpListener::bind(&address).await?;
+    let mut handles = vec![];
 
+    let team = Arc::new(team);
     loop {
-        let team_clone = Arc::clone(&team);
-        select! {
-            result = listener.accept() => {
-                match result {
-                    Ok((client, _addr)) => {
-                        task::spawn(handle_connection(client, team_clone));
-                    },
-                    Err(err) => {
-                        println!("Failed to accept connection: {}", err);
+        match tcp::handle_tcp(address.clone()).await {
+            Ok(client) => {
+                let team: Arc<String> = Arc::clone(&team);
+                let handle = task::spawn(async move {
+                    let team_str = &*team;
+                    match command_handle::start_ai(client, team_str.clone()).await {
+                        Ok(_) => {
+                            println!("ok");
+                            Ok(())
+                        }
+                        Err(e) => {
+                            println!("ko");
+                            Err(e)
+                        }
                     }
-                }
+                });
+                handles.push(handle);
+            }
+            Err(e) => {
+                println!("Failed to handle TCP: {}", e);
+                break;
             }
         }
+    }
+
+    if handles.is_empty() {
+        debug!("Connection refused, handles is empty.");
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
     }
 
     Ok(())
