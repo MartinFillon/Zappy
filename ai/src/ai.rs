@@ -6,7 +6,7 @@
 //
 
 #![allow(dead_code)]
-// #![allow(unused_imports)]
+#![allow(unused_imports)]
 
 pub mod bot;
 pub mod fetus;
@@ -34,24 +34,18 @@ enum AIState {
     Fetus,
 }
 
-pub enum Action {
-    Movement((i32, i32)),
-    Push(Direction),
-    LevelUp,
-}
-
 #[derive(Debug, Clone)]
 pub struct AI {
     team: String,
     client: i32,
-    map: (usize, usize),
+    map: (i32, i32),
     level: usize,
     state: Option<AIState>,
 }
 
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
-    fn update(&mut self, action: Option<Action>);
+    fn update(&mut self);
 }
 
 impl Display for AIState {
@@ -69,7 +63,7 @@ impl AI {
     fn new(
         team: String,
         client: i32,
-        map: (usize, usize),
+        map: (i32, i32),
         level: usize,
         state: Option<AIState>,
     ) -> Self {
@@ -127,14 +121,14 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
     match lines.next() {
         Some(line) => {
             let mut words = line.split_whitespace();
-            let x = match words.next().and_then(|word| word.parse::<usize>().ok()) {
+            let x = match words.next().and_then(|word| word.parse::<i32>().ok()) {
                 Some(val) => val,
                 None => {
                     debug!("Failed to parse x coordinate from line: {}", line);
                     return Err(Error::new(ErrorKind::InvalidData, "Invalid x coordinate."));
                 }
             };
-            let y = match words.next().and_then(|word| word.parse::<usize>().ok()) {
+            let y = match words.next().and_then(|word| word.parse::<i32>().ok()) {
                 Some(val) => val,
                 None => {
                     debug!("Failed to parse y coordinate from line: {}", line);
@@ -165,9 +159,13 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
                     "No room for player.",
                 ));
             }
-            _ => init_ai(&mut client, &response, team).await?,
+            _ => {
+                info!("Connection to team successful");
+                init_ai(&mut client, &response, team).await?
+            }
         }
     } else {
+        debug!("Host not reachable.");
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
@@ -176,43 +174,66 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
     Ok(())
 }
 
+//temp
 pub async fn launch(address: String, team: String) -> io::Result<()> {
-    let mut handles = vec![];
-
-    let team = Arc::new(team);
-    loop {
-        match tcp::handle_tcp(address.clone()).await {
-            Ok(client) => {
-                let team: Arc<String> = Arc::clone(&team);
-                let handle = task::spawn(async move {
-                    let team_str = &*team;
-                    match start_ai(client, team_str.clone()).await {
-                        Ok(_) => {
-                            println!("ok");
-                            Ok(())
-                        }
-                        Err(e) => {
-                            println!("ko");
-                            Err(e)
-                        }
-                    }
-                });
-                handles.push(handle);
+    match tcp::handle_tcp(address.clone()).await {
+        Ok(client) => {
+            info!("Client connected successfully.");
+            match start_ai(client, team.clone()).await {
+                Ok(_) => {
+                    println!("ok");
+                }
+                Err(e) => {
+                    debug!("{e}");
+                    println!("ko");
+                }
             }
-            Err(e) => {
-                println!("Failed to handle TCP: {}", e);
-                break;
-            }
+        }
+        Err(e) => {
+            println!("Failed to handle TCP: {}", e);
         }
     }
 
-    if handles.is_empty() {
-        debug!("Connection refused, handles is empty.");
-        return Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ));
-    }
-
     Ok(())
 }
+
+// pub async fn launch(address: String, team: String) -> io::Result<()> {
+//     let mut handles = vec![];
+
+//     let team = Arc::new(team);
+//     loop {
+//         match tcp::handle_tcp(address.clone()).await {
+//             Ok(client) => {
+//                 let team: Arc<String> = Arc::clone(&team);
+//                 let handle = task::spawn(async move {
+//                     let team_str = &*team;
+//                     match start_ai(client, team_str.clone()).await {
+//                         Ok(_) => {
+//                             println!("ok");
+//                             Ok(())
+//                         }
+//                         Err(e) => {
+//                             println!("ko");
+//                             Err(e)
+//                         }
+//                     }
+//                 });
+//                 handles.push(handle);
+//             }
+//             Err(e) => {
+//                 println!("Failed to handle TCP: {}", e);
+//                 break;
+//             }
+//         }
+//     }
+
+//     if handles.is_empty() {
+//         debug!("Connection refused, handles is empty.");
+//         return Err(Error::new(
+//             ErrorKind::ConnectionRefused,
+//             "Couldn't reach host.",
+//         ));
+//     }
+
+//     Ok(())
+// }

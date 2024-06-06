@@ -5,7 +5,7 @@
 // knight
 //
 
-use crate::ai::{AIHandler, Action, AI};
+use crate::ai::{AIHandler, AI};
 
 #[derive(Debug, Clone)]
 pub struct Knight {
@@ -23,5 +23,5 @@ impl AIHandler for Knight {
         Self::new(info)
     }
 
-    fn update(&mut self, action: Option<Action>) {}
+    fn update(&mut self) {}
 }

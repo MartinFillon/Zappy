@@ -5,15 +5,15 @@
 // fetus
 //
 
-use crate::ai::{AIHandler, Action, AI};
+use crate::ai::{AIHandler, AI};
 
 #[derive(Debug, Clone, Default)]
 pub struct Fetus {}
 
 impl AIHandler for Fetus {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(&mut self, _info: AI) -> Self {
         Self::default()
     }
 
-    fn update(&mut self, action: Option<Action>) {}
+    fn update(&mut self) {}
 }

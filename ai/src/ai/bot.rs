@@ -5,7 +5,7 @@
 // bot
 //
 
-use crate::ai::{AIHandler, Action, AI};
+use crate::ai::{AIHandler, AI};
 use crate::tcp::command_handle::Direction;
 
 #[derive(Debug, Clone)]
@@ -30,29 +30,34 @@ impl AIHandler for Bot {
         Self::new(info)
     }
 
-    fn update(&mut self, action: Option<Action>) {}
+    fn update(&mut self) {}
 }
 
 impl Bot {
-    fn update_coord_movement(&mut self, offset_coord: (i32, i32)) {
-        let x = self.coord.0 - offset_coord.0;
-        let y = self.coord.1 - offset_coord.1;
-        self.coord = (x, y);
+    fn update_coord_movement(&mut self, d: (i32, i32)) {
+        let x = self.coord.0 + d.0;
+        let y = self.coord.1 + d.1;
+        let width = self.info.map.0;
+        let height = self.info.map.1;
+
+        let wrapped_x = (x % width + width) % width;
+        let wrapped_y = (y % height + height) % height;
+
+        self.coord = (wrapped_x, wrapped_y);
         self.log_path_history(self.coord);
     }
 
     fn update_eject_coord(&mut self, direction: Direction) {
         match direction {
-            Direction::North => self.coord = (self.coord.0, (self.coord.1 + 1)),
-            Direction::NorthWest => self.coord = ((self.coord.0 - 1), (self.coord.1 + 1)),
-            Direction::West => self.coord = (self.coord.0 - 1, self.coord.1),
-            Direction::SouthWest => self.coord = ((self.coord.0 - 1), (self.coord.1 - 1)),
-            Direction::South => self.coord = (self.coord.0, (self.coord.1 - 1)),
-            Direction::SouthEast => self.coord = ((self.coord.0 + 1), (self.coord.1 - 1)),
-            Direction::East => self.coord = ((self.coord.0 + 1), self.coord.1),
-            Direction::NorthEast => self.coord = ((self.coord.0 + 1), (self.coord.1 + 1)),
+            Direction::North => self.update_coord_movement((0, 1)),
+            Direction::NorthWest => self.update_coord_movement((-1, 1)),
+            Direction::West => self.update_coord_movement((-1, 0)),
+            Direction::SouthWest => self.update_coord_movement((-1, -1)),
+            Direction::South => self.update_coord_movement((0, -1)),
+            Direction::SouthEast => self.update_coord_movement((1, -1)),
+            Direction::East => self.update_coord_movement((1, 0)),
+            Direction::NorthEast => self.update_coord_movement((1, 1)),
         }
-        self.log_path_history(self.coord);
     }
 
     fn log_path_history(&mut self, coord: (i32, i32)) {
