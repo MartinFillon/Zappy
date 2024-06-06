@@ -13,6 +13,8 @@ jobs:
   cleanup:
     needs: checkout
     runs-on: self-hosted
+    container:
+        image: epitechcontent/epitest-docker:latest
     steps:
       - name: cleanup
         run: |
