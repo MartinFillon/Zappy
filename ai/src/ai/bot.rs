@@ -8,6 +8,8 @@
 use crate::ai::{AIHandler, AI};
 use crate::tcp::command_handle::Direction;
 
+use log::info;
+
 #[derive(Debug, Clone)]
 pub struct Bot {
     info: AI,
@@ -37,18 +39,27 @@ impl Bot {
     fn update_coord_movement(&mut self, d: (i32, i32)) {
         let x = self.coord.0 + d.0;
         let y = self.coord.1 + d.1;
+        info!("Updating movement of offset: ({}, {})...", d.0, d.1);
+
         let width = self.info.map.0;
         let height = self.info.map.1;
 
+        info!(
+            "Coordinated updated from: ({}, {})",
+            self.coord.0, self.coord.1
+        );
         let wrapped_x = (x % width + width) % width;
         let wrapped_y = (y % height + height) % height;
+        info!("To: ({}, {})", wrapped_x, wrapped_y);
 
         self.coord = (wrapped_x, wrapped_y);
         self.log_path_history(self.coord);
     }
 
     fn update_eject_coord(&mut self, direction: Direction) {
+        info!("Updating movement from Direction: {}...", direction);
         match direction {
+            Direction::Center => self.update_coord_movement((0, 0)),
             Direction::North => self.update_coord_movement((0, 1)),
             Direction::NorthWest => self.update_coord_movement((-1, 1)),
             Direction::West => self.update_coord_movement((-1, 0)),
@@ -61,6 +72,7 @@ impl Bot {
     }
 
     fn log_path_history(&mut self, coord: (i32, i32)) {
+        info!("Pushing ({}, {}) to backtrack...", coord.0, coord.1);
         self.backtrack.push(coord);
     }
 }
