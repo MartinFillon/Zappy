@@ -35,8 +35,8 @@ class Map {
     void resize(int x, int y);
     void resize(const Pos<int, 2> &size);
 
-    void checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox);
-    void checkCollision3D(InfoBox &infoBox, const Camera3D &cam);
+    void checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox) const;
+    void checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const;
     void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const;
     void displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const;
 

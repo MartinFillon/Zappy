@@ -105,7 +105,7 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox)
+void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox) const
 {
     int mapWidth = end_x - start_x;
     int mapHeight = end_y - start_y;
@@ -142,48 +142,52 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
     }
 }
 
-void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam)
+void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
 {
     float tileSize = 1.0f;
     Ray ray = GetMouseRay(GetMousePosition(), cam);
     RayCollision collision = {};
     RayCollision collisionTmp = {};
+    std::shared_ptr<ISelectItem> tmpItemSelect = nullptr;
+    Pos<float, 3> tmpPos = {0.0f, 0.0f, 0.0f};
+    float tmpSize = 0.0f;
 
     for (auto player : m_players) {
-        float playerCenterX = player->getPos().x() * tileSize + tileSize / 2;
-        float playerCenterZ = player->getPos().y() * tileSize + tileSize / 2;
+        float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
+        float playerCenterZ = player->getPos().y() * tileSize + tileSize / 2.0f;
         collisionTmp = GetRayCollisionSphere(ray,
-            (Vector3){playerCenterX, tileSize / 6 + tileSize / 2, playerCenterZ},
-            tileSize / 6);
+            (Vector3){playerCenterX, tileSize / 6.0f + tileSize / 2.0f, playerCenterZ},
+            tileSize / 6.0f);
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
-            auto &item = infoBox.getItem();
-            if (item == player) {
-                infoBox.setPrint(!infoBox.isPrint());
-            } else {
-                item = player;
-                infoBox.setPosTile(0.25, 1, 0.25);
-                infoBox.setSize(0.5);
-            }
+            tmpItemSelect = player;
+            tmpPos = {0.0f, 0.67f, 0.0f};
+            tmpSize = 0.4f;
         }
     }
     for (auto tile : m_map) {
-        float tileX = tile->getPos().x() * tileSize + tileSize / 2;
-        float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
+        float tileX = tile->getPos().x() * tileSize + tileSize / 2.0f;
+        float tileZ = tile->getPos().y() * tileSize + tileSize / 2.0f;
         collisionTmp = GetRayCollisionBox(ray, (BoundingBox){
-            (Vector3){tileX, 0, tileZ},
-            (Vector3){tileX + tileSize, tileSize, tileZ + tileSize}});
+            (Vector3){tileX - tileSize / 2.0f, - tileSize / 2.0f, tileZ - tileSize / 2.0f},
+            (Vector3){tileX + tileSize / 2.0f, tileSize / 2.0f, tileZ + tileSize / 2.0f}});
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
-            auto &item = infoBox.getItem();
-            if (item == tile) {
-                infoBox.setPrint(!infoBox.isPrint());
-            } else {
-                item = tile;
-                infoBox.setPosTile(0, 0, 0);
-                infoBox.setSize(1);
-            }
+            tmpItemSelect = tile;
+            tmpPos = {0.0f, 0.0f, 0.0f};
+            tmpSize = 1.0f;
         }
+    }
+    if (tmpItemSelect != nullptr) {
+        auto &item = infoBox.getItem();
+        if (item == tmpItemSelect) {
+            infoBox.setPrint(!infoBox.isPrint());
+            return;
+        }
+        item = tmpItemSelect;
+        infoBox.setPosTile(tmpPos);
+        infoBox.setSize(tmpSize);
+        infoBox.setPrint(true);
     }
 }
 
