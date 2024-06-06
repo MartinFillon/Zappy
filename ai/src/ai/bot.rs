@@ -37,39 +37,18 @@ impl AIHandler for Bot {
 
 impl Bot {
     fn update_coord_movement(&mut self, d: (i32, i32)) {
-        let x = self.coord.0 + d.0;
-        let y = self.coord.1 + d.1;
+        let (x, y) = (self.coord.0 + d.0, self.coord.1 + d.1);
         info!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
-        let width = self.info.map.0 / 2;
-        let height = self.info.map.1 / 2;
+        let (width, height) = (self.info.map.0 / 2, self.info.map.1 / 2);
 
         info!(
             "Coordinated updated from: ({}, {})",
             self.coord.0, self.coord.1
         );
-        let mut wrapped_x = x;
-        let mut wrapped_y = y;
 
-        if wrapped_x > width {
-            wrapped_x = (x % width + width) % width;
-            wrapped_x = -(width - (wrapped_x - 1));
-        }
-
-        if wrapped_x < (-width) {
-            wrapped_x = (x % width + width) % width;
-            wrapped_x = wrapped_x + 1;
-        }
-
-        if wrapped_y > height {
-            wrapped_y = (x % height + height) % height;
-            wrapped_y = -(height - (wrapped_y - 1));
-        }
-
-        if wrapped_y > (-height) {
-            wrapped_y = (x % height + height) % height;
-            wrapped_y = wrapped_y + 1;
-        }
+        let wrapped_x = wrap_coordinate(x, width);
+        let wrapped_y = wrap_coordinate(y, height);
 
         info!("To: ({}, {})", wrapped_x, wrapped_y);
 
@@ -96,4 +75,14 @@ impl Bot {
         info!("Pushing ({}, {}) to backtrack...", coord.0, coord.1);
         self.backtrack.push(coord);
     }
+}
+
+fn wrap_coordinate(coord: i32, max: i32) -> i32 {
+    let mut wrapped = (coord % max + max) % max;
+    if coord > max {
+        wrapped = -(max - (wrapped - 1));
+    } else if coord < -max {
+        wrapped += 1;
+    }
+    wrapped
 }
