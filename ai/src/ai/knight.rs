@@ -8,4 +8,5 @@
 #[derive(Debug, Clone)]
 pub struct Knight {
     team: String,
+    level: usize
 }

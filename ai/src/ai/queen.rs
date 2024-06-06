@@ -8,4 +8,5 @@
 #[derive(Debug, Clone)]
 pub struct Queen {
     team: String,
+    level: usize
 }

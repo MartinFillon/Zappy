@@ -8,4 +8,6 @@
 #[derive(Debug, Clone)]
 pub struct Bot {
     team: String,
+    coord: (usize, usize),
+    backtrack: Vec<(usize, usize)>
 }

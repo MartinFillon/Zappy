@@ -7,5 +7,10 @@
 
 #[derive(Debug, Clone)]
 pub struct Fetus {
-    team: String,
+}
+
+impl Default for Fetus {
+    fn default() -> Fetus {
+        Fetus {}
+    }
 }
