@@ -14,6 +14,7 @@ pub mod knight;
 pub mod queen;
 
 use crate::commands;
+use crate::tcp::command_handle::Direction;
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;
@@ -33,12 +34,24 @@ enum AIState {
     Fetus,
 }
 
+pub enum Action {
+    Movement((i32, i32)),
+    Push(Direction),
+    LevelUp,
+}
+
 #[derive(Debug, Clone)]
-struct AI {
+pub struct AI {
     team: String,
     client: i32,
     map: (usize, usize),
     level: usize,
+    state: Option<AIState>,
+}
+
+pub trait AIHandler {
+    fn init(&mut self, info: AI) -> Self;
+    fn update(&mut self, action: Option<Action>);
 }
 
 impl Display for AIState {

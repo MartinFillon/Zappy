@@ -5,9 +5,23 @@
 // queen
 //
 
-use crate::ai::AI;
+use crate::ai::{AIHandler, Action, AI};
 
 #[derive(Debug, Clone)]
 pub struct Queen {
     info: AI,
+}
+
+impl Queen {
+    fn new(info: AI) -> Self {
+        Self { info }
+    }
+}
+
+impl AIHandler for Queen {
+    fn init(&mut self, info: AI) -> Self {
+        Self::new(info)
+    }
+
+    fn update(&mut self, action: Option<Action>) {}
 }

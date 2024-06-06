@@ -5,7 +5,7 @@
 // bot
 //
 
-use crate::ai::AI;
+use crate::ai::{AIHandler, Action, AI};
 use crate::tcp::command_handle::Direction;
 
 #[derive(Debug, Clone)]
@@ -25,13 +25,15 @@ impl Bot {
     }
 }
 
-pub trait BotHandler {
-    fn update_coord_movement(&mut self, offset_coord: (i32, i32));
-    fn update_eject_coord(&mut self, direction: Direction);
-    fn log_path_history(&mut self, coord: (i32, i32));
+impl AIHandler for Bot {
+    fn init(&mut self, info: AI) -> Self {
+        Self::new(info)
+    }
+
+    fn update(&mut self, action: Option<Action>) {}
 }
 
-impl BotHandler for Bot {
+impl Bot {
     fn update_coord_movement(&mut self, offset_coord: (i32, i32)) {
         let x = self.coord.0 - offset_coord.0;
         let y = self.coord.1 - offset_coord.1;
