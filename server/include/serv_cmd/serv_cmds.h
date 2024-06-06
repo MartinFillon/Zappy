@@ -12,17 +12,26 @@
 typedef struct serv_cmds_s {
     char const *name;
     void (*func)(zappy_t *z, struct vector_str_t *args);
+    char const *desc;
+    size_t nb_args;
 } serv_cmds_t;
 
 void handle_display_map(zappy_t *z, struct vector_str_t *args);
 void handle_display_ais(zappy_t *z, struct vector_str_t *args);
 void handle_ressources_ais(zappy_t *z, struct vector_str_t *args);
 void handle_display_eggs(zappy_t *serv, struct vector_str_t *args);
+void handle_help(zappy_t *serv, struct vector_str_t *args);
 
 static const serv_cmds_t SERV_CMDS[] = {
-    {"/display", handle_display_map},
-    {"/ais", handle_display_ais},
-    {"/ais-res", handle_ressources_ais},
-    {"/eggs", handle_display_eggs},
-    {NULL, NULL}
+    {"/display", handle_display_map,
+        "Display the map with all the ai's positions\n", 0},
+    {"/ais", handle_display_ais,
+        "Display general information about the ais\n", 0},
+    {"/ais-res", handle_ressources_ais,
+        "Display the current ressources of all the ais\n", 0},
+    {"/eggs", handle_display_eggs,
+        "Display informations about the eggs currently on the map\n", 0},
+    {"/help", handle_help,
+        NULL, 0},
+    {NULL, NULL, NULL, 0}
 };

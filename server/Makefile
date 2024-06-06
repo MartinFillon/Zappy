@@ -62,6 +62,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_display 	\
 							handle_ais_info	\
 							handle_eggs_info\
+							handle_help 	\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
