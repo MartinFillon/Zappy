@@ -14,7 +14,7 @@
 
 namespace GUI {
 
-InfoBox::InfoBox(): m_posTile({0, 0}), m_lineHeight(20)
+InfoBox::InfoBox(): m_posTile({0, 0, 0}), m_lineHeight(20)
 {
     m_itemName[0] = "Food";
     m_itemName[1] = "Linemate";
@@ -35,19 +35,19 @@ void InfoBox::setPrint(bool print)
     m_isPrint = print;
 }
 
-Pos<float, 2> InfoBox::getPosTile() const
+Pos<float, 3> InfoBox::getPosTile() const
 {
     return m_posTile;
 }
 
-void InfoBox::setPosTile(Pos<float, 2> posTile)
+void InfoBox::setPosTile(Pos<float, 3> posTile)
 {
     m_posTile = posTile;
 }
 
-void InfoBox::setPosTile(float x, float y)
+void InfoBox::setPosTile(float x, float y, float z)
 {
-    m_posTile = {x, y};
+    m_posTile = {x, y, z};
 }
 
 float InfoBox::getSize() const

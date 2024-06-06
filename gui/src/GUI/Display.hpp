@@ -72,7 +72,9 @@ class Display {
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
     InfoBox infoBox;
+
     Camera3D m_cam;
+    bool m_is3D;
     bool m_isCameraFree;
     bool m_showCursor;
 };

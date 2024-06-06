@@ -24,9 +24,9 @@ namespace GUI
             bool isPrint() const;
             void setPrint(bool print);
 
-            Pos<float, 2> getPosTile() const;
-            void setPosTile(Pos<float, 2> posTile);
-            void setPosTile(float x, float y);
+            Pos<float, 3> getPosTile() const;
+            void setPosTile(Pos<float, 3> posTile);
+            void setPosTile(float x, float y, float z);
 
             float getSize() const;
             void setSize(float size);
@@ -39,7 +39,7 @@ namespace GUI
         private:
             bool m_isPrint;
             std::shared_ptr<Data::ISelectItem> m_item;
-            Pos<float, 2> m_posTile;
+            Pos<float, 3> m_posTile;
             float m_size;
 
             std::array<std::string, 7> m_itemName;

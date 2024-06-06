@@ -17,7 +17,7 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height),
-      messageBox(), m_cam({}), m_isCameraFree(true), m_showCursor(true)
+      messageBox(), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -48,7 +48,10 @@ void Display::handleEvent()
         resize();
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        if (m_is3D)
+            map.checkCollision3D(infoBox, m_cam);
+        else
+            map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
     }
     messageBox.handleInput(offsetX, offsetY + newHeight - 200, 400, 200);
 }
@@ -56,7 +59,6 @@ void Display::handleEvent()
 void Display::run()
 {
     std::string message;
-    bool is3D = true;
 
     while (!WindowShouldClose()) {
         handleServerMessage(message);
@@ -64,7 +66,7 @@ void Display::run()
         handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);
-        if (is3D) {
+        if (m_is3D) {
             map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree, m_showCursor);
         } else {
             DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
