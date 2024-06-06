@@ -41,15 +41,36 @@ impl Bot {
         let y = self.coord.1 + d.1;
         info!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
-        let width = self.info.map.0;
-        let height = self.info.map.1;
+        let width = self.info.map.0 / 2;
+        let height = self.info.map.1 / 2;
 
         info!(
             "Coordinated updated from: ({}, {})",
             self.coord.0, self.coord.1
         );
-        let wrapped_x = (x % width + width) % width;
-        let wrapped_y = (y % height + height) % height;
+        let mut wrapped_x = x;
+        let mut wrapped_y = y;
+
+        if wrapped_x > width {
+            wrapped_x = (x % width + width) % width;
+            wrapped_x = -(width - (wrapped_x - 1));
+        }
+
+        if wrapped_x < (-width) {
+            wrapped_x = (x % width + width) % width;
+            wrapped_x = wrapped_x + 1;
+        }
+
+        if wrapped_y > height {
+            wrapped_y = (x % height + height) % height;
+            wrapped_y = -(height - (wrapped_y - 1));
+        }
+
+        if wrapped_y > (-height) {
+            wrapped_y = (x % height + height) % height;
+            wrapped_y = wrapped_y + 1;
+        }
+
         info!("To: ({}, {})", wrapped_x, wrapped_y);
 
         self.coord = (wrapped_x, wrapped_y);
