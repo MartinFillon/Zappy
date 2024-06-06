@@ -5,8 +5,9 @@
 // queen
 //
 
+use crate::ai::AI;
+
 #[derive(Debug, Clone)]
 pub struct Queen {
-    team: String,
-    level: usize
+    info: AI,
 }

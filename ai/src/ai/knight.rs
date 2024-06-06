@@ -5,8 +5,10 @@
 // knight
 //
 
+use crate::ai::AI;
+
 #[derive(Debug, Clone)]
 pub struct Knight {
-    team: String,
-    level: usize
+    info: AI,
+    level: usize,
 }

@@ -27,27 +27,27 @@ use log::{debug, info};
 
 #[derive(Debug, Clone)]
 enum AIState {
-    Bot(bot::Bot),
-    Queen(queen::Queen),
-    Knight(knight::Knight),
-    Fetus(fetus::Fetus),
+    Bot,
+    Queen,
+    Knight,
+    Fetus,
 }
 
+#[derive(Debug, Clone)]
 struct AI {
     team: String,
     client: i32,
     map: (usize, usize),
     level: usize,
-    state: Option<AIState>,
 }
 
 impl Display for AIState {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            AIState::Bot(_) => write!(f, "Bot"),
-            AIState::Queen(_) => write!(f, "Queen"),
-            AIState::Knight(_) => write!(f, "Knight"),
-            AIState::Fetus(_) => write!(f, "Fetus"),
+            AIState::Bot => write!(f, "Bot"),
+            AIState::Queen => write!(f, "Queen"),
+            AIState::Knight => write!(f, "Knight"),
+            AIState::Fetus => write!(f, "Fetus"),
         }
     }
 }

@@ -5,12 +5,5 @@
 // fetus
 //
 
-#[derive(Debug, Clone)]
-pub struct Fetus {
-}
-
-impl Default for Fetus {
-    fn default() -> Fetus {
-        Fetus {}
-    }
-}
+#[derive(Debug, Clone, Default)]
+pub struct Fetus {}
