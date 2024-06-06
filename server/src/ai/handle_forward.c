@@ -42,10 +42,10 @@ void move_by_dir(pos_t *pos, enum direction dir, map_t *map)
 void move_ai(ai_t *ai, enum direction dir, map_t *map)
 {
     vec_erase_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int);
+        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int
+    );
     move_by_dir(&ai->pos, dir, map);
-    vec_pushback_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id);
+    vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);
 }
 
 void handle_forward(client_t *cli, command_state_t *s)
@@ -54,4 +54,13 @@ void handle_forward(client_t *cli, command_state_t *s)
 
     move_ai(ai, ai->dir, s->game->map);
     prepare_response_cat(&cli->io, "ok\n");
+    broadcast_to(
+        GUI,
+        s->clients,
+        "ppo %d %d %d %d\n",
+        cli->ai->id,
+        cli->ai->pos.x,
+        cli->ai->pos.y,
+        cli->ai->dir + 1
+    );
 }

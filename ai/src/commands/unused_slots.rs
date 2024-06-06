@@ -17,6 +17,6 @@ pub async fn unused_slots(client: &mut TcpClient) -> Result<ResponseResult, Comm
     let response = client.check_dead("Connect_nbr\n").await?;
     match response.parse::<usize>() {
         Ok(nb) => Ok(ResponseResult::Value(nb)),
-        Err(_) => Err(CommandError::InvalidResponse),
+        Err(_) => client.handle_response(response).await,
     }
 }

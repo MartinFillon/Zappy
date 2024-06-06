@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include "client.h"
+#include "queue.h"
 #include "types/client.h"
 
 void free_buffer(struct buffer_s *buffer)
@@ -16,7 +17,7 @@ void free_buffer(struct buffer_s *buffer)
     buffer->size = 0;
 }
 
-void close_client(client_t *c)
+void destroy_client(client_t *c)
 {
     close(c->fd);
     c->fd = 0;
@@ -24,4 +25,14 @@ void close_client(client_t *c)
     free_buffer(&c->io.res);
     c->ai = NULL;
     c->type = UNSET;
+    for (size_t i = 0; i < c->commands->size; i++)
+        str_free(c->commands->data[i]);
+    queue_destroy_queue_command_t(c->commands);
+}
+
+void close_client(client_t *c, struct client_list *clients)
+{
+    if (c->type == AI)
+        broadcast_to(GUI, clients, "pdi %d\n", c->ai->id);
+    destroy_client(c);
 }

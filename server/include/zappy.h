@@ -13,7 +13,7 @@
 typedef struct zappy_s {
     game_t game;
     server_t server;
-    client_t clients[SOMAXCONN];
+    struct client_list *clients;
 } zappy_t;
 
 /**

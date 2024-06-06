@@ -55,11 +55,12 @@ BASE_SRC = $(addsuffix .c, 				\
 						zappy_server		\
 						buffer 				\
 						destroy_server		\
+						execute 			\
 						$(addprefix cmd/, 	\
 							handle_cmds 	\
 							handle_display 	\
 							handle_ais_info	\
-							handle_eggs_info 	\
+							handle_eggs_info\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -75,6 +76,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						parse_unset			\
 						read_client			\
 						close_client		\
+						send_message_to_guis\
 						prepare_res 		\
 					)						\
 					$(addprefix time/, 	\
@@ -141,6 +143,11 @@ $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
 
 tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
+
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
 
 re: fclean all
 

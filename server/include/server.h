@@ -11,7 +11,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
-#include "types/client.h"
+#include "client.h"
 #include "types/game.h"
 #include "args_info.h"
 
@@ -48,7 +48,7 @@ int loop_server(args_infos_t *args);
  * @param clients All the clients connected.
  * @return int 0 if success, 84 if error
  */
-int accept_new_client(server_t *s, client_t *clients);
+int accept_new_client(server_t *s, struct client_list *clients);
 
 /**
  * @brief Handle the buffer
@@ -65,3 +65,5 @@ int handle_buffer(client_t *c, zappy_t *z);
  * @param s the server structure
  */
 void free_wifi(server_t *s);
+
+void execute_commands(zappy_t *z);

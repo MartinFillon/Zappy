@@ -5,6 +5,8 @@
 // string
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -37,9 +39,21 @@ impl<'a> Parser<'a> {
     }
 }
 
+impl DeserializeTrait for String {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::String(s) => Ok(s.clone()),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
-    use crate::json::{JsonDocument, JsonValue, ParserError};
+    use crate::{JsonDocument, JsonValue, ParserError};
 
     #[test]
     fn basic_json_string() {

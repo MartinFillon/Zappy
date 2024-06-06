@@ -14,11 +14,13 @@ use tokio::net::TcpStream;
 use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
 use tokio::task::JoinHandle;
+use zappy_macros::Bean;
 
 use log::{debug, info};
 
 pub mod command_handle;
 
+#[derive(Debug, Bean)]
 pub struct TcpClient {
     addr: String,
     request_sender: Option<Sender<String>>,

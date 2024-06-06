@@ -5,6 +5,8 @@
 // bool
 //
 
+use crate::DeserializeTrait;
+
 use super::{JsonValue, Parser, ParserError};
 
 impl<'a> Parser<'a> {
@@ -24,9 +26,21 @@ impl<'a> Parser<'a> {
     }
 }
 
+impl DeserializeTrait for bool {
+    fn from_value(value: &JsonValue) -> Result<Self, String>
+    where
+        Self: Sized,
+    {
+        match value {
+            JsonValue::Bool(b) => Ok(*b),
+            _ => Err(String::from("Bad json value")),
+        }
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
-    use crate::json::{JsonDocument, JsonValue, ParserError};
+    use crate::{JsonDocument, JsonValue, ParserError};
 
     #[test]
     fn basic_json_bool() {

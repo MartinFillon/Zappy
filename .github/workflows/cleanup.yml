@@ -1,0 +1,20 @@
+name: cleanup
+
+on: [ workflow_call, workflow_dispatch ]
+
+jobs:
+  checkout:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout the repo
+        id: checkout
+        uses: actions/checkout@v4
+
+  cleanup:
+    needs: checkout
+    runs-on: self-hosted
+    steps:
+      - name: cleanup
+        run: |
+          make fclean
+        timeout-minutes: 5
