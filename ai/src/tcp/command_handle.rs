@@ -7,15 +7,12 @@
 
 #![allow(dead_code)]
 
-use crate::commands;
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
-use tokio::io::{self};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::io::{Error, ErrorKind};
 
 use log::{debug, info};
 
@@ -73,7 +70,7 @@ impl CommandHandler for TcpClient {
         info!("Checking if request receives dead...");
         let response = self.send_command(command).await?;
         if response == "dead\n" {
-            info!("Dead received.");
+            debug!("Dead received.");
             return Err(CommandError::DeadReceived);
         }
         info!("Not dead received, response is forwarded.");
@@ -148,112 +145,4 @@ impl Display for ResponseResult {
             ResponseResult::Message((dir, msg)) => write!(f, "Message: ({}, {})", dir, msg),
         }
     }
-}
-
-enum AIState {
-    Bot(Bot),
-    Queen(Queen),
-    Knight(Knight),
-    Fetus(Fetus),
-}
-
-struct AI {
-    team: String,
-    client: i32,
-    map: (usize, usize),
-    level: usize,
-    state: AIState,
-}
-
-impl AI {
-    fn new(client: i32, map: (usize, usize), level: usize, state: AIState) -> Self {
-        Self { client, map, level, state }
-    }
-}
-
-impl Display for AI {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Ai {} = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            self.state, self.team, self.client, self.map.0, self.map.1, self.level
-        )
-    }
-}
-
-async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
-    info!("Sending startup commands...");
-    match commands::inventory::inventory(client).await {
-        Ok(res) => {
-            info!("Inventory checked.");
-            println!("{}", res);
-        }
-        Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    }
-    Ok(())
-}
-
-async fn init_ai(client: &mut TcpClient, response: &str) -> io::Result<()> {
-    info!("Initializing AI...");
-    let mut lines = response.split('\n');
-
-    let client_number = match lines.next() {
-        Some(nbr) => match nbr.parse::<i32>() {
-            Ok(nbr) => nbr,
-            Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid client number.")),
-        },
-        None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    };
-    info!("Client number detected as [{}].", client_number);
-
-    match lines.next() {
-        Some(line) => {
-            let mut words = line.split_whitespace();
-            let x = match words.next().and_then(|word| word.parse::<usize>().ok()) {
-                Some(val) => val,
-                None => {
-                    debug!("Failed to parse x coordinate from line: {}", line);
-                    return Err(Error::new(ErrorKind::InvalidData, "Invalid x coordinate."));
-                }
-            };
-            let y = match words.next().and_then(|word| word.parse::<usize>().ok()) {
-                Some(val) => val,
-                None => {
-                    debug!("Failed to parse y coordinate from line: {}", line);
-                    return Err(Error::new(ErrorKind::InvalidData, "Invalid y coordinate."));
-                }
-            };
-            info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(client_number, x, y);
-            println!("({})> {}", client_number, ai);
-            info!("{}", ai);
-            info!("AI initialized.");
-        }
-        None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    }
-    startup_commands(client).await?;
-    Ok(())
-}
-
-pub async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
-    info!("Starting AI...");
-    client.send_request(team + "\n").await?;
-    if let Some(response) = client.get_response().await {
-        match response.trim_end() {
-            "ko" => {
-                print!("server> {}", response);
-                return Err(Error::new(
-                    ErrorKind::ConnectionRefused,
-                    "No room for player.",
-                ));
-            }
-            _ => init_ai(&mut client, &response).await?,
-        }
-    } else {
-        return Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ));
-    }
-    Ok(())
 }

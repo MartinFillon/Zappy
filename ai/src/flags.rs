@@ -80,8 +80,8 @@ impl Display for Flags {
             "Flags {{\n  Machine: {},\n  Port: {},\n  Name: {}\n}};",
             self.machine,
             self.port
-                .map_or_else(|| "None".to_string(), |p| p.to_string()),
-            self.name.clone().unwrap_or_else(|| "None".to_string())
+                .map_or_else(|| String::from("None"), |p| p.to_string()),
+            <Option<String> as Clone>::clone(&self.name).unwrap_or_default()
         )
     }
 }
