@@ -32,7 +32,8 @@ enum AIState {
 #[derive(Debug, Clone)]
 pub struct AI {
     team: String,
-    client: i32,
+    id: i32,
+    client: TcpClient,
     map: (i32, i32),
     level: usize,
     state: Option<AIState>,
@@ -57,13 +58,15 @@ impl Display for AIState {
 impl AI {
     fn new(
         team: String,
-        client: i32,
+        id: i32,
+        client: TcpClient,
         map: (i32, i32),
         level: usize,
         state: Option<AIState>,
     ) -> Self {
         Self {
             team,
+            id,
             client,
             map,
             level,
@@ -76,10 +79,11 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI {} = [team: {}, client: {}, map: ({}, {}), level: {}]",
+            "AI {} = [team: {}, id: {}, client: {:?}, map: ({}, {}), level: {}]",
             <Option<AIState> as Clone>::clone(&self.state)
                 .map_or_else(|| String::from("None"), |p| p.to_string()),
             self.team,
+            self.id,
             self.client,
             self.map.0,
             self.map.1,
@@ -100,7 +104,7 @@ async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
     Ok(())
 }
 
-async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Result<()> {
+async fn init_ai(mut client: TcpClient, response: &str, team: String) -> io::Result<()> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
@@ -131,15 +135,15 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, (x, y), 1, None);
+            let mut ai: AI = AI::new(team, client_number, client, (x, y), 1, None);
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
+            startup_commands(&mut ai.client).await?;
+            Ok(())
         }
-        None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
+        None => Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
-    startup_commands(client).await?;
-    Ok(())
 }
 
 async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
@@ -156,7 +160,7 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
             }
             _ => {
                 info!("Connection to team successful");
-                init_ai(&mut client, &response, team).await?
+                init_ai(client, &response, team).await?
             }
         }
     } else {
