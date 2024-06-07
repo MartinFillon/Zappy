@@ -36,13 +36,25 @@ make <binary>
 In order to run the project you just need to run the binaries using the appropriate argumets.
 It is advised to run `zappy_server` first
 
-## Debugging/ Logging (AI)
+## Debugging/ Logging
 
-The AI has a logging system that can be enabled by setting the `RUST_LOG` environment variable to `debug`, `trace` or `info` before running the binary.
+### AI
+
+The AI has a logging system that can be enabled by setting the `ZAPPY_LOG` environment variable to `debug`, `trace` or `info` before running the binary. For more information about it see the [env_logger](https://crates.io/crates/env_logger) crate documentation.
 
 ```sh
 ZAPPY_LOG=info ./zappy_ai
 ```
+
+### Server
+
+The server also have a logging system implemented with multiple level.
+The levels are set using the `-l` argument and are the following.
+- `ERROR` (default)
+- `WARN`
+- `INFO`
+- `DEBUG`
+
 
 ## Our team
 | [<img src="https://avatars.githubusercontent.com/u/109749395?v=4" width=85><br><sub>Lou Onezime</sub>](https://github.com/louonezime) | [<img src="https://avatars.githubusercontent.com/u/114775771?v=4" width=85><br><sub>Martin Fillon</sub>](https://github.com/MartinFillon) | [<img src="https://avatars.githubusercontent.com/u/100275038?v=4" width=85><br><sub>Alexandre Vigoureux</sub>](https://github.com/Aluxray) | [<img src="https://avatars.githubusercontent.com/u/114816489?v=4" width=85><br><sub>Tiphaine Bertone</sub>](https://github.com/Kanda09) | [<img src="https://avatars.githubusercontent.com/u/105550975?v=4" width=85><br><sub>Manuel Tome</sub>](https://github.com/ManuelR-T)| [<img src="https://avatars.githubusercontent.com/u/114925763?v=4" width=85><br><sub>Rahul Chander</sub>](https://github.com/RahulCHANDER25)|
