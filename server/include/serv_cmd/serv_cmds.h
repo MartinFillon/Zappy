@@ -26,6 +26,7 @@ DECLARE_COMMAND(handle_help);
 DECLARE_COMMAND(handle_kill_player);
 DECLARE_COMMAND(godmode);
 DECLARE_COMMAND(give);
+DECLARE_COMMAND(teleport);
 
 static const serv_cmds_t SERV_CMDS[] = {
     {
@@ -70,6 +71,12 @@ static const serv_cmds_t SERV_CMDS[] = {
         "<id> <object> <n> Give n object to a player (object is case "
         "insensitive)\n",
         3,
+    },
+    {
+        "/tp",
+        teleport,
+        "<id> <id> Teleport the first player on the second one\n",
+        2,
     },
     {
         "/help",

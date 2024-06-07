@@ -66,6 +66,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_kill_player 	\
 							godmode			\
 							give			\
+							teleport		\
 						) 					\
 					)						\
 					$(addprefix gui/,		\

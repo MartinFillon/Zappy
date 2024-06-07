@@ -10,12 +10,12 @@
 #include "router/route.h"
 #include "types/client.h"
 
-DECLARE_ROUTE(map_size);
-DECLARE_ROUTE(map_content_tile);
-DECLARE_ROUTE(map_content_full);
-DECLARE_ROUTE(team_names);
-DECLARE_ROUTE(player_position);
-DECLARE_ROUTE(player_level);
-DECLARE_ROUTE(player_inventory);
-DECLARE_ROUTE(update_time);
-DECLARE_ROUTE(request_time);
+void map_size(client_t *c, command_state_t *s);
+void map_content_tile(client_t *c, command_state_t *s);
+void map_content_full(client_t *c, command_state_t *s);
+void team_names(client_t *c, command_state_t *s);
+void player_position(client_t *c, command_state_t *s);
+void player_level(client_t *c, command_state_t *s);
+void player_inventory(client_t *c, command_state_t *s);
+void update_time(client_t *c, command_state_t *s);
+void request_time(client_t *c, command_state_t *s);
