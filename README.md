@@ -36,6 +36,40 @@ make <binary>
 In order to run the project you just need to run the binaries using the appropriate argumets.
 It is advised to run `zappy_server` first
 
+## Command line arguments
+
+### Server
+
+```sh
+./zappy_server -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq
+```
+
+- `port`	    is the port number
+- `width`	    is the width of the world
+- `height`	    is the height of the world
+- `nameX`	    is the name of the team X
+- `clientsNb`	is the number of authorized clients per team
+- `freq`	    is the reciprocal of time unit for execution of actions
+
+## AI
+
+```sh
+./zappy_ai -p port -n name -h machine
+```
+
+- `port`    port number
+- `name`    name of the team
+- `machine` name of the machine; localhost by default
+
+## GUI
+
+```sh
+./zappy_gui -p port -h machine
+```
+
+- `port`    port number
+- `machine` name of the machine; localhost by default
+
 ## Debugging/ Logging
 
 ### AI
@@ -54,6 +88,7 @@ The levels are set using the `-l` argument and are the following.
 - `WARN`
 - `INFO`
 - `DEBUG`
+- `DISABLED`
 
 
 ## Our team
