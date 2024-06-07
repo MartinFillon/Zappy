@@ -1,7 +1,6 @@
 zappy_server
 zappy_ai
 zappy_gui
-doc/html
 *.o
 
 Cargo.lock
@@ -14,3 +13,8 @@ compile_commands.json
 server-tester-bin
 liblogger.a
 libmy.a
+doc/ai
+doc/gui
+doc/server
+server/doc
+gui/doc
