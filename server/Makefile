@@ -162,6 +162,7 @@ debug: fclean all
 re: fclean all
 
 docs: docs-clean
-	doxygen Doxyfile && mv doc/html ../doc/server 
+	doxygen Doxyfile
+	mv doc/html ../doc/server
 
 .PHONY: all clean fclean re tests_run docs

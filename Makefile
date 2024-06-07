@@ -20,9 +20,9 @@ clean tests_run:
 	$(foreach M,$(MODULES), make -C $M $@;)
 
 docs-clean:
-	$(RM) -r doc/ai doc/gui
+	$(RM) -r doc/ai doc/gui doc/server
 
-fclean: clean
+fclean: clean docs-clean
 	$(foreach M,$(MODULES), make -C $M $@;)
 	$(RM) $(FTESTBIN)
 
@@ -34,6 +34,7 @@ re: fclean all
 docs: docs-clean
 	$(MAKE) -C gui docs
 	$(MAKE) -C server docs
-	cargo doc --no-deps -p ai -p zappy-json -p zappy-macros && cp -r target/doc doc/ai
+	cargo doc --no-deps -p ai -p zappy-json -p zappy-macros
+	cp -r target/doc doc/ai
 
 .PHONY: clean fclean re tests_run docs
