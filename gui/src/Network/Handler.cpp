@@ -6,6 +6,7 @@
 */
 
 #include "Handler.hpp"
+#include <asio/error.hpp>
 #include <iostream>
 
 namespace Network {
@@ -18,6 +19,11 @@ Handler::Handler(const std::string &machine, int port)
 Handler::~Handler()
 {
     stop();
+}
+
+bool Handler::isRunning() const
+{
+    return running;
 }
 
 bool Handler::start()
@@ -60,33 +66,58 @@ bool Handler::getMessage(std::string &message)
 
 void Handler::sendMessage(const std::string &message)
 {
+    if (running == false) {
+        return;
+    }
     std::scoped_lock lock(socketMutex);
-    asio::write(socket, asio::buffer(message + "\n"));
+
+    try {
+        asio::error_code error;
+        asio::write(socket, asio::buffer(message + "\n"), error);
+        if (error == asio::error::broken_pipe) {
+            if (running == false)
+                return;
+            std::cerr << "Connection closed by peer" << std::endl;
+            running = false;
+        } else if (error) {
+            throw asio::system_error(error);
+        }
+    } catch (const std::exception &e) {
+        if (running == false)
+            return;
+        std::cerr << "Send error: " << e.what() << std::endl;
+        running = false;
+    }
 }
+
 
 void Handler::run()
 {
     std::string message;
+    std::thread receiver;
 
     try {
-        std::thread receiver(&Handler::receiveMessages, this);
+        receiver = std::thread(&Handler::receiveMessages, this);
         sendMessage("GRAPHIC");
-        while (message != "WELCOME") {
+        while (message != "WELCOME" && running) {
             getMessage(message);
         }
 
         while (running) {
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             requestMapSize();
             requestMapContent();
         }
-
-        receiver.join();
     } catch (const std::exception &e) {
         std::cerr << "Network error: " << e.what() << std::endl;
         running = false;
     }
+
+    if (receiver.joinable()) {
+        receiver.join();
+    }
 }
+
 
 void Handler::receiveMessages()
 {
@@ -97,8 +128,16 @@ void Handler::receiveMessages()
         try {
             asio::error_code error;
             size_t n = socket.read_some(asio::buffer(buffer), error);
-            if (error)
+
+            if (error == asio::error::eof) {
+                if (running == true)
+                    std::cerr << "Connection closed by peer" << std::endl;
+                running = false;
+                break;
+            } else if (error) {
                 throw asio::system_error(error);
+            }
+
             std::string data(buffer.data(), n);
             data = leftover + data;
             leftover.clear();

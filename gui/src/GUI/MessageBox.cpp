@@ -111,11 +111,10 @@ void MessageBox::display(int x, int y, int width, int height)
 
     std::vector<std::vector<std::string>> wrappedMessages;
     for (const auto &msg : m_formattedMessages) {
-        wrappedMessages.push_back(wrapText(msg.lines[0], width - 20, m_lineHeight)); // Adjust width for scrollbar
+        wrappedMessages.push_back(wrapText(msg.lines[0], width - 20, m_lineHeight));
         m_totalLines += wrappedMessages.back().size();
     }
 
-    // Draw scrollbar
     float scrollbarHeight =
         static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
