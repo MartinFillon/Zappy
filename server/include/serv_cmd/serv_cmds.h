@@ -16,13 +16,16 @@ typedef struct serv_cmds_s {
     size_t nb_args;
 } serv_cmds_t;
 
-void handle_display_map(zappy_t *z, struct vector_str_t *args);
-void handle_display_ais(zappy_t *z, struct vector_str_t *args);
-void handle_ressources_ais(zappy_t *z, struct vector_str_t *args);
-void handle_display_eggs(zappy_t *serv, struct vector_str_t *args);
-void handle_help(zappy_t *serv, struct vector_str_t *args);
-void handle_kill_player(zappy_t *serv, struct vector_str_t *args);
-void godmode(zappy_t *z, struct vector_str_t *args);
+#define DECLARE_COMMAND(name) void name(zappy_t *z, struct vector_str_t *args)
+
+DECLARE_COMMAND(handle_display_map);
+DECLARE_COMMAND(handle_display_ais);
+DECLARE_COMMAND(handle_ressources_ais);
+DECLARE_COMMAND(handle_display_eggs);
+DECLARE_COMMAND(handle_help);
+DECLARE_COMMAND(handle_kill_player);
+DECLARE_COMMAND(godmode);
+DECLARE_COMMAND(give);
 
 static const serv_cmds_t SERV_CMDS[] = {
     {
@@ -56,16 +59,23 @@ static const serv_cmds_t SERV_CMDS[] = {
         1,
     },
     {
-        "/help",
-        handle_help,
-        NULL,
-        0,
-    },
-    {
         "/godmode",
         godmode,
         "<id> Switch the godmode state of a player\n",
         1,
+    },
+    {
+        "/give",
+        give,
+        "<id> <object> <n> Give n object to a player (object is case "
+        "insensitive)\n",
+        3,
+    },
+    {
+        "/help",
+        handle_help,
+        NULL,
+        0,
     },
     {NULL, NULL, NULL, 0}
 };

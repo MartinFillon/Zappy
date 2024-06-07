@@ -28,4 +28,5 @@ void godmode(zappy_t *z, struct vector_str_t *args)
             return;
         }
     }
+    return logs(ERROR_LEVEL, "Argument must be an id of a player\n");
 }
