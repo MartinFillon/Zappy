@@ -18,6 +18,7 @@ pub mod elevation;
 pub mod flags;
 pub mod move_to_tile;
 pub mod move_towards_broadcast;
+pub mod roles;
 pub mod tcp;
 
 const ERROR_CODE: i32 = 84;

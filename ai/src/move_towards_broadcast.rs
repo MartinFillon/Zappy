@@ -1,6 +1,6 @@
 //
 // EPITECH PROJECT, 2024
-// move_to_tile.rs
+// move_towards_broadcast.rs
 // File description:
 // utility function to move towards a broadcast made by another player.
 // stops when finding a player on tile n°0
