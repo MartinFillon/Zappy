@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "client.h"
 #include "logger.h"
 #include "types/buffer.h"
 #include "types/map.h"
-#include "client.h"
+#include "types/object.h"
 
 static void check_ressource(
     io_t *io,
@@ -47,11 +48,11 @@ void prepare_info_tile(io_t *io, map_t *map, size_t y, size_t x)
     if (y > map->y || x > map->x)
         return log_map_error(y, x, map->y, map->x);
     check_ressource(io, "player", map->arena[y][x].players->size != 0, &fst);
-    check_ressource(io, "food", map->arena[y][x].content.food, &fst);
-    check_ressource(io, "linemate", map->arena[y][x].content.linemate, &fst);
-    check_ressource(io, "deraumere", map->arena[y][x].content.deraumere, &fst);
-    check_ressource(io, "sibur", map->arena[y][x].content.sibur, &fst);
-    check_ressource(io, "mendiane", map->arena[y][x].content.mendiane, &fst);
-    check_ressource(io, "phiras", map->arena[y][x].content.phiras, &fst);
-    check_ressource(io, "thystame", map->arena[y][x].content.thystame, &fst);
+    check_ressource(io, "food", map->arena[y][x].content[FOOD], &fst);
+    check_ressource(io, "linemate", map->arena[y][x].content[LINEMATE], &fst);
+    check_ressource(io, "deraumere", map->arena[y][x].content[DERAUMERE], &fst);
+    check_ressource(io, "sibur", map->arena[y][x].content[SIBUR], &fst);
+    check_ressource(io, "mendiane", map->arena[y][x].content[MENDIANE], &fst);
+    check_ressource(io, "phiras", map->arena[y][x].content[PHIRAS], &fst);
+    check_ressource(io, "thystame", map->arena[y][x].content[THYSTAME], &fst);
 }

@@ -5,7 +5,9 @@
 ** handle_ais_info
 */
 
+#include <stdio.h>
 #include "logger.h"
+#include "types/object.h"
 #include "zappy.h"
 
 static void display_ai(ai_t *ai)
@@ -24,23 +26,19 @@ static void display_ai(ai_t *ai)
 
 static void display_ai_ressources(ai_t *ai)
 {
-    inventory_t *inventory = &ai->inventory;
+    size_t *inventory = ai->inventory;
 
     logs(
         INFO,
         "AI [%d][Team: %s] (%s)\n"
-        "Ressources: %d %d %d %d %d %d %d\n",
+        "Ressources:",
         ai->id,
         ai->team->name,
-        ai->alive ? "alive" : "dead",
-        inventory->food,
-        inventory->linemate,
-        inventory->deraumere,
-        inventory->sibur,
-        inventory->mendiane,
-        inventory->phiras,
-        inventory->thystame
+        ai->alive ? "alive" : "dead"
     );
+    for (size_t i = FOOD; i < OBJ_COUNT; i++)
+        dprintf(2, " %lu", inventory[i]);
+    dprintf(2, "\n");
 }
 
 void handle_display_ais(zappy_t *z)

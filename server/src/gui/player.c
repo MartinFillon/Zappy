@@ -11,6 +11,7 @@
 #include "router/route.h"
 #include "str.h"
 #include "types/client.h"
+#include "types/object.h"
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {
@@ -52,20 +53,10 @@ void player_level(client_t *c, command_state_t *com)
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
 {
-    prepare_response_cat(
-        &c->io,
-        "pin %lu %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
-        nb,
-        ai->pos.x,
-        ai->pos.y,
-        ai->inventory.food,
-        ai->inventory.linemate,
-        ai->inventory.deraumere,
-        ai->inventory.sibur,
-        ai->inventory.mendiane,
-        ai->inventory.phiras,
-        ai->inventory.thystame
-    );
+    prepare_response_cat(&c->io, "pin %lu %ld %ld\n", nb, ai->pos.x, ai->pos.y);
+    for (size_t i = FOOD; i < OBJ_COUNT; i++)
+        prepare_response_cat(&c->io, " %lu", ai->inventory[i]);
+    prepare_response_cat(&c->io, "\n");
 }
 
 void player_inventory(client_t *c, command_state_t *com)
