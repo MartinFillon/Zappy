@@ -22,7 +22,6 @@
 #include "server.h"
 #include "types/client.h"
 #include "types/game.h"
-#include "utils.h"
 #include "zappy.h"
 #include "args_info.h"
 
@@ -49,7 +48,9 @@ static void handle_cli_isset(zappy_t *z, int i)
 
 static void handle_client(zappy_t *z)
 {
-    for (size_t i = 0; i < z->clients->size; i++) {
+    size_t size = z->clients->size;
+
+    for (size_t i = 0; i < size; i++) {
         handle_cli_isset(z, i);
     }
 }
@@ -107,23 +108,15 @@ static void check_eating(struct client_list *clients)
             make_ai_eat(&clients->data[i], clients, i);
 }
 
-static void erase_dead_ai(int id, struct vector_ai_t *ais)
-{
-    ai_t ai = {0};
-
-    ai.id = id;
-    vec_erase_vector_ai_t(ais, ai, &cmp_ais);
-}
-
 static void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
 {
-    for (size_t i = 0; i < clients->size; i++)
+    size_t size = clients->size;
+
+    for (size_t i = 0; i < size; i++)
         if (clients->data[i].type == AI &&
             clients->data[i].ai->alive == false) {
-            erase_dead_ai(clients->data[i].ai->id, ais);
-            close_client(&clients->data[i], clients);
-            vec_erase_at_client_list(clients, i);
-        }
+        kill_ai(clients, ais, i);
+    }
 }
 
 static void refill_map(game_t *game)
@@ -142,9 +135,9 @@ int loop_server(args_infos_t *args)
     if (init_program(args, &z))
         return ERROR;
     while (!retval) {
-        kill_dead_ais(z.clients, z.game.ais);
         fill_fd_set(&z);
         retval = select_server(&z);
+        kill_dead_ais(z.clients, z.game.ais);
         exec_clients(&z);
         check_eating(z.clients);
         refill_map(&z.game);

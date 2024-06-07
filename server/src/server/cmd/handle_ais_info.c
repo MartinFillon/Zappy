@@ -41,19 +41,21 @@ static void display_ai_ressources(ai_t *ai)
     dprintf(2, "\n");
 }
 
-void handle_display_ais(zappy_t *z)
+void handle_display_ais(zappy_t *z, struct vector_str_t *args)
 {
     struct vector_ai_t *ais = z->game.ais;
 
+    (void)args;
     for (size_t i = 0; i < ais->size; i++) {
         display_ai(&ais->data[i]);
     }
 }
 
-void handle_ressources_ais(zappy_t *z)
+void handle_ressources_ais(zappy_t *z, struct vector_str_t *args)
 {
     struct vector_ai_t *ais = z->game.ais;
 
+    (void)args;
     for (size_t i = 0; i < ais->size; i++) {
         display_ai_ressources(&ais->data[i]);
     }

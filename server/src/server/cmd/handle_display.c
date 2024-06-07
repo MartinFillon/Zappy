@@ -12,9 +12,10 @@
 #include "types/map.h"
 #include "zappy.h"
 
-void handle_display_map(zappy_t *serv)
+void handle_display_map(zappy_t *serv, struct vector_str_t *args)
 {
     map_t *map = serv->game.map;
 
+    (void)args;
     display_map(map, map->y, map->x);
 }
