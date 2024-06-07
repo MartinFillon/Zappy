@@ -64,6 +64,7 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_eggs_info\
 							handle_help 	\
 							handle_kill_player 	\
+							godmode			\
 						) 					\
 					)						\
 					$(addprefix gui/,		\

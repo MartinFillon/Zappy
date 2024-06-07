@@ -42,4 +42,6 @@ typedef struct {
 
     bool alive;
     int id;
+
+    bool godmode;
 } ai_t;
