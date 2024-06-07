@@ -34,6 +34,7 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
 Display::~Display()
 {
     CloseWindow();
+    networkHandler.stop();
 }
 
 void Display::handleEvent()
@@ -49,8 +50,7 @@ void Display::handleEvent()
 
 void Display::run()
 {
-
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose() && networkHandler.isRunning()) {
         handleServerMessage();
 
         handleEvent();
@@ -70,7 +70,6 @@ void Display::handleServerMessage()
     while (networkHandler.getMessage(message)) {
         serverMessageHandler.handleServerMessage(message);
     }
-
 }
 
 void Display::resize()
