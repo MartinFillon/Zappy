@@ -38,7 +38,7 @@ typedef struct {
 
     enum direction dir;
 
-    inventory_t inventory;
+    size_t *inventory;
     long cycles_to_wait; // if current time < this time dont do anything
     zclock_t *clock;
     zclock_t *food_clock;

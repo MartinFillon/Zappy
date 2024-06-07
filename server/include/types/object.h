@@ -16,7 +16,8 @@ enum object_e {
     SIBUR,
     MENDIANE,
     PHIRAS,
-    THYSTAME
+    THYSTAME,
+    OBJ_COUNT,
 };
 
 struct obj_name_s {
