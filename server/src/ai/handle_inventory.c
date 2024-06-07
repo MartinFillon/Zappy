@@ -5,7 +5,6 @@
 ** handle_inventory
 */
 
-#include <stdlib.h>
 #include "client.h"
 #include "router/route.h"
 #include "types/ai.h"
@@ -14,25 +13,23 @@
 
 void handle_inventory(client_t *cli, command_state_t *s)
 {
-    size_t *inv = cli->ai->inventory;
-
     (void)s;
     prepare_response(
         &cli->io,
         "[%s %d, %s %d, %s %d, %s %d, %s %d, %s %d, %s %d]\n",
         "food",
-        inv[FOOD],
+        cli->ai->inventory[FOOD],
         "linemate",
-        inv[LINEMATE],
+        cli->ai->inventory[LINEMATE],
         "deraumere",
-        inv[DERAUMERE],
+        cli->ai->inventory[DERAUMERE],
         "sibur",
-        inv[SIBUR],
+        cli->ai->inventory[SIBUR],
         "mendiane",
-        inv[MENDIANE],
+        cli->ai->inventory[MENDIANE],
         "phiras",
-        inv[PHIRAS],
+        cli->ai->inventory[PHIRAS],
         "thystame",
-        inv[THYSTAME]
+        cli->ai->inventory[THYSTAME]
     );
 }

@@ -53,7 +53,7 @@ void player_level(client_t *c, command_state_t *com)
 
 static void send_inventory(client_t *c, ai_t *ai, size_t nb)
 {
-    prepare_response_cat(&c->io, "pin %lu %ld %ld\n", nb, ai->pos.x, ai->pos.y);
+    prepare_response_cat(&c->io, "pin %lu %ld %ld", nb, ai->pos.x, ai->pos.y);
     for (size_t i = FOOD; i < OBJ_COUNT; i++)
         prepare_response_cat(&c->io, " %lu", ai->inventory[i]);
     prepare_response_cat(&c->io, "\n");

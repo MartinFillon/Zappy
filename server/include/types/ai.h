@@ -8,12 +8,9 @@
 #pragma once
 
 #include <stdlib.h>
-#include "map.h"
 #include "types/clock.h"
 #include "types/position.h"
 #include "types/team.h"
-
-typedef struct tile_content_s inventory_t;
 
 enum direction {
     UP,
