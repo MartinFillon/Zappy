@@ -59,7 +59,7 @@ class Display {
 
   private:
     void handleEvent();
-    void handleServerMessage(std::string &message);
+    void handleServerMessage();
     void resize();
     void displayMessages(int x, int y, int width, int height);
 

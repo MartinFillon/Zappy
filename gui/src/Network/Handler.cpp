@@ -121,7 +121,6 @@ void Handler::receiveMessages()
         } catch (const std::exception &e) {
             std::cerr << "Receive error: " << e.what() << std::endl;
             running = false;
-            break;
         }
     }
 }
