@@ -42,7 +42,7 @@ void give(zappy_t *z, struct vector_str_t *args)
     if (str_toint(&id, args->data[1]))
         return logs(ERROR_LEVEL, "Argument must be an id of a player\n");
     if (str_toint(&count, args->data[3]))
-        return logs(ERROR_LEVEL, "Thrid argument must be a number\n");
+        return logs(ERROR_LEVEL, "Third argument must be a number\n");
     for (size_t i = 0; i < z->clients->size; i++) {
         if (z->game.ais->data[i].id == id) {
             return try_give_object(
