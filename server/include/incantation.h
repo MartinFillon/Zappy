@@ -7,14 +7,13 @@
 
 #pragma once
 
-#include "types/map.h"
-
-typedef struct tile_content_s ressource_require_t;
+#include <stdlib.h>
+#include "types/object.h"
 
 typedef struct incant_require_s {
     size_t level;
     size_t nb_player;
-    ressource_require_t ressource;
+    size_t ressource[OBJ_COUNT];
 } incant_require_t;
 
 static const incant_require_t incant_req[] = {

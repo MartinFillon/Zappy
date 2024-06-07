@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_number 		\
 						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
@@ -61,6 +62,8 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_display 	\
 							handle_ais_info	\
 							handle_eggs_info\
+							handle_help 	\
+							handle_kill_player 	\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -78,6 +81,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						close_client		\
 						send_message_to_guis\
 						prepare_res 		\
+						kill_ai 			\
 					)						\
 					$(addprefix time/, 	\
 						clock				\

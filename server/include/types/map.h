@@ -15,15 +15,7 @@
 struct tile_s {
     struct vector_int *players;
 
-    struct tile_content_s {
-        size_t food;
-        size_t linemate;
-        size_t deraumere;
-        size_t sibur;
-        size_t mendiane;
-        size_t phiras;
-        size_t thystame;
-    } content;
+    size_t *content;
 };
 
 typedef struct {
