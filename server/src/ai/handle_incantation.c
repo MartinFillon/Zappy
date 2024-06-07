@@ -5,12 +5,14 @@
 ** handle_incantation
 */
 
+#include <stdlib.h>
 #include "client.h"
 #include "incantation.h"
 #include "types/ai.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "types/map.h"
+#include "types/object.h"
 #include "types/position.h"
 #include "utils.h"
 
@@ -56,32 +58,27 @@ static void consume_tile_incantation(
 )
 {
     struct tile_s *tile = &map->arena[y][x];
-    const ressource_require_t *tile_req = &incant_req[lvl_idx].ressource;
+    const size_t *tile_req = incant_req[lvl_idx].ressource;
 
-    tile->content.linemate -= tile_req->linemate;
-    tile->content.deraumere -= tile_req->deraumere;
-    tile->content.sibur -= tile_req->sibur;
-    tile->content.mendiane -= tile_req->mendiane;
-    tile->content.phiras -= tile_req->phiras;
-    tile->content.thystame -= tile_req->thystame;
+    for (size_t i = LINEMATE; i < OBJ_COUNT; i++)
+        tile->content[i] -= tile_req[i];
 }
 
 static bool verif_level_specification(ai_t *ai, map_t *map)
 {
     pos_t *pos = &ai->pos;
     size_t idx = ai->level - 1;
-    struct tile_content_s *con = NULL;
-    const ressource_require_t *tile = NULL;
+    size_t *con = NULL;
+    const size_t *tile = NULL;
 
     if (incant_req[idx].nb_player != map->arena[pos->y][pos->x].players->size)
         return false;
-    con = &map->arena[pos->y][pos->x].content;
-    tile = &incant_req[idx].ressource;
-    return (
-        con->linemate >= tile->linemate && con->deraumere >= tile->deraumere &&
-        con->sibur >= tile->sibur && con->mendiane >= tile->mendiane &&
-        con->phiras >= tile->phiras && con->thystame >= tile->thystame
-    );
+    con = map->arena[pos->y][pos->x].content;
+    tile = incant_req[idx].ressource;
+    for (size_t i = LINEMATE; i < OBJ_COUNT; i++)
+        if (!(con[i] >= tile[i]))
+            return false;
+    return true;
 }
 
 void handle_end_incantation(
