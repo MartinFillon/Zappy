@@ -21,6 +21,7 @@ void handle_display_ais(zappy_t *z, struct vector_str_t *args);
 void handle_ressources_ais(zappy_t *z, struct vector_str_t *args);
 void handle_display_eggs(zappy_t *serv, struct vector_str_t *args);
 void handle_help(zappy_t *serv, struct vector_str_t *args);
+void handle_kill_player(zappy_t *serv, struct vector_str_t *args);
 
 static const serv_cmds_t SERV_CMDS[] = {
     {"/display", handle_display_map,
@@ -31,6 +32,8 @@ static const serv_cmds_t SERV_CMDS[] = {
         "Display the current ressources of all the ais\n", 0},
     {"/eggs", handle_display_eggs,
         "Display informations about the eggs currently on the map\n", 0},
+    {"/kill", handle_kill_player,
+        "<id>  Kill a player with a specific id\n", 1},
     {"/help", handle_help,
         NULL, 0},
     {NULL, NULL, NULL, 0}

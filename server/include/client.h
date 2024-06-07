@@ -124,6 +124,20 @@ void free_buffer(struct buffer_s *buffer);
 void close_client(client_t *c, struct client_list *clients);
 
 /**
+ * @brief Erase client from @param clients at idx @param i
+ *        from every structures: @param clients and @param ais
+ *
+ * @param clients All the clients connected
+ * @param ais All the ais connected
+ * @param i idx of the client in @param clients
+ */
+void kill_ai(
+    struct client_list *clients,
+    struct vector_ai_t *ais,
+    size_t i
+);
+
+/**
  * @brief Make an ai eat
  *
  * @param cli the client that will eat.

@@ -16,6 +16,6 @@ void handle_help(zappy_t *serv, struct vector_str_t *args)
     (void) args;
     dprintf(1, "Supported commands:\n");
     for (size_t i = 0; SERV_CMDS[i].desc != NULL; i++) {
-        dprintf(1, "    %s: %s", SERV_CMDS[i].name, SERV_CMDS[i].desc);
+        dprintf(1, "    %s %s", SERV_CMDS[i].name, SERV_CMDS[i].desc);
     }
 }
