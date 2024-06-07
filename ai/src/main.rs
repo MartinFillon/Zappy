@@ -54,7 +54,11 @@ async fn main() {
                 res.clone().port().unwrap_or_default()
             );
             match ai::launch(address, res.name().clone().unwrap_or_default()).await {
-                Ok(_) => process::exit(SUCCESS_CODE),
+                Ok(ai) => {
+                    println!("My ai => {ai}");
+                    
+                    process::exit(SUCCESS_CODE)
+                },
                 Err(e) => {
                     eprintln!("Error: {}.", e);
                     process::exit(ERROR_CODE);

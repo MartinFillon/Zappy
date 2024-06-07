@@ -105,7 +105,7 @@ async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
     Ok(())
 }
 
-async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Result<()> {
+async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Result<AI> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
@@ -118,7 +118,7 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
     };
     info!("Client number detected as [{}].", client_number);
 
-    match lines.next() {
+    let ai = match lines.next() {
         Some(line) => {
             let mut words = line.split_whitespace();
             let x = match words.next().and_then(|word| word.parse::<i32>().ok()) {
@@ -140,17 +140,18 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
+            ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    }
+    };
     startup_commands(client).await?;
-    Ok(())
+    Ok(ai)
 }
 
-async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
+async fn start_ai(mut client: TcpClient, team: String) -> io::Result<AI> {
     info!("Starting AI...");
     client.send_request(team.clone() + "\n").await?;
-    if let Some(response) = client.get_response().await {
+    let ai = if let Some(response) = client.get_response().await {
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
@@ -161,7 +162,17 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
             }
             _ => {
                 info!("Connection to team successful");
-                init_ai(&mut client, &response, team).await?
+                match init_ai(&mut client, &response, team).await {
+                    Ok(ai) => {
+                        ai
+                    }
+                    Err(e) => {
+                        return Err(Error::new(
+                            e.kind(),
+                            e
+                        ));
+                    }
+                }
             }
         }
     } else {
@@ -170,31 +181,37 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<()> {
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
         ));
-    }
-    Ok(())
+    };
+    Ok(ai)
 }
 
 //temp
-pub async fn launch(address: String, team: String) -> io::Result<()> {
-    match tcp::handle_tcp(address.clone()).await {
+pub async fn launch(address: String, team: String) -> io::Result<AI> {
+    let ai = match tcp::handle_tcp(address.clone()).await {
         Ok(client) => {
             info!("Client connected successfully.");
             match start_ai(client, team.clone()).await {
-                Ok(_) => {
+                Ok(ai) => {
                     println!("ok");
+                    ai
                 }
                 Err(e) => {
-                    debug!("{e}");
-                    println!("ko");
+                    return Err(Error::new(
+                        e.kind(),
+                        e
+                    ));
                 }
             }
         }
         Err(e) => {
-            println!("Failed to handle TCP: {}", e);
+            return Err(Error::new(
+                e.kind(),
+                e
+            ));
         }
-    }
+    };
 
-    Ok(())
+    Ok(ai)
 }
 
 // pub async fn launch(address: String, team: String) -> io::Result<()> {
