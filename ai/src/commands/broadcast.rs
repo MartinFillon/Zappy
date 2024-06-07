@@ -7,15 +7,14 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
 use log::info;
 
-pub async fn broadcast(client: &mut TcpClient, msg: &str) -> bool {
+pub async fn broadcast(client: &mut TcpClient, msg: &str) -> Result<ResponseResult, CommandError> {
     info!("Broadcasting: ({})...", msg);
-    client
-        .check_dead(&format!("Broadcast {}\n", msg))
-        .await
-        .is_ok()
+
+    let response = client.check_dead(&format!("Broadcast {}\n", msg)).await?;
+    client.handle_response(response).await
 }

@@ -8,9 +8,11 @@
 use log::info;
 
 use crate::{
-    commands::move_up,
-    commands::turn::{self, DirectionTurn},
-    tcp::TcpClient,
+    commands::{
+        move_up,
+        turn::{self, DirectionTurn},
+    },
+    tcp::{command_handle::ResponseResult, TcpClient},
 };
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
@@ -60,33 +62,37 @@ fn get_tile_coordinates(tile: usize, lvl: usize) -> Option<(i32, i32)> {
 }
 
 async fn move_left(client: &mut TcpClient, x: i32) -> bool {
-    if !turn::turn(client, DirectionTurn::Left).await {
-        return false;
-    }
-    for _ in 0..=(-x) {
-        if !move_up::move_up(client).await {
-            return false;
+    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
+        // to handle eject/message
+        for _ in 0..=(-x) {
+            if move_up::move_up(client).await.is_err() {
+                // to handle eject/message
+                return false;
+            }
+        }
+        if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
+            // to handle eject/message
+            return true;
         }
     }
-    if !turn::turn(client, DirectionTurn::Right).await {
-        return false;
-    }
-    true
+    false
 }
 
 async fn move_right(client: &mut TcpClient, x: i32) -> bool {
-    if !turn::turn(client, DirectionTurn::Right).await {
-        return false;
-    }
-    for _ in 0..=x {
-        if !move_up::move_up(client).await {
-            return false;
+    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
+        // to handle eject/message
+        for _ in 0..=x {
+            if move_up::move_up(client).await.is_err() {
+                // to handle eject/message
+                return false;
+            }
+        }
+        if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
+            // to handle eject/message
+            return true;
         }
     }
-    if !turn::turn(client, DirectionTurn::Left).await {
-        return false;
-    }
-    true
+    false
 }
 
 pub async fn move_to_tile(client: &mut TcpClient, tile: usize, lvl: usize) -> bool {
@@ -94,10 +100,12 @@ pub async fn move_to_tile(client: &mut TcpClient, tile: usize, lvl: usize) -> bo
     match get_tile_coordinates(tile, lvl) {
         Some((x, y)) => {
             if (x < 0 && !move_left(client, x).await) || (x > 0 && !move_right(client, x).await) {
+                // to handle eject/message
                 return false;
             }
             for _ in 0..=y {
-                if !move_up::move_up(client).await {
+                if move_up::move_up(client).await.is_err() {
+                    // to handle eject/message
                     return false;
                 }
             }
