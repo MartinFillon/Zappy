@@ -8,9 +8,10 @@
 #pragma once
 
 #include <stddef.h>
-#include "types/ai.h"
 #include "types/clock.h"
+#include "types/map.h"
 
+#include "types/ai.h"
 #define TYPE ai_t
 #include "vector.h"
 

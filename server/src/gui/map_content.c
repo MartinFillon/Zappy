@@ -23,19 +23,10 @@ static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
         prepare_response_cat(&c->io, "sbp\n");
         return;
     }
-    prepare_response_cat(
-        &c->io,
-        "bct %ld %ld %lu %lu %lu %lu %lu %lu %lu\n",
-        x,
-        y,
-        tile->content.food,
-        tile->content.linemate,
-        tile->content.deraumere,
-        tile->content.sibur,
-        tile->content.mendiane,
-        tile->content.phiras,
-        tile->content.thystame
-    );
+    prepare_response_cat(&c->io, "bct %ld %ld", x, y);
+    for (size_t i = FOOD; i < OBJ_COUNT; i++)
+        prepare_response_cat(&c->io, " %lu", map->arena[y][x].content[i]);
+    prepare_response_cat(&c->io, "\n");
 }
 
 void map_content_tile(client_t *cli, command_state_t *com)

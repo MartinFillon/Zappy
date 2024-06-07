@@ -12,8 +12,16 @@
 
 static const route_t CONTENT_ROUTE = {
     .args = 0,
-    .command = "bct",
+    .command = "mct",
     .f = &map_content_full,
+    .mode = GUI,
+    .time = 0,
+};
+
+static const route_t TILE_CONTENT_ROUTE = {
+    .args = 2,
+    .command = "bct",
+    .f = &map_content_tile,
     .mode = GUI,
     .time = 0,
 };

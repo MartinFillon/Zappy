@@ -24,22 +24,7 @@ static void take_object_down(
 {
     if (!take_item(map, cli->ai->pos.x, cli->ai->pos.y, obj->obj))
         return prepare_response_cat(&cli->io, "ko\n");
-    switch (obj->obj) {
-        case FOOD:
-            return increment_item(cli, &cli->ai->inventory.food);
-        case LINEMATE:
-            return increment_item(cli, &cli->ai->inventory.linemate);
-        case DERAUMERE:
-            return increment_item(cli, &cli->ai->inventory.deraumere);
-        case SIBUR:
-            return increment_item(cli, &cli->ai->inventory.sibur);
-        case MENDIANE:
-            return increment_item(cli, &cli->ai->inventory.mendiane);
-        case PHIRAS:
-            return increment_item(cli, &cli->ai->inventory.phiras);
-        case THYSTAME:
-            return increment_item(cli, &cli->ai->inventory.thystame);
-    }
+    return increment_item(cli, &cli->ai->inventory[obj->obj]);
 }
 
 void handle_take_object(client_t *cli, command_state_t *s)

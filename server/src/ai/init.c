@@ -13,6 +13,7 @@
 #include "queue.h"
 #include "types/ai.h"
 #include "types/client.h"
+#include "types/object.h"
 #include "types/team.h"
 
 static void send_infos(
@@ -46,7 +47,8 @@ static void send_infos(
 
 static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
 {
-    new->inventory.food = 20;
+    new->inventory = calloc(OBJ_COUNT, sizeof(size_t));
+    new->inventory[FOOD] = 10;
     new->alive = true;
     new->id = egg->id;
     new->pos = egg->pos;

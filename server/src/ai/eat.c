@@ -12,6 +12,7 @@
 #include "logger.h"
 #include "types/ai.h"
 #include "types/client.h"
+#include "types/object.h"
 
 static void send_death(int n, struct client_list *clients)
 {
@@ -26,7 +27,7 @@ void make_ai_eat(client_t *cli, struct client_list *clients, int n)
 {
     if (!cli->ai->alive || !has_n_ticks_passed(cli->ai->food_clock, 126))
         return;
-    if (cli->ai->inventory.food == 0) {
+    if (cli->ai->inventory[FOOD] == 0) {
         logs(INFO, "Ai %d is dead\n", n);
         prepare_response_cat(&cli->io, "dead\n");
         send_death(n, clients);
@@ -34,6 +35,6 @@ void make_ai_eat(client_t *cli, struct client_list *clients, int n)
         return;
     }
     logs(INFO, "Cli %d is eating\n", n);
-    cli->ai->inventory.food -= 1;
+    cli->ai->inventory[FOOD] -= 1;
     reset_clock(cli->ai->food_clock);
 }
