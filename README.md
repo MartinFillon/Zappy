@@ -90,6 +90,10 @@ The levels are set using the `-l` argument and are the following.
 - `DEBUG`
 - `DISABLED`
 
+### GUI
+
+The gui as a debug mode by adding the argument `-d` and the value `true` or `false` to enable or disable the log from raylib
+
 ## Code documentation
 
 There are two main directories for the code documentation. They can be generated using `make docs`.
