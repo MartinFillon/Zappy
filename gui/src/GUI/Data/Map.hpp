@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
+#include "../InfoBox.hpp"
 #include "Egg.hpp"
 #include "Player.hpp"
 #include "Pos.hpp"
 #include "Tile.hpp"
-#include "../InfoBox.hpp"
 
 namespace GUI {
 namespace Data {
@@ -35,7 +35,7 @@ class Map {
     void resize(int x, int y);
     void resize(const Pos<int, 2> &size);
 
-    void checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox);
+    void checkCollision(InfoBox &infoBox);
     void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const;
 
   private:
@@ -43,6 +43,7 @@ class Map {
     std::vector<std::shared_ptr<Player>> m_players;
     std::vector<std::shared_ptr<Egg>> m_eggs;
     Pos<int, 2> m_size;
+    mutable int x, y, end_x, end_y;
 };
 
 } // namespace Data
