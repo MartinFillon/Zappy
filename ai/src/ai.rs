@@ -15,7 +15,7 @@ pub mod knight;
 pub mod queen;
 
 use crate::commands;
-use crate::tcp::command_handle::{CommandError, Direction};
+use crate::tcp::command_handle::{CommandError, Direction, ResponseResult};
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;
@@ -50,7 +50,7 @@ pub struct AI {
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
     fn update(&mut self);
-    async fn loop_ai(&mut self) -> Result<(), CommandError>;
+    async fn loop_ai(&mut self, requirement: crate::Config) -> Result<(), CommandError>;
 }
 
 impl Display for AIState {
@@ -100,12 +100,21 @@ impl Display for AI {
     }
 }
 
-async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
+async fn startup_commands(client: &mut TcpClient, ai: &mut AI) -> io::Result<()> {
     info!("Sending startup commands...");
     match commands::inventory::inventory(client).await {
         Ok(res) => {
             info!("Inventory checked.");
             println!("{}", res);
+            match res {
+                ResponseResult::Inventory(vec) => {
+                    println!("Vector Here");
+                    for (key, val) in vec.iter() {
+                        
+                    }
+                }
+                _ => println!("Not a vector"),
+            }
         }
         Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
@@ -125,7 +134,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
     };
     info!("Client number detected as [{}].", client_number);
 
-    let ai = match lines.next() {
+    let mut ai = match lines.next() {
         Some(line) => {
             let mut words = line.split_whitespace();
             let x = match words.next().and_then(|word| word.parse::<i32>().ok()) {
@@ -153,7 +162,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
     };
 
     let mut client_lock = client.lock().await;
-    startup_commands(&mut client_lock).await?;
+    startup_commands(&mut client_lock, &mut ai).await?;
     Ok(ai)
 }
 

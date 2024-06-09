@@ -36,7 +36,7 @@ impl AIHandler for Bot {
     }
 
     fn update(&mut self) {}
-    async fn loop_ai(&mut self) -> Result<(), CommandError> {
+    async fn loop_ai(&mut self, requirement: crate::Config) -> Result<(), CommandError> {
         Ok(())
     }
 }

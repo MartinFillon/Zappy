@@ -9,10 +9,7 @@ use core::fmt;
 use std::fmt::{Display, Formatter};
 
 use crate::{
-    ai::{AIHandler, AI},
-    commands,
-    tcp::command_handle,
-    tcp::command_handle::CommandError
+    ai::{AIHandler, AI}, commands, elevation::Config, tcp::command_handle::{self, CommandError}
 };
 
 use super::AIState;
@@ -20,7 +17,7 @@ use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub struct Queen {
-    pub info: AI,
+    pub info: AI
 }
 
 impl Queen {
@@ -31,10 +28,18 @@ impl Queen {
         ai
     }
 
-    fn check_requirement() {}
+    fn check_requirement(&self, requirement: Config) -> bool
+    {
+        let idx = self.info.level - 1;
+        let require = &requirement.elevation[idx];
+        println!("{}", require);
+        // Check the look response with the the requirement.
+        true
+    }
 }
 
 #[async_trait]
+// Handle Eject DON'T FORGET.
 impl AIHandler for Queen {
     fn init(&mut self, info: AI) -> Self {
         Self::new(info)
@@ -42,18 +47,24 @@ impl AIHandler for Queen {
 
     fn update(&mut self) {}
 
-    async fn loop_ai(&mut self) -> Result<(), command_handle::CommandError> {
-        // Handle Eject.
-        // while 1 == 1 {
-        // match {
-        //     check_requirement => Incantation,
-        //     Inventory,
-        // }
-        // }
-        // commands::move_up::move_up(self.info.client).await;
-        // commands::move_up::move_up(self.info.client).await;
-        // commands::move_up::move_up(self.info.client).await;
-        // commands::move_up::move_up(self.info.client).await;
+    async fn loop_ai(&mut self, requirement: Config) -> Result<(), command_handle::CommandError> {
+        self.check_requirement(requirement);
+        /*
+        while 1 == 1 {
+            Look ==> In the current Look array,
+            Inventory ==> In the current inventory,
+            if check_take_food() {
+                Take food
+            },
+            if check_requirement() && check_enough_food() {
+                Incantation
+            }
+        }
+        commands::move_up::move_up(self.info.client).await;
+        commands::move_up::move_up(self.info.client).await;
+        commands::move_up::move_up(self.info.client).await;
+        commands::move_up::move_up(self.info.client).await;
+        */
         Ok(())
     }
 }
