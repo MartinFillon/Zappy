@@ -19,7 +19,7 @@ Map::Map(int x, int y) : m_size({x, y})
 Map::Map(const Pos<int, 2> &pos) : m_size(pos)
 {
     resize(pos);
-    std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
+    std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "debugTeam", 99, true);
     m_players.push_back(test);
 }
 
@@ -171,6 +171,8 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         }
     }
     for (const auto &player : m_players) {
+        if (!player->isHatched())
+            continue;
         int playerX = player->getPos().x() * tileSize + start_x;
         int playerY = player->getPos().y() * tileSize + start_y;
 
