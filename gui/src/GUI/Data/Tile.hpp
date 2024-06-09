@@ -13,7 +13,7 @@ namespace GUI {
 namespace Data {
 class Tile : public ASelectItem {
   public:
-    Tile(int x, int y): ASelectItem({x, y}) {};
+    Tile(int x, int y): ASelectItem(x, y) {};
     Tile(const Pos<int, 2> &pos): ASelectItem(pos) {};
     ~Tile() = default;
 
