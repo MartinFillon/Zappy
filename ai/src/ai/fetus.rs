@@ -6,6 +6,7 @@
 //
 
 use crate::ai::{AIHandler, AI};
+use crate::tcp::command_handle::CommandError;
 
 #[derive(Debug, Clone, Default)]
 pub struct Fetus {}
@@ -15,5 +16,7 @@ impl AIHandler for Fetus {
         Self::default()
     }
 
-    fn update(&mut self) {}
+    async fn update(&mut self) -> Result<(), CommandError> {
+        Ok(())
+    }
 }

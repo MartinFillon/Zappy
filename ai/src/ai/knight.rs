@@ -6,6 +6,7 @@
 //
 
 use crate::ai::{AIHandler, AI};
+use crate::tcp::command_handle::CommandError;
 
 #[derive(Debug, Clone)]
 pub struct Knight {
@@ -23,5 +24,7 @@ impl AIHandler for Knight {
         Self::new(info)
     }
 
-    fn update(&mut self) {}
+    async fn update(&mut self) -> Result<(), CommandError> {
+        Ok(())
+    }
 }

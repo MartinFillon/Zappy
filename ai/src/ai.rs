@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(unused_mut)]
 
 pub mod bot;
 pub mod fetus;
@@ -14,7 +15,7 @@ pub mod knight;
 pub mod queen;
 
 use crate::commands;
-use crate::tcp::command_handle::Direction;
+use crate::tcp::command_handle::{CommandError, Direction};
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;
@@ -22,7 +23,7 @@ use std::fmt::{Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::Arc;
 
-use tokio::{task, sync::Mutex};
+use tokio::{sync::Mutex, task};
 
 use log::{debug, info};
 
@@ -46,7 +47,7 @@ pub struct AI {
 
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
-    fn update(&mut self);
+    async fn update(&mut self) -> Result<(), CommandError>;
 }
 
 impl Display for AIState {
@@ -161,7 +162,7 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<()>
     if let Some(response) = {
         let mut client_lock = client.lock().await;
         client_lock.get_response().await
-    }{
+    } {
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
