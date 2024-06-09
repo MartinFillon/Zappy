@@ -8,9 +8,10 @@
 #include "TimeUnitInput.hpp"
 #include <raylib.h>
 
-TimeUnitInput::TimeUnitInput(int initialValue)
+TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
     : timeUnit(initialValue), oldTimeUnit(initialValue), timeUnitStr(std::to_string(initialValue)), selected(false),
-      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), x(0), y(0), width(0), height(0)
+      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), x(0), y(0), width(0), height(0),
+      networkHandler(networkHandler)
 {
 }
 
@@ -75,6 +76,7 @@ void TimeUnitInput::handleEvent()
             timeUnit = std::stoi(timeUnitStr);
             timeUnitStr = std::to_string(timeUnit);
             selected = false;
+            networkHandler.modifyTimeUnit(timeUnit);
         }
         if (key == KEY_ESCAPE) {
             timeUnit = oldTimeUnit;
@@ -93,4 +95,12 @@ void TimeUnitInput::handleEvent()
 int TimeUnitInput::getTimeUnit() const
 {
     return timeUnit;
+}
+
+void TimeUnitInput::setTimeUnit(int time)
+{
+    timeUnit = time;
+    if (!selected) {
+        timeUnitStr = std::to_string(timeUnit);
+    }
 }

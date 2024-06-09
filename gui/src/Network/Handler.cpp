@@ -107,6 +107,7 @@ void Handler::run()
             std::this_thread::sleep_for(std::chrono::seconds(1));
             requestMapSize();
             requestMapContent();
+            requestTimeUnit();
         }
     } catch (const std::exception &e) {
         std::cerr << "Network error: " << e.what() << std::endl;
