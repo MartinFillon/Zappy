@@ -100,18 +100,15 @@ impl Display for AI {
     }
 }
 
-async fn startup_commands(client: &mut TcpClient, ai: &mut AI) -> io::Result<()> {
+async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
     info!("Sending startup commands...");
     match commands::inventory::inventory(client).await {
         Ok(res) => {
             info!("Inventory checked.");
             println!("{}", res);
             match res {
-                ResponseResult::Inventory(vec) => {
+                ResponseResult::Inventory(_) => {
                     println!("Vector Here");
-                    for (key, val) in vec.iter() {
-                        
-                    }
                 }
                 _ => println!("Not a vector"),
             }
@@ -162,7 +159,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
     };
 
     let mut client_lock = client.lock().await;
-    startup_commands(&mut client_lock, &mut ai).await?;
+    startup_commands(&mut client_lock).await?;
     Ok(ai)
 }
 

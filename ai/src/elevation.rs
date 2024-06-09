@@ -45,6 +45,34 @@ pub struct Config {
     pub elevation: Vec::<Elevation>,
 }
 
+impl Inventory {
+    pub fn clear(&mut self) {
+        self.food = 0;
+        self.linemate = 0;
+        self.deraumere = 0;
+        self.sibur = 0;
+        self.mendiane = 0;
+        self.phiras = 0;
+        self.thystame = 0;
+    }
+}
+
+impl Display for Inventory {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[Inventory]: food={}, linemate={}, deraumere={}, sibur={}, mendiane={}, phiras={}, thystame={}",
+            self.food,
+            self.linemate,
+            self.deraumere,
+            self.sibur,
+            self.mendiane,
+            self.phiras,
+            self.thystame
+        )
+    }
+}
+
 impl Display for Elevation {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
