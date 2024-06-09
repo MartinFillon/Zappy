@@ -5,19 +5,14 @@
 ** Display
 */
 
-#include <raylib.h>
-
-#include "Data/Map.hpp"
 #include "Display.hpp"
-#include "MessageBox.hpp"
-#include "ServerMessageHandler.hpp"
 
 namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       timeUnit(100), endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height),
-      messageBox()
+      messageBox(), timeUnitInput(100)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -43,9 +38,10 @@ void Display::handleEvent()
         resize();
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        map.checkCollision(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        map.checkCollision(infoBox);
     }
-    messageBox.handleInput(offsetX, offsetY + newHeight - 200, 400, 200);
+    messageBox.handleInput();
+    timeUnitInput.handleEvent();
 }
 
 void Display::run()
@@ -60,6 +56,7 @@ void Display::run()
         map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
         infoBox.display(offsetX, offsetY, 400, 300);
         messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
+        timeUnitInput.display(offsetX + 10, offsetY + 340, 200, 30);
         EndDrawing();
     }
 }

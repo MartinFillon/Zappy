@@ -5,15 +5,16 @@
 ** MessageBox
 */
 
-
-
 #include "MessageBox.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include "define.hpp"
 
-MessageBox::MessageBox() : m_scrollOffset(0), m_lineHeight(20), m_totalLines(0), m_maxLines(0) {}
+MessageBox::MessageBox()
+    : m_scrollOffset(0), m_lineHeight(20), m_totalLines(0), m_maxLines(0), x(0), y(0), width(0), height(0)
+{
+}
 
 void MessageBox::addMessage(const std::string &message, int user)
 {
@@ -77,7 +78,7 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
     return lines;
 }
 
-bool MessageBox::isMouseOver(int x, int y, int width, int height) const
+bool MessageBox::isMouseOver() const
 {
     return CheckCollisionPointRec(
         GetMousePosition(),
@@ -91,9 +92,9 @@ void MessageBox::scroll(int amount)
     m_scrollOffset = std::clamp(m_scrollOffset + amount, 0, maxOffset);
 }
 
-void MessageBox::handleInput(int x, int y, int width, int height)
+void MessageBox::handleInput()
 {
-    if (!isMouseOver(x, y, width, height)) {
+    if (!isMouseOver()) {
         return;
     }
     int scrollAmount = GetMouseWheelMove();
@@ -104,6 +105,10 @@ void MessageBox::handleInput(int x, int y, int width, int height)
 
 void MessageBox::display(int x, int y, int width, int height)
 {
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
     DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
     m_maxLines = height / m_lineHeight;

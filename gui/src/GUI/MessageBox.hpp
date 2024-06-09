@@ -7,21 +7,21 @@
 
 #pragma once
 
+#include <chrono>
 #include <raylib.h>
 #include <string>
 #include <vector>
-#include <chrono>
 
 class MessageBox {
-public:
+  public:
     MessageBox();
     void addMessage(const std::string &message, int user);
     void display(int x, int y, int width, int height);
     void scroll(int amount);
-    bool isMouseOver(int x, int y, int width, int height) const;
-    void handleInput(int x, int y, int width, int height);
+    bool isMouseOver() const;
+    void handleInput();
 
-private:
+  private:
     struct FormattedMessage {
         std::chrono::steady_clock::time_point time;
         std::string user;
@@ -37,4 +37,5 @@ private:
     int m_maxLines;
     std::vector<FormattedMessage> m_formattedMessages;
     std::vector<std::string> m_team;
+    mutable int x, y, width, height;
 };

@@ -15,6 +15,7 @@
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
 #include "InfoBox.hpp"
+#include "TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 
@@ -72,6 +73,7 @@ class Display {
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
     InfoBox infoBox;
+    TimeUnitInput timeUnitInput;
 };
 
 } // namespace GUI
