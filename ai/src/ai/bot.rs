@@ -6,6 +6,7 @@
 //
 
 use crate::ai::{AIHandler, AI};
+use crate::tcp::command_handle::CommandError;
 use crate::tcp::command_handle::Direction;
 
 use log::info;
@@ -33,6 +34,9 @@ impl AIHandler for Bot {
     }
 
     fn update(&mut self) {}
+    async fn loop_ai(&mut self) -> Result<(), CommandError> {
+        Ok(())
+    }
 }
 
 impl Bot {

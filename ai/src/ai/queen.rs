@@ -5,17 +5,31 @@
 // queen
 //
 
-use crate::ai::{AIHandler, AI};
+use core::fmt;
+use std::fmt::{Display, Formatter};
+
+use crate::{
+    ai::{AIHandler, AI},
+    commands,
+    tcp::command_handle,
+};
+
+use super::AIState;
 
 #[derive(Debug, Clone)]
 pub struct Queen {
-    info: AI,
+    pub info: AI,
 }
 
 impl Queen {
-    fn new(info: AI) -> Self {
-        Self { info }
+    /// Creates a new [`Queen`].
+    pub fn new(info: AI) -> Self {
+        let mut ai = Self { info };
+        ai.info.state = Some(AIState::Queen);
+        ai
     }
+
+    fn check_requirement() {}
 }
 
 impl AIHandler for Queen {
@@ -24,4 +38,25 @@ impl AIHandler for Queen {
     }
 
     fn update(&mut self) {}
+
+    async fn loop_ai(&mut self) -> Result<(), command_handle::CommandError> {
+        // Handle Eject.
+        // while 1 == 1 {
+        // match {
+        //     check_requirement => Incantation,
+        //     Inventory,
+        // }
+        // }
+        // commands::move_up::move_up(self.info.client).await;
+        // commands::move_up::move_up(self.info.client).await;
+        // commands::move_up::move_up(self.info.client).await;
+        // commands::move_up::move_up(self.info.client).await;
+        Ok(())
+    }
+}
+
+impl Display for Queen {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "Queen => {}", self.info)
+    }
 }

@@ -7,6 +7,7 @@
 
 use std::process;
 
+use ai::{queen::Queen, AIHandler};
 use elevation::Elevation;
 use env_logger::{Builder, Env};
 use log::info;
@@ -56,9 +57,12 @@ async fn main() {
             match ai::launch(address, res.name().clone().unwrap_or_default()).await {
                 Ok(ai) => {
                     println!("My ai => {ai}");
-                    
-                    process::exit(SUCCESS_CODE)
-                },
+                    let mut queen = Queen::new(ai);
+                    if let Err(e) = queen.loop_ai().await {
+                        println!("Error: {}", e);
+                        process::exit(ERROR_CODE);
+                    }
+                }
                 Err(e) => {
                     eprintln!("Error: {}.", e);
                     process::exit(ERROR_CODE);
@@ -71,4 +75,5 @@ async fn main() {
             process::exit(ERROR_CODE)
         }
     }
+    process::exit(SUCCESS_CODE);
 }

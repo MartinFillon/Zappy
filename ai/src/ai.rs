@@ -14,6 +14,7 @@ pub mod knight;
 pub mod queen;
 
 use crate::commands;
+use crate::tcp::command_handle::CommandError;
 use crate::tcp::command_handle::Direction;
 use crate::tcp::{self, TcpClient};
 
@@ -27,7 +28,7 @@ use tokio::task;
 use log::{debug, info};
 
 #[derive(Debug, Clone)]
-enum AIState {
+pub enum AIState {
     Bot,
     Queen,
     Knight,
@@ -40,12 +41,13 @@ pub struct AI {
     client: i32,
     map: (i32, i32),
     level: usize,
-    state: Option<AIState>,
+    pub state: Option<AIState>,
 }
 
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
     fn update(&mut self);
+    async fn loop_ai(&mut self) -> Result<(), CommandError>;
 }
 
 impl Display for AIState {
@@ -163,14 +165,9 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<AI> {
             _ => {
                 info!("Connection to team successful");
                 match init_ai(&mut client, &response, team).await {
-                    Ok(ai) => {
-                        ai
-                    }
+                    Ok(ai) => ai,
                     Err(e) => {
-                        return Err(Error::new(
-                            e.kind(),
-                            e
-                        ));
+                        return Err(Error::new(e.kind(), e));
                     }
                 }
             }
@@ -196,21 +193,14 @@ pub async fn launch(address: String, team: String) -> io::Result<AI> {
                     ai
                 }
                 Err(e) => {
-                    return Err(Error::new(
-                        e.kind(),
-                        e
-                    ));
+                    return Err(Error::new(e.kind(), e));
                 }
             }
         }
         Err(e) => {
-            return Err(Error::new(
-                e.kind(),
-                e
-            ));
+            return Err(Error::new(e.kind(), e));
         }
     };
-
     Ok(ai)
 }
 
