@@ -68,4 +68,7 @@ re: fclean all
 docs: docs-clean
 	doxygen Doxyfile && mv doc/html ../doc/gui
 
-.PHONY: all clean fclean re tests_run
+debug: CXXFLAGS += -g3
+debug: re
+
+.PHONY: all clean fclean re tests_run debug docs docs-clean

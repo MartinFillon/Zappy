@@ -34,6 +34,7 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
 Display::~Display()
 {
     CloseWindow();
+    networkHandler.stop();
 }
 
 void Display::handleEvent()
@@ -49,10 +50,8 @@ void Display::handleEvent()
 
 void Display::run()
 {
-    std::string message;
-
-    while (!WindowShouldClose()) {
-        handleServerMessage(message);
+    while (!WindowShouldClose() && networkHandler.isRunning()) {
+        handleServerMessage();
 
         handleEvent();
         BeginDrawing();
@@ -65,12 +64,12 @@ void Display::run()
     }
 }
 
-void Display::handleServerMessage(std::string &message)
+void Display::handleServerMessage()
 {
-    if (!networkHandler.getMessage(message)) {
-        return;
+    std::string message;
+    while (networkHandler.getMessage(message)) {
+        serverMessageHandler.handleServerMessage(message);
     }
-    serverMessageHandler.handleServerMessage(message);
 }
 
 void Display::resize()
