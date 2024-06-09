@@ -8,6 +8,8 @@
 use crate::ai::{AIHandler, AI};
 use crate::tcp::command_handle::{CommandError, Direction};
 
+use async_trait::async_trait;
+
 use log::info;
 
 #[derive(Debug, Clone)]
@@ -27,6 +29,7 @@ impl Bot {
     }
 }
 
+#[async_trait]
 impl AIHandler for Bot {
     fn init(&mut self, info: AI) -> Self {
         Self::new(info)

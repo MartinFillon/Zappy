@@ -8,6 +8,8 @@
 use crate::ai::{AIHandler, AI};
 use crate::tcp::command_handle::CommandError;
 
+use async_trait::async_trait;
+
 #[derive(Debug, Clone)]
 pub struct Knight {
     info: AI,
@@ -19,6 +21,7 @@ impl Knight {
     }
 }
 
+#[async_trait]
 impl AIHandler for Knight {
     fn init(&mut self, info: AI) -> Self {
         Self::new(info)

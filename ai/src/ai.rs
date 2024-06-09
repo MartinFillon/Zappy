@@ -23,6 +23,7 @@ use std::fmt::{Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::Arc;
 
+use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
 use log::{debug, info};
@@ -45,6 +46,7 @@ pub struct AI {
     state: Option<AIState>,
 }
 
+#[async_trait]
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
