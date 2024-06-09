@@ -26,11 +26,12 @@ static void put_in_team(
 )
 {
     logs(INFO, "Client %d is trying to be an AI\n", c->fd);
-    c->type = AI;
     if (init_ai(game, c, &game->teams->data[i], clients)) {
         prepare_response_cat(&c->io, "ko\n");
         logs(INFO, "No more eggs to place %d\n", c->fd);
+        return;
     }
+    c->type = AI;
     logs(INFO, "AI inited\n");
 }
 
@@ -85,7 +86,6 @@ void unset_command(client_t *c, command_state_t *s)
         return logs(WARNING, "No teams set\n");
     for (size_t i = 0; i < s->game->teams->size; i++)
         if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
-            c->type = AI;
             logs(
                 INFO,
                 "Client %d is a AI of team %s\n",
