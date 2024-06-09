@@ -36,7 +36,7 @@ class Display {
 
     void setTimeUnit(int time)
     {
-        timeUnit = time;
+        timeUnitInput.setTimeUnit(time);
     }
 
     void setEndGame(std::vector<std::string> message, bool end = true)
@@ -47,7 +47,7 @@ class Display {
 
     int getTimeUnit() const
     {
-        return timeUnit;
+        return timeUnitInput.getTimeUnit();
     }
 
     void addMessage(std::string message, int user = SERVER)
@@ -67,7 +67,6 @@ class Display {
     ServerMessageHandler serverMessageHandler;
     bool debug;
     Data::Map map;
-    int timeUnit;
     bool endGame;
     std::vector<std::string> endGameMessage;
     int offsetX, offsetY, newWidth, newHeight;
