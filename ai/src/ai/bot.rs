@@ -8,6 +8,7 @@
 use crate::ai::{AIHandler, AI};
 use crate::tcp::command_handle::CommandError;
 use crate::tcp::command_handle::Direction;
+use async_trait::async_trait;
 
 use log::info;
 
@@ -28,6 +29,7 @@ impl Bot {
     }
 }
 
+#[async_trait]
 impl AIHandler for Bot {
     fn init(&mut self, info: AI) -> Self {
         Self::new(info)
@@ -65,13 +67,13 @@ impl Bot {
         match direction {
             Direction::Center => self.update_coord_movement((0, 0)),
             Direction::North => self.update_coord_movement((0, 1)),
-            Direction::NorthWest => self.update_coord_movement((-1, 1)),
+            Direction::NorthWest => self.update_coord_movement((0, 0)),
             Direction::West => self.update_coord_movement((-1, 0)),
-            Direction::SouthWest => self.update_coord_movement((-1, -1)),
+            Direction::SouthWest => self.update_coord_movement((0, 0)),
             Direction::South => self.update_coord_movement((0, -1)),
-            Direction::SouthEast => self.update_coord_movement((1, -1)),
+            Direction::SouthEast => self.update_coord_movement((0, 0)),
             Direction::East => self.update_coord_movement((1, 0)),
-            Direction::NorthEast => self.update_coord_movement((1, 1)),
+            Direction::NorthEast => self.update_coord_movement((0, 0)),
         }
     }
 

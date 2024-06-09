@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(unused_mut)]
 
 pub mod bot;
 pub mod fetus;
@@ -14,8 +15,7 @@ pub mod knight;
 pub mod queen;
 
 use crate::commands;
-use crate::tcp::command_handle::CommandError;
-use crate::tcp::command_handle::Direction;
+use crate::tcp::command_handle::{CommandError, Direction};
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;
@@ -23,7 +23,8 @@ use std::fmt::{Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::Arc;
 
-use tokio::task;
+use async_trait::async_trait;
+use tokio::{sync::Mutex, task};
 
 use log::{debug, info};
 
@@ -38,12 +39,14 @@ pub enum AIState {
 #[derive(Debug, Clone)]
 pub struct AI {
     team: String,
-    client: i32,
+    cli_id: i32,
+    client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
     pub state: Option<AIState>,
 }
 
+#[async_trait]
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
     fn update(&mut self);
@@ -64,13 +67,15 @@ impl Display for AIState {
 impl AI {
     fn new(
         team: String,
-        client: i32,
+        cli_id: i32,
+        client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
         state: Option<AIState>,
     ) -> Self {
         Self {
             team,
+            cli_id,
             client,
             map,
             level,
@@ -87,7 +92,7 @@ impl Display for AI {
             <Option<AIState> as Clone>::clone(&self.state)
                 .map_or_else(|| String::from("None"), |p| p.to_string()),
             self.team,
-            self.client,
+            self.cli_id,
             self.map.0,
             self.map.1,
             self.level
@@ -107,7 +112,7 @@ async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
     Ok(())
 }
 
-async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Result<AI> {
+async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) -> io::Result<AI> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
@@ -138,7 +143,7 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, (x, y), 1, None);
+            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1, None);
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
@@ -146,14 +151,22 @@ async fn init_ai(client: &mut TcpClient, response: &str, team: String) -> io::Re
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     };
-    startup_commands(client).await?;
+
+    let mut client_lock = client.lock().await;
+    startup_commands(&mut client_lock).await?;
     Ok(ai)
 }
 
-async fn start_ai(mut client: TcpClient, team: String) -> io::Result<AI> {
+async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI> {
     info!("Starting AI...");
-    client.send_request(team.clone() + "\n").await?;
-    let ai = if let Some(response) = client.get_response().await {
+    {
+        let mut client_lock = client.lock().await;
+        client_lock.send_request(team.clone() + "\n").await?;
+    }
+    if let Some(response) = {
+        let mut client_lock = client.lock().await;
+        client_lock.get_response().await
+    } {
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
@@ -164,12 +177,8 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<AI> {
             }
             _ => {
                 info!("Connection to team successful");
-                match init_ai(&mut client, &response, team).await {
-                    Ok(ai) => ai,
-                    Err(e) => {
-                        return Err(Error::new(e.kind(), e));
-                    }
-                }
+                let ai = init_ai(client.clone(), &response, team).await?;
+                return Ok(ai)
             }
         }
     } else {
@@ -179,7 +188,6 @@ async fn start_ai(mut client: TcpClient, team: String) -> io::Result<AI> {
             "Couldn't reach host.",
         ));
     };
-    Ok(ai)
 }
 
 //temp
@@ -187,7 +195,8 @@ pub async fn launch(address: String, team: String) -> io::Result<AI> {
     let ai = match tcp::handle_tcp(address.clone()).await {
         Ok(client) => {
             info!("Client connected successfully.");
-            match start_ai(client, team.clone()).await {
+            let client = Arc::new(Mutex::new(client));
+            match start_ai(client.clone(), team.clone()).await {
                 Ok(ai) => {
                     println!("ok");
                     ai
@@ -212,9 +221,10 @@ pub async fn launch(address: String, team: String) -> io::Result<AI> {
 //         match tcp::handle_tcp(address.clone()).await {
 //             Ok(client) => {
 //                 let team: Arc<String> = Arc::clone(&team);
+//                 let client = Arc::new(Mutex::new(client));
 //                 let handle = task::spawn(async move {
 //                     let team_str = &*team;
-//                     match start_ai(client, team_str.clone()).await {
+//                     match start_ai(client.clone(), team_str.clone()).await {
 //                         Ok(_) => {
 //                             println!("ok");
 //                             Ok(())
