@@ -61,13 +61,13 @@ impl Bot {
         match direction {
             Direction::Center => self.update_coord_movement((0, 0)),
             Direction::North => self.update_coord_movement((0, 1)),
-            Direction::NorthWest => self.update_coord_movement((-1, 1)),
+            Direction::NorthWest => self.update_coord_movement((0, 0)),
             Direction::West => self.update_coord_movement((-1, 0)),
-            Direction::SouthWest => self.update_coord_movement((-1, -1)),
+            Direction::SouthWest => self.update_coord_movement((0, 0)),
             Direction::South => self.update_coord_movement((0, -1)),
-            Direction::SouthEast => self.update_coord_movement((1, -1)),
+            Direction::SouthEast => self.update_coord_movement((0, 0)),
             Direction::East => self.update_coord_movement((1, 0)),
-            Direction::NorthEast => self.update_coord_movement((1, 1)),
+            Direction::NorthEast => self.update_coord_movement((0, 0)),
         }
     }
 

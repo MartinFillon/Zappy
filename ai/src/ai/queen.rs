@@ -25,3 +25,7 @@ impl AIHandler for Queen {
 
     fn update(&mut self) {}
 }
+
+impl Queen {
+    // fn handle eject reset
+}
