@@ -19,6 +19,7 @@ class MessageBox {
     void display(int x, int y, int width, int height);
     void scroll(int amount);
     bool isMouseOver() const;
+    bool isMouseOver(int x, int y, int width, int height) const;
     void handleInput();
 
   private:
