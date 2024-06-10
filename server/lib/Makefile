@@ -37,7 +37,7 @@ NAME = ../libmy.a
 
 OBJ = $(SRC:.c=.o)
 
-CFLAGS += -Wall -Wextra -Wno-unused-function
+CFLAGS += -Wall -Wextra -Wno-unused-function -fPIC
 CPPFLAGS += -iquote ../include
 
 all: $(NAME)
