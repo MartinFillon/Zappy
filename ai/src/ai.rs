@@ -16,7 +16,7 @@ pub mod queen;
 pub mod utils;
 
 use crate::commands;
-use crate::tcp::command_handle::{CommandError, Direction};
+use crate::tcp::command_handle::{CommandError, Direction, ResponseResult};
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;
@@ -72,17 +72,18 @@ impl Display for AI {
     }
 }
 
+#[allow(dead_code)]
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
 
-    let mut fetus = fetus::Fetus::init(ai);
+    let mut fetus = fetus::Fetus::init(ai.clone());
     if let Err(e) = fetus.update().await {
         println!("Error: {}", e);
     }
     Ok(())
 }
 
-async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) -> io::Result<()> {
+async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) -> io::Result<AI> {
     info!("Initializing AI...");
     let mut lines = response.split('\n');
 
@@ -95,7 +96,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
     };
     info!("Client number detected as [{}].", client_number);
 
-    match lines.next() {
+    let mut ai = match lines.next() {
         Some(line) => {
             let mut words = line.split_whitespace();
             let x = match words.next().and_then(|word| word.parse::<i32>().ok()) {
@@ -117,15 +118,15 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
-            kickstart(ai).await?;
+            ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    }
+    };
 
-    Ok(())
+    Ok(ai)
 }
 
-async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<()> {
+async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI> {
     info!("Starting AI...");
     {
         let mut client_lock = client.lock().await;
@@ -138,48 +139,48 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<()>
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
-                return Err(Error::new(
+                Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
-                ));
+                ))
             }
             _ => {
                 info!("Connection to team successful");
-                init_ai(client.clone(), &response, team).await?
+                let ai = init_ai(client.clone(), &response, team).await?;
+                Ok(ai)
             }
         }
     } else {
         debug!("Host not reachable.");
-        return Err(Error::new(
+        Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
-        ));
+        ))
     }
-    Ok(())
 }
 
 //temp
-pub async fn launch(address: String, team: String) -> io::Result<()> {
-    match tcp::handle_tcp(address.clone()).await {
+pub async fn launch(address: String, team: String) -> io::Result<AI> {
+    let ai = match tcp::handle_tcp(address.clone()).await {
         Ok(client) => {
             info!("Client connected successfully.");
             let client = Arc::new(Mutex::new(client));
             match start_ai(client.clone(), team.clone()).await {
-                Ok(_) => {
+                Ok(ai) => {
                     println!("ok");
+                    ai
                 }
                 Err(e) => {
-                    debug!("{e}");
-                    println!("ko");
+                    eprintln!("Launch Error {}", e);
+                    return Err(Error::new(e.kind(), e));
                 }
             }
         }
         Err(e) => {
-            println!("Failed to handle TCP: {}", e);
+            return Err(Error::new(e.kind(), e));
         }
-    }
-
-    Ok(())
+    };
+    Ok(ai)
 }
 
 // pub async fn launch(address: String, team: String) -> io::Result<()> {

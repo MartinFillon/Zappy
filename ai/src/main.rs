@@ -7,10 +7,12 @@
 
 use std::process;
 
-use elevation::Elevation;
+use ai::{
+    queen::{self},
+    AIHandler,
+};
 use env_logger::{Builder, Env};
 use log::info;
-use zappy_macros::{Bean, Deserialize};
 
 pub mod ai;
 pub mod commands;
@@ -23,27 +25,10 @@ pub mod tcp;
 const ERROR_CODE: i32 = 84;
 const SUCCESS_CODE: i32 = 0;
 
-#[allow(dead_code)]
-#[derive(Debug, Deserialize, Default, Bean)]
-struct Resources {
-    name: String,
-    density: f32,
-}
-
-#[allow(dead_code)]
-#[rustfmt::skip]
-#[derive(Debug, Deserialize, Default, Bean)]
-struct Config {
-    ressources: Vec::<Resources>,
-    elevation: Vec::<Elevation>,
-}
-
 #[tokio::main]
 async fn main() {
     let env = Env::new().filter("ZAPPY_LOG");
     Builder::from_env(env).init();
-
-    let _ = zappy_json::create_from_file::<Config>("config.json").unwrap();
 
     match flags::check_flags() {
         Ok(res) => {
@@ -54,7 +39,14 @@ async fn main() {
                 res.clone().port().unwrap_or_default()
             );
             match ai::launch(address, res.name().clone().unwrap_or_default()).await {
-                Ok(_) => process::exit(SUCCESS_CODE),
+                Ok(ai) => {
+                    println!("My ai => {ai}");
+                    let mut queen = queen::Queen::init(ai);
+                    if let Err(e) = queen.update().await {
+                        println!("Error: {}", e);
+                        process::exit(ERROR_CODE);
+                    }
+                }
                 Err(e) => {
                     eprintln!("Error: {}.", e);
                     process::exit(ERROR_CODE);
@@ -67,4 +59,5 @@ async fn main() {
             process::exit(ERROR_CODE)
         }
     }
+    process::exit(SUCCESS_CODE);
 }
