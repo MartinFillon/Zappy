@@ -20,16 +20,17 @@ lib_t open_dhl(char const *file)
     if (!l.handle) {
         logs(ERROR_LEVEL, "%s\n", dlerror());
         if (strcmp(file, "base.so") == 0)
-            return (lib_t){NULL, NULL};
+            return (lib_t){NULL, NULL, NULL};
         return open_dhl("base.so");
     }
     dlerror();
-    l.loop = (bool (*)(zappy_t *))dlsym(l.handle, "server_runner");
+    l.loop = (bool (*)(zappy_t *, void *))dlsym(l.handle, "server_runner");
+    l.init = (void *(*)(void))dlsym(l.handle, "init");
     error = dlerror();
     if (error) {
         logs(ERROR_LEVEL, "%s\n", dlerror());
         if (strcmp(file, "base.so") == 0)
-            return (lib_t){NULL, NULL};
+            return (lib_t){NULL, NULL, NULL};
         return open_dhl("base.so");
     }
     return l;

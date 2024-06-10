@@ -16,10 +16,12 @@ int loop_server(args_infos_t *args)
 {
     zappy_t z = {0};
     lib_t l = open_dhl("server/dashboard.so");
+    void *dt = NULL;
 
     if (!l.loop || init_program(args, &z))
         return ERROR;
-    while (l.loop(&z))
+    dt = l.init();
+    while (l.loop(&z, dt))
         ;
     destroy_program(&z);
     close_dhl(&l);

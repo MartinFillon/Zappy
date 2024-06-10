@@ -12,26 +12,39 @@
 #include "logger.h"
 #include "zappy.h"
 
-static void init_raylib(void)
+struct draw_state_s {
+    size_t width;
+    size_t height;
+    size_t fps;
+};
+
+static void init_raylib(struct draw_state_s *st)
 {
-    logs(INFO, "Starting window with size: %d %d\n", 800, 450);
+    logs(INFO, "Starting window with size: %d %d\n", st->width, st->height);
     SetTraceLogLevel(LOG_ERROR);
-    InitWindow(800, 450, "Zappy dashboard");
-    SetTargetFPS(60);
+    InitWindow(st->width, st->height, "Zappy dashboard");
+    SetTargetFPS(st->fps);
 }
 
-extern bool server_runner(zappy_t *z)
+extern bool server_runner(zappy_t *z, void *dt)
 {
-    static bool startup = true;
+    struct draw_state_s *s = dt;
 
-    if (startup) {
-        init_raylib();
-        startup = false;
-    }
-
+    (void)s;
     BeginDrawing();
     ClearBackground(BLACK);
     DrawText("Waiting for connections...", 190, 200, 20, WHITE);
     EndDrawing();
     return core(z) && !WindowShouldClose();
+}
+
+extern void *init(void)
+{
+    struct draw_state_s *st = calloc(1, sizeof(struct draw_state_s));
+
+    st->height = 450;
+    st->width = 800;
+    st->fps = 60;
+    init_raylib(st);
+    return st;
 }

@@ -10,7 +10,8 @@
 #include "core/server.h"
 
 typedef struct {
-    bool (*loop)(zappy_t *);
+    bool (*loop)(zappy_t *, void *);
+    void *(*init)(void);
     void *handle;
 } lib_t;
 
