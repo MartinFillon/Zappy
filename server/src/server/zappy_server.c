@@ -115,8 +115,8 @@ static void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
     for (size_t i = 0; i < size; i++)
         if (clients->data[i].type == AI &&
             clients->data[i].ai->alive == false) {
-        kill_ai(clients, ais, i);
-    }
+            kill_ai(clients, ais, i);
+        }
 }
 
 static void refill_map(game_t *game)
@@ -134,7 +134,7 @@ int loop_server(args_infos_t *args)
 
     if (init_program(args, &z))
         return ERROR;
-    while (!retval) {
+    while (!retval && !check_end(z.clients)) {
         fill_fd_set(&z);
         retval = select_server(&z);
         kill_dead_ais(z.clients, z.game.ais);
