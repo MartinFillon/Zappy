@@ -80,18 +80,12 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
 
 bool MessageBox::isMouseOver() const
 {
-    return CheckCollisionPointRec(
-        GetMousePosition(),
-        {static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)}
-    );
+    return Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height));
 }
 
 bool MessageBox::isMouseOver(int x, int y, int width, int height) const
 {
-    return CheckCollisionPointRec(
-        GetMousePosition(),
-        {static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)}
-    );
+    return Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height));
 }
 
 void MessageBox::scroll(int amount)
@@ -105,13 +99,13 @@ void MessageBox::handleInput()
     if (!isMouseOver()) {
         return;
     }
-    int scrollAmount = GetMouseWheelMove();
+    int scrollAmount = Raylib::getMouseWheelMove();
     if (scrollAmount != 0) {
         scroll(scrollAmount);
     }
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && isMouseOver(x + width - 20, y, 20, height)) {
+    if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) && isMouseOver(x + width - 20, y, 20, height)) {
         int maxOffset = std::max(0, m_totalLines - m_maxLines);
-        float clickPosition = GetMousePosition().y - y;
+        float clickPosition = Raylib::getMousePosition().y - y;
         float scrollbarHeight = static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
         float scrollbarCenter = scrollbarHeight / 2.0f;
         m_scrollOffset = std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
@@ -124,7 +118,7 @@ void MessageBox::display(int x, int y, int width, int height)
     this->y = y;
     this->width = width;
     this->height = height;
-    DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
+    Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
     m_maxLines = height / m_lineHeight;
     m_totalLines = 0;
@@ -138,8 +132,8 @@ void MessageBox::display(int x, int y, int width, int height)
     float scrollbarHeight =
         static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
-    DrawRectangle(x + width - 20, y, 20, height, (Color){255, 255, 255, 50});
-    DrawRectangle(x + width - 20, scrollbarY, 20, scrollbarHeight, (Color){255, 255, 255, 100});
+    Raylib::drawRectangle(x + width - 20, y, 20, height, (Color){255, 255, 255, 50});
+    Raylib::drawRectangle(x + width - 20, scrollbarY, 20, scrollbarHeight, (Color){255, 255, 255, 100});
 
     int startLine = std::max(0, m_totalLines - m_maxLines - m_scrollOffset);
     int currentLine = 0;
@@ -150,7 +144,7 @@ void MessageBox::display(int x, int y, int width, int height)
 
         for (const auto &line : msgLines) {
             if (currentLine >= startLine && lineCount < m_maxLines) {
-                DrawText(line.c_str(), x, y + (lineCount * m_lineHeight), m_lineHeight, WHITE);
+                Raylib::drawText(line, x, y + (lineCount * m_lineHeight), m_lineHeight, WHITE);
                 lineCount++;
             }
             currentLine++;
