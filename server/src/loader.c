@@ -10,7 +10,6 @@
 
 #include "loader.h"
 #include "logger.h"
-#include "server.h"
 
 lib_t open_dhl(char const *file)
 {

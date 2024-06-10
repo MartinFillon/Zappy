@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy -lm
+LDLIBS += -L./ -lmy -lm -lcore
 
 NAME = ../zappy_server
 
@@ -18,106 +18,13 @@ BASE_SRC = $(addsuffix .c, 				\
 					init_program 			\
 					destroy_program 		\
 					loop 					\
-					$(addprefix cmd_line/, 	\
-						display_help 			\
-						handle_cmd_line 		\
-						handle_nb_flags			\
-						handle_name_flag		\
-						log_level				\
-					)\
-					$(addprefix utils/,	\
-						free_box		\
-						va_free			\
-						mod				\
-						vec_cmp 		\
-						is_empty 		\
-						is_number 		\
-						is_coord_equals	\
-					)\
-					$(addprefix game/, 		\
-						$(addprefix map/, 	\
-							initializer		\
-							destroyer		\
-							drop_on_tile	\
-							take_on_tile	\
-							get_tile		\
-							display_map 	\
-							send_info_tile 	\
-						)\
-						$(addprefix team/,	\
-							egg				\
-							team			\
-						)\
-						broadcast			\
-						game 				\
-						end					\
-					)\
-					$(addprefix server/, 	\
-						accept				\
-					  	init_server			\
-						zappy_server		\
-						buffer 				\
-						destroy_server		\
-						execute 			\
-						$(addprefix cmd/, 	\
-							handle_cmds 	\
-							handle_display 	\
-							handle_ais_info	\
-							handle_eggs_info\
-							handle_help 	\
-							handle_kill_player 	\
-							godmode			\
-							give			\
-							teleport		\
-						) 					\
-					)						\
-					$(addprefix gui/,		\
-						map_size			\
-						map_content			\
-						team_names			\
-						player				\
-						time 				\
-					)\
-					$(addprefix client/, 	\
-						init_client			\
-						send	 			\
-						parse_unset			\
-						read_client			\
-						close_client		\
-						send_message_to_guis\
-						prepare_res 		\
-						kill_ai 			\
-					)						\
-					$(addprefix time/, 	\
-						clock				\
-					)						\
-					$(addprefix ai/, 	\
-						init				\
-						eat					\
-						handle_look			\
-						handle_forward		\
-						handle_rotate		\
-						handle_broadcast 	\
-						handle_take_object 	\
-						handle_set_object 	\
-						handle_inventory 	\
-						handle_connect_nbr 	\
-						handle_fork 		\
-						handle_eject 		\
-						handle_incantation 	\
-						destroy				\
-					)\
-					$(addprefix router/, 	\
-						mode_parser			\
-						init_router			\
-						destroy_router		\
-						run 				\
-					)\
-					$(addprefix middleware/,\
-						invalid				\
-					)\
+					loader					\
 				)\
-			)\
+			)
+
+DISPLAYERS = base
+
+SUBMODULES = lib core $(DISPLAYERS)
 
 SRC += src/main.c
 
@@ -126,25 +33,19 @@ OBJ = $(SRC:.c=.o)
 TEST_NAME = unit_tests
 TEST_SRC =
 
-all: lib $(NAME)
+all: submodules $(NAME)
 
-$(NAME): $(OBJ) blib
+$(NAME): $(OBJ)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDLIBS)
 
-blib:
-	$(MAKE) -C lib
-
-ldashboard:
-	$(MAKE) -C dashboard
-
-graphic-mode: ldashboard all
+submodules:
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule);)
 
 clean:
 	rm -f $(OBJ)
 	rm -f *.gcno
 	rm -f *.gcda
-	$(MAKE) -C lib clean
-	$(MAKE) -C dashboard clean
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) clean;)
 
 docs-clean:
 	$(RM) -r doc
@@ -152,8 +53,7 @@ docs-clean:
 fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
-	$(MAKE) -C lib fclean
-	$(MAKE) -C dashboard fclean
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) fclean;)
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
