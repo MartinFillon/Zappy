@@ -33,8 +33,6 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        let mut _client_lock = self.info.client.lock().await;
-
         Ok(())
     }
 }

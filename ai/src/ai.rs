@@ -126,9 +126,9 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             };
             info!("Map size: ({}, {}).", x, y);
             let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
-            println!("({})> {}", client_number, ai);
-            info!("{}", ai);
-            info!("AI initialized.");
+            println!("AI #{} > {}", client_number, ai);
+            info!("{} initialized.", ai);
+            kickstart(ai.clone()).await?;
             ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),

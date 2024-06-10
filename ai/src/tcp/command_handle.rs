@@ -68,7 +68,7 @@ pub trait CommandHandler {
     async fn check_response(&mut self) -> Result<String, CommandError>;
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl CommandHandler for TcpClient {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError> {
         info!("Sending command: ({})...", command.trim_end());
