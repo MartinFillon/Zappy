@@ -47,8 +47,7 @@ impl Knight {
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                // to finish backtrack_eject then
-                return Ok(ResponseResult::OK);
+                return Ok(ResponseResult::EjectUndone);
             }
         }
         res

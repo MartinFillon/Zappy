@@ -27,6 +27,7 @@ pub enum ResponseResult {
     Incantation(usize),
     Message((DirectionMessage, String)),
     Eject(DirectionEject),
+    EjectUndone,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -299,6 +300,7 @@ impl Display for ResponseResult {
             ResponseResult::Incantation(level) => write!(f, "Incantation Level: {}", level),
             ResponseResult::Message((dir, msg)) => write!(f, "Message: ({}, {})", dir, msg),
             ResponseResult::Eject(dir) => write!(f, "Eject: {}", dir),
+            ResponseResult::EjectUndone => write!(f, "Eject Undoed"),
         }
     }
 }

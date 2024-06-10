@@ -121,7 +121,6 @@ async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
     if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
         return true;
     }
-    // to handle eject/message
     false
 }
 
