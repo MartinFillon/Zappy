@@ -15,12 +15,9 @@
 #include <bits/types/struct_timeval.h>
 
 #include "client.h"
-#include "clock.h"
 #include "macros.h"
-#include "map.h"
 #include "server.h"
 #include "types/client.h"
-#include "types/game.h"
 #include "zappy.h"
 
 static void handle_cli_isset(zappy_t *z, int i)
@@ -115,12 +112,4 @@ void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
             clients->data[i].ai->alive == false) {
             kill_ai(clients, ais, i);
         }
-}
-
-void refill_map(game_t *game)
-{
-    if (!has_n_ticks_passed(game->clock, REFILL_TICKS))
-        return;
-    fill_map(game->map);
-    reset_clock(game->clock);
 }

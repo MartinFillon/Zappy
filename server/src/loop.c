@@ -5,16 +5,12 @@
 ** loop
 */
 
-#include "core.h"
 #include "loader.h"
 #include "logger.h"
 #include "macros.h"
 #include "server.h"
 #include "zappy.h"
 #include "args_info.h"
-
-lib_t open_dhl(char const *file);
-void close_dhl(lib_t *l);
 
 int loop_server(args_infos_t *args)
 {

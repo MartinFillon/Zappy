@@ -37,6 +37,7 @@ SRC = $(addsuffix .c, 				\
 						broadcast			\
 						game 				\
 						end					\
+						refill				\
 					)\
 					$(addprefix server/, 	\
 						accept				\
