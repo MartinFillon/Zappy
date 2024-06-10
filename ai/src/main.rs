@@ -7,7 +7,10 @@
 
 use std::process;
 
-use ai::{queen::{self}, AIHandler};
+use ai::{
+    queen::{self},
+    AIHandler,
+};
 use env_logger::{Builder, Env};
 use log::info;
 

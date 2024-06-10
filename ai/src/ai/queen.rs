@@ -40,13 +40,12 @@ impl Queen {
     /// Creates a new [`Queen`].
     fn new(info: AI) -> Self {
         // Requirement !
-        let mut ai = Self {
+        Self {
             info,
             inv: Default::default(),
             look: Default::default(),
             requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
-        };
-        ai
+        }
     }
 
     async fn incantate(&mut self) {
@@ -58,9 +57,9 @@ impl Queen {
             Ok(ResponseResult::Incantation(lvl)) => {
                 self.info.level = lvl;
                 println!("{}", self);
-            },
+            }
             Err(err) => println!("{}", err),
-            _ => ()
+            _ => (),
         }
     }
 
