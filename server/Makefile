@@ -21,6 +21,9 @@ BASE_SRC = $(addsuffix .c, 				\
 				)\
 			)
 
+DISPLAYERS = base dashboard
+
+SUBMODULES = lib core $(DISPLAYERS)
 
 SRC += src/main.c
 
@@ -29,28 +32,19 @@ OBJ = $(SRC:.c=.o)
 TEST_NAME = unit_tests
 TEST_SRC =
 
-all: bcore $(NAME)
+all: submodules $(NAME)
 
-$(NAME): $(OBJ) blib
+$(NAME): $(OBJ)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDLIBS)
 
-bcore:
-	$(MAKE) -C core
-
-blib:
-	$(MAKE) -C lib
-
-ldashboard:
-	$(MAKE) -C dashboard
-
-graphic-mode: ldashboard all
+submodules:
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule);)
 
 clean:
 	rm -f $(OBJ)
 	rm -f *.gcno
 	rm -f *.gcda
-	$(MAKE) -C lib clean
-	$(MAKE) -C dashboard clean
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) clean;)
 
 docs-clean:
 	$(RM) -r doc
@@ -58,8 +52,7 @@ docs-clean:
 fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
-	$(MAKE) -C lib fclean
-	$(MAKE) -C dashboard fclean
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) fclean;)
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)

@@ -8,13 +8,13 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy
+LDLIBS = -lraylib -L.. -lmy -lcore
 
-SRC = src/dashboard.c
+SRC = src/base.c
 
 OBJ = $(SRC:.c=.o)
 
-NAME = ../dashboard.so
+NAME = ../base.so
 
 all: $(NAME)
 
