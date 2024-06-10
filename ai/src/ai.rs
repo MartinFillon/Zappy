@@ -171,6 +171,7 @@ pub async fn launch(address: String, team: String) -> io::Result<AI> {
                     ai
                 }
                 Err(e) => {
+                    eprintln!("Launch Error {}", e);
                     return Err(Error::new(e.kind(), e));
                 }
             }

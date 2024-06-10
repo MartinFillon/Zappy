@@ -155,7 +155,6 @@ impl AIHandler for Queen {
             self.check_enough_food(3).await?;
 
             if self.check_requirement() {
-                println!("Incant !");
                 info!("Ai {} is incanting", self.info.cli_id);
                 self.incantate().await;
             }
