@@ -83,6 +83,7 @@ impl Display for AI {
     }
 }
 
+// test here
 #[allow(dead_code)]
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
@@ -128,7 +129,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
             println!("AI #{} > {}", client_number, ai);
             info!("{} initialized.", ai);
-            kickstart(ai.clone()).await?;
+            // kickstart(ai.clone()).await?; handle ur ai here to test bruh no from main
             ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
