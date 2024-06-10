@@ -107,7 +107,7 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(InfoBox &infoBox)
+void Map::checkCollision(InfoBox &infoBox) const
 {
     int mapWidth = end_x - x;
     int mapHeight = end_y - y;
@@ -122,7 +122,7 @@ void Map::checkCollision(InfoBox &infoBox)
                 infoBox.setPrint(!infoBox.isPrint());
             } else {
                 item = player;
-                infoBox.setPosTile(0.25, 0.25);
+                infoBox.setPosTile(0.25, 0.25, 0.25);
                 infoBox.setSize(0.5);
             }
             return;
@@ -137,10 +137,56 @@ void Map::checkCollision(InfoBox &infoBox)
                 infoBox.setPrint(!infoBox.isPrint());
             } else {
                 item = tile;
-                infoBox.setPosTile(0, 0);
+                infoBox.setPosTile(0, 0, 0);
                 infoBox.setSize(1);
             }
         }
+    }
+}
+
+void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
+{
+    float tileSize = 1.0f;
+    Ray ray = GetMouseRay(GetMousePosition(), cam);
+    RayCollision collision = {};
+    RayCollision collisionTmp = {};
+    InfoBox tmpInfo = infoBox;
+
+    for (auto player : m_players) {
+        float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
+        float playerCenterZ = player->getPos().y() * tileSize + tileSize / 2.0f;
+        collisionTmp = GetRayCollisionSphere(ray,
+            (Vector3){playerCenterX, tileSize / 6.0f + tileSize / 2.0f, playerCenterZ},
+            tileSize / 6.0f);
+        if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
+            collision = collisionTmp;
+            tmpInfo.setItem(player);
+            tmpInfo.setPosTile(0.0f, 0.67f, 0.0f);
+            tmpInfo.setSize(0.4f);
+        }
+    }
+    for (auto tile : m_map) {
+        float tileX = tile->getPos().x() * tileSize + tileSize / 2.0f;
+        float tileZ = tile->getPos().y() * tileSize + tileSize / 2.0f;
+        collisionTmp = GetRayCollisionBox(ray, (BoundingBox){
+            (Vector3){tileX - tileSize / 2.0f, - tileSize / 2.0f, tileZ - tileSize / 2.0f},
+            (Vector3){tileX + tileSize / 2.0f, tileSize / 2.0f, tileZ + tileSize / 2.0f}});
+        if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
+            collision = collisionTmp;
+            tmpInfo.setItem(tile);
+            tmpInfo.setPosTile(0.0f, 0.0f, 0.0f);
+            tmpInfo.setSize(1.0f);
+        }
+    }
+    auto &tmpItem = tmpInfo.getItem();
+    if (tmpItem != nullptr) {
+        auto &item = infoBox.getItem();
+        if (item == tmpItem) {
+            infoBox.setPrint(!infoBox.isPrint());
+            return;
+        }
+        infoBox = tmpInfo;
+        infoBox.setPrint(true);
     }
 }
 
@@ -175,23 +221,71 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     for (const auto &player : m_players) {
         if (!player->isHatched())
             continue;
-        int playerX = player->getPos().x() * tileSize + start_x;
-        int playerY = player->getPos().y() * tileSize + start_y;
+        int playerX = player->getPos().x() * tileSize + start_x + tileSize / 2;
+        int playerY = player->getPos().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(playerX + tileSize / 2, playerY + tileSize / 2, tileSize / 6, Color{0, 121, 241, 150});
+        DrawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
-        int eggX = egg->getPosition().x() * tileSize + start_x;
-        int eggY = egg->getPosition().y() * tileSize + start_y;
+        int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
+        int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(eggX + tileSize / 2, eggY + tileSize / 2, tileSize / 8, Color{253, 249, 0, 150});
+        DrawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
         float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize + start_x;
-        float itemY = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
-        DrawRectangleLines(itemX, itemY, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
+        float itemZ = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
+        DrawRectangleLines(itemX, itemZ, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
     }
+}
+
+void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
+{
+    float tileSize = 1.0f;
+
+
+    if (IsKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+    if (IsKeyPressed('F')) isCameraFree = !isCameraFree;
+    if (IsKeyPressed('C')) {
+        if (showCursor) DisableCursor();
+        else EnableCursor();
+        showCursor = !showCursor;
+    };
+    if (isCameraFree) UpdateCamera(&cam, CAMERA_FREE);
+
+    ClearBackground(RAYWHITE);
+    BeginMode3D(cam);
+
+    DrawGrid(100, 1.0f);
+    for (auto tile : m_map) {
+        float tileX = tile->getPos().x() * tileSize + tileSize / 2;
+        float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
+        DrawCube({tileX, 0, tileZ}, tileSize, tileSize, tileSize, RED);
+        DrawCubeWires({tileX, 0, tileZ}, tileSize, tileSize, tileSize, BROWN);
+    }
+    for (const auto &player : m_players) {
+        float playerX = player->getPos().x() * tileSize + tileSize / 2;
+        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
+
+        DrawSphere({playerX, tileSize / 6 + tileSize / 2 ,playerZ}, tileSize / 6, Color{0, 121, 241, 150});
+    }
+    for (const auto &egg : m_eggs) {
+        float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
+        float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
+
+        DrawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
+    }
+    if (info.isPrint() && info.getItem() != nullptr) {
+        auto item = info.getItem();
+        float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize + tileSize / 2;
+        float itemY = info.getPosTile().y() * tileSize;
+        float itemZ = (item->getPos().y() + info.getPosTile().z()) * tileSize + tileSize / 2;
+        float plus = tileSize / 10.0f;
+        float sizeCube = tileSize * info.getSize() + 2 * plus;
+        DrawCubeWires({itemX, itemY, itemZ}, sizeCube, sizeCube, sizeCube, GREEN);
+    }
+    EndMode3D();
 }
 
 } // namespace Data

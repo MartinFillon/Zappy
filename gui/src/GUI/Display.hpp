@@ -61,7 +61,6 @@ class Display {
     void handleEvent();
     void handleServerMessage();
     void resize();
-    void displayMessages(int x, int y, int width, int height);
 
     Network::Handler &networkHandler;
     ServerMessageHandler serverMessageHandler;
@@ -73,6 +72,11 @@ class Display {
     MessageBox messageBox;
     InfoBox infoBox;
     TimeUnitInput timeUnitInput;
+
+    Camera3D m_cam;
+    bool m_is3D;
+    bool m_isCameraFree;
+    bool m_showCursor;
 };
 
 } // namespace GUI
