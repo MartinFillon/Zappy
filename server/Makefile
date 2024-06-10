@@ -133,11 +133,17 @@ $(NAME): $(OBJ) blib
 blib:
 	$(MAKE) -C lib
 
+ldashboard:
+	$(MAKE) -C dashboard
+
+graphic-mode: ldashboard all
+
 clean:
 	rm -f $(OBJ)
 	rm -f *.gcno
 	rm -f *.gcda
 	$(MAKE) -C lib clean
+	$(MAKE) -C dashboard clean
 
 docs-clean:
 	$(RM) -r doc
@@ -146,6 +152,7 @@ fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
 	$(MAKE) -C lib fclean
+	$(MAKE) -C dashboard fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
