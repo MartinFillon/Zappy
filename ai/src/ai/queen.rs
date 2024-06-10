@@ -5,11 +5,9 @@
 // queen
 //
 
-use core::fmt;
-use std::fmt::{Display, Formatter};
-
+use crate::move_towards_broadcast::backtrack_eject;
 use crate::{
-    ai::{AIHandler, AI},
+    ai::{AIHandler, Incantationers, AI},
     commands,
     elevation::{Config, Inventory},
     tcp::{
@@ -17,10 +15,14 @@ use crate::{
         TcpClient,
     },
 };
-use log::info;
-use tokio::{sync::Mutex, task};
+
+use core::fmt;
+use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
+
+use log::info;
+use tokio::{sync::Mutex, task};
 
 #[derive(Debug, Clone, Default)]
 struct LookInfo {
@@ -124,6 +126,22 @@ impl Queen {
                 _ => (),
             }
         }
+    }
+}
+
+#[async_trait]
+impl Incantationers for Queen {
+    async fn handle_reject(
+        &mut self,
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        if let Ok(ResponseResult::Eject(ref dir)) = res {
+            if backtrack_eject(client, dir.clone()).await {
+                return Ok(ResponseResult::EjectUndone);
+            }
+        }
+        res
     }
 }
 

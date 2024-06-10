@@ -35,7 +35,7 @@ impl AIHandler for Fetus {
         while let Ok(ResponseResult::OK) =
             commands::drop_object::drop_object(&mut client_lock, "food").await
         {
-            println!("Fetus dropping food x1...");
+            println!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
             commands::drop_object::drop_object(&mut client_lock, "food").await?;
         }
         Ok(())

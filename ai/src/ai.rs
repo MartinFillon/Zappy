@@ -16,7 +16,11 @@ pub mod queen;
 pub mod utils;
 
 use crate::commands;
-use crate::tcp::{self, command_handle::CommandError, TcpClient};
+use crate::tcp::{
+    self,
+    command_handle::{CommandError, ResponseResult},
+    TcpClient,
+};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -41,6 +45,15 @@ pub struct AI {
 pub trait AIHandler {
     fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
+}
+
+#[async_trait]
+pub trait Incantationers {
+    async fn handle_reject(
+        &mut self,
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError>;
 }
 
 impl AI {
@@ -158,7 +171,7 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI>
     }
 }
 
-//temp
+//temp to test single program
 pub async fn launch(address: String, team: String) -> io::Result<AI> {
     let ai = match tcp::handle_tcp(address.clone()).await {
         Ok(client) => {
@@ -182,6 +195,7 @@ pub async fn launch(address: String, team: String) -> io::Result<AI> {
     Ok(ai)
 }
 
+// multi-connect
 // pub async fn launch(address: String, team: String) -> io::Result<()> {
 //     let mut handles = vec![];
 

@@ -5,7 +5,7 @@
 // knight
 //
 
-use crate::ai::{utils, AIHandler, AI};
+use crate::ai::{utils, AIHandler, Incantationers, AI};
 use crate::commands;
 use crate::move_towards_broadcast::backtrack_eject;
 use crate::tcp::command_handle::{CommandError, DirectionEject, ResponseResult};
@@ -39,7 +39,8 @@ impl AIHandler for Knight {
     }
 }
 
-impl Knight {
+#[async_trait]
+impl Incantationers for Knight {
     async fn handle_reject(
         &mut self,
         client: &mut TcpClient,
