@@ -23,12 +23,15 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::{
-    atomic::{AtomicUsize, Ordering},
+    atomic::{AtomicBool, AtomicUsize, Ordering},
     Arc,
 };
 
 use async_trait::async_trait;
-use tokio::{sync::Mutex, task};
+use tokio::{
+    sync::{Mutex, Semaphore},
+    task,
+};
 
 use log::{debug, info};
 
@@ -121,6 +124,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
+            kickstart(ai.clone()).await?;
             ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
@@ -188,25 +192,46 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
 
 // multi-connect
 pub async fn launch(address: String, team: String) -> io::Result<()> {
+    let semaphore = Arc::new(Semaphore::new(100)); // test w 100
     let mut handles = vec![];
     let team = Arc::new(team);
     let connection_id = Arc::new(AtomicUsize::new(0));
+    let stop_flag = Arc::new(AtomicBool::new(false));
 
     loop {
+        if stop_flag.load(Ordering::SeqCst) {
+            println!("Stop flag is set, breaking the loop.");
+            break;
+        }
+
+        let permit = match semaphore.clone().acquire_owned().await {
+            Ok(permit) => permit,
+            Err(_) => {
+                println!("Failed to acquire semaphore permit.");
+                break;
+            }
+        };
+
         match tcp::handle_tcp(address.clone()).await {
             Ok(client) => {
                 let team = Arc::clone(&team);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
+                let stop_flag = Arc::clone(&stop_flag);
+
                 let handle = task::spawn(async move {
                     let team_str = &*team;
-                    match start_ai(client.clone(), team_str.clone(), id).await {
+                    let result = start_ai(client.clone(), team_str.clone(), id).await;
+                    drop(permit);
+
+                    match result {
                         Ok(_) => {
                             println!("Connection {} handled successfully", id);
                             Ok(())
                         }
                         Err(e) => {
                             println!("Connection {} failed: {}", id, e);
+                            stop_flag.store(true, Ordering::SeqCst);
                             Err(e)
                         }
                     }
