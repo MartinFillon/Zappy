@@ -82,7 +82,7 @@ impl CommandHandler for TcpClient {
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
-        info!("Handling response: ({})...", response);
+        info!("Handling response: ({})...", response.trim_end());
 
         if response.starts_with("message ") && response.ends_with('\n') {
             return handle_message_response(response);

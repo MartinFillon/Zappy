@@ -14,6 +14,7 @@ pub mod fetus;
 pub mod knight;
 pub mod queen;
 
+use crate::ai::{fetus::Fetus, knight::Knight};
 use crate::commands;
 use crate::tcp::command_handle::{CommandError, Direction};
 use crate::tcp::{self, TcpClient};
@@ -48,7 +49,7 @@ pub struct AI {
 
 #[async_trait]
 pub trait AIHandler {
-    fn init(&mut self, info: AI) -> Self;
+    fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
 }
 
@@ -101,15 +102,11 @@ impl Display for AI {
 
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
-    let mut client_lock = ai.client.lock().await;
-    match commands::inventory::inventory(&mut client_lock).await {
-        Ok(res) => {
-            info!("Inventory checked.");
-            println!("{}", res);
-        }
-        Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    }
 
+    let mut fetus = Fetus::init(ai);
+    if let Err(e) = fetus.update().await {
+        println!("Error: {}", e);
+    }
     Ok(())
 }
 
@@ -153,7 +150,6 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
 
-    // let mut client_lock = client.lock().await;
     Ok(())
 }
 

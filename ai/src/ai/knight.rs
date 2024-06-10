@@ -6,9 +6,12 @@
 //
 
 use crate::ai::{AIHandler, AI};
+use crate::commands;
 use crate::tcp::command_handle::CommandError;
 
 use async_trait::async_trait;
+
+use log::info;
 
 #[derive(Debug, Clone)]
 pub struct Knight {
@@ -23,11 +26,14 @@ impl Knight {
 
 #[async_trait]
 impl AIHandler for Knight {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(info: AI) -> Self {
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        let mut client_lock = self.info.client.lock().await;
+
+        commands::inventory::inventory(&mut client_lock).await?;
         Ok(())
     }
 }

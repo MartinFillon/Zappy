@@ -31,11 +31,13 @@ impl Bot {
 
 #[async_trait]
 impl AIHandler for Bot {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(info: AI) -> Self {
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        let mut _client_lock = self.info.client.lock().await;
+
         Ok(())
     }
 }
