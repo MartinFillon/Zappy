@@ -5,10 +5,15 @@
 // fetus
 //
 
-use crate::ai::{AIHandler, AI};
-use crate::commands;
-use crate::tcp::command_handle::{CommandError, ResponseResult};
-use crate::tcp::{self, TcpClient};
+use crate::{
+    ai::{AIHandler, AI},
+    commands,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
+};
 
 use async_trait::async_trait;
 

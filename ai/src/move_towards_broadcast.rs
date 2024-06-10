@@ -6,8 +6,6 @@
 // stops when finding a player on tile n°0
 //
 
-use log::info;
-
 use crate::{
     commands::{
         look_around, move_up,
@@ -19,6 +17,8 @@ use crate::{
         TcpClient,
     },
 };
+
+use log::info;
 
 const Y_MSG_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
 const X_MSG_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];

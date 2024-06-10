@@ -7,18 +7,20 @@
 
 #![allow(dead_code)]
 
+pub mod command_handle;
+
 use std::io::{Error, ErrorKind};
+
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
 use tokio::select;
 use tokio::sync::mpsc::{self, Receiver, Sender};
 use tokio::task::JoinHandle;
+
 use zappy_macros::Bean;
 
 use log::{debug, info};
-
-pub mod command_handle;
 
 #[derive(Debug, Bean)]
 pub struct TcpClient {

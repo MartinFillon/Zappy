@@ -9,10 +9,10 @@
 
 use crate::tcp::TcpClient;
 
-use async_trait::async_trait;
-
 use std::fmt;
 use std::fmt::{Display, Formatter};
+
+use async_trait::async_trait;
 
 use log::{debug, info};
 

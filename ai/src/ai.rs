@@ -13,13 +13,14 @@ pub mod bot;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
-pub mod utils;
 
-use crate::commands;
-use crate::tcp::{
-    self,
-    command_handle::{CommandError, ResponseResult},
-    TcpClient,
+use crate::{
+    commands,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
 };
 
 use std::fmt;

@@ -5,11 +5,15 @@
 // knight
 //
 
-use crate::ai::{utils, AIHandler, Incantationers, AI};
-use crate::commands;
-use crate::move_towards_broadcast::backtrack_eject;
-use crate::tcp::command_handle::{CommandError, CommandHandler, DirectionEject, ResponseResult};
-use crate::tcp::TcpClient;
+use crate::{
+    ai::{AIHandler, Incantationers, AI},
+    commands,
+    move_towards_broadcast::backtrack_eject,
+    tcp::{
+        command_handle::{CommandError, CommandHandler, DirectionEject, ResponseResult},
+        TcpClient,
+    },
+};
 
 use async_trait::async_trait;
 
