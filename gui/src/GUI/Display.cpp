@@ -62,7 +62,6 @@ void Display::run()
 
     while (!WindowShouldClose()) {
         handleServerMessage(message);
-
         handleEvent();
         BeginDrawing();
         ClearBackground(BLACK);

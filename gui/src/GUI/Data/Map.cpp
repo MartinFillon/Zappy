@@ -148,9 +148,7 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     Ray ray = GetMouseRay(GetMousePosition(), cam);
     RayCollision collision = {};
     RayCollision collisionTmp = {};
-    std::shared_ptr<ISelectItem> tmpItemSelect = nullptr;
-    Pos<float, 3> tmpPos = {0.0f, 0.0f, 0.0f};
-    float tmpSize = 0.0f;
+    InfoBox tmpInfo = infoBox;
 
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
@@ -160,9 +158,9 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
             tileSize / 6.0f);
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
-            tmpItemSelect = player;
-            tmpPos = {0.0f, 0.67f, 0.0f};
-            tmpSize = 0.4f;
+            tmpInfo.setItem(player);
+            tmpInfo.setPosTile(0.0f, 0.67f, 0.0f);
+            tmpInfo.setSize(0.4f);
         }
     }
     for (auto tile : m_map) {
@@ -173,20 +171,19 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
             (Vector3){tileX + tileSize / 2.0f, tileSize / 2.0f, tileZ + tileSize / 2.0f}});
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
-            tmpItemSelect = tile;
-            tmpPos = {0.0f, 0.0f, 0.0f};
-            tmpSize = 1.0f;
+            tmpInfo.setItem(tile);
+            tmpInfo.setPosTile(0.0f, 0.0f, 0.0f);
+            tmpInfo.setSize(1.0f);
         }
     }
-    if (tmpItemSelect != nullptr) {
+    auto &tmpItem = tmpInfo.getItem();
+    if (tmpItem != nullptr) {
         auto &item = infoBox.getItem();
-        if (item == tmpItemSelect) {
+        if (item == tmpItem) {
             infoBox.setPrint(!infoBox.isPrint());
             return;
         }
-        item = tmpItemSelect;
-        infoBox.setPosTile(tmpPos);
-        infoBox.setSize(tmpSize);
+        infoBox = tmpInfo;
         infoBox.setPrint(true);
     }
 }

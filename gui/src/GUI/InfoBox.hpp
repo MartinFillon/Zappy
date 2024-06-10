@@ -20,6 +20,8 @@ namespace GUI
     class InfoBox {
         public:
             InfoBox();
+            InfoBox(InfoBox &other) = default;
+            InfoBox &operator=(InfoBox &other) = default;
 
             bool isPrint() const;
             void setPrint(bool print);
@@ -31,6 +33,7 @@ namespace GUI
             float getSize() const;
             void setSize(float size);
 
+            void setItem(std::shared_ptr<Data::ISelectItem> item);
             std::shared_ptr<Data::ISelectItem> &getItem();
             std::shared_ptr<Data::ISelectItem> getItem() const;
 
