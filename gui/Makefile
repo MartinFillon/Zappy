@@ -6,7 +6,7 @@
 ##
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -Iinclude/
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude/
 LDFLAGS = -lraylib -lpthread
 
 NAME = ../zappy_gui
@@ -27,6 +27,7 @@ SRC = $(BASE_SRC) 						\
 					Map					\
 					Player				\
 				)						\
+				Raylib					\
 				Display					\
 				ServerMessageHandler	\
 				MessageBox				\

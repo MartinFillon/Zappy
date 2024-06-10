@@ -6,7 +6,6 @@
 */
 
 #include "TimeUnitInput.hpp"
-#include <raylib.h>
 
 TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
     : timeUnit(initialValue), oldTimeUnit(initialValue), timeUnitStr(std::to_string(initialValue)), selected(false),
