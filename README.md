@@ -36,13 +36,73 @@ make <binary>
 In order to run the project you just need to run the binaries using the appropriate argumets.
 It is advised to run `zappy_server` first
 
-## Debugging/ Logging (AI)
+## Command line arguments
 
-The AI has a logging system that can be enabled by setting the `RUST_LOG` environment variable to `debug`, `trace` or `info` before running the binary.
+### Server
+
+```sh
+./zappy_server -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq
+```
+
+- `port`	    is the port number
+- `width`	    is the width of the world
+- `height`	    is the height of the world
+- `nameX`	    is the name of the team X
+- `clientsNb`	is the number of authorized clients per team
+- `freq`	    is the reciprocal of time unit for execution of actions
+
+## AI
+
+```sh
+./zappy_ai -p port -n name -h machine
+```
+
+- `port`    port number
+- `name`    name of the team
+- `machine` name of the machine; localhost by default
+
+## GUI
+
+```sh
+./zappy_gui -p port -h machine
+```
+
+- `port`    port number
+- `machine` name of the machine; localhost by default
+
+## Debugging/ Logging
+
+### AI
+
+The AI has a logging system that can be enabled by setting the `ZAPPY_LOG` environment variable to `debug`, `trace` or `info` before running the binary. For more information about it see the [env_logger](https://crates.io/crates/env_logger) crate documentation.
 
 ```sh
 ZAPPY_LOG=info ./zappy_ai
 ```
+
+### Server
+
+The server also have a logging system implemented with multiple level.
+The levels are set using the `-l` argument and are the following.
+- `ERROR` (default)
+- `WARN`
+- `INFO`
+- `DEBUG`
+- `DISABLED`
+
+### GUI
+
+The gui as a debug mode by adding the argument `-d` and the value `true` or `false` to enable or disable the log from raylib
+
+## Code documentation
+
+There are two main directories for the code documentation. They can be generated using `make docs`.
+The directory `doc/gui` is for everything about the gui.
+The directory `doc/server` is for everything about the server.
+The directory `doc/ai` is for everything about the ai.
+
+As the ai is in rust it is the only one not using a doxygen but a `cargo doc` format.
+
 
 ## Our team
 | [<img src="https://avatars.githubusercontent.com/u/109749395?v=4" width=85><br><sub>Lou Onezime</sub>](https://github.com/louonezime) | [<img src="https://avatars.githubusercontent.com/u/114775771?v=4" width=85><br><sub>Martin Fillon</sub>](https://github.com/MartinFillon) | [<img src="https://avatars.githubusercontent.com/u/100275038?v=4" width=85><br><sub>Alexandre Vigoureux</sub>](https://github.com/Aluxray) | [<img src="https://avatars.githubusercontent.com/u/114816489?v=4" width=85><br><sub>Tiphaine Bertone</sub>](https://github.com/Kanda09) | [<img src="https://avatars.githubusercontent.com/u/105550975?v=4" width=85><br><sub>Manuel Tome</sub>](https://github.com/ManuelR-T)| [<img src="https://avatars.githubusercontent.com/u/114925763?v=4" width=85><br><sub>Rahul Chander</sub>](https://github.com/RahulCHANDER25)|

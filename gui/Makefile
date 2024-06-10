@@ -66,7 +66,10 @@ tests_run:	$(TEST_NAME)
 
 re: fclean all
 
+docs: docs-clean
+	doxygen Doxyfile && mv doc/html ../doc/gui
+
 debug: CXXFLAGS += -g3
 debug: re
 
-.PHONY: all clean fclean re tests_run debug
+.PHONY: all clean fclean re tests_run debug docs docs-clean
