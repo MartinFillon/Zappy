@@ -22,7 +22,10 @@ use crate::tcp::{self, TcpClient};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::io::{self, Error, ErrorKind};
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
 
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
@@ -126,8 +129,8 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
     Ok(ai)
 }
 
-async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI> {
-    info!("Starting AI...");
+async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> io::Result<AI> {
+    info!("Starting AI process n{}...", p_id);
     {
         let mut client_lock = client.lock().await;
         client_lock.send_request(team.clone() + "\n").await?;
@@ -159,68 +162,77 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI>
     }
 }
 
-//temp
-pub async fn launch(address: String, team: String) -> io::Result<AI> {
-    let ai = match tcp::handle_tcp(address.clone()).await {
-        Ok(client) => {
-            info!("Client connected successfully.");
-            let client = Arc::new(Mutex::new(client));
-            match start_ai(client.clone(), team.clone()).await {
-                Ok(ai) => {
-                    println!("ok");
-                    ai
-                }
-                Err(e) => {
-                    eprintln!("Launch Error {}", e);
-                    return Err(Error::new(e.kind(), e));
-                }
-            }
-        }
-        Err(e) => {
-            return Err(Error::new(e.kind(), e));
-        }
-    };
-    Ok(ai)
-}
-
-// pub async fn launch(address: String, team: String) -> io::Result<()> {
-//     let mut handles = vec![];
-
-//     let team = Arc::new(team);
-//     loop {
-//         match tcp::handle_tcp(address.clone()).await {
-//             Ok(client) => {
-//                 let team: Arc<String> = Arc::clone(&team);
-//                 let client = Arc::new(Mutex::new(client));
-//                 let handle = task::spawn(async move {
-//                     let team_str = &*team;
-//                     match start_ai(client.clone(), team_str.clone()).await {
-//                         Ok(_) => {
-//                             println!("ok");
-//                             Ok(())
-//                         }
-//                         Err(e) => {
-//                             println!("ko");
-//                             Err(e)
-//                         }
-//                     }
-//                 });
-//                 handles.push(handle);
-//             }
-//             Err(e) => {
-//                 println!("Failed to handle TCP: {}", e);
-//                 break;
+//temp to test single program
+// pub async fn launch(address: String, team: String) -> io::Result<AI> {
+//     let ai = match tcp::handle_tcp(address.clone()).await {
+//         Ok(client) => {
+//             info!("Client connected successfully.");
+//             let client = Arc::new(Mutex::new(client));
+//             match start_ai(client.clone(), team.clone()).await {
+//                 Ok(ai) => {
+//                     println!("ok");
+//                     ai
+//                 }
+//                 Err(e) => {
+//                     eprintln!("Launch Error {}", e);
+//                     return Err(Error::new(e.kind(), e));
+//                 }
 //             }
 //         }
-//     }
-
-//     if handles.is_empty() {
-//         debug!("Connection refused, handles is empty.");
-//         return Err(Error::new(
-//             ErrorKind::ConnectionRefused,
-//             "Couldn't reach host.",
-//         ));
-//     }
-
-//     Ok(())
+//         Err(e) => {
+//             return Err(Error::new(e.kind(), e));
+//         }
+//     };
+//     Ok(ai)
 // }
+
+// multi-connect
+pub async fn launch(address: String, team: String) -> io::Result<()> {
+    let mut handles = vec![];
+    let team = Arc::new(team);
+    let connection_id = Arc::new(AtomicUsize::new(0));
+
+    loop {
+        match tcp::handle_tcp(address.clone()).await {
+            Ok(client) => {
+                let team = Arc::clone(&team);
+                let client = Arc::new(Mutex::new(client));
+                let id = connection_id.fetch_add(1, Ordering::SeqCst);
+                let handle = task::spawn(async move {
+                    let team_str = &*team;
+                    match start_ai(client.clone(), team_str.clone(), id).await {
+                        Ok(_) => {
+                            println!("Connection {} handled successfully", id);
+                            Ok(())
+                        }
+                        Err(e) => {
+                            println!("Connection {} failed: {}", id, e);
+                            Err(e)
+                        }
+                    }
+                });
+                handles.push(handle);
+            }
+            Err(e) => {
+                println!("Failed to handle TCP: {}", e);
+                break;
+            }
+        }
+    }
+
+    if handles.is_empty() {
+        debug!("Connection refused, handles is empty.");
+        return Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ));
+    }
+
+    for handle in handles {
+        if let Err(e) = handle.await {
+            println!("Task failed: {:?}", e);
+        }
+    }
+
+    Ok(())
+}

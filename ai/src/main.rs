@@ -7,10 +7,6 @@
 
 use std::process;
 
-use ai::{
-    queen::{self},
-    AIHandler,
-};
 use env_logger::{Builder, Env};
 use log::info;
 
@@ -39,14 +35,7 @@ async fn main() {
                 res.clone().port().unwrap_or_default()
             );
             match ai::launch(address, res.name().clone().unwrap_or_default()).await {
-                Ok(ai) => {
-                    println!("My ai => {ai}");
-                    let mut queen = queen::Queen::init(ai);
-                    if let Err(e) = queen.update().await {
-                        println!("Error: {}", e);
-                        process::exit(ERROR_CODE);
-                    }
-                }
+                Ok(_) => process::exit(SUCCESS_CODE),
                 Err(e) => {
                     eprintln!("Error: {}.", e);
                     process::exit(ERROR_CODE);
@@ -59,5 +48,4 @@ async fn main() {
             process::exit(ERROR_CODE)
         }
     }
-    process::exit(SUCCESS_CODE);
 }
