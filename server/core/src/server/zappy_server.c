@@ -16,14 +16,12 @@
 
 #include "client.h"
 #include "clock.h"
-#include "logger.h"
 #include "macros.h"
 #include "map.h"
 #include "server.h"
 #include "types/client.h"
 #include "types/game.h"
 #include "zappy.h"
-#include "args_info.h"
 
 static void handle_cli_isset(zappy_t *z, int i)
 {

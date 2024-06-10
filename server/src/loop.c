@@ -5,6 +5,7 @@
 ** loop
 */
 
+#include "core.h"
 #include "logger.h"
 #include "macros.h"
 #include "server.h"
@@ -14,18 +15,11 @@
 int loop_server(args_infos_t *args)
 {
     zappy_t z = {0};
-    int retval = 0;
 
     if (init_program(args, &z))
         return ERROR;
-    while (!retval && !check_end(z.clients)) {
-        fill_fd_set(&z);
-        retval = select_server(&z);
-        kill_dead_ais(z.clients, z.game.ais);
-        exec_clients(&z);
-        check_eating(z.clients);
-        refill_map(&z.game);
-    }
+    while (core(&z))
+        ;
     destroy_program(&z);
     logs(INFO, "Server shutting down\n");
     return SUCCESS;
