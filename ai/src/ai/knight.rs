@@ -15,19 +15,18 @@ use crate::{
     },
 };
 
+use core::fmt;
+use std::fmt::{Display, Formatter};
+
 use async_trait::async_trait;
 
 use log::info;
 
+use super::Listeners;
+
 #[derive(Debug, Clone)]
 pub struct Knight {
     info: AI,
-}
-
-impl Knight {
-    fn new(info: AI) -> Self {
-        Self { info }
-    }
 }
 
 #[async_trait]
@@ -37,7 +36,7 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        Ok(())
+        todo!()
     }
 }
 
@@ -54,5 +53,34 @@ impl Incantationers for Knight {
             }
         }
         res
+    }
+}
+
+#[async_trait]
+impl Listeners for Knight {
+    async fn handle_message(
+        _client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        if let Ok(ResponseResult::Message(ref _dir)) = res {
+            todo!()
+            // if checkout_message(client, dir.clone()).await {
+            //     let response: String = client.check_response().await?;
+            //     client.handle_response(response).await?;
+            // }
+        }
+        res
+    }
+}
+
+impl Knight {
+    fn new(info: AI) -> Self {
+        Self { info }
+    }
+}
+
+impl Display for Knight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "Knight => {}", self.info)
     }
 }

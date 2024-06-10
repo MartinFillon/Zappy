@@ -56,6 +56,14 @@ pub trait Incantationers {
     ) -> Result<ResponseResult, CommandError>;
 }
 
+#[async_trait]
+pub trait Listeners {
+    async fn handle_message(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError>;
+}
+
 impl AI {
     fn new(
         team: String,
