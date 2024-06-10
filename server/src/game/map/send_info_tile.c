@@ -15,7 +15,7 @@
 #include "types/map.h"
 #include "types/object.h"
 
-static void check_res(
+static void check_player(
     io_t *io,
     char const *name,
     size_t nb_ressource,
@@ -23,6 +23,19 @@ static void check_res(
 )
 {
     if (nb_ressource) {
+        prepare_response_cat(io, "%s%s", (*is_first) ? "" : " ", name);
+        *is_first = false;
+    }
+}
+
+static void check_res(
+    io_t *io,
+    char const *name,
+    size_t nb_ressource,
+    bool *is_first
+)
+{
+    for (size_t n = 0; n < nb_ressource; n++) {
         prepare_response_cat(io, "%s%s", (*is_first) ? "" : " ", name);
         *is_first = false;
     }
@@ -47,7 +60,7 @@ void prepare_info_tile(io_t *io, map_t *map, size_t y, size_t x)
 
     if (y > map->y || x > map->x)
         return log_map_error(y, x, map->y, map->x);
-    check_res(io, "player", map->arena[y][x].players->size != 0, &fst);
+    check_player(io, "player", map->arena[y][x].players->size != 0, &fst);
     check_res(io, "food", map->arena[y][x].content[FOOD], &fst);
     check_res(io, "linemate", map->arena[y][x].content[LINEMATE], &fst);
     check_res(io, "deraumere", map->arena[y][x].content[DERAUMERE], &fst);
