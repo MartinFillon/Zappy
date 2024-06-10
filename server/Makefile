@@ -17,6 +17,7 @@ BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					init_program 			\
 					destroy_program 		\
+					loop 					\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\

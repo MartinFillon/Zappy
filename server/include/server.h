@@ -67,3 +67,9 @@ int handle_buffer(client_t *c, zappy_t *z);
 void free_wifi(server_t *s);
 
 void execute_commands(zappy_t *z);
+int select_server(zappy_t *z);
+void fill_fd_set(zappy_t *z);
+void exec_clients(zappy_t *z);
+void check_eating(struct client_list *clients);
+void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais);
+void refill_map(game_t *game);

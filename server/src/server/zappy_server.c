@@ -55,7 +55,7 @@ static void handle_client(zappy_t *z)
     }
 }
 
-static int select_server(zappy_t *z)
+int select_server(zappy_t *z)
 {
     struct timeval t = {0, 1};
     int retval =
@@ -77,7 +77,7 @@ static int select_server(zappy_t *z)
     return SUCCESS;
 }
 
-static void fill_fd_set(zappy_t *z)
+void fill_fd_set(zappy_t *z)
 {
     FD_ZERO(&z->server.read_fds);
     FD_ZERO(&z->server.write_fds);
@@ -91,7 +91,7 @@ static void fill_fd_set(zappy_t *z)
     }
 }
 
-static void exec_clients(zappy_t *z)
+void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
         if (z->clients->data[i].io.req.size > 0) {
@@ -101,14 +101,14 @@ static void exec_clients(zappy_t *z)
     execute_commands(z);
 }
 
-static void check_eating(struct client_list *clients)
+void check_eating(struct client_list *clients)
 {
     for (size_t i = 0; i < clients->size; i++)
         if (clients->data[i].type == AI)
             make_ai_eat(&clients->data[i], clients, i);
 }
 
-static void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
+void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
 {
     size_t size = clients->size;
 
@@ -119,30 +119,10 @@ static void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
         }
 }
 
-static void refill_map(game_t *game)
+void refill_map(game_t *game)
 {
     if (!has_n_ticks_passed(game->clock, REFILL_TICKS))
         return;
     fill_map(game->map);
     reset_clock(game->clock);
-}
-
-int loop_server(args_infos_t *args)
-{
-    zappy_t z = {0};
-    int retval = 0;
-
-    if (init_program(args, &z))
-        return ERROR;
-    while (!retval && !check_end(z.clients)) {
-        fill_fd_set(&z);
-        retval = select_server(&z);
-        kill_dead_ais(z.clients, z.game.ais);
-        exec_clients(&z);
-        check_eating(z.clients);
-        refill_map(&z.game);
-    }
-    destroy_program(&z);
-    logs(INFO, "Server shutting down\n");
-    return SUCCESS;
 }
