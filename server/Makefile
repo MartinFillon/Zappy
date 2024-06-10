@@ -49,6 +49,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						broadcast			\
 						game 				\
+						end					\
 					)\
 					$(addprefix server/, 	\
 						accept				\
@@ -64,6 +65,9 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_eggs_info\
 							handle_help 	\
 							handle_kill_player 	\
+							godmode			\
+							give			\
+							teleport		\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -135,7 +139,10 @@ clean:
 	rm -f *.gcda
 	$(MAKE) -C lib clean
 
-fclean: clean
+docs-clean:
+	$(RM) -r doc
+
+fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
 	$(MAKE) -C lib fclean
@@ -155,4 +162,8 @@ debug: fclean all
 
 re: fclean all
 
-.PHONY: all clean fclean re tests_run
+docs: docs-clean
+	doxygen Doxyfile
+	mv doc/html ../doc/server
+
+.PHONY: all clean fclean re tests_run docs

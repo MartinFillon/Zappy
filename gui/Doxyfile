@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = Zappy
+PROJECT_NAME           = Zappy-gui
 PROJECT_NUMBER         = 1.0
 PROJECT_BRIEF          =
 PROJECT_LOGO           =

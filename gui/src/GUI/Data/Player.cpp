@@ -54,7 +54,7 @@ Pos<int, 2> Player::Incantation::getTarget() const
 }
 
 Player::Player(int x, int y, Direction direction, int id, const std::string &team, int level, bool is_hatched)
-    : ASelectItem({x, y}), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
+    : ASelectItem(x, y), m_id(id), m_team(team), m_level(level), m_is_hatched(is_hatched), m_orientation(direction)
 {
 }
 

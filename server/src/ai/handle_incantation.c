@@ -84,14 +84,25 @@ static bool verif_level_specification(ai_t *ai, map_t *map)
     return true;
 }
 
+static void send_incantation_end(client_t *cli, struct client_list *clients)
+{
+    broadcast_to(
+        GUI,
+        clients,
+        "pie %d %d %d\n",
+        cli->ai->pos.x,
+        cli->ai->pos.y,
+        cli->ai->level
+    );
+}
+
 void handle_end_incantation(client_t *cli, command_state_t *s)
 {
     bool first = cli->ai->incant.last_verif;
 
     cli->ai->incant.is_incant = false;
-    cli->ai->incant.last_verif = verif_level_specification(
-        cli->ai, s->game->map
-    );
+    cli->ai->incant.last_verif =
+        verif_level_specification(cli->ai, s->game->map);
     unfreeze_ais(s->game, cli->ai->id);
     if (first == false || cli->ai->incant.last_verif == false)
         return prepare_response_cat(&cli->io, "ko\n");
@@ -100,6 +111,26 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
         cli->ai->level, s->game->map, cli->ai->pos.y, cli->ai->pos.x
     );
     increment_all_levels(s->game, cli->ai->id);
+    send_incantation_end(cli, s->clients);
+}
+
+static void send_incantation_start(client_t *cli, struct client_list *clients)
+{
+    broadcast_to(
+        GUI,
+        clients,
+        "pic %d %d %d %d",
+        cli->ai->pos.x,
+        cli->ai->pos.y,
+        cli->ai->level,
+        cli->ai->id
+    );
+    for (size_t i = 0; i < clients->size; i++)
+        if (clients->data[i].type == AI &&
+            clients->data[i].ai->incant.is_incant &&
+            clients->data[i].ai->id != clients->data[i].ai->incant.id_incant)
+            broadcast_to(GUI, clients, " %d", clients->data[i].ai->id);
+    broadcast_to(GUI, clients, "\n");
 }
 
 void handle_start_incantation(client_t *cli, command_state_t *s)
@@ -107,9 +138,8 @@ void handle_start_incantation(client_t *cli, command_state_t *s)
     str_t *end_incant = NULL;
 
     freeze_ais(s->game, &cli->ai->pos, cli->ai->id);
-    cli->ai->incant.last_verif = verif_level_specification(
-        cli->ai, s->game->map
-    );
+    cli->ai->incant.last_verif =
+        verif_level_specification(cli->ai, s->game->map);
     if (cli->ai->incant.last_verif)
         prepare_response_cat(&cli->io, "Elevation underway\n");
     else
@@ -119,5 +149,6 @@ void handle_start_incantation(client_t *cli, command_state_t *s)
         logs(ERROR_LEVEL, "Allocation error\n");
         return;
     }
+    send_incantation_start(cli, s->clients);
     queue_pushfront_queue_command_t(cli->commands, end_incant);
 }

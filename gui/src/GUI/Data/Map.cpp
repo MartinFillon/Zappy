@@ -11,15 +11,16 @@
 namespace GUI {
 namespace Data {
 
-Map::Map(int x, int y) : m_size({x, y})
+Map::Map(int x, int y) : m_size({x, y}), x(0), y(0), end_x(0), end_y(0)
 {
     resize(x, y);
 }
 
-Map::Map(const Pos<int, 2> &pos) : m_size(pos)
+Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
-    std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
+    std::shared_ptr<Player> test =
+        std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "debugTeam", 99, true);
     m_players.push_back(test);
 }
 
@@ -54,7 +55,8 @@ Tile Map::getTile(int x, int y) const
     }
     Tile tile = *m_map.at(y * m_size.x() + x);
     if (x != tile.getPos().x() && y != tile.getPos().y())
-        std::cout << "wanted (" << x << ", " << y << ") | me: ()" << tile.getPos().x() << ", " << tile.getPos().y() << ")" << std::endl;
+        std::cout << "wanted (" << x << ", " << y << ") | me: ()" << tile.getPos().x() << ", " << tile.getPos().y()
+                  << ")" << std::endl;
     return tile;
 }
 
@@ -105,15 +107,15 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox)
+void Map::checkCollision(InfoBox &infoBox)
 {
-    int mapWidth = end_x - start_x;
-    int mapHeight = end_y - start_y;
+    int mapWidth = end_x - x;
+    int mapHeight = end_y - y;
     float tileSize = std::min(mapWidth / m_size.x(), mapHeight / m_size.y());
 
     for (auto player : m_players) {
-        float playerCenterX = player->getPos().x() * tileSize + start_x + tileSize / 2;
-        float playerCenterY = player->getPos().y() * tileSize + start_y + tileSize / 2;
+        float playerCenterX = player->getPos().x() * tileSize + x + tileSize / 2;
+        float playerCenterY = player->getPos().y() * tileSize + y + tileSize / 2;
         if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterY}, tileSize / 6)) {
             auto &item = infoBox.getItem();
             if (item == player) {
@@ -127,8 +129,8 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
         }
     }
     for (auto tile : m_map) {
-        float tileX = tile->getPos().x() * tileSize + start_x;
-        float tileY = tile->getPos().y() * tileSize + start_y;
+        float tileX = tile->getPos().x() * tileSize + x;
+        float tileY = tile->getPos().y() * tileSize + y;
         if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
             auto &item = infoBox.getItem();
             if (item == tile) {
@@ -144,6 +146,10 @@ void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox
 
 void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
 {
+    this->x = start_x;
+    this->y = start_y;
+    this->end_x = end_x;
+    this->end_y = end_y;
     int mapWidth = end_x - start_x;
     int mapHeight = end_y - start_y;
     float tileSize = std::min(mapWidth / m_size.x(), mapHeight / m_size.y());
@@ -155,22 +161,20 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
             float tileX = x * tileSize + start_x;
             float tileY = y * tileSize + start_y;
 
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 7; ++i) {
                 float ressourceX = tileX + (i % 3) * tileSize / 3;
                 float ressourceY = tileY + (i / 3) * tileSize / 3;
-
-                if (ressources[i] > 0 && ressources[i] < 2) {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, ORANGE);
-                } else if (ressources[i] >= 2) {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, GREEN);
-                } else {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, RED);
-                }
+                Color color = RED;
+                if (ressources[i] > 0)
+                    color = (ressources[i] < 2) ? ORANGE : GREEN;
+                DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, color);
             }
             DrawRectangleLines(tileX, tileY, tileSize, tileSize, BLACK);
         }
     }
     for (const auto &player : m_players) {
+        if (!player->isHatched())
+            continue;
         int playerX = player->getPos().x() * tileSize + start_x;
         int playerY = player->getPos().y() * tileSize + start_y;
 
@@ -188,7 +192,6 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         float itemY = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
         DrawRectangleLines(itemX, itemY, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
     }
-
 }
 
 } // namespace Data

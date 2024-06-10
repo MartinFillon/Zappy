@@ -35,3 +35,4 @@ void destroy_game(game_t *game);
 int init_program(args_infos_t *args, zappy_t *z);
 void handle_server_cmd(char const *cmd, zappy_t *serv);
 void destroy_program(zappy_t *z);
+bool check_end(struct client_list *list);

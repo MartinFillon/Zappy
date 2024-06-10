@@ -118,6 +118,13 @@ class Handler {
      */
     void modifyTimeUnit(int t);
 
+
+    /**
+     * @brief Checks if the network communication is running.
+     * @return True if the network communication is running, false otherwise.
+     */
+    bool isRunning() const;
+
   private:
     /**
      * @brief The main network communication loop.

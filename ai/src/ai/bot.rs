@@ -5,8 +5,10 @@
 // bot
 //
 
-use crate::ai::{AIHandler, AI};
-use crate::tcp::command_handle::Direction;
+use crate::ai::{utils, AIHandler, AI};
+use crate::tcp::command_handle::{CommandError, Direction};
+
+use async_trait::async_trait;
 
 use log::info;
 
@@ -27,12 +29,17 @@ impl Bot {
     }
 }
 
+#[async_trait]
 impl AIHandler for Bot {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(info: AI) -> Self {
         Self::new(info)
     }
 
-    fn update(&mut self) {}
+    async fn update(&mut self) -> Result<(), CommandError> {
+        let mut _client_lock = self.info.client.lock().await;
+
+        Ok(())
+    }
 }
 
 impl Bot {
@@ -47,8 +54,8 @@ impl Bot {
             self.coord.0, self.coord.1
         );
 
-        let wrapped_x = wrap_coordinate(x, width);
-        let wrapped_y = wrap_coordinate(y, height);
+        let wrapped_x = utils::wrap_coordinate(x, width);
+        let wrapped_y = utils::wrap_coordinate(y, height);
 
         info!("To: ({}, {})", wrapped_x, wrapped_y);
 
@@ -75,14 +82,4 @@ impl Bot {
         info!("Pushing ({}, {}) to backtrack...", coord.0, coord.1);
         self.backtrack.push(coord);
     }
-}
-
-fn wrap_coordinate(coord: i32, max: i32) -> i32 {
-    let mut wrapped = (coord % max + max) % max;
-    if coord > max {
-        wrapped = -(max - (wrapped - 1));
-    } else if coord < -max {
-        wrapped += 1;
-    }
-    wrapped
 }

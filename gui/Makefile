@@ -31,6 +31,7 @@ SRC = $(BASE_SRC) 						\
 				ServerMessageHandler	\
 				MessageBox				\
 				InfoBox					\
+				TimeUnitInput			\
 			)							\
 		)								\
 	)
@@ -65,4 +66,10 @@ tests_run:	$(TEST_NAME)
 
 re: fclean all
 
-.PHONY: all clean fclean re tests_run
+docs: docs-clean
+	doxygen Doxyfile && mv doc/html ../doc/gui
+
+debug: CXXFLAGS += -g3
+debug: re
+
+.PHONY: all clean fclean re tests_run debug docs docs-clean

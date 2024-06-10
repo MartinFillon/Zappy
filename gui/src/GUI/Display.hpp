@@ -9,13 +9,13 @@
 
 #include <raylib.h>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "../Network/Handler.hpp"
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
 #include "InfoBox.hpp"
+#include "TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 
@@ -36,7 +36,7 @@ class Display {
 
     void setTimeUnit(int time)
     {
-        timeUnit = time;
+        timeUnitInput.setTimeUnit(time);
     }
 
     void setEndGame(std::vector<std::string> message, bool end = true)
@@ -47,7 +47,7 @@ class Display {
 
     int getTimeUnit() const
     {
-        return timeUnit;
+        return timeUnitInput.getTimeUnit();
     }
 
     void addMessage(std::string message, int user = SERVER)
@@ -59,7 +59,7 @@ class Display {
 
   private:
     void handleEvent();
-    void handleServerMessage(std::string &message);
+    void handleServerMessage();
     void resize();
     void displayMessages(int x, int y, int width, int height);
 
@@ -67,12 +67,12 @@ class Display {
     ServerMessageHandler serverMessageHandler;
     bool debug;
     Data::Map map;
-    int timeUnit;
     bool endGame;
     std::vector<std::string> endGameMessage;
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
     InfoBox infoBox;
+    TimeUnitInput timeUnitInput;
 };
 
 } // namespace GUI
