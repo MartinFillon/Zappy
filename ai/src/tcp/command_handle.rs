@@ -185,9 +185,11 @@ impl Display for CommandError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             CommandError::RequestError => write!(f, "Request error."),
-            CommandError::NoResponseReceived => write!(f, "No response received."),
-            CommandError::InvalidResponse => write!(f, "Invalid response."),
-            CommandError::DeadReceived => write!(f, "Dead received."),
+            CommandError::NoResponseReceived => {
+                write!(f, "No response has been successfully received.")
+            }
+            CommandError::InvalidResponse => write!(f, "Invalid response, unknown."),
+            CommandError::DeadReceived => write!(f, "Dead has been received, end of program."),
         }
     }
 }

@@ -8,6 +8,7 @@
 use crate::ai::{AIHandler, AI};
 use crate::commands;
 use crate::tcp::command_handle::{CommandError, ResponseResult};
+use crate::tcp::{self, TcpClient};
 
 use async_trait::async_trait;
 
@@ -34,7 +35,7 @@ impl AIHandler for Fetus {
         while let Ok(ResponseResult::OK) =
             commands::drop_object::drop_object(&mut client_lock, "food").await
         {
-            println!("Dropping food x1...");
+            println!("Fetus dropping food x1...");
             commands::drop_object::drop_object(&mut client_lock, "food").await?;
         }
         Ok(())
