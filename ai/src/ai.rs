@@ -175,24 +175,24 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String) -> io::Result<AI>
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
-                return Err(Error::new(
+                Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
-                ));
+                ))
             }
             _ => {
                 info!("Connection to team successful");
                 let ai = init_ai(client.clone(), &response, team).await?;
-                return Ok(ai)
+                Ok(ai)
             }
         }
     } else {
         debug!("Host not reachable.");
-        return Err(Error::new(
+        Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
-        ));
-    };
+        ))
+    }
 }
 
 //temp

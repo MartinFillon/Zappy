@@ -8,7 +8,6 @@
 use std::process;
 
 use ai::{queen::Queen, AIHandler};
-use elevation::Config;
 use env_logger::{Builder, Env};
 use log::info;
 

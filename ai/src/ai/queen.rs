@@ -6,13 +6,19 @@
 //
 
 use core::fmt;
-use std::{fmt::{Display, Formatter}};
+use std::fmt::{Display, Formatter};
 
+use crate::{
+    ai::{AIHandler, AI},
+    commands,
+    elevation::{Config, Inventory},
+    tcp::{
+        command_handle::{self, CommandError, ResponseResult},
+        TcpClient,
+    },
+};
 use log::info;
 use tokio::{sync::Mutex, task};
-use crate::{
-    ai::{AIHandler, AI}, commands, elevation::{Config, Inventory}, tcp::{command_handle::{self, CommandError, ResponseResult}, TcpClient}
-};
 
 use super::AIState;
 use async_trait::async_trait;
@@ -28,65 +34,62 @@ pub struct Queen {
     pub info: AI,
     inv: Inventory,
     look: LookInfo,
-    requirement: Config
+    requirement: Config,
 }
 
 impl Queen {
     /// Creates a new [`Queen`].
-    pub fn new(info: AI) -> Self { // Requirement !
+    pub fn new(info: AI) -> Self {
+        // Requirement !
         let mut ai = Self {
             info,
             inv: Default::default(),
             look: Default::default(),
-            requirement: zappy_json::create_from_file::<Config>("config.json").unwrap()
+            requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
         };
         ai.info.state = Some(AIState::Queen);
         ai
     }
 
-    async fn incantate(&mut self)
-    {
+    async fn incantate(&mut self) {
         let mut cli = self.info.client.lock().await;
         let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
 
-        match commands::incantation::incantation(&mut cli).await {
-            Ok(ResponseResult::Incantation(lvl)) => self.info.level = lvl,
-            _ => ()
+        if let Ok(ResponseResult::Incantation(lvl)) =
+            commands::incantation::incantation(&mut cli).await
+        {
+            self.info.level = lvl;
         }
     }
 
-    async fn check_enough_food(&mut self, min: usize) -> Result<(), command_handle::CommandError>
-    {
+    async fn check_enough_food(&mut self, min: usize) -> Result<(), command_handle::CommandError> {
         if *self.inv.food() >= min || *self.look.inv.food() == 0 {
             return Ok(());
         }
         let mut cli = self.info.client.lock().await;
-        match commands::take_object::take_object(&mut cli, "food").await {
-            Ok(ResponseResult::OK) => self.inv.set_food(self.inv.food() + 1),
-            _ => ()
+        if let Ok(ResponseResult::OK) = commands::take_object::take_object(&mut cli, "food").await {
+            self.inv.set_food(self.inv.food() + 1);
         }
         Ok(())
     }
 
-    fn check_requirement(&self) -> bool
-    {
+    fn check_requirement(&self) -> bool {
         let idx = self.info.level - 1;
         let require = &self.requirement.elevation[idx];
         let r_inv = require.inv();
         let look = &self.look;
 
-        look.nb_player >= *require.nb_players() &&
-        look.inv.food() >= r_inv.food() &&
-        look.inv.linemate() >= r_inv.linemate() &&
-        look.inv.deraumere() >= r_inv.deraumere() &&
-        look.inv.sibur() >= r_inv.sibur() &&
-        look.inv.mendiane() >= r_inv.mendiane() &&
-        look.inv.phiras() >= r_inv.phiras() &&
-        look.inv.thystame() >= r_inv.thystame()
+        look.nb_player >= *require.nb_players()
+            && look.inv.food() >= r_inv.food()
+            && look.inv.linemate() >= r_inv.linemate()
+            && look.inv.deraumere() >= r_inv.deraumere()
+            && look.inv.sibur() >= r_inv.sibur()
+            && look.inv.mendiane() >= r_inv.mendiane()
+            && look.inv.phiras() >= r_inv.phiras()
+            && look.inv.thystame() >= r_inv.thystame()
     }
 
-    fn to_look_info(&mut self, vec: Vec<String>)
-    {
+    fn convert_to_look_info(&mut self, vec: Vec<String>) {
         self.look.inv.clear();
 
         let mut inv: &mut Inventory = &mut self.look.inv;
@@ -102,14 +105,13 @@ impl Queen {
                 "mendiane" => inv.set_mendiane(inv.mendiane() + 1),
                 "phiras" => inv.set_phiras(inv.phiras() + 1),
                 "thystame" => inv.set_thystame(inv.thystame() + 1),
-                _ => ()
+                _ => (),
             }
         }
     }
 
     /// Transform Inventory info to exploit them later.
-    fn to_inv(&mut self, vec: Vec<(String, i32)>)
-    {
+    fn convert_to_inv(&mut self, vec: Vec<(String, i32)>) {
         for elem in vec.iter() {
             match elem.0.as_str() {
                 "food" => self.inv.set_food(elem.1 as usize),
@@ -119,7 +121,7 @@ impl Queen {
                 "mendiane" => self.inv.set_mendiane(elem.1 as usize),
                 "phiras" => self.inv.set_phiras(elem.1 as usize),
                 "thystame" => self.inv.set_thystame(elem.1 as usize),
-                _ => ()
+                _ => (),
             }
         }
     }
@@ -138,19 +140,17 @@ impl AIHandler for Queen {
                 let mut cli = self.info.client.lock().await;
                 commands::look_around::look_around(&mut cli).await?
             };
-            match val {
-                ResponseResult::Tiles(vec) => self.to_look_info(vec[0].clone()),
-                _ => ()
-            };
+            if let ResponseResult::Tiles(vec) = val {
+                self.convert_to_look_info(vec[0].clone());
+            }
 
             let val = {
                 let mut cli = self.info.client.lock().await;
                 commands::inventory::inventory(&mut cli).await?
             };
-            match val {
-                ResponseResult::Inventory(vec) => self.to_inv(vec),
-                _ => ()
-            };
+            if let ResponseResult::Inventory(vec) = val {
+                self.convert_to_inv(vec);
+            }
 
             self.check_enough_food(3).await?;
 
