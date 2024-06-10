@@ -25,15 +25,6 @@ BASE_SRC = $(addsuffix .c, 				\
 						handle_name_flag		\
 						log_level				\
 					)\
-					$(addprefix utils/,	\
-						free_box		\
-						va_free			\
-						mod				\
-						vec_cmp 		\
-						is_empty 		\
-						is_number 		\
-						is_coord_equals	\
-					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
 							initializer		\
