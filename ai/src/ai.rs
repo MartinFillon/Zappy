@@ -31,11 +31,11 @@ use log::{debug, info};
 
 #[derive(Debug, Clone)]
 pub struct AI {
-    team: String,
-    cli_id: i32,
-    client: Arc<Mutex<TcpClient>>,
-    map: (i32, i32),
-    level: usize,
+    pub team: String,
+    pub cli_id: i32,
+    pub client: Arc<Mutex<TcpClient>>,
+    pub map: (i32, i32),
+    pub level: usize,
 }
 
 #[async_trait]

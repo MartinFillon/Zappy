@@ -9,6 +9,7 @@
 use log::info;
 
 use crate::{
+    ai::bot::COLONY_PLAYER_COUNT,
     commands::{
         look_around, move_up,
         turn::{self, DirectionTurn},
@@ -65,7 +66,9 @@ async fn move_player(client: &mut TcpClient, x: i32) -> bool {
             match look_around::look_around(client).await {
                 Ok(tcp::command_handle::ResponseResult::Tiles(tiles)) => {
                     if let Some(tile) = tiles.first() {
-                        if tile.iter().filter(|obj| obj.as_str() == "player").count() > 2 {
+                        if tile.iter().filter(|obj| obj.as_str() == "player").count()
+                            > COLONY_PLAYER_COUNT
+                        {
                             break;
                         }
                     }
