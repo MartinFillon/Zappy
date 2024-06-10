@@ -36,10 +36,12 @@ int main(int argc, char *argv[])
 
     try {
         parseArguments(argc, argv, port, machine, debug);
+
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return ERROR;
     }
+
     Network::Handler networkHandler(machine, port);
     if (networkHandler.start()) {
         GUI::Display display(networkHandler, debug);
