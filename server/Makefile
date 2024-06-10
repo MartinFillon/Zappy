@@ -49,6 +49,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						broadcast			\
 						game 				\
+						end					\
 					)\
 					$(addprefix server/, 	\
 						accept				\
