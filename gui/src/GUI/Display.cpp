@@ -12,7 +12,7 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(false), m_isCameraFree(true), m_showCursor(true)
+      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -43,6 +43,8 @@ void Display::handleEvent()
     if (IsWindowResized()) {
         resize();
     }
+    if (IsKeyPressed('P'))
+        m_is3D = !m_is3D;
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         if (m_is3D)
             map.checkCollision3D(infoBox, m_cam);
