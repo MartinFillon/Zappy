@@ -30,6 +30,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						mod				\
 						vec_cmp 		\
 						is_empty 		\
+						is_number 		\
 						is_coord_equals	\
 					)\
 					$(addprefix game/, 		\
@@ -61,6 +62,11 @@ BASE_SRC = $(addsuffix .c, 				\
 							handle_display 	\
 							handle_ais_info	\
 							handle_eggs_info\
+							handle_help 	\
+							handle_kill_player 	\
+							godmode			\
+							give			\
+							teleport		\
 						) 					\
 					)						\
 					$(addprefix gui/,		\
@@ -78,6 +84,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						close_client		\
 						send_message_to_guis\
 						prepare_res 		\
+						kill_ai 			\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
@@ -131,7 +138,10 @@ clean:
 	rm -f *.gcda
 	$(MAKE) -C lib clean
 
-fclean: clean
+docs-clean:
+	$(RM) -r doc
+
+fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
 	$(MAKE) -C lib fclean
@@ -151,4 +161,8 @@ debug: fclean all
 
 re: fclean all
 
-.PHONY: all clean fclean re tests_run
+docs: docs-clean
+	doxygen Doxyfile
+	mv doc/html ../doc/server
+
+.PHONY: all clean fclean re tests_run docs

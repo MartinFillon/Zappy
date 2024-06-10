@@ -13,6 +13,8 @@
 #include "defs/map/size.h"
 #include "defs/map/tile.h"
 #include "defs/player/broadcast.h"
+#include "defs/player/eject.h"
+#include "defs/player/fork.h"
 #include "defs/player/forward.h"
 #include "defs/player/inventory.h"
 #include "defs/player/level.h"
@@ -21,17 +23,21 @@
 #include "defs/player/rotate.h"
 #include "defs/time/request.h"
 #include "defs/time/update.h"
+#include "defs/player/connect_nbr.h"
 #include "defs/player/set_object.h"
 #include "defs/player/take_object.h"
 #include "defs/team_names.h"
 #include "defs/player/fork.h"
 #include "defs/player/connect_nbr.h"
 #include "defs/player/eject.h"
+#include "router/defs/player/incantation.h"
 
-#define BASE_ROUTE_COUNT 20
+#define BASE_ROUTE_COUNT 23
 
+// clang-format off
 static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     CONTENT_ROUTE,
+    TILE_CONTENT_ROUTE,
     SIZE_ROUTE,
     TILE_ROUTE,
     REQUEST_ROUTE,
@@ -50,5 +56,7 @@ static const route_t ROUTES[BASE_ROUTE_COUNT] = {
     FORK_ROUTE,
     CONNECT_NBR_ROUTE,
     EJECT_ROUTE,
-    PLAYER_INVENTORY_ROUTE
+    PLAYER_INVENTORY_ROUTE,
+    START_INCANTATION,
+    END_INCANTATION
 };

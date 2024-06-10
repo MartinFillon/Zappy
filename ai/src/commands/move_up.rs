@@ -7,16 +7,14 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::CommandHandler;
+use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
 use crate::tcp::TcpClient;
 
 use log::info;
 
-pub async fn move_up(client: &mut TcpClient) -> bool {
+pub async fn move_up(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     info!("Moving up...");
-    let response = match client.check_dead("Forward\n").await {
-        Ok(res) => res,
-        Err(_) => return false,
-    };
-    matches!(response.trim_end(), "ok")
+
+    let response = client.check_dead("Forward\n").await?;
+    client.handle_response(response).await
 }

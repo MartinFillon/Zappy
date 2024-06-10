@@ -52,7 +52,7 @@ void ServerMessageHandler::handleServerMessage(const std::string &message)
         it->second(commandBody);
     } else {
         if (debug)
-            std::cout << "Unhandled message: " << message << std::endl;
+            std::cout << "Unhandled message: \"" << message << "\"" << std::endl;
     }
 }
 
@@ -412,7 +412,7 @@ void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 void ServerMessageHandler::handleUnknownCommand(const std::string &message)
 {
     if (debug)
-        std::cout << "Unknown command: " << message << std::endl;
+        std::cout << "Unknown command: \"" << message << "\"" << std::endl;
 }
 
 void ServerMessageHandler::handleCommandParameter(const std::string &message)

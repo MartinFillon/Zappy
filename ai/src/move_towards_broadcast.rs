@@ -13,7 +13,11 @@ use crate::{
         look_around, move_up,
         turn::{self, DirectionTurn},
     },
-    tcp::{self, command_handle::Direction, TcpClient},
+    tcp::{
+        self,
+        command_handle::{Direction, ResponseResult},
+        TcpClient,
+    },
 };
 
 const Y_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
@@ -24,29 +28,31 @@ fn get_dir_coordinates(dir: &Direction) -> (i32, i32) {
 }
 
 async fn move_left(client: &mut TcpClient) -> bool {
-    if !turn::turn(client, DirectionTurn::Left).await {
-        return false;
+    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
+        // to handle eject/message
+        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
+            // to handle eject/message
+            if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
+                // to handle eject/message
+                return true;
+            }
+        }
     }
-    if !move_up::move_up(client).await {
-        return false;
-    }
-    if !turn::turn(client, DirectionTurn::Right).await {
-        return false;
-    }
-    true
+    false
 }
 
 async fn move_right(client: &mut TcpClient) -> bool {
-    if !turn::turn(client, DirectionTurn::Right).await {
-        return false;
+    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
+        // to handle eject/message
+        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
+            // to handle eject/message
+            if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
+                // to handle eject/message
+                return true;
+            }
+        }
     }
-    if !move_up::move_up(client).await {
-        return false;
-    }
-    if !turn::turn(client, DirectionTurn::Left).await {
-        return false;
-    }
-    true
+    false
 }
 
 async fn move_player(client: &mut TcpClient, x: i32) -> bool {
@@ -54,24 +60,24 @@ async fn move_player(client: &mut TcpClient, x: i32) -> bool {
         if (x < 0 && !move_left(client).await) || (x > 0 && !move_right(client).await) {
             return false;
         }
-        if !move_up::move_up(client).await {
-            return false;
-        }
-        match look_around::look_around(client).await {
-            Ok(tcp::command_handle::ResponseResult::Tiles(tiles)) => {
-                if let Some(tile) = tiles.first() {
-                    if tile.iter().filter(|obj| obj.as_str() == "player").count() > 1 {
-                        break;
+        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
+            // to handle eject/message
+            match look_around::look_around(client).await {
+                Ok(tcp::command_handle::ResponseResult::Tiles(tiles)) => {
+                    if let Some(tile) = tiles.first() {
+                        if tile.iter().filter(|obj| obj.as_str() == "player").count() > 1 {
+                            break;
+                        }
                     }
                 }
-            }
-            Ok(_) => {
-                info!("Error: Wrong type of result returned.");
-                return false;
-            }
-            Err(e) => {
-                info!("Error: {}.", e);
-                return false;
+                Ok(_) => {
+                    info!("Error: Wrong type of result returned.");
+                    return false;
+                }
+                Err(e) => {
+                    info!("Error: {}.", e);
+                    return false;
+                }
             }
         }
     }
@@ -86,8 +92,8 @@ pub async fn move_towards_broadcast(client: &mut TcpClient, dir: Direction) -> b
     let (mut x, y) = get_dir_coordinates(&dir);
     if y < 0 {
         x = -x;
-        if !turn::turn(client, DirectionTurn::Right).await
-            || !turn::turn(client, DirectionTurn::Right).await
+        if turn::turn(client, DirectionTurn::Right).await.is_err() // to handle eject/message
+            || turn::turn(client, DirectionTurn::Right).await.is_err()
         {
             return false;
         }

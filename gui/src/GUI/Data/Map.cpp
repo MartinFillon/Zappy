@@ -11,15 +11,16 @@
 namespace GUI {
 namespace Data {
 
-Map::Map(int x, int y) : m_size({x, y})
+Map::Map(int x, int y) : m_size({x, y}), x(0), y(0), end_x(0), end_y(0)
 {
     resize(x, y);
 }
 
-Map::Map(const Pos<int, 2> &pos) : m_size(pos)
+Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
-    std::shared_ptr<Player> test = std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "newTeam", 99, false);
+    std::shared_ptr<Player> test =
+        std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "debugTeam", 99, true);
     m_players.push_back(test);
 }
 
@@ -54,7 +55,8 @@ Tile Map::getTile(int x, int y) const
     }
     Tile tile = *m_map.at(y * m_size.x() + x);
     if (x != tile.getPos().x() && y != tile.getPos().y())
-        std::cout << "wanted (" << x << ", " << y << ") | me: ()" << tile.getPos().x() << ", " << tile.getPos().y() << ")" << std::endl;
+        std::cout << "wanted (" << x << ", " << y << ") | me: ()" << tile.getPos().x() << ", " << tile.getPos().y()
+                  << ")" << std::endl;
     return tile;
 }
 
@@ -105,31 +107,31 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(int start_x, int start_y, int end_x, int end_y, InfoBox &infoBox) const
+void Map::checkCollision(InfoBox &infoBox) const
 {
-    int mapWidth = end_x - start_x;
-    int mapHeight = end_y - start_y;
+    int mapWidth = end_x - x;
+    int mapHeight = end_y - y;
     float tileSize = std::min(mapWidth / m_size.x(), mapHeight / m_size.y());
 
     for (auto player : m_players) {
-        float playerCenterX = player->getPos().x() * tileSize + start_x + tileSize / 2;
-        float playerCenterZ = player->getPos().y() * tileSize + start_y + tileSize / 2;
-        if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterZ}, tileSize / 6)) {
+        float playerCenterX = player->getPos().x() * tileSize + x + tileSize / 2;
+        float playerCenterY = player->getPos().y() * tileSize + y + tileSize / 2;
+        if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterY}, tileSize / 6)) {
             auto &item = infoBox.getItem();
             if (item == player) {
                 infoBox.setPrint(!infoBox.isPrint());
             } else {
                 item = player;
                 infoBox.setPosTile(0.25, 0.25, 0.25);
-                infoBox.setSize(0.4);
+                infoBox.setSize(0.5);
             }
             return;
         }
     }
     for (auto tile : m_map) {
-        float tileX = tile->getPos().x() * tileSize + start_x;
-        float tileZ = tile->getPos().y() * tileSize + start_y;
-        if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileZ, tileSize, tileSize})) {
+        float tileX = tile->getPos().x() * tileSize + x;
+        float tileY = tile->getPos().y() * tileSize + y;
+        if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
             auto &item = infoBox.getItem();
             if (item == tile) {
                 infoBox.setPrint(!infoBox.isPrint());
@@ -190,6 +192,10 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
 
 void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
 {
+    this->x = start_x;
+    this->y = start_y;
+    this->end_x = end_x;
+    this->end_y = end_y;
     int mapWidth = end_x - start_x;
     int mapHeight = end_y - start_y;
     float tileSize = std::min(mapWidth / m_size.x(), mapHeight / m_size.y());
@@ -199,34 +205,32 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
             auto &ressources = getTile(x, y).getInventory();
 
             float tileX = x * tileSize + start_x;
-            float tileZ = y * tileSize + start_y;
+            float tileY = y * tileSize + start_y;
 
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 7; ++i) {
                 float ressourceX = tileX + (i % 3) * tileSize / 3;
-                float ressourceY = tileZ + (i / 3) * tileSize / 3;
-
-                if (ressources[i] > 0 && ressources[i] < 2) {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, ORANGE);
-                } else if (ressources[i] >= 2) {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, GREEN);
-                } else {
-                    DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, RED);
-                }
+                float ressourceY = tileY + (i / 3) * tileSize / 3;
+                Color color = RED;
+                if (ressources[i] > 0)
+                    color = (ressources[i] < 2) ? ORANGE : GREEN;
+                DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, color);
             }
-            DrawRectangleLines(tileX, tileZ, tileSize, tileSize, BLACK);
+            DrawRectangleLines(tileX, tileY, tileSize, tileSize, BLACK);
         }
     }
     for (const auto &player : m_players) {
+        if (!player->isHatched())
+            continue;
         int playerX = player->getPos().x() * tileSize + start_x + tileSize / 2;
-        int playerZ = player->getPos().y() * tileSize + start_y + tileSize / 2;
+        int playerY = player->getPos().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(playerX, playerZ, tileSize / 6, Color{0, 121, 241, 150});
+        DrawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
-        int eggZ = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
+        int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(eggX, eggZ, tileSize / 8, Color{253, 249, 0, 150});
+        DrawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();

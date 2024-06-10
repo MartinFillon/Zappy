@@ -5,26 +5,13 @@
 ** InfoBox
 */
 
-#include <algorithm>
-#include <iomanip>
-#include <sstream>
-
 #include "InfoBox.hpp"
-#include "define.hpp"
 
 namespace GUI {
 
 InfoBox::InfoBox(): m_posTile({0.0f, 0.0f, 0.0f}), m_size(0.0f), m_lineHeight(20)
 {
-    m_itemName = {
-        "Food",
-        "Linemate",
-        "Deraumere",
-        "Sibur",
-        "Mendiane",
-        "Phiras",
-        "Thystame",
-    };
+    m_itemName = {"Food", "Linemate", "Deraumere", "Sibur", "Mendiane", "Phiras", "Thystame"};
 }
 
 bool InfoBox::isPrint() const

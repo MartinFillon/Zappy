@@ -55,7 +55,7 @@ static inline void FN_NAME(queue_destroy, NAME)(struct NAME *vec)
 }
 
 /**
-** @brief push a new value to a queue
+** @brief push a new value at the end of the queue
 ** @param the queue to push into
 ** @param the elem to push
 **/
@@ -70,6 +70,25 @@ static inline void FN_NAME(queue_pushback, NAME)(
     }
     vec->data[vec->size] = elem;
     vec->size++;
+}
+
+/**
+** @brief push a new value at the front of the queue queue
+** @param the queue to push into
+** @param the elem to push
+**/
+static inline void FN_NAME(queue_pushfront, NAME)(
+    struct NAME *q,
+    TYPE elem
+)
+{
+    if (q->size == q->capacity) {
+        q->capacity *= 2;
+        q->data = (TYPE *)realloc(q->data, q->capacity * sizeof(TYPE));
+    }
+    memmove(q->data + 1, q->data, (q->size) * sizeof(TYPE));
+    q->data[0] = elem;
+    q->size++;
 }
 
 /**
