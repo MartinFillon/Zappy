@@ -18,6 +18,7 @@ BASE_SRC = $(addsuffix .c, 				\
 					init_program 			\
 					destroy_program 		\
 					loop 					\
+					loader					\
 				)\
 			)
 

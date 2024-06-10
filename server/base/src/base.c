@@ -5,13 +5,17 @@
 ** dashboard
 */
 
+#include "core.h"
 #include "logger.h"
 #include "server.h"
 #include "zappy.h"
-#include "core.h"
 
 extern bool server_runner(zappy_t *z)
 {
-    logs(INFO, "Starting as base without dashboard\n");
+    static bool fst = true;
+
+    if (fst)
+        logs(INFO, "Starting as base without dashboard\n");
+    fst = 0;
     return core(z);
 }
