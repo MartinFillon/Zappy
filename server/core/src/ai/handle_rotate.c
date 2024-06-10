@@ -7,10 +7,10 @@
 
 #include <stdbool.h>
 
-#include "client.h"
-#include "router/route.h"
-#include "types/ai.h"
-#include "types/client.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
 #include "utils.h"
 
 void handle_rotate_right(client_t *cli, command_state_t *s)

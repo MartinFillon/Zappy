@@ -12,14 +12,14 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "client.h"
-#include "router/route.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
+#include "core/types/game.h"
+#include "core/types/map.h"
+#include "core/types/position.h"
 #include "str.h"
-#include "types/ai.h"
-#include "types/client.h"
-#include "types/game.h"
-#include "types/map.h"
-#include "types/position.h"
 #include "utils.h"
 
 static bool valid_client(client_t *to_check, client_t *banned)

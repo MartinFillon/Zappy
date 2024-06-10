@@ -8,7 +8,7 @@
 #include "loader.h"
 #include "logger.h"
 #include "macros.h"
-#include "server.h"
+#include "core/server.h"
 #include "zappy.h"
 #include "args_info.h"
 

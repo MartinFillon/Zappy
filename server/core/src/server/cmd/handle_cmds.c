@@ -7,11 +7,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "core/server.h"
 #include "logger.h"
-#include "server.h"
 #include "str.h"
 #include "zappy.h"
-#include "serv_cmd/serv_cmds.h"
+#include "core/serv_cmd/serv_cmds.h"
 
 static void run_serv_functions(
     zappy_t *z,

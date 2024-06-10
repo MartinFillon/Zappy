@@ -8,14 +8,14 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "client.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
+#include "core/types/game.h"
+#include "core/types/position.h"
+#include "core/types/team.h"
 #include "queue.h"
-#include "router/route.h"
-#include "types/ai.h"
-#include "types/client.h"
-#include "types/game.h"
-#include "types/position.h"
-#include "types/team.h"
 #include "utils.h"
 
 static void eject_ai(client_t *this, client_t *oth, command_state_t *s)

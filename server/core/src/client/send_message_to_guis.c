@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <sys/socket.h>
 
-#include "client.h"
+#include "core/client.h"
 
 void broadcast_to(
     enum client_type_e type,

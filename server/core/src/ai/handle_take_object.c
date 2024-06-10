@@ -5,9 +5,9 @@
 ** handle_take_object
 */
 
-#include "client.h"
-#include "map.h"
-#include "router/route.h"
+#include "core/client.h"
+#include "core/map.h"
+#include "core/router/route.h"
 #include "str.h"
 
 static void increment_item(client_t *cli, size_t *item_quantity)

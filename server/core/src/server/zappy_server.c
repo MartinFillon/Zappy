@@ -14,10 +14,10 @@
 #include <unistd.h>
 #include <bits/types/struct_timeval.h>
 
-#include "client.h"
+#include "core/client.h"
+#include "core/server.h"
+#include "core/types/client.h"
 #include "macros.h"
-#include "server.h"
-#include "types/client.h"
 #include "zappy.h"
 
 static void handle_cli_isset(zappy_t *z, int i)

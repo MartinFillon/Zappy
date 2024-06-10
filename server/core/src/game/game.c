@@ -5,11 +5,11 @@
 ** game
 */
 
-#include "types/game.h"
-#include "client.h"
-#include "clock.h"
+#include "core/types/game.h"
+#include "core/client.h"
+#include "core/clock.h"
+#include "core/map.h"
 #include "logger.h"
-#include "map.h"
 #include "zappy.h"
 #include "args_info.h"
 

@@ -6,9 +6,9 @@
 */
 
 #include <string.h>
+#include "core/router/router.h"
+#include "core/router/routes.h"
 #include "logger.h"
-#include "router/router.h"
-#include "router/routes.h"
 
 static void create_route(struct router *router, const route_t *route)
 {

@@ -5,12 +5,12 @@
 ** godmode
 */
 
-#include "client.h"
+#include "core/client.h"
+#include "core/server.h"
+#include "core/types/ai.h"
+#include "core/types/object.h"
 #include "logger.h"
-#include "server.h"
 #include "str.h"
-#include "types/ai.h"
-#include "types/object.h"
 #include "zappy.h"
 
 static void try_give_object(zappy_t *z, ai_t *ai, str_t *obj, long count)

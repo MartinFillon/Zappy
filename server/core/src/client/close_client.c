@@ -6,9 +6,9 @@
 */
 
 #include <unistd.h>
-#include "client.h"
+#include "core/client.h"
+#include "core/types/client.h"
 #include "queue.h"
-#include "types/client.h"
 
 void free_buffer(struct buffer_s *buffer)
 {

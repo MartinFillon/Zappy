@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-#include "types/map.h"
+#include "core/types/map.h"
 #include "utils.h"
 
 void destroy_map(map_t *map)

@@ -5,11 +5,11 @@
 ** execute
 */
 
-#include "clock.h"
+#include "core/clock.h"
+#include "core/router/router.h"
+#include "core/server.h"
+#include "core/types/client.h"
 #include "logger.h"
-#include "router/router.h"
-#include "server.h"
-#include "types/client.h"
 #include "zappy.h"
 
 static void case_ai(zappy_t *z, client_t *c)

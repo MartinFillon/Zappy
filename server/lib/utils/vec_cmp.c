@@ -6,7 +6,7 @@
 */
 
 #include <stdbool.h>
-#include "types/ai.h"
+#include "core/types/ai.h"
 
 bool cmp_int(int a, int b)
 {

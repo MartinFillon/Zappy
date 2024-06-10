@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "types/map.h"
+#include "core/types/map.h"
 
 void display_map(map_t *map, size_t y, size_t x)
 {

@@ -5,11 +5,11 @@
 ** handle_fork
 */
 
-#include "client.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/client.h"
+#include "core/types/team.h"
 #include "logger.h"
-#include "router/route.h"
-#include "types/client.h"
-#include "types/team.h"
 
 void handle_fork(client_t *cli, command_state_t *s)
 {

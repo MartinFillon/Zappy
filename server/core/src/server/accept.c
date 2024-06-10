@@ -9,11 +9,11 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "client.h"
+#include "core/client.h"
+#include "core/server.h"
+#include "core/types/client.h"
 #include "logger.h"
 #include "macros.h"
-#include "server.h"
-#include "types/client.h"
 
 static int fill_client(
     struct client_list *clients,

@@ -8,9 +8,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "core/types/client.h"
 #include "logger.h"
 #include "macros.h"
-#include "types/client.h"
 
 int read_client(client_t *c)
 {

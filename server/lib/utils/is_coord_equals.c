@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "types/position.h"
+#include "core/types/position.h"
 
 bool is_coord_equal(pos_t *this, pos_t *oth)
 {

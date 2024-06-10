@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 
-#include "client.h"
+#include "core/client.h"
 #include "utils.h"
 
 static void erase_dead_ai(int id, struct vector_ai_t *ais)
@@ -18,11 +18,7 @@ static void erase_dead_ai(int id, struct vector_ai_t *ais)
     vec_erase_vector_ai_t(ais, ai, &cmp_ais);
 }
 
-void kill_ai(
-    struct client_list *clients,
-    struct vector_ai_t *ais,
-    size_t i
-)
+void kill_ai(struct client_list *clients, struct vector_ai_t *ais, size_t i)
 {
     erase_dead_ai(clients->data[i].ai->id, ais);
     close_client(&clients->data[i], clients);

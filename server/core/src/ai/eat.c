@@ -7,12 +7,12 @@
 
 #include <sys/socket.h>
 
-#include "client.h"
-#include "clock.h"
+#include "core/client.h"
+#include "core/clock.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
+#include "core/types/object.h"
 #include "logger.h"
-#include "types/ai.h"
-#include "types/client.h"
-#include "types/object.h"
 
 static void send_death(int n, struct client_list *clients)
 {

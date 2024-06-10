@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 
-#include "clock.h"
-#include "router/route.h"
-#include "router/router.h"
-#include "types/client.h"
+#include "core/clock.h"
+#include "core/router/route.h"
+#include "core/router/router.h"
+#include "core/types/client.h"
 #include "zappy.h"
-#include "router/error_callbacks.h"
+#include "core/router/error_callbacks.h"
 
 static route_t *get_route(
     struct router const *this,

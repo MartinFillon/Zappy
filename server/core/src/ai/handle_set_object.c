@@ -5,12 +5,12 @@
 ** handle_set_object
 */
 
-#include "client.h"
-#include "map.h"
-#include "router/route.h"
+#include "core/client.h"
+#include "core/map.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/object.h"
 #include "str.h"
-#include "types/ai.h"
-#include "types/object.h"
 
 static bool try_decrement_item(size_t *item_quantity)
 {

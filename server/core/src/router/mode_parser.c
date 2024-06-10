@@ -5,7 +5,7 @@
 ** mode_parser
 */
 
-#include "types/client.h"
+#include "core/types/client.h"
 
 enum client_type_e get_mode(char const *restrict mode)
 {

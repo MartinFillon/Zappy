@@ -6,12 +6,12 @@
 */
 
 #include <stdbool.h>
-#include "client.h"
-#include "router/route.h"
-#include "types/ai.h"
-#include "types/map.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/map.h"
 
-#include "types/position.h"
+#include "core/types/position.h"
 #include "utils.h"
 
 static void move_pos_y(pos_t *pos, enum direction dir, map_t *map)

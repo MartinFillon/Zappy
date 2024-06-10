@@ -5,10 +5,10 @@
 ** refill
 */
 
-#include "clock.h"
+#include "core/clock.h"
+#include "core/map.h"
+#include "core/types/game.h"
 #include "macros.h"
-#include "map.h"
-#include "types/game.h"
 
 void refill_map(game_t *game)
 {

@@ -6,9 +6,9 @@
 */
 
 #include <stdlib.h>
-#include "client.h"
-#include "router/route.h"
-#include "types/client.h"
+#include "core/client.h"
+#include "core/router/route.h"
+#include "core/types/client.h"
 
 void team_names(client_t *c, command_state_t *s)
 {

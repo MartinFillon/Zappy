@@ -5,8 +5,8 @@
 ** init_client
 */
 
-#include "client.h"
-#include "types/client.h"
+#include "core/client.h"
+#include "core/types/client.h"
 
 client_t init_client(int fd)
 {

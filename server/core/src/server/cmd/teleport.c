@@ -5,9 +5,9 @@
 ** teleport
 */
 
+#include "core/server.h"
+#include "core/types/position.h"
 #include "logger.h"
-#include "server.h"
-#include "types/position.h"
 #include "zappy.h"
 
 static bool get_pos(zappy_t *z, long id, pos_t *p)

@@ -5,9 +5,9 @@
 ** dashboard
 */
 
-#include "core.h"
+#include "core/core.h"
+#include "core/server.h"
 #include "logger.h"
-#include "server.h"
 #include "zappy.h"
 
 extern bool server_runner(zappy_t *z)

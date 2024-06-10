@@ -8,7 +8,7 @@
 #include <string.h>
 #include "args_info.h"
 
-#include "types/team.h"
+#include "core/types/team.h"
 
 team_t create_team(args_infos_t *args, char const *name)
 {

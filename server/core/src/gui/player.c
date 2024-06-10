@@ -6,12 +6,12 @@
 */
 
 #include <stdlib.h>
-#include "client.h"
-#include "middlewares.h"
-#include "router/route.h"
+#include "core/client.h"
+#include "core/middlewares.h"
+#include "core/router/route.h"
+#include "core/types/client.h"
+#include "core/types/object.h"
 #include "str.h"
-#include "types/client.h"
-#include "types/object.h"
 
 static void send_infos(client_t *c, ai_t *ai, size_t nb)
 {

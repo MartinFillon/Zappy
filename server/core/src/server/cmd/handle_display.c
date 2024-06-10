@@ -7,9 +7,8 @@
 
 #include <unistd.h>
 
-
-#include "map.h"
-#include "types/map.h"
+#include "core/map.h"
+#include "core/types/map.h"
 #include "zappy.h"
 
 void handle_display_map(zappy_t *serv, struct vector_str_t *args)

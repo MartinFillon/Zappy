@@ -6,8 +6,8 @@
 */
 
 #include <stdio.h>
+#include "core/types/object.h"
 #include "logger.h"
-#include "types/object.h"
 #include "zappy.h"
 
 static void display_ai(ai_t *ai)

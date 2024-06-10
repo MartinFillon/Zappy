@@ -5,8 +5,8 @@
 ** map_size
 */
 
-#include "client.h"
-#include "gui/defs.h"
+#include "core/client.h"
+#include "core/gui/defs.h"
 
 void map_size(client_t *cli, command_state_t *com)
 {

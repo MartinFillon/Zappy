@@ -5,9 +5,9 @@
 ** invalid_args
 */
 
+#include "core/types/client.h"
 #include "logger.h"
-#include "types/client.h"
-#include "router/error_callbacks.h"
+#include "core/router/error_callbacks.h"
 
 static char *mode_to_str(enum client_type_e mode)
 {

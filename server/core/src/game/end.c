@@ -5,7 +5,7 @@
 ** end
 */
 
-#include "client.h"
+#include "core/client.h"
 #include "zappy.h"
 
 bool check_end(struct client_list *list)

@@ -5,7 +5,7 @@
 ** destroy
 */
 
-#include "types/ai.h"
+#include "core/types/ai.h"
 #include "utils.h"
 
 void destroy_ai(ai_t *ai)

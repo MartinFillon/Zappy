@@ -7,10 +7,10 @@
 
 #include <string.h>
 
+#include "core/server.h"
+#include "core/types/client.h"
 #include "logger.h"
-#include "server.h"
 #include "str.h"
-#include "types/client.h"
 #include "utils.h"
 #include "zappy.h"
 

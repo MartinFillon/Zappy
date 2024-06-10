@@ -8,8 +8,8 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include "router/router.h"
-#include "server.h"
+#include "core/router/router.h"
+#include "core/server.h"
 
 void free_wifi(server_t *s)
 {

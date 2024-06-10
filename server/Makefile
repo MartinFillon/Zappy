@@ -22,7 +22,7 @@ BASE_SRC = $(addsuffix .c, 				\
 				)\
 			)
 
-DISPLAYERS = base dashboard
+DISPLAYERS = base
 
 SUBMODULES = lib core $(DISPLAYERS)
 

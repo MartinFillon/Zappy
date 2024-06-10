@@ -5,12 +5,12 @@
 ** time
 */
 
-#include "client.h"
-#include "middlewares.h"
-#include "router/route.h"
+#include "core/client.h"
+#include "core/middlewares.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
 #include "str.h"
-#include "types/ai.h"
-#include "types/client.h"
 
 void request_time(client_t *c, command_state_t *s)
 {

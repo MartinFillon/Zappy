@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "server.h"
+#include "core/server.h"
 
 typedef struct {
     bool (*loop)(zappy_t *);

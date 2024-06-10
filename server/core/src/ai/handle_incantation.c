@@ -7,16 +7,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "client.h"
-#include "incantation.h"
+#include "core/client.h"
+#include "core/incantation.h"
+#include "core/router/route.h"
+#include "core/types/ai.h"
+#include "core/types/client.h"
+#include "core/types/game.h"
+#include "core/types/map.h"
+#include "core/types/object.h"
+#include "core/types/position.h"
 #include "logger.h"
-#include "router/route.h"
-#include "types/ai.h"
-#include "types/client.h"
-#include "types/game.h"
-#include "types/map.h"
-#include "types/object.h"
-#include "types/position.h"
 #include "utils.h"
 
 static void freeze_ais(game_t *game, pos_t *pos, int id)

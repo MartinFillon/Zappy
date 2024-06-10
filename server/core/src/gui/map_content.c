@@ -8,12 +8,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "client.h"
-#include "gui/defs.h"
-#include "map.h"
-#include "middlewares.h"
+#include "core/client.h"
+#include "core/gui/defs.h"
+#include "core/map.h"
+#include "core/middlewares.h"
+#include "core/types/map.h"
 #include "str.h"
-#include "types/map.h"
 
 static void get_and_send_tile(long x, long y, map_t *map, client_t *c)
 {

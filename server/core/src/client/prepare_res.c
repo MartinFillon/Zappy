@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/types/buffer.h"
 #include "logger.h"
 #include "macros.h"
-#include "types/buffer.h"
 
 static int fill_io(io_t *io, char *buff)
 {

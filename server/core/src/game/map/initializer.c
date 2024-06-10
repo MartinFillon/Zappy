@@ -7,10 +7,10 @@
 
 #include <stdlib.h>
 
+#include "core/map.h"
+#include "core/types/map.h"
+#include "core/types/object.h"
 #include "macros.h"
-#include "map.h"
-#include "types/map.h"
-#include "types/object.h"
 
 static void init_tile(struct tile_s *tile)
 {

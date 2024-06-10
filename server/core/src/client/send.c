@@ -7,7 +7,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "types/client.h"
+#include "core/types/client.h"
 
 void send_client(client_t *client, char *fmt, ...)
 {

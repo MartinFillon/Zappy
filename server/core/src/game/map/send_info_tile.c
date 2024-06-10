@@ -9,11 +9,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "client.h"
+#include "core/client.h"
+#include "core/types/buffer.h"
+#include "core/types/map.h"
+#include "core/types/object.h"
 #include "logger.h"
-#include "types/buffer.h"
-#include "types/map.h"
-#include "types/object.h"
 
 static void check_res(
     io_t *io,

@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-#include "types/team.h"
+#include "core/types/team.h"
 
 egg_t *create_egg(int width, int height)
 {

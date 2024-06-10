@@ -9,8 +9,8 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "types/ai.h"
-#include "types/position.h"
+#include "core/types/ai.h"
+#include "core/types/position.h"
 
 /**
  * @brief frees a double char array

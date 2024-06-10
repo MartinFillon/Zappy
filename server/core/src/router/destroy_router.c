@@ -5,7 +5,7 @@
 ** destroy_router
 */
 
-#include "router/router.h"
+#include "core/router/router.h"
 
 static void delete_route(route_t **route)
 {

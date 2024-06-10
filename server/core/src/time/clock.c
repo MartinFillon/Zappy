@@ -11,8 +11,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "core/types/clock.h"
 #include "logger.h"
-#include "types/clock.h"
 
 static ztime_t get_current_time(void)
 {

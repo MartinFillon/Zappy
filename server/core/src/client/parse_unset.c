@@ -8,15 +8,15 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "client.h"
-#include "gui/defs.h"
+#include "core/client.h"
+#include "core/gui/defs.h"
+#include "core/middlewares.h"
+#include "core/router/route.h"
+#include "core/types/client.h"
+#include "core/types/game.h"
+#include "core/types/team.h"
 #include "logger.h"
-#include "middlewares.h"
-#include "router/route.h"
 #include "str.h"
-#include "types/client.h"
-#include "types/game.h"
-#include "types/team.h"
 
 static void put_in_team(
     client_t *restrict c,

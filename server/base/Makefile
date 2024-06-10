@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy -lcore
+LDLIBS = -L.. -lmy -lcore
 
 SRC = src/base.c
 

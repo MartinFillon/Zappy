@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "types/team.h"
+#include "core/types/team.h"
 #include "zappy.h"
 
 static void display_team_eggs(team_t *team)
@@ -18,8 +18,9 @@ static void display_team_eggs(team_t *team)
     dprintf(1, "Team: %s\n", team->name);
     for (size_t k = 0; k < team->eggs->size; k++) {
         egg = team->eggs->data[k];
-        dprintf(1, "\tEgg [%ld]: pos (%d, %d)\n",
-            egg->id, egg->pos.y, egg->pos.x);
+        dprintf(
+            1, "\tEgg [%ld]: pos (%d, %d)\n", egg->id, egg->pos.y, egg->pos.x
+        );
     }
 }
 

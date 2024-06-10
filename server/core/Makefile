@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy
+LDLIBS = -L.. -lmy
 
 SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\

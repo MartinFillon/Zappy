@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
-#include "types/map.h"
-#include "types/object.h"
+#include "core/types/map.h"
+#include "core/types/object.h"
 
 bool take_item(map_t *map, size_t x, size_t y, enum object_e obj)
 {
