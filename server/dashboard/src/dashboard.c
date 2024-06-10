@@ -31,7 +31,7 @@ extern bool server_runner(zappy_t *z, void *dt)
     if (z->game.ais->size == 0)
         wait_for_connections();
     else
-        display_clients(z->clients);
+        display_clients(z->clients, s->page, s->page + 4);
     EndDrawing();
     return core(z) && !WindowShouldClose();
 }
@@ -40,9 +40,10 @@ extern void *init(void)
 {
     struct draw_state_s *st = calloc(1, sizeof(struct draw_state_s));
 
-    st->height = 450;
-    st->width = 800;
+    st->height = 986;
+    st->width = 1876;
     st->fps = 60;
+    st->page = 0;
     init_raylib(st);
     return st;
 }

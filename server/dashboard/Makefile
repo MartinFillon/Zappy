@@ -13,6 +13,9 @@ LDLIBS = -lraylib -L.. -lmy
 SRC = 	src/dashboard.c			\
 		src/waiting.c			\
 		src/display_clients.c	\
+		src/displayers/id.c 	\
+		src/displayers/team.c	\
+		src/displayers/inventory.c	\
 
 OBJ = $(SRC:.c=.o)
 
