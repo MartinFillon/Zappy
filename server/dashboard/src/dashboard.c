@@ -9,14 +9,9 @@
 
 #include "core/core.h"
 #include "core/server.h"
+#include "internal.h"
 #include "logger.h"
 #include "zappy.h"
-
-struct draw_state_s {
-    size_t width;
-    size_t height;
-    size_t fps;
-};
 
 static void init_raylib(struct draw_state_s *st)
 {
@@ -33,7 +28,10 @@ extern bool server_runner(zappy_t *z, void *dt)
     (void)s;
     BeginDrawing();
     ClearBackground(BLACK);
-    DrawText("Waiting for connections...", 190, 200, 20, WHITE);
+    if (z->clients->size == 0)
+        wait_for_connections();
+    else
+        display_clients(z->clients);
     EndDrawing();
     return core(z) && !WindowShouldClose();
 }

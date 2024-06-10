@@ -46,6 +46,7 @@ clean:
 	rm -f *.gcno
 	rm -f *.gcda
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) clean;)
+	$(MAKE) -C dashboard clean
 
 docs-clean:
 	$(RM) -r doc
@@ -54,6 +55,7 @@ fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) fclean;)
+	$(MAKE) -C dashboard fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)

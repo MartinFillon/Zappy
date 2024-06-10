@@ -6,11 +6,13 @@
 ##
 
 CC = gcc
-CFLAGS = -Wall -Wextra -fPIC
+CFLAGS = -Wall -Wextra -fPIC -D_GNU_SOURCE
 CPPFLAGS = -iquote../include
 LDLIBS = -lraylib -L.. -lmy
 
-SRC = src/dashboard.c
+SRC = 	src/dashboard.c			\
+		src/waiting.c			\
+		src/display_clients.c	\
 
 OBJ = $(SRC:.c=.o)
 
