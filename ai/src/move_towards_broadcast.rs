@@ -65,7 +65,7 @@ async fn move_player(client: &mut TcpClient, x: i32) -> bool {
             match look_around::look_around(client).await {
                 Ok(tcp::command_handle::ResponseResult::Tiles(tiles)) => {
                     if let Some(tile) = tiles.first() {
-                        if tile.iter().filter(|obj| obj.as_str() == "player").count() > 1 {
+                        if tile.iter().filter(|obj| obj.as_str() == "player").count() > 2 {
                             break;
                         }
                     }
@@ -99,4 +99,14 @@ pub async fn move_towards_broadcast(client: &mut TcpClient, dir: Direction) -> b
         }
     }
     move_player(client, x).await
+}
+
+pub async fn backtrack_eject(_client: &mut TcpClient, dir: Direction) -> bool {
+    info!("Backtracking back from ejection {}...", dir);
+    if dir == Direction::Center {
+        return true;
+    }
+    let (_x, _y) = get_dir_coordinates(&dir);
+    // to look at only backtracking one from direction to the opposite of direction.
+    true
 }

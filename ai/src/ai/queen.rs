@@ -6,6 +6,9 @@
 //
 
 use crate::ai::{AIHandler, AI};
+use crate::tcp::command_handle::CommandError;
+
+use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub struct Queen {
@@ -18,10 +21,19 @@ impl Queen {
     }
 }
 
+#[async_trait]
 impl AIHandler for Queen {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(info: AI) -> Self {
         Self::new(info)
     }
 
-    fn update(&mut self) {}
+    async fn update(&mut self) -> Result<(), CommandError> {
+        let mut _client_lock = self.info.client.lock().await;
+
+        Ok(())
+    }
+}
+
+impl Queen {
+    // fn handle eject reset
 }
