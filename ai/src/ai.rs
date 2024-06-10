@@ -13,6 +13,7 @@ pub mod bot;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
+pub mod utils;
 
 use crate::commands;
 use crate::tcp::command_handle::{CommandError, Direction, ResponseResult};
@@ -29,38 +30,18 @@ use tokio::{sync::Mutex, task};
 use log::{debug, info};
 
 #[derive(Debug, Clone)]
-pub enum AIState {
-    Bot,
-    Queen,
-    Knight,
-    Fetus,
-}
-
-#[derive(Debug, Clone)]
 pub struct AI {
     team: String,
     cli_id: i32,
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
-    pub state: Option<AIState>,
 }
 
 #[async_trait]
 pub trait AIHandler {
-    fn init(&mut self, info: AI) -> Self;
+    fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
-}
-
-impl Display for AIState {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            AIState::Bot => write!(f, "Bot"),
-            AIState::Queen => write!(f, "Queen"),
-            AIState::Knight => write!(f, "Knight"),
-            AIState::Fetus => write!(f, "Fetus"),
-        }
-    }
 }
 
 impl AI {
@@ -70,7 +51,6 @@ impl AI {
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
-        state: Option<AIState>,
     ) -> Self {
         Self {
             team,
@@ -78,7 +58,6 @@ impl AI {
             client,
             map,
             level,
-            state,
         }
     }
 }
@@ -87,32 +66,19 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI {} = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            <Option<AIState> as Clone>::clone(&self.state)
-                .map_or_else(|| String::from("None"), |p| p.to_string()),
-            self.team,
-            self.cli_id,
-            self.map.0,
-            self.map.1,
-            self.level
+            "AI = [team: {}, client: {}, map: ({}, {}), level: {}]",
+            self.team, self.cli_id, self.map.0, self.map.1, self.level
         )
     }
 }
 
-async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
+#[allow(dead_code)]
+async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
-    match commands::inventory::inventory(client).await {
-        Ok(res) => {
-            info!("Inventory checked.");
-            println!("{}", res);
-            match res {
-                ResponseResult::Inventory(_) => {
-                    println!("Vector Here");
-                }
-                _ => println!("Not a vector"),
-            }
-        }
-        Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
+
+    let mut fetus = fetus::Fetus::init(ai.clone());
+    if let Err(e) = fetus.update().await {
+        println!("Error: {}", e);
     }
     Ok(())
 }
@@ -148,7 +114,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1, None);
+            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
@@ -157,8 +123,6 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     };
 
-    let mut client_lock = client.lock().await;
-    startup_commands(&mut client_lock).await?;
     Ok(ai)
 }
 

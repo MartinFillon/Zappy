@@ -20,7 +20,6 @@ use crate::{
 use log::info;
 use tokio::{sync::Mutex, task};
 
-use super::AIState;
 use async_trait::async_trait;
 
 #[derive(Debug, Clone, Default)]
@@ -47,7 +46,6 @@ impl Queen {
             look: Default::default(),
             requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
         };
-        ai.info.state = Some(AIState::Queen);
         ai
     }
 
@@ -55,10 +53,14 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
         let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
 
-        if let Ok(ResponseResult::Incantation(lvl)) =
-            commands::incantation::incantation(&mut cli).await
-        {
-            self.info.level = lvl;
+        let val = commands::incantation::incantation(&mut cli).await;
+        match val {
+            Ok(ResponseResult::Incantation(lvl)) => {
+                self.info.level = lvl;
+                println!("{}", self);
+            },
+            Err(err) => println!("{}", err),
+            _ => ()
         }
     }
 
@@ -94,7 +96,6 @@ impl Queen {
 
         let mut inv: &mut Inventory = &mut self.look.inv;
 
-        println!("{:?}", vec);
         for elem in vec.iter() {
             match elem.as_str() {
                 "player" => self.look.nb_player += 1,
@@ -130,7 +131,7 @@ impl Queen {
 #[async_trait]
 // Handle Eject DON'T FORGET.
 impl AIHandler for Queen {
-    fn init(&mut self, info: AI) -> Self {
+    fn init(info: AI) -> Self {
         Self::new(info)
     }
 
@@ -155,6 +156,7 @@ impl AIHandler for Queen {
             self.check_enough_food(3).await?;
 
             if self.check_requirement() {
+                println!("Incant !");
                 info!("Ai {} is incanting", self.info.cli_id);
                 self.incantate().await;
             }

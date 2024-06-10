@@ -5,15 +5,16 @@
 ** MessageBox
 */
 
-
-
 #include "MessageBox.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include "define.hpp"
 
-MessageBox::MessageBox() : m_scrollOffset(0), m_lineHeight(20), m_totalLines(0), m_maxLines(0) {}
+MessageBox::MessageBox()
+    : m_scrollOffset(0), m_lineHeight(20), m_totalLines(0), m_maxLines(0), x(0), y(0), width(0), height(0)
+{
+}
 
 void MessageBox::addMessage(const std::string &message, int user)
 {
@@ -77,6 +78,14 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
     return lines;
 }
 
+bool MessageBox::isMouseOver() const
+{
+    return CheckCollisionPointRec(
+        GetMousePosition(),
+        {static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)}
+    );
+}
+
 bool MessageBox::isMouseOver(int x, int y, int width, int height) const
 {
     return CheckCollisionPointRec(
@@ -91,31 +100,41 @@ void MessageBox::scroll(int amount)
     m_scrollOffset = std::clamp(m_scrollOffset + amount, 0, maxOffset);
 }
 
-void MessageBox::handleInput(int x, int y, int width, int height)
+void MessageBox::handleInput()
 {
-    if (!isMouseOver(x, y, width, height)) {
+    if (!isMouseOver()) {
         return;
     }
     int scrollAmount = GetMouseWheelMove();
     if (scrollAmount != 0) {
         scroll(scrollAmount);
     }
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && isMouseOver(x + width - 20, y, 20, height)) {
+        int maxOffset = std::max(0, m_totalLines - m_maxLines);
+        float clickPosition = GetMousePosition().y - y;
+        float scrollbarHeight = static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
+        float scrollbarCenter = scrollbarHeight / 2.0f;
+        m_scrollOffset = std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
+    }
 }
 
 void MessageBox::display(int x, int y, int width, int height)
 {
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
     DrawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
     m_maxLines = height / m_lineHeight;
     m_totalLines = 0;
 
     std::vector<std::vector<std::string>> wrappedMessages;
-    for (const auto &msg : m_formattedMessages) {
-        wrappedMessages.push_back(wrapText(msg.lines[0], width - 20, m_lineHeight)); // Adjust width for scrollbar
+    for (const FormattedMessage &msg : m_formattedMessages) {
+        wrappedMessages.push_back(wrapText(msg.lines[0], width - 20, m_lineHeight));
         m_totalLines += wrappedMessages.back().size();
     }
 
-    // Draw scrollbar
     float scrollbarHeight =
         static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
@@ -127,7 +146,7 @@ void MessageBox::display(int x, int y, int width, int height)
     int lineCount = 0;
 
     for (auto it = wrappedMessages.rbegin(); it != wrappedMessages.rend() && lineCount < m_maxLines; ++it) {
-        const auto &msgLines = *it;
+        const std::vector<std::string> &msgLines = *it;
 
         for (const auto &line : msgLines) {
             if (currentLine >= startLine && lineCount < m_maxLines) {

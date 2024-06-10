@@ -17,6 +17,7 @@ BASE_SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					init_program 			\
 					destroy_program 		\
+					loop 					\
 					$(addprefix cmd_line/, 	\
 						display_help 			\
 						handle_cmd_line 		\
@@ -49,6 +50,7 @@ BASE_SRC = $(addsuffix .c, 				\
 						)\
 						broadcast			\
 						game 				\
+						end					\
 					)\
 					$(addprefix server/, 	\
 						accept				\
@@ -132,16 +134,26 @@ $(NAME): $(OBJ) blib
 blib:
 	$(MAKE) -C lib
 
+ldashboard:
+	$(MAKE) -C dashboard
+
+graphic-mode: ldashboard all
+
 clean:
 	rm -f $(OBJ)
 	rm -f *.gcno
 	rm -f *.gcda
 	$(MAKE) -C lib clean
+	$(MAKE) -C dashboard clean
 
-fclean: clean
+docs-clean:
+	$(RM) -r doc
+
+fclean: clean docs-clean
 	rm -f $(NAME)
 	rm -f $(TEST_NAME)
 	$(MAKE) -C lib fclean
+	$(MAKE) -C dashboard fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
 $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
@@ -158,4 +170,8 @@ debug: fclean all
 
 re: fclean all
 
-.PHONY: all clean fclean re tests_run
+docs: docs-clean
+	doxygen Doxyfile
+	mv doc/html ../doc/server
+
+.PHONY: all clean fclean re tests_run docs
