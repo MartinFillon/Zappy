@@ -28,7 +28,7 @@ extern bool server_runner(zappy_t *z, void *dt)
     (void)s;
     BeginDrawing();
     ClearBackground(BLACK);
-    if (z->clients->size == 0)
+    if (z->game.ais->size == 0)
         wait_for_connections();
     else
         display_clients(z->clients);

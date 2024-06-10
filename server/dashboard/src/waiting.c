@@ -9,5 +9,5 @@
 
 void wait_for_connections(void)
 {
-    DrawText("Waiting for connections...", 190, 200, 20, WHITE);
+    DrawText("Waiting for ais connections...", 190, 200, 20, WHITE);
 }
