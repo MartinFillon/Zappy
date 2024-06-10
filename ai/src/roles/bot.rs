@@ -6,12 +6,10 @@
 //
 
 use crate::{
-    commands::{self, look_around::look_around, take_object::take_object},
-    move_to_tile::move_to_tile,
-    tcp::{
+    ai::{AIHandler, AI}, commands::{self, look_around::look_around, take_object::take_object}, move_to_tile::move_to_tile, tcp::{
         command_handle::{CommandError, ResponseResult},
         TcpClient,
-    },
+    }
 };
 use log::info;
 
@@ -64,6 +62,11 @@ fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> Option<Strin
 }
 
 #[allow(dead_code)]
+fn player_count_on_tile(tile: &[String]) -> usize {
+    tile.iter().filter(|obj| obj.as_str() == "player").count()
+}
+
+#[allow(dead_code)]
 impl Bot {
     async fn seek_best_item_index(
         client: &mut TcpClient,
@@ -78,6 +81,7 @@ impl Bot {
                         Some(item) => {
                             if get_item_priority(item.as_str())
                                 > get_item_priority(inv[idex].0.as_str())
+                                && player_count_on_tile(tile) < 2
                             {
                                 idex = i;
                                 best_item.clone_from(&item);
@@ -112,5 +116,19 @@ impl Bot {
     ) -> Result<ResponseResult, CommandError> {
         info!("Handling bot...");
         self.seek_objects(client).await
+    }
+}
+
+impl AIHandler for Bot {
+    fn init(&mut self, info: AI) -> Self {
+        Self {
+            level: 0,
+            pos: (0,0),
+            key: info.team,
+        }
+    }
+
+    async fn update(&mut self, client: &mut TcpClient) {
+        self.handle_behavior(client).await;
     }
 }

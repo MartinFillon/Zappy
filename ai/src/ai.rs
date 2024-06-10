@@ -31,9 +31,8 @@ enum AIState {
 
 #[derive(Debug, Clone)]
 pub struct AI {
-    team: String,
+    pub team: String,
     id: i32,
-    client: TcpClient,
     map: (i32, i32),
     level: usize,
     state: Option<AIState>,
@@ -41,7 +40,7 @@ pub struct AI {
 
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
-    fn update(&mut self);
+    async fn update(&mut self, client: &mut TcpClient);
 }
 
 impl Display for AIState {
@@ -59,7 +58,6 @@ impl AI {
     fn new(
         team: String,
         id: i32,
-        client: TcpClient,
         map: (i32, i32),
         level: usize,
         state: Option<AIState>,
@@ -67,7 +65,6 @@ impl AI {
         Self {
             team,
             id,
-            client,
             map,
             level,
             state,
@@ -79,12 +76,11 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI {} = [team: {}, id: {}, client: {:?}, map: ({}, {}), level: {}]",
+            "AI {} = [team: {}, id: {}, map: ({}, {}), level: {}]",
             <Option<AIState> as Clone>::clone(&self.state)
                 .map_or_else(|| String::from("None"), |p| p.to_string()),
             self.team,
             self.id,
-            self.client,
             self.map.0,
             self.map.1,
             self.level
@@ -135,11 +131,11 @@ async fn init_ai(mut client: TcpClient, response: &str, team: String) -> io::Res
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let mut ai: AI = AI::new(team, client_number, client, (x, y), 1, None);
+            let ai: AI = AI::new(team, client_number, (x, y), 1, None);
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
-            startup_commands(&mut ai.client).await?;
+            startup_commands(&mut client).await?;
             Ok(())
         }
         None => Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
