@@ -28,8 +28,6 @@ async fn main() {
     let env = Env::new().filter("ZAPPY_LOG");
     Builder::from_env(env).init();
 
-    let requirement = zappy_json::create_from_file::<Config>("config.json").unwrap();
-
     match flags::check_flags() {
         Ok(res) => {
             info!("Arguments set:\n{}", res.clone());
@@ -42,7 +40,7 @@ async fn main() {
                 Ok(ai) => {
                     println!("My ai => {ai}");
                     let mut queen = Queen::new(ai);
-                    if let Err(e) = queen.loop_ai(requirement).await {
+                    if let Err(e) = queen.update().await {
                         println!("Error: {}", e);
                         process::exit(ERROR_CODE);
                     }

@@ -49,8 +49,7 @@ pub struct AI {
 #[async_trait]
 pub trait AIHandler {
     fn init(&mut self, info: AI) -> Self;
-    fn update(&mut self);
-    async fn loop_ai(&mut self, requirement: crate::Config) -> Result<(), CommandError>;
+    async fn update(&mut self) -> Result<(), CommandError>;
 }
 
 impl Display for AIState {

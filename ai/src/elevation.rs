@@ -31,7 +31,7 @@ pub struct Elevation {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Deserialize, Default, Bean)]
+#[derive(Debug, Deserialize, Default, Bean, Clone)]
 pub struct Resources {
     name: String,
     density: f32,
@@ -39,7 +39,7 @@ pub struct Resources {
 
 #[allow(dead_code)]
 #[rustfmt::skip]
-#[derive(Debug, Deserialize, Default, Bean)]
+#[derive(Debug, Deserialize, Default, Bean, Clone)]
 pub struct Config {
     pub ressources: Vec::<Resources>,
     pub elevation: Vec::<Elevation>,

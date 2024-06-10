@@ -27,8 +27,7 @@ impl AIHandler for Knight {
         Self::new(info)
     }
 
-    fn update(&mut self) {}
-    async fn loop_ai(&mut self, requirement: crate::Config) -> Result<(), CommandError> {
+    async fn update(&mut self) -> Result<(), CommandError> {
         Ok(())
     }
 }

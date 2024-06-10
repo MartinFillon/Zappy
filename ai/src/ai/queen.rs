@@ -6,10 +6,12 @@
 //
 
 use core::fmt;
-use std::{fmt::{Display, Formatter}, future::IntoFuture};
+use std::{fmt::{Display, Formatter}};
 
+use log::info;
+use tokio::{sync::Mutex, task};
 use crate::{
-    ai::{AIHandler, AI}, commands, elevation::{Config, Inventory}, tcp::command_handle::{self, CommandError, ResponseResult}
+    ai::{AIHandler, AI}, commands, elevation::{Config, Inventory}, tcp::{command_handle::{self, CommandError, ResponseResult}, TcpClient}
 };
 
 use super::AIState;
@@ -25,24 +27,62 @@ struct LookInfo {
 pub struct Queen {
     pub info: AI,
     inv: Inventory,
-    look: LookInfo
+    look: LookInfo,
+    requirement: Config
 }
 
 impl Queen {
     /// Creates a new [`Queen`].
-    pub fn new(info: AI) -> Self {
-        let mut ai = Self { info, inv: Default::default(), look: Default::default() };
+    pub fn new(info: AI) -> Self { // Requirement !
+        let mut ai = Self {
+            info,
+            inv: Default::default(),
+            look: Default::default(),
+            requirement: zappy_json::create_from_file::<Config>("config.json").unwrap()
+        };
         ai.info.state = Some(AIState::Queen);
         ai
     }
 
-    fn check_requirement(&self, requirement: &Config) -> bool
+    async fn incantate(&mut self)
+    {
+        let mut cli = self.info.client.lock().await;
+        let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
+
+        match commands::incantation::incantation(&mut cli).await {
+            Ok(ResponseResult::Incantation(lvl)) => self.info.level = lvl,
+            _ => ()
+        }
+    }
+
+    async fn check_enough_food(&mut self, min: usize) -> Result<(), command_handle::CommandError>
+    {
+        if *self.inv.food() >= min || *self.look.inv.food() == 0 {
+            return Ok(());
+        }
+        let mut cli = self.info.client.lock().await;
+        match commands::take_object::take_object(&mut cli, "food").await {
+            Ok(ResponseResult::OK) => self.inv.set_food(self.inv.food() + 1),
+            _ => ()
+        }
+        Ok(())
+    }
+
+    fn check_requirement(&self) -> bool
     {
         let idx = self.info.level - 1;
-        let require = &requirement.elevation[idx];
-        println!("{}", require);
-        // Check the look response with the the requirement.
-        true
+        let require = &self.requirement.elevation[idx];
+        let r_inv = require.inv();
+        let look = &self.look;
+
+        look.nb_player >= *require.nb_players() &&
+        look.inv.food() >= r_inv.food() &&
+        look.inv.linemate() >= r_inv.linemate() &&
+        look.inv.deraumere() >= r_inv.deraumere() &&
+        look.inv.sibur() >= r_inv.sibur() &&
+        look.inv.mendiane() >= r_inv.mendiane() &&
+        look.inv.phiras() >= r_inv.phiras() &&
+        look.inv.thystame() >= r_inv.thystame()
     }
 
     fn to_look_info(&mut self, vec: Vec<String>)
@@ -92,15 +132,11 @@ impl AIHandler for Queen {
         Self::new(info)
     }
 
-    fn update(&mut self) {}
-
-    async fn loop_ai(&mut self, requirement: Config) -> Result<(), command_handle::CommandError> {
-        let mut i = 0;
-        while i < 10 {
+    async fn update(&mut self) -> Result<(), command_handle::CommandError> {
+        loop {
             let val = {
                 let mut cli = self.info.client.lock().await;
-                let val = commands::look_around::look_around(&mut cli).await?;
-                val
+                commands::look_around::look_around(&mut cli).await?
             };
             match val {
                 ResponseResult::Tiles(vec) => self.to_look_info(vec[0].clone()),
@@ -109,25 +145,20 @@ impl AIHandler for Queen {
 
             let val = {
                 let mut cli = self.info.client.lock().await;
-                let val = commands::inventory::inventory(&mut cli).await?;
-                val
+                commands::inventory::inventory(&mut cli).await?
             };
             match val {
                 ResponseResult::Inventory(vec) => self.to_inv(vec),
                 _ => ()
             };
 
-            let _ = {
-                let mut cli = self.info.client.lock().await;
-                let val = commands::move_up::move_up(&mut cli).await?;
-                val
-            };
-            // if self.check_requirement(&requirement) {
-                // i += 1;
-                // Incantation
-            // }
+            self.check_enough_food(3).await?;
+
+            if self.check_requirement() {
+                info!("Ai {} is incanting", self.info.cli_id);
+                self.incantate().await;
+            }
         }
-        Ok(())
     }
 }
 
@@ -136,16 +167,3 @@ impl Display for Queen {
         write!(f, "Queen => {}", self.info)
     }
 }
-
-/*
-    while 1 == 1 {
-        Look ==> In the current Look array,
-        Inventory ==> In the current inventory,
-        if check_take_food() {
-            Take food
-        },
-        if check_requirement() && check_enough_food() {
-            Incantation
-        }
-    }
-*/
