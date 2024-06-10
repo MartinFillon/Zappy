@@ -16,7 +16,7 @@ pub mod queen;
 pub mod utils;
 
 use crate::commands;
-use crate::tcp::command_handle::{CommandError, Direction};
+use crate::tcp::command_handle::CommandError;
 use crate::tcp::{self, TcpClient};
 
 use std::fmt;

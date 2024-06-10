@@ -6,7 +6,7 @@
 //
 
 use crate::ai::{utils, AIHandler, AI};
-use crate::tcp::command_handle::{CommandError, Direction};
+use crate::tcp::command_handle::{CommandError, DirectionEject};
 
 use async_trait::async_trait;
 
@@ -63,18 +63,13 @@ impl Bot {
         self.log_path_history(self.coord);
     }
 
-    fn update_eject_coord(&mut self, direction: Direction) {
+    fn update_eject_coord(&mut self, direction: DirectionEject) {
         info!("Updating movement from Direction: {}...", direction);
         match direction {
-            Direction::Center => self.update_coord_movement((0, 0)),
-            Direction::North => self.update_coord_movement((0, 1)),
-            Direction::NorthWest => self.update_coord_movement((-1, 1)),
-            Direction::West => self.update_coord_movement((-1, 0)),
-            Direction::SouthWest => self.update_coord_movement((-1, -1)),
-            Direction::South => self.update_coord_movement((0, -1)),
-            Direction::SouthEast => self.update_coord_movement((1, -1)),
-            Direction::East => self.update_coord_movement((1, 0)),
-            Direction::NorthEast => self.update_coord_movement((1, 1)),
+            DirectionEject::North => self.update_coord_movement((0, 1)),
+            DirectionEject::East => self.update_coord_movement((1, 0)),
+            DirectionEject::South => self.update_coord_movement((0, -1)),
+            DirectionEject::West => self.update_coord_movement((-1, 0)),
         }
     }
 

@@ -15,16 +15,29 @@ use crate::{
     },
     tcp::{
         self,
-        command_handle::{Direction, ResponseResult},
+        command_handle::{DirectionEject, DirectionHandler, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
 
-const Y_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
-const X_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];
+const Y_MSG_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
+const X_MSG_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];
 
-fn get_dir_coordinates(dir: &Direction) -> (i32, i32) {
-    (X_DIRS[dir.to_usize() - 1], Y_DIRS[dir.to_usize() - 1])
+const Y_EJECT_DIRS: [i32; 4] = [1, 0, -1, 0];
+const X_EJECT_DIRS: [i32; 4] = [0, 1, 0, -1];
+
+fn get_msg_coordinates(dir: &DirectionMessage) -> (i32, i32) {
+    (
+        X_MSG_DIRS[dir.to_usize() - 1],
+        Y_MSG_DIRS[dir.to_usize() - 1],
+    )
+}
+
+fn get_eject_coordinates(dir: &DirectionEject) -> (i32, i32) {
+    (
+        X_EJECT_DIRS[dir.to_usize() - 1],
+        Y_EJECT_DIRS[dir.to_usize() - 1],
+    )
 }
 
 async fn move_left(client: &mut TcpClient) -> bool {
@@ -84,12 +97,12 @@ async fn move_player(client: &mut TcpClient, x: i32) -> bool {
     true
 }
 
-pub async fn move_towards_broadcast(client: &mut TcpClient, dir: Direction) -> bool {
+pub async fn move_towards_broadcast(client: &mut TcpClient, dir: DirectionMessage) -> bool {
     info!("Moving towards direction {}...", dir);
-    if dir == Direction::Center {
+    if dir == DirectionMessage::Center {
         return true;
     }
-    let (mut x, y) = get_dir_coordinates(&dir);
+    let (mut x, y) = get_msg_coordinates(&dir);
     if y < 0 {
         x = -x;
         if turn::turn(client, DirectionTurn::Right).await.is_err() // to handle eject/message
@@ -101,12 +114,27 @@ pub async fn move_towards_broadcast(client: &mut TcpClient, dir: Direction) -> b
     move_player(client, x).await
 }
 
-pub async fn backtrack_eject(_client: &mut TcpClient, dir: Direction) -> bool {
-    info!("Backtracking back from ejection {}...", dir);
-    if dir == Direction::Center {
+async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
+    if (x < 0 && !move_left(client).await) || (x > 0 && !move_right(client).await) {
+        return false;
+    }
+    if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
         return true;
     }
-    let (_x, _y) = get_dir_coordinates(&dir);
-    // to look at only backtracking one from direction to the opposite of direction.
-    true
+    // to handle eject/message
+    false
+}
+
+pub async fn backtrack_eject(client: &mut TcpClient, dir: DirectionEject) -> bool {
+    info!("Backtracking back from ejection {}...", dir);
+    let (mut x, y) = get_eject_coordinates(&dir);
+    if y < 0 {
+        x = -x;
+        if turn::turn(client, DirectionTurn::Right).await.is_err() // to handle eject/message
+            || turn::turn(client, DirectionTurn::Right).await.is_err()
+        {
+            return false;
+        }
+    }
+    undo_eject(client, x).await
 }
