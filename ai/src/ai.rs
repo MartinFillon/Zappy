@@ -49,8 +49,7 @@ pub trait AIHandler {
 
 #[async_trait]
 pub trait Incantationers {
-    async fn handle_reject(
-        &mut self,
+    async fn handle_eject(
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError>;

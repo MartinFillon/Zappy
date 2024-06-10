@@ -8,7 +8,7 @@
 use crate::ai::{utils, AIHandler, Incantationers, AI};
 use crate::commands;
 use crate::move_towards_broadcast::backtrack_eject;
-use crate::tcp::command_handle::{CommandError, DirectionEject, ResponseResult};
+use crate::tcp::command_handle::{CommandError, CommandHandler, DirectionEject, ResponseResult};
 use crate::tcp::TcpClient;
 
 use async_trait::async_trait;
@@ -41,14 +41,14 @@ impl AIHandler for Knight {
 
 #[async_trait]
 impl Incantationers for Knight {
-    async fn handle_reject(
-        &mut self,
+    async fn handle_eject(
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                return Ok(ResponseResult::EjectUndone);
+                let response = client.check_response().await?;
+                client.handle_response(response).await?;
             }
         }
         res

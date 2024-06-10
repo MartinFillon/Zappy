@@ -65,6 +65,7 @@ pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError>;
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
+    async fn check_response(&mut self) -> Result<String, CommandError>;
 }
 
 #[async_trait::async_trait]
@@ -74,6 +75,14 @@ impl CommandHandler for TcpClient {
         if self.send_request(command.to_string()).await.is_err() {
             return Err(CommandError::RequestError);
         }
+        match self.get_response().await {
+            Some(res) => Ok(res),
+            None => Err(CommandError::NoResponseReceived),
+        }
+    }
+
+    async fn check_response(&mut self) -> Result<String, CommandError> {
+        info!("Checking for a response...");
         match self.get_response().await {
             Some(res) => Ok(res),
             None => Err(CommandError::NoResponseReceived),
@@ -103,6 +112,7 @@ impl CommandHandler for TcpClient {
         }
 
         match response.trim_end() {
+            "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             _ => Err(CommandError::InvalidResponse),

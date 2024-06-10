@@ -6,6 +6,7 @@
 //
 
 use crate::move_towards_broadcast::backtrack_eject;
+use crate::tcp::command_handle::CommandHandler;
 use crate::{
     ai::{AIHandler, Incantationers, AI},
     commands,
@@ -38,6 +39,22 @@ pub struct Queen {
     requirement: Config,
 }
 
+#[async_trait]
+impl Incantationers for Queen {
+    async fn handle_eject(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        if let Ok(ResponseResult::Eject(ref dir)) = res {
+            if backtrack_eject(client, dir.clone()).await {
+                let response = client.check_response().await?;
+                client.handle_response(response).await?;
+            }
+        }
+        res
+    }
+}
+
 impl Queen {
     /// Creates a new [`Queen`].
     fn new(info: AI) -> Self {
@@ -54,7 +71,8 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
         let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
 
-        let val = commands::incantation::incantation(&mut cli).await;
+        let mut val = commands::incantation::incantation(&mut cli).await;
+        val = Queen::handle_eject(&mut cli, val).await;
         match val {
             Ok(ResponseResult::Incantation(lvl)) => {
                 self.info.level = lvl;
@@ -130,23 +148,6 @@ impl Queen {
 }
 
 #[async_trait]
-impl Incantationers for Queen {
-    async fn handle_reject(
-        &mut self,
-        client: &mut TcpClient,
-        res: Result<ResponseResult, CommandError>,
-    ) -> Result<ResponseResult, CommandError> {
-        if let Ok(ResponseResult::Eject(ref dir)) = res {
-            if backtrack_eject(client, dir.clone()).await {
-                return Ok(ResponseResult::EjectUndone);
-            }
-        }
-        res
-    }
-}
-
-#[async_trait]
-// Handle Eject DON'T FORGET.
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
         Self::new(info)
@@ -154,19 +155,21 @@ impl AIHandler for Queen {
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
         loop {
-            let val = {
+            let mut val = {
                 let mut cli = self.info.client.lock().await;
-                commands::look_around::look_around(&mut cli).await?
+                let res = commands::look_around::look_around(&mut cli).await;
+                Queen::handle_eject(&mut cli, res).await
             };
-            if let ResponseResult::Tiles(vec) = val {
+            if let Ok(ResponseResult::Tiles(vec)) = val {
                 self.convert_to_look_info(vec[0].clone());
             }
 
             let val = {
                 let mut cli = self.info.client.lock().await;
-                commands::inventory::inventory(&mut cli).await?
+                let res = commands::inventory::inventory(&mut cli).await;
+                Queen::handle_eject(&mut cli, res).await
             };
-            if let ResponseResult::Inventory(vec) = val {
+            if let Ok(ResponseResult::Inventory(vec)) = val {
                 self.convert_to_inv(vec);
             }
 
