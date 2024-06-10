@@ -38,7 +38,7 @@ pub struct Queen {
 
 impl Queen {
     /// Creates a new [`Queen`].
-    pub fn new(info: AI) -> Self {
+    fn new(info: AI) -> Self {
         // Requirement !
         let mut ai = Self {
             info,
