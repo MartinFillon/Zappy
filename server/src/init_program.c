@@ -5,10 +5,10 @@
 ** init_program
 */
 
-#include "client.h"
+#include "core/client.h"
 #include "logger.h"
 #include "macros.h"
-#include "router/router.h"
+#include "core/router/router.h"
 #include "args_info.h"
 
 int init_program(args_infos_t *args, zappy_t *z)

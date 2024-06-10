@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "server.h"
-#include "types/game.h"
+#include "core/server.h"
+#include "core/types/game.h"
 
 typedef struct zappy_s {
     game_t game;

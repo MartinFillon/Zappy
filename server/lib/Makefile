@@ -25,12 +25,19 @@ SRC =   str/str.c\
 		json/file.c\
 		json/free.c\
 		logger/logger.c\
+		utils/free_box.c\
+		utils/va_free.c\
+		utils/mod.c\
+		utils/vec_cmp.c\
+		utils/is_empty.c\
+		utils/is_number.c\
+		utils/is_coord_equals.c
 
 NAME = ../libmy.a
 
 OBJ = $(SRC:.c=.o)
 
-CFLAGS += -Wall -Wextra -Wno-unused-function
+CFLAGS += -Wall -Wextra -Wno-unused-function -fPIC
 CPPFLAGS += -iquote ../include
 
 all: $(NAME)

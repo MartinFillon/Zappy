@@ -18,3 +18,4 @@ doc/gui
 doc/server
 server/doc
 gui/doc
+*.so
