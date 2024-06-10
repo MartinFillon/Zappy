@@ -249,29 +249,29 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         else Raylib::enableCursor();
         showCursor = !showCursor;
     };
-    if (isCameraFree) UpdateCamera(&cam, CAMERA_FREE);
+    if (isCameraFree) Raylib::updateCamera(cam, CAMERA_FREE);
 
-    ClearBackground(RAYWHITE);
-    BeginMode3D(cam);
+    Raylib::clearBackground(RAYWHITE);
+    Raylib::beginMode3D(cam);
 
-    DrawGrid(100, 1.0f);
+    Raylib::drawGrid(100, 1.0f);
     for (auto tile : m_map) {
         float tileX = tile->getPos().x() * tileSize + tileSize / 2;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
-        DrawCube({tileX, 0, tileZ}, tileSize, tileSize, tileSize, RED);
-        DrawCubeWires({tileX, 0, tileZ}, tileSize, tileSize, tileSize, BROWN);
+        Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
+        Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
     }
     for (const auto &player : m_players) {
         float playerX = player->getPos().x() * tileSize + tileSize / 2;
         float playerZ = player->getPos().y() * tileSize + tileSize / 2;
 
-        DrawSphere({playerX, tileSize / 6 + tileSize / 2 ,playerZ}, tileSize / 6, Color{0, 121, 241, 150});
+        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2 ,playerZ}, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
 
-        DrawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
@@ -280,9 +280,9 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         float itemZ = (item->getPos().y() + info.getPosTile().z()) * tileSize + tileSize / 2;
         float plus = tileSize / 10.0f;
         float sizeCube = tileSize * info.getSize() + 2 * plus;
-        DrawCubeWires({itemX, itemY, itemZ}, sizeCube, sizeCube, sizeCube, GREEN);
+        Raylib::drawCubeWires({itemX, itemY, itemZ}, sizeCube, GREEN);
     }
-    EndMode3D();
+    Raylib::endMode3D();
 }
 
 } // namespace Data

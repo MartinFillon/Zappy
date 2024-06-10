@@ -8,6 +8,7 @@
 #pragma once
 
 #include <raylib.h>
+#include <string>
 
 namespace Raylib {
 
@@ -32,12 +33,32 @@ namespace Raylib {
     void drawSquareLines(float x, float y, float size, Color color);
     void drawCircle(float x, float y, float radius, Color color);
     void drawCircle(Vector2 vec, float radius, Color color);
+    void drawGrid(int slices, float spacing);
+    void drawCuboid(Vector3 pStart, Vector3 pEnd, Color color);
+    void drawCuboidWires(Vector3 pStart, Vector3 pEnd, Color color);
+    void drawCube(Vector3 p, float size, Color color);
+    void drawCubeWires(Vector3 p, float size, Color color);
+    void drawSphere(Vector3 p, float radius, Color color);
+    void drawText(std::string str, int x, int y, int fontSize, Color color);
+    void drawLine(int sx, int sy, int ex, int ey, Color color);
 
 // Event
+    bool isMouseButtonPressed(int button);
     bool isKeyPressed(int key);
+    int getKeyPressed();
+    float getMouseWheelMove();
+    bool isMouseButtonDown(int button);
 
 // Window
     void disableCursor();
     void enableCursor();
+    void updateCamera(Camera &cam, int mode);
+    void clearBackground(Color color);
+    void beginMode3D(Camera &cam);
+    void endMode3D();
+    float getFrameTime();
+
+// Other
+    Vector2 getMousePosition();
 
 } // namespace Raylib

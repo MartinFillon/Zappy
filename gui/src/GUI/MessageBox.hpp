@@ -8,7 +8,7 @@
 #pragma once
 
 #include <chrono>
-#include <raylib.h>
+#include "Raylib.hpp"
 #include <string>
 #include <vector>
 
