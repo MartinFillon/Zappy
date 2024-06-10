@@ -13,8 +13,8 @@ pub mod bot;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
+pub mod utils;
 
-use crate::ai::{fetus::Fetus, knight::Knight};
 use crate::commands;
 use crate::tcp::command_handle::{CommandError, Direction};
 use crate::tcp::{self, TcpClient};
@@ -30,38 +30,18 @@ use tokio::{sync::Mutex, task};
 use log::{debug, info};
 
 #[derive(Debug, Clone)]
-enum AIState {
-    Bot,
-    Queen,
-    Knight,
-    Fetus,
-}
-
-#[derive(Debug, Clone)]
 pub struct AI {
     team: String,
     cli_id: i32,
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
-    state: Option<AIState>,
 }
 
 #[async_trait]
 pub trait AIHandler {
     fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
-}
-
-impl Display for AIState {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            AIState::Bot => write!(f, "Bot"),
-            AIState::Queen => write!(f, "Queen"),
-            AIState::Knight => write!(f, "Knight"),
-            AIState::Fetus => write!(f, "Fetus"),
-        }
-    }
 }
 
 impl AI {
@@ -71,7 +51,6 @@ impl AI {
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
-        state: Option<AIState>,
     ) -> Self {
         Self {
             team,
@@ -79,7 +58,6 @@ impl AI {
             client,
             map,
             level,
-            state,
         }
     }
 }
@@ -88,14 +66,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI {} = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            <Option<AIState> as Clone>::clone(&self.state)
-                .map_or_else(|| String::from("None"), |p| p.to_string()),
-            self.team,
-            self.cli_id,
-            self.map.0,
-            self.map.1,
-            self.level
+            "AI = [team: {}, client: {}, map: ({}, {}), level: {}]",
+            self.team, self.cli_id, self.map.0, self.map.1, self.level
         )
     }
 }
@@ -103,7 +75,7 @@ impl Display for AI {
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
 
-    let mut fetus = Fetus::init(ai);
+    let mut fetus = fetus::Fetus::init(ai);
     if let Err(e) = fetus.update().await {
         println!("Error: {}", e);
     }
@@ -141,7 +113,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1, None);
+            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");

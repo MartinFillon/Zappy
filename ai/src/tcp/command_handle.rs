@@ -29,7 +29,7 @@ pub enum ResponseResult {
     Eject(Direction),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 #[repr(u8)]
 pub enum Direction {
     Center,
