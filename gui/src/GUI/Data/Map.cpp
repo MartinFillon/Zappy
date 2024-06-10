@@ -6,7 +6,6 @@
 */
 
 #include "Map.hpp"
-#include <raylib.h>
 
 namespace GUI {
 namespace Data {
@@ -116,7 +115,7 @@ void Map::checkCollision(InfoBox &infoBox) const
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + x + tileSize / 2;
         float playerCenterY = player->getPos().y() * tileSize + y + tileSize / 2;
-        if (CheckCollisionPointCircle(GetMousePosition(), {playerCenterX, playerCenterY}, tileSize / 6)) {
+        if (Raylib::checkCollisionMouseCircle(playerCenterX, playerCenterY, tileSize / 6)) {
             auto &item = infoBox.getItem();
             if (item == player) {
                 infoBox.setPrint(!infoBox.isPrint());
@@ -131,7 +130,7 @@ void Map::checkCollision(InfoBox &infoBox) const
     for (auto tile : m_map) {
         float tileX = tile->getPos().x() * tileSize + x;
         float tileY = tile->getPos().y() * tileSize + y;
-        if (CheckCollisionPointRec(GetMousePosition(), {tileX, tileY, tileSize, tileSize})) {
+        if (Raylib::checkCollisionMouseSquare(tileX, tileY, tileSize)) {
             auto &item = infoBox.getItem();
             if (item == tile) {
                 infoBox.setPrint(!infoBox.isPrint());
@@ -147,7 +146,7 @@ void Map::checkCollision(InfoBox &infoBox) const
 void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
 {
     float tileSize = 1.0f;
-    Ray ray = GetMouseRay(GetMousePosition(), cam);
+    Ray ray = Raylib::GetMouseRay(cam);
     RayCollision collision = {};
     RayCollision collisionTmp = {};
     InfoBox tmpInfo = infoBox;
@@ -155,7 +154,7 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
         float playerCenterZ = player->getPos().y() * tileSize + tileSize / 2.0f;
-        collisionTmp = GetRayCollisionSphere(ray,
+        collisionTmp = Raylib::getRayCollisionSphere(ray,
             (Vector3){playerCenterX, tileSize / 6.0f + tileSize / 2.0f, playerCenterZ},
             tileSize / 6.0f);
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
@@ -168,9 +167,7 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     for (auto tile : m_map) {
         float tileX = tile->getPos().x() * tileSize + tileSize / 2.0f;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2.0f;
-        collisionTmp = GetRayCollisionBox(ray, (BoundingBox){
-            (Vector3){tileX - tileSize / 2.0f, - tileSize / 2.0f, tileZ - tileSize / 2.0f},
-            (Vector3){tileX + tileSize / 2.0f, tileSize / 2.0f, tileZ + tileSize / 2.0f}});
+        collisionTmp = Raylib::getRayCollisionCube(ray, {tileX, 0, tileZ}, tileSize);
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
             tmpInfo.setItem(tile);
@@ -213,9 +210,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
                 Color color = RED;
                 if (ressources[i] > 0)
                     color = (ressources[i] < 2) ? ORANGE : GREEN;
-                DrawRectangle(ressourceX, ressourceY, tileSize / 3, tileSize / 3, color);
+                Raylib::drawSquare(ressourceX, ressourceY, tileSize / 3, color);
             }
-            DrawRectangleLines(tileX, tileY, tileSize, tileSize, BLACK);
+            Raylib::drawSquareLines(tileX, tileY, tileSize, BLACK);
         }
     }
     for (const auto &player : m_players) {
@@ -224,19 +221,19 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         int playerX = player->getPos().x() * tileSize + start_x + tileSize / 2;
         int playerY = player->getPos().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
+        Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
         int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
-        DrawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
         float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize + start_x;
         float itemZ = (item->getPos().y() + info.getPosTile().y()) * tileSize + start_y;
-        DrawRectangleLines(itemX, itemZ, tileSize * info.getSize(), tileSize * info.getSize(), GREEN);
+        Raylib::drawSquareLines(itemX, itemZ, tileSize * info.getSize(), GREEN);
     }
 }
 
@@ -245,11 +242,11 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     float tileSize = 1.0f;
 
 
-    if (IsKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
-    if (IsKeyPressed('F')) isCameraFree = !isCameraFree;
-    if (IsKeyPressed('C')) {
-        if (showCursor) DisableCursor();
-        else EnableCursor();
+    if (Raylib::isKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+    if (Raylib::isKeyPressed('F')) isCameraFree = !isCameraFree;
+    if (Raylib::isKeyPressed('C')) {
+        if (showCursor) Raylib::disableCursor();
+        else Raylib::enableCursor();
         showCursor = !showCursor;
     };
     if (isCameraFree) UpdateCamera(&cam, CAMERA_FREE);

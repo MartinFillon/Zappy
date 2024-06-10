@@ -6,6 +6,7 @@
 */
 
 #include "InfoBox.hpp"
+#include "Raylib.hpp"
 
 namespace GUI {
 
