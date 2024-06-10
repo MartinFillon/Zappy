@@ -99,15 +99,17 @@ impl Display for AI {
     }
 }
 
-async fn startup_commands(client: &mut TcpClient) -> io::Result<()> {
+async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
-    match commands::inventory::inventory(client).await {
+    let mut client_lock = ai.client.lock().await;
+    match commands::inventory::inventory(&mut client_lock).await {
         Ok(res) => {
             info!("Inventory checked.");
             println!("{}", res);
         }
         Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
+
     Ok(())
 }
 
@@ -146,12 +148,12 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             println!("({})> {}", client_number, ai);
             info!("{}", ai);
             info!("AI initialized.");
+            kickstart(ai).await?;
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
     }
 
-    let mut client_lock = client.lock().await;
-    startup_commands(&mut client_lock).await?;
+    // let mut client_lock = client.lock().await;
     Ok(())
 }
 
