@@ -16,6 +16,7 @@ use std::fmt::{Display, Formatter};
 
 use log::{debug, info};
 
+#[derive(PartialEq)]
 pub enum ResponseResult {
     OK,
     KO,
