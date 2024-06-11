@@ -7,8 +7,10 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
-use crate::tcp::TcpClient;
+use crate::tcp::{
+    command_handle::{CommandError, CommandHandler, ResponseResult},
+    TcpClient,
+};
 
 pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     let checkpoint = client.check_dead("Incantation\n").await?;

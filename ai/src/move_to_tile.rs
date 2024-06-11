@@ -5,8 +5,6 @@
 // utility function to move towards a specific tile in player's vision
 //
 
-use log::info;
-
 use crate::{
     ai::bot::Bot,
     commands::{
@@ -15,6 +13,8 @@ use crate::{
     },
     tcp::{command_handle::ResponseResult, TcpClient},
 };
+
+use log::info;
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
     let mut tile_count: usize = 0;

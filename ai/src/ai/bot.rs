@@ -5,15 +5,21 @@
 // bot
 //
 
-use crate::ai::{utils, AIHandler, AI};
-use crate::commands::drop_object::drop_object;
-use crate::commands::inventory::inventory;
-use crate::commands::look_around::look_around;
-use crate::commands::move_up::move_up;
-use crate::commands::take_object::take_object;
-use crate::commands::turn::{turn, DirectionTurn};
-use crate::tcp::command_handle::{CommandError, Direction, ResponseResult};
-use crate::tcp::TcpClient;
+use crate::{
+    ai::{AIHandler, AI},
+    commands::{
+        drop_object::drop_object,
+        inventory::inventory,
+        look_around::look_around,
+        move_up::move_up,
+        take_object::take_object,
+        turn::{turn, DirectionTurn},
+    },
+    tcp::{
+        command_handle::{CommandError, DirectionEject, ResponseResult},
+        TcpClient,
+    },
+};
 
 use async_trait::async_trait;
 
@@ -157,25 +163,20 @@ impl Bot {
             self.coord().1
         );
 
-        let wrapped_x = utils::wrap_coordinate(x, width);
-        let wrapped_y = utils::wrap_coordinate(y, height);
+        let wrapped_x = wrap_coordinate(x, width);
+        let wrapped_y = wrap_coordinate(y, height);
 
         info!("To: ({}, {})", wrapped_x, wrapped_y);
         self.set_coord((wrapped_x, wrapped_y));
     }
 
-    pub fn update_eject_coord(&mut self, direction: Direction) {
+    fn update_eject_coord(&mut self, direction: DirectionEject) {
         info!("Updating movement from Direction: {}...", direction);
         match direction {
-            Direction::Center => self.update_coord_movement((0, 0)),
-            Direction::North => self.update_coord_movement((0, 1)),
-            Direction::NorthWest => self.update_coord_movement((-1, 1)),
-            Direction::West => self.update_coord_movement((-1, 0)),
-            Direction::SouthWest => self.update_coord_movement((-1, -1)),
-            Direction::South => self.update_coord_movement((0, -1)),
-            Direction::SouthEast => self.update_coord_movement((1, -1)),
-            Direction::East => self.update_coord_movement((1, 0)),
-            Direction::NorthEast => self.update_coord_movement((1, 1)),
+            DirectionEject::North => self.update_coord_movement((0, 1)),
+            DirectionEject::East => self.update_coord_movement((1, 0)),
+            DirectionEject::South => self.update_coord_movement((0, -1)),
+            DirectionEject::West => self.update_coord_movement((-1, 0)),
         }
     }
 
@@ -247,4 +248,14 @@ impl Bot {
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }
+}
+
+pub fn wrap_coordinate(coord: i32, max: i32) -> i32 {
+    let mut wrapped = (coord % max + max) % max;
+    if coord > max {
+        wrapped = -(max - (wrapped - 1));
+    } else if coord < -max {
+        wrapped += 1;
+    }
+    wrapped
 }

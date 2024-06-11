@@ -7,8 +7,10 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::command_handle::{CommandError, CommandHandler, ResponseResult};
-use crate::tcp::TcpClient;
+use crate::tcp::{
+    command_handle::{CommandError, CommandHandler, ResponseResult},
+    TcpClient,
+};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
