@@ -10,11 +10,12 @@
 #include <stdlib.h>
 #include "core/types/ai.h"
 
-void display_level(ai_t *ai, int x, int y)
+int display_level(ai_t *ai, int x, int y)
 {
     char *txt = NULL;
 
     asprintf(&txt, "level %ld", ai->level);
     DrawText(txt, x, y, 20, WHITE);
     free(txt);
+    return 20;
 }
