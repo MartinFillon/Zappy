@@ -18,6 +18,7 @@ use crate::tcp::TcpClient;
 use async_trait::async_trait;
 
 use log::info;
+use zappy_macros::Bean;
 
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 5;
@@ -31,10 +32,10 @@ const ITEM_PRIORITY: [(&str, usize); 7] = [
     ("thystame", 7),
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct Bot {
-    pub info: AI,
-    pub coord: (i32, i32),
+    info: AI,
+    coord: (i32, i32),
 }
 
 fn get_item_priority(item: &str) -> usize {
@@ -145,20 +146,22 @@ impl AIHandler for Bot {
 
 impl Bot {
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
-        let (x, y) = (self.coord.0 + d.0, self.coord.1 + d.1);
+        let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         info!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
-        let (width, height) = (self.info.map.0 / 2, self.info.map.1 / 2);
+        let (width, height) = (self.info.map().0 / 2, self.info.map().1 / 2);
 
         info!(
             "Coordinated updated from: ({}, {})",
-            self.coord.0, self.coord.1
+            self.coord().0,
+            self.coord().1
         );
 
         let wrapped_x = utils::wrap_coordinate(x, width);
         let wrapped_y = utils::wrap_coordinate(y, height);
 
         info!("To: ({}, {})", wrapped_x, wrapped_y);
+        self.set_coord((wrapped_x, wrapped_y));
     }
 
     pub fn update_eject_coord(&mut self, direction: Direction) {
@@ -178,14 +181,14 @@ impl Bot {
 
     pub async fn seek_objects(&mut self) -> Result<ResponseResult, CommandError> {
         let res = {
-            let mut client_lock = self.info.client.lock().await;
+            let mut client_lock = self.info.client().lock().await;
             look_around(&mut client_lock).await?
         };
         match res {
             ResponseResult::Tiles(tiles) => {
                 let mut best_item = String::new();
                 let tile = {
-                    let mut client_lock = self.info.client.lock().await;
+                    let mut client_lock = self.info.client().lock().await;
                     seek_best_item_index(&mut client_lock, tiles, &mut best_item).await?
                 };
                 if best_item.is_empty() {
@@ -194,7 +197,7 @@ impl Bot {
                     if !self.move_to_tile(tile).await {
                         return Err(CommandError::RequestError);
                     }
-                    let mut client_lock = self.info.client.lock().await;
+                    let mut client_lock = self.info.client().lock().await;
                     take_object(&mut client_lock, &best_item).await
                 }
             }
@@ -204,7 +207,7 @@ impl Bot {
 
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         loop {
-            let mut client_lock = self.info.client.lock().await;
+            let mut client_lock = self.info.client().lock().await;
             match inventory(&mut client_lock).await? {
                 ResponseResult::Inventory(inv) => {
                     if done_dropping_items(&inv) {
@@ -227,7 +230,7 @@ impl Bot {
     }
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut client_lock = self.info.client.lock().await;
+        let mut client_lock = self.info.client().lock().await;
         turn(&mut client_lock, DirectionTurn::Right).await?;
         turn(&mut client_lock, DirectionTurn::Right).await?;
         Ok(ResponseResult::OK)
@@ -235,13 +238,13 @@ impl Bot {
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         self.turn_around().await?;
-        if self.coord.1.is_negative() {
-            self.coord.1 = -self.coord.1;
+        if self.coord().1.is_negative() {
+            self.coord.1 = -self.coord().1;
         }
-        if !self.move_ai_to_coords(self.coord).await {
+        if !self.move_ai_to_coords(*self.coord()).await {
             return Err(CommandError::RequestError);
         }
-        self.coord = (0, 0);
+        self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }
 }

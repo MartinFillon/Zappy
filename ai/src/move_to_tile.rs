@@ -98,7 +98,7 @@ pub async fn move_right(client: &mut TcpClient, x: i32) -> bool {
 
 impl Bot {
     pub async fn move_ai_to_coords(&mut self, (x, y): (i32, i32)) -> bool {
-        let mut client_lock = self.info.client.lock().await;
+        let mut client_lock = self.info().client().lock().await;
         if (x < 0 && !move_left(&mut client_lock, x).await)
             || (x > 0 && !move_right(&mut client_lock, x).await)
         {
@@ -116,7 +116,7 @@ impl Bot {
 
     pub async fn move_to_tile(&mut self, tile: usize) -> bool {
         info!("Moving to tile {}...", tile);
-        match get_tile_coordinates(tile, self.info.level) {
+        match get_tile_coordinates(tile, *self.info().level()) {
             Some(coords) => {
                 if self.move_ai_to_coords(coords).await {
                     self.update_coord_movement(coords);
