@@ -10,6 +10,7 @@
 #![allow(unused_mut)]
 
 pub mod bot;
+pub mod empress;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
@@ -98,8 +99,8 @@ impl Display for AI {
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
 
-    let mut fetus = fetus::Fetus::init(ai.clone());
-    if let Err(e) = fetus.update().await {
+    let mut empress = empress::Empress::init(ai.clone());
+    if let Err(e) = empress.update().await {
         println!("Error: {}", e);
     }
     Ok(())
@@ -139,7 +140,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
             println!("AI #{} > {}", client_number, ai);
             info!("{} initialized.", ai);
-            // kickstart(ai.clone()).await?; handle ur ai here to test bruh no from main
+            kickstart(ai.clone()).await?; // handle ur ai here to test bruh no from main
             ai
         }
         None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
