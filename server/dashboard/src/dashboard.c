@@ -26,7 +26,7 @@ extern bool server_runner(zappy_t *z, void *dt)
 {
     struct draw_state_s *s = dt;
 
-    (void)s;
+    poll_events(s);
     BeginDrawing();
     ClearBackground(BLACK);
     if (z->game.ais->size == 0)

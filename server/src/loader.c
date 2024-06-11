@@ -17,7 +17,7 @@ static void *load_function(char const *name, void *handle)
     char *error = dlerror();
 
     if (error) {
-        logs(ERROR_LEVEL, "%s\n", error);
+        logs(ERROR_LEVEL, "Error loading %s: %s\n", name, error);
         return NULL;
     }
     return f;
@@ -36,7 +36,7 @@ lib_t open_dhl(char const *file)
 
     l.handle = dlopen(file, RTLD_LAZY);
     if (!l.handle) {
-        logs(ERROR_LEVEL, "%s\n", dlerror());
+        logs(ERROR_LEVEL, "Error loading lib %s: %s\n", file, dlerror());
         return error_case(file);
     }
     dlerror();
@@ -44,7 +44,7 @@ lib_t open_dhl(char const *file)
         (bool (*)(zappy_t *, void *))load_function("server_runner", l.handle);
     l.init = (void *(*)(void))load_function("init", l.handle);
     l.destroy = (void (*)(void *))load_function("destroy_renderer", l.handle);
-    if (l.loop == NULL || l.init == NULL || l.destroy) {
+    if (l.loop == NULL || l.init == NULL || l.destroy == NULL) {
         close_dhl(&l);
         return error_case(file);
     }

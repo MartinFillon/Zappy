@@ -25,3 +25,4 @@ struct draw_state_s {
 
 void wait_for_connections(void);
 void display_clients(struct client_list *lst, struct draw_state_s *st);
+void poll_events(struct draw_state_s *st);
