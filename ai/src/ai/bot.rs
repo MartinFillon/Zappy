@@ -5,15 +5,21 @@
 // bot
 //
 
-use crate::ai::{utils, AIHandler, AI};
-use crate::commands::drop_object::drop_object;
-use crate::commands::inventory::inventory;
-use crate::commands::look_around::look_around;
-use crate::commands::move_up::move_up;
-use crate::commands::take_object::take_object;
-use crate::commands::turn::{turn, DirectionTurn};
-use crate::tcp::command_handle::{CommandError, DirectionEject, ResponseResult};
-use crate::tcp::TcpClient;
+use crate::{
+    ai::{AIHandler, AI},
+    commands::{
+        drop_object::drop_object,
+        inventory::inventory,
+        look_around::look_around,
+        move_up::move_up,
+        take_object::take_object,
+        turn::{turn, DirectionTurn},
+    },
+    tcp::{
+        command_handle::{CommandError, DirectionEject, ResponseResult},
+        TcpClient,
+    },
+};
 
 use async_trait::async_trait;
 
