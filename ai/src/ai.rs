@@ -13,11 +13,15 @@ pub mod bot;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
-pub mod utils;
 
-use crate::commands;
-use crate::tcp::command_handle::{CommandError, Direction, ResponseResult};
-use crate::tcp::{self, TcpClient};
+use crate::{
+    commands,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
+};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -34,8 +38,9 @@ use tokio::{
 };
 
 use log::{debug, info};
+use zappy_macros::Bean;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct AI {
     team: String,
     cli_id: i32,
@@ -48,6 +53,22 @@ pub struct AI {
 pub trait AIHandler {
     fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
+}
+
+#[async_trait]
+pub trait Incantationers {
+    async fn handle_eject(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError>;
+}
+
+#[async_trait]
+pub trait Listeners {
+    async fn handle_message(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError>;
 }
 
 impl AI {
@@ -78,6 +99,7 @@ impl Display for AI {
     }
 }
 
+// test here
 #[allow(dead_code)]
 async fn kickstart(ai: AI) -> io::Result<()> {
     info!("Sending startup commands...");
@@ -121,9 +143,8 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
             };
             info!("Map size: ({}, {}).", x, y);
             let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
-            println!("({})> {}", client_number, ai);
-            info!("{}", ai);
-            info!("AI initialized.");
+            println!("AI #{} > {}", client_number, ai);
+            info!("{} initialized.", ai);
             kickstart(ai.clone()).await?;
             ai
         }
@@ -166,7 +187,6 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
     }
 }
 
-//temp to test single program
 // pub async fn launch(address: String, team: String) -> io::Result<AI> {
 //     let ai = match tcp::handle_tcp(address.clone()).await {
 //         Ok(client) => {

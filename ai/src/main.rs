@@ -34,12 +34,11 @@ async fn main() {
                 res.clone().machine(),
                 res.clone().port().unwrap_or_default()
             );
-            match ai::launch(address, res.name().clone().unwrap_or_default()).await {
-                Ok(_) => process::exit(SUCCESS_CODE),
-                Err(e) => {
-                    eprintln!("Error: {}.", e);
-                    process::exit(ERROR_CODE);
-                }
+            if let Err(e) = ai::launch(address, res.name().clone().unwrap_or_default()).await {
+                eprintln!("Error: {}.", e);
+                process::exit(ERROR_CODE);
+            } else {
+                process::exit(SUCCESS_CODE);
             }
         }
         Err(e) => {

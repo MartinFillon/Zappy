@@ -9,13 +9,14 @@
 
 use crate::tcp::TcpClient;
 
-use async_trait::async_trait;
-
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use async_trait::async_trait;
+
 use log::{debug, info};
 
+#[derive(PartialEq)]
 pub enum ResponseResult {
     OK,
     KO,
@@ -25,13 +26,14 @@ pub enum ResponseResult {
     Tiles(Vec<Vec<String>>),
     Inventory(Vec<(String, i32)>),
     Incantation(usize),
-    Message((Direction, String)),
-    Eject(Direction),
+    Message((DirectionMessage, String)),
+    Eject(DirectionEject),
+    EjectUndone,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 #[repr(u8)]
-pub enum Direction {
+pub enum DirectionMessage {
     Center,
     North,
     NorthWest,
@@ -41,6 +43,15 @@ pub enum Direction {
     SouthEast,
     East,
     NorthEast,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+#[repr(u8)]
+pub enum DirectionEject {
+    North = 1,
+    East,
+    South,
+    West,
 }
 
 pub enum CommandError {
@@ -55,15 +66,24 @@ pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError>;
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
+    async fn check_response(&mut self) -> Result<String, CommandError>;
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl CommandHandler for TcpClient {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError> {
         info!("Sending command: ({})...", command.trim_end());
         if self.send_request(command.to_string()).await.is_err() {
             return Err(CommandError::RequestError);
         }
+        match self.get_response().await {
+            Some(res) => Ok(res),
+            None => Err(CommandError::NoResponseReceived),
+        }
+    }
+
+    async fn check_response(&mut self) -> Result<String, CommandError> {
+        info!("Checking for a response...");
         match self.get_response().await {
             Some(res) => Ok(res),
             None => Err(CommandError::NoResponseReceived),
@@ -93,6 +113,7 @@ impl CommandHandler for TcpClient {
         }
 
         match response.trim_end() {
+            "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             _ => Err(CommandError::InvalidResponse),
@@ -107,7 +128,7 @@ fn handle_message_response(response: String) -> Result<ResponseResult, CommandEr
     if parts.len() >= 3 && parts[0] == "message" {
         match parts[1].trim_end_matches(',').parse::<usize>() {
             Ok(direction) => {
-                if let Some(dir_enum) = Direction::from_usize(direction) {
+                if let Some(dir_enum) = DirectionMessage::from_usize(direction) {
                     let final_msg = parts[2..].join(" ");
                     info!(
                         "Message received from direction {} (aka {}): {}",
@@ -131,7 +152,7 @@ fn handle_eject_response(response: String) -> Result<ResponseResult, CommandErro
     if parts.len() == 2 && parts[0] == "eject:" {
         match parts[1].trim_start().parse::<usize>() {
             Ok(direction) => {
-                if let Some(dir_enum) = Direction::from_usize(direction) {
+                if let Some(dir_enum) = DirectionEject::from_usize(direction) {
                     info!(
                         "Receiving ejection from direction {} (aka {}).",
                         dir_enum, direction
@@ -150,32 +171,60 @@ fn handle_eject_response(response: String) -> Result<ResponseResult, CommandErro
     Err(CommandError::InvalidResponse)
 }
 
-impl Direction {
-    pub fn to_usize(&self) -> usize {
+pub trait DirectionHandler {
+    fn to_usize(&self) -> usize;
+    fn from_usize(value: usize) -> Option<Self>
+    where
+        Self: Sized;
+}
+
+impl DirectionHandler for DirectionMessage {
+    fn to_usize(&self) -> usize {
         match self {
-            Direction::Center => 0,
-            Direction::North => 1,
-            Direction::NorthWest => 2,
-            Direction::West => 3,
-            Direction::SouthWest => 4,
-            Direction::South => 5,
-            Direction::SouthEast => 6,
-            Direction::East => 7,
-            Direction::NorthEast => 8,
+            DirectionMessage::Center => 0,
+            DirectionMessage::North => 1,
+            DirectionMessage::NorthWest => 2,
+            DirectionMessage::West => 3,
+            DirectionMessage::SouthWest => 4,
+            DirectionMessage::South => 5,
+            DirectionMessage::SouthEast => 6,
+            DirectionMessage::East => 7,
+            DirectionMessage::NorthEast => 8,
         }
     }
 
-    pub fn from_usize(value: usize) -> Option<Self> {
+    fn from_usize(value: usize) -> Option<Self> {
         match value {
-            0 => Some(Direction::Center),
-            1 => Some(Direction::North),
-            2 => Some(Direction::NorthWest),
-            3 => Some(Direction::West),
-            4 => Some(Direction::SouthWest),
-            5 => Some(Direction::South),
-            6 => Some(Direction::SouthEast),
-            7 => Some(Direction::East),
-            8 => Some(Direction::NorthEast),
+            0 => Some(DirectionMessage::Center),
+            1 => Some(DirectionMessage::North),
+            2 => Some(DirectionMessage::NorthWest),
+            3 => Some(DirectionMessage::West),
+            4 => Some(DirectionMessage::SouthWest),
+            5 => Some(DirectionMessage::South),
+            6 => Some(DirectionMessage::SouthEast),
+            7 => Some(DirectionMessage::East),
+            8 => Some(DirectionMessage::NorthEast),
+            _ => None,
+        }
+    }
+}
+
+impl DirectionHandler for DirectionEject {
+    fn to_usize(&self) -> usize {
+        match self {
+            DirectionEject::North => 1,
+            DirectionEject::East => 2,
+            DirectionEject::South => 3,
+            DirectionEject::West => 4,
+        }
+    }
+
+    fn from_usize(value: usize) -> Option<Self> {
+        match value {
+            1 => Some(DirectionEject::North),
+            2 => Some(DirectionEject::East),
+            3 => Some(DirectionEject::South),
+            4 => Some(DirectionEject::West),
             _ => None,
         }
     }
@@ -185,25 +234,38 @@ impl Display for CommandError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             CommandError::RequestError => write!(f, "Request error."),
-            CommandError::NoResponseReceived => write!(f, "No response received."),
-            CommandError::InvalidResponse => write!(f, "Invalid response."),
-            CommandError::DeadReceived => write!(f, "Dead received."),
+            CommandError::NoResponseReceived => {
+                write!(f, "No response has been successfully received.")
+            }
+            CommandError::InvalidResponse => write!(f, "Invalid response, unknown."),
+            CommandError::DeadReceived => write!(f, "Dead has been received, end of program."),
         }
     }
 }
 
-impl Display for Direction {
+impl Display for DirectionMessage {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Direction::Center => write!(f, "Center"),
-            Direction::North => write!(f, "North"),
-            Direction::NorthWest => write!(f, "NorthWest"),
-            Direction::West => write!(f, "West"),
-            Direction::SouthWest => write!(f, "SouthWest"),
-            Direction::South => write!(f, "South"),
-            Direction::SouthEast => write!(f, "SouthEast"),
-            Direction::East => write!(f, "East"),
-            Direction::NorthEast => write!(f, "NorthEast"),
+            DirectionMessage::Center => write!(f, "Center"),
+            DirectionMessage::North => write!(f, "North"),
+            DirectionMessage::NorthWest => write!(f, "NorthWest"),
+            DirectionMessage::West => write!(f, "West"),
+            DirectionMessage::SouthWest => write!(f, "SouthWest"),
+            DirectionMessage::South => write!(f, "South"),
+            DirectionMessage::SouthEast => write!(f, "SouthEast"),
+            DirectionMessage::East => write!(f, "East"),
+            DirectionMessage::NorthEast => write!(f, "NorthEast"),
+        }
+    }
+}
+
+impl Display for DirectionEject {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            DirectionEject::North => write!(f, "North"),
+            DirectionEject::West => write!(f, "West"),
+            DirectionEject::South => write!(f, "South"),
+            DirectionEject::East => write!(f, "East"),
         }
     }
 }
@@ -249,6 +311,7 @@ impl Display for ResponseResult {
             ResponseResult::Incantation(level) => write!(f, "Incantation Level: {}", level),
             ResponseResult::Message((dir, msg)) => write!(f, "Message: ({}, {})", dir, msg),
             ResponseResult::Eject(dir) => write!(f, "Eject: {}", dir),
+            ResponseResult::EjectUndone => write!(f, "Eject Undoed"),
         }
     }
 }

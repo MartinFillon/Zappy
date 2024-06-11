@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <raylib.h>
+#include "Raylib.hpp"
 #include <string>
 
 #include "../Network/Handler.hpp"
