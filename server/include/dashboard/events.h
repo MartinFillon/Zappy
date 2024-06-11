@@ -15,7 +15,7 @@ struct key_event {
     void (*f)(struct draw_state_s *);
 };
 
-#define REGISTER_EVENT(name) void handle_##name##_event(struct draw_state_s *st)
+#define REGISTER_EVENT(name) void handle_##name(struct draw_state_s *st)
 
 REGISTER_EVENT(left_key);
 REGISTER_EVENT(right_key);
@@ -23,11 +23,11 @@ REGISTER_EVENT(right_key);
 static const struct key_event KEY_EVENTS[] = {
     {
         KEY_LEFT,
-        handle_left_key_event,
+        handle_left_key,
     },
     {
         KEY_RIGHT,
-        handle_right_key_event,
+        handle_right_key,
     },
     {
         0,
