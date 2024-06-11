@@ -6,8 +6,9 @@
 //
 
 use crate::{
+    ai::bot::Bot,
     commands::{
-        move_up,
+        move_up::{self, move_up},
         turn::{self, DirectionTurn},
     },
     tcp::{command_handle::ResponseResult, TcpClient},
@@ -61,7 +62,7 @@ fn get_tile_coordinates(tile: usize, lvl: usize) -> Option<(i32, i32)> {
     Some((x, y))
 }
 
-async fn move_left(client: &mut TcpClient, x: i32) -> bool {
+pub async fn move_left(client: &mut TcpClient, x: i32) -> bool {
     if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
         // to handle eject/message
         for _ in 0..=(-x) {
@@ -78,7 +79,7 @@ async fn move_left(client: &mut TcpClient, x: i32) -> bool {
     false
 }
 
-async fn move_right(client: &mut TcpClient, x: i32) -> bool {
+pub async fn move_right(client: &mut TcpClient, x: i32) -> bool {
     if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
         // to handle eject/message
         for _ in 0..=x {
@@ -95,23 +96,37 @@ async fn move_right(client: &mut TcpClient, x: i32) -> bool {
     false
 }
 
-pub async fn move_to_tile(client: &mut TcpClient, tile: usize, lvl: usize) -> bool {
-    info!("Moving to tile {}...", tile);
-    match get_tile_coordinates(tile, lvl) {
-        Some((x, y)) => {
-            if (x < 0 && !move_left(client, x).await) || (x > 0 && !move_right(client, x).await) {
+impl Bot {
+    pub async fn move_ai_to_coords(&mut self, (x, y): (i32, i32)) -> bool {
+        let mut client_lock = self.info().client().lock().await;
+        if (x < 0 && !move_left(&mut client_lock, x).await)
+            || (x > 0 && !move_right(&mut client_lock, x).await)
+        {
+            // to handle eject/message
+            return false;
+        }
+        for _ in 0..=y {
+            if move_up(&mut client_lock).await.is_err() {
                 // to handle eject/message
                 return false;
             }
-            for _ in 0..=y {
-                if move_up::move_up(client).await.is_err() {
-                    // to handle eject/message
-                    return false;
+        }
+        true
+    }
+
+    pub async fn move_to_tile(&mut self, tile: usize) -> bool {
+        info!("Moving to tile {}...", tile);
+        match get_tile_coordinates(tile, *self.info().level()) {
+            Some(coords) => {
+                if self.move_ai_to_coords(coords).await {
+                    self.update_coord_movement(coords);
+                    true
+                } else {
+                    false
                 }
             }
-            true
+            None => false,
         }
-        None => false,
     }
 }
 

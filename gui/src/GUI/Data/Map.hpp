@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "../Raylib.hpp"
 #include "../InfoBox.hpp"
 #include "Egg.hpp"
 #include "Player.hpp"

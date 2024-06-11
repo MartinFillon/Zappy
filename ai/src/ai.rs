@@ -32,8 +32,9 @@ use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
 use log::{debug, info};
+use zappy_macros::Bean;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct AI {
     team: String,
     cli_id: i32,
