@@ -7,14 +7,12 @@
 
 #pragma once
 
-#include <raylib.h>
 #include <string>
 #include <vector>
 
 #include "../Network/Handler.hpp"
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
-#include "InfoBox.hpp"
 #include "TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"

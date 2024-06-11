@@ -36,7 +36,7 @@ typedef struct {
 } json_data_t;
 
 #define TYPE json_data_t
-#include "map.h"
+#include "json/map.h"
 
 #define TYPE json_data_t *
 #define NAME vec_json_t

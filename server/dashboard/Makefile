@@ -14,7 +14,7 @@ SRC = src/dashboard.c
 
 OBJ = $(SRC:.c=.o)
 
-NAME = dashboard.so
+NAME = ../dashboard.so
 
 all: $(NAME)
 

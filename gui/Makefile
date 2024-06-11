@@ -27,6 +27,7 @@ SRC = $(BASE_SRC) 						\
 					Map					\
 					Player				\
 				)						\
+				Raylib					\
 				Display					\
 				ServerMessageHandler	\
 				MessageBox				\

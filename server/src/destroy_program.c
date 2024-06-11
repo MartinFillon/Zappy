@@ -6,7 +6,7 @@
 */
 
 #include <unistd.h>
-#include "client.h"
+#include "core/client.h"
 #include "zappy.h"
 
 void destroy_program(zappy_t *z)
