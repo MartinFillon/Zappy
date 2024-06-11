@@ -85,5 +85,14 @@ extern void *init(void)
         deserialize(st, f);
     }
     init_raylib(st);
+    json_free(f);
     return st;
+}
+
+extern void destroy_renderer(void *state)
+{
+    struct draw_state_s *st = state;
+
+    free(st);
+    return;
 }

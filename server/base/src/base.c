@@ -25,3 +25,9 @@ extern void *init(void)
 {
     return NULL;
 }
+
+extern void destroy_renderer(void *state)
+{
+    (void)state;
+    return;
+}

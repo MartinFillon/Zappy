@@ -24,6 +24,7 @@ int loop_server(args_infos_t *args)
     while (l.loop(&z, dt))
         ;
     destroy_program(&z);
+    l.destroy(dt);
     close_dhl(&l);
     logs(INFO, "Server shutting down\n");
     return SUCCESS;
