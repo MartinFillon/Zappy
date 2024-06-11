@@ -63,3 +63,4 @@ struct map_json_data_t *json_get_object(
     str_t const *key
 );
 void json_free(json_data_t *json);
+double json_get_number_raw(json_data_t const *this, char const *rkey);

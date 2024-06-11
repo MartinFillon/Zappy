@@ -35,3 +35,14 @@ double json_get_number(json_data_t const *this, str_t const *key)
     assert(this->t == OBJECT);
     return map_get_json_data_t(this->data.obj, key)->data.num;
 }
+
+double json_get_number_raw(json_data_t const *this, char const *rkey)
+{
+    str_t *key = str_snew(rkey);
+    double res = 0;
+
+    assert(this->t == OBJECT);
+    res = map_get_json_data_t(this->data.obj, key)->data.num;
+    str_free(key);
+    return res;
+}
