@@ -40,8 +40,8 @@ extern void *init(void)
 {
     struct draw_state_s *st = calloc(1, sizeof(struct draw_state_s));
 
-    st->height = 986;
-    st->width = 1876;
+    st->height = 600;
+    st->width = 800;
     st->fps = 60;
     st->page = 0;
     init_raylib(st);

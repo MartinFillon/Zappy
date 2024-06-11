@@ -7,32 +7,39 @@
 
 #include <raylib.h>
 #include <stdio.h>
+
 #include "core/types/client.h"
 #include "dashboard/displayers.h"
 #include "dashboard/internal.h"
 
-static void display_ais(client_t *client, int x, int y)
+static int display_ais(client_t *client, int x, int y)
 {
-    for (size_t i = 0; displayers[i] != NULL; i++) {
+    int i = 0;
+
+    for (; displayers[i] != NULL; i++) {
         displayers[i](client->ai, x, y);
         y += 20;
     }
+    return i;
 }
 
-static void display_client(client_t *client, int x, int y)
+static int display_client(client_t *client, int x, int y)
 {
     if (client->type != AI)
-        return;
-    display_ais(client, x, y);
+        return 0;
+    return display_ais(client, x, y);
 }
 
 void display_clients(struct client_list *lst, size_t start, size_t end)
 {
-    int x = 10;
-    int y = 10;
+    int x = 20;
+    int y = 20;
+    int displayed = 0;
 
     for (size_t i = start; i < lst->size && i < end; i++) {
-        display_client(&lst->data[i], x, y);
+        displayed = display_client(&lst->data[i], x, y);
+        if (displayed != 0)
+            DrawRectangleLines(x - 10, y - 5, 200, 20 * displayed + 10, WHITE);
         x += 200;
     }
 }

@@ -22,10 +22,13 @@ OBJ = $(SRC:.c=.o)
 
 NAME = ../dashboard.so
 
-all: $(NAME)
+all: lib $(NAME)
 
 $(NAME): $(OBJ)
 	$(CC) -shared -o $(NAME) $(OBJ) $(LDLIBS)
+
+lib:
+	$(MAKE) -C ../lib
 
 clean:
 	rm -f $(OBJ)
