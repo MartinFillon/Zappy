@@ -16,6 +16,7 @@ SRC = 	src/dashboard.c			\
 		src/displayers/id.c 	\
 		src/displayers/team.c	\
 		src/displayers/inventory.c	\
+		src/displayers/level.c	\
 
 OBJ = $(SRC:.c=.o)
 

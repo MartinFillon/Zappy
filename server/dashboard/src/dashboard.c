@@ -9,7 +9,7 @@
 
 #include "core/core.h"
 #include "core/server.h"
-#include "internal.h"
+#include "dashboard/internal.h"
 #include "logger.h"
 #include "zappy.h"
 

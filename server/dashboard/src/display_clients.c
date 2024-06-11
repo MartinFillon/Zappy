@@ -8,8 +8,8 @@
 #include <raylib.h>
 #include <stdio.h>
 #include "core/types/client.h"
-#include "displayers.h"
-#include "zappy.h"
+#include "dashboard/displayers.h"
+#include "dashboard/internal.h"
 
 static void display_ais(client_t *client, int x, int y)
 {
