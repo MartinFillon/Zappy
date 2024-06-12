@@ -33,7 +33,7 @@ SRC =   str/str.c\
 		utils/is_number.c\
 		utils/is_coord_equals.c
 
-NAME = ../libmy.a
+NAME = ../libcore.a
 
 OBJ = $(SRC:.c=.o)
 
@@ -43,7 +43,7 @@ CPPFLAGS += -iquote ../include
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	ar rc -o $(NAME) $(OBJ)
+	ar cq -o $(NAME) $(OBJ)
 
 clean:
 	rm -f $(OBJ)

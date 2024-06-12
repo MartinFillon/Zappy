@@ -109,12 +109,12 @@ SRC = $(addsuffix .c, 				\
 
 OBJ = $(SRC:.c=.o)
 
-NAME = ../libcore.so
+NAME = ../libcore.a
 
 all: $(NAME)
 
 $(NAME): lib $(OBJ)
-	$(CC) -shared -o $(NAME) $(OBJ) $(LDLIBS)
+	ar cq -o $(NAME) $(OBJ)
 
 lib:
 	$(MAKE) -C ../lib

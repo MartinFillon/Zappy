@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC -D_GNU_SOURCE
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy
+LDLIBS = -lraylib -L.. -lcore
 
 SRC = 	src/dashboard.c			\
 		src/waiting.c			\

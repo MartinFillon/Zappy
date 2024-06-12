@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy -lm -lcore
+LDLIBS += -L./ -lm -lcore
 
 NAME = ../zappy_server
 
