@@ -7,14 +7,15 @@
 //
 
 use crate::{
-    ai::bot::COLONY_PLAYER_COUNT,
     commands::{
-        look_around, move_up,
+        move_up,
         turn::{self, DirectionTurn},
     },
+    move_to_tile::{move_left, move_right},
     tcp::{
-        self,
-        command_handle::{DirectionEject, DirectionHandler, DirectionMessage, ResponseResult},
+        command_handle::{
+            CommandError, DirectionEject, DirectionHandler, DirectionMessage, ResponseResult,
+        },
         TcpClient,
     },
 };
@@ -41,84 +42,35 @@ fn get_eject_coordinates(dir: &DirectionEject) -> (i32, i32) {
     )
 }
 
-async fn move_left(client: &mut TcpClient) -> bool {
-    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
-        // to handle eject/message
-        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
-            // to handle eject/message
-            if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
-                // to handle eject/message
-                return true;
-            }
-        }
+async fn move_player(client: &mut TcpClient, x: i32) -> Result<ResponseResult, CommandError> {
+    if x < 0 {
+        move_left(client).await?;
     }
-    false
+    if x > 0 {
+        move_right(client).await?;
+    }
+    move_up::move_up(client).await
 }
 
-async fn move_right(client: &mut TcpClient) -> bool {
-    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
-        // to handle eject/message
-        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
-            // to handle eject/message
-            if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
-                // to handle eject/message
-                return true;
-            }
-        }
-    }
-    false
-}
-
-async fn move_player(client: &mut TcpClient, x: i32) -> bool {
-    loop {
-        if (x < 0 && !move_left(client).await) || (x > 0 && !move_right(client).await) {
-            return false;
-        }
-        if let Ok(ResponseResult::OK) = move_up::move_up(client).await {
-            // to handle eject/message
-            match look_around::look_around(client).await {
-                Ok(tcp::command_handle::ResponseResult::Tiles(tiles)) => {
-                    if let Some(tile) = tiles.first() {
-                        if tile.iter().filter(|obj| obj.as_str() == "player").count()
-                            > COLONY_PLAYER_COUNT
-                        {
-                            break;
-                        }
-                    }
-                }
-                Ok(_) => {
-                    info!("Error: Wrong type of result returned.");
-                    return false;
-                }
-                Err(e) => {
-                    info!("Error: {}.", e);
-                    return false;
-                }
-            }
-        }
-    }
-    true
-}
-
-pub async fn move_towards_broadcast(client: &mut TcpClient, dir: DirectionMessage) -> bool {
+pub async fn move_towards_broadcast(
+    client: &mut TcpClient,
+    dir: DirectionMessage,
+) -> Result<ResponseResult, CommandError> {
     info!("Moving towards direction {}...", dir);
     if dir == DirectionMessage::Center {
-        return true;
+        return Ok(ResponseResult::OK);
     }
     let (mut x, y) = get_msg_coordinates(&dir);
     if y < 0 {
         x = -x;
-        if turn::turn(client, DirectionTurn::Right).await.is_err() // to handle eject/message
-            || turn::turn(client, DirectionTurn::Right).await.is_err()
-        {
-            return false;
-        }
+        turn::turn(client, DirectionTurn::Right).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
     }
     move_player(client, x).await
 }
 
 async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
-    if (x < 0 && !move_left(client).await) || (x > 0 && !move_right(client).await) {
+    if (x < 0 && move_left(client).await.is_err()) || (x > 0 && move_right(client).await.is_err()) {
         return false;
     }
     if let Ok(ResponseResult::OK) = move_up::move_up(client).await {

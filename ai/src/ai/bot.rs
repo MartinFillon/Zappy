@@ -152,7 +152,7 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot...");
+        info!("Handling bot [Queen {}]...", self.info().cli_id);
         let mut idex: usize = 0;
         loop {
             self.handle_message().await?;
@@ -175,7 +175,7 @@ impl Bot {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         info!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
-        let (width, height) = (self.info.map().0 / 2, self.info.map().1 / 2);
+        let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
 
         info!(
             "Coordinated updated from: ({}, {})",
@@ -202,24 +202,22 @@ impl Bot {
 
     pub async fn seek_objects(&mut self) -> Result<ResponseResult, CommandError> {
         let res = {
-            let mut client_lock = self.info.client().lock().await;
-            look_around(&mut client_lock).await?
+            let mut client = self.info().client().lock().await;
+            look_around(&mut client).await?
         };
         match res {
             ResponseResult::Tiles(tiles) => {
                 let mut best_item = String::new();
                 let tile = {
-                    let mut client_lock = self.info.client().lock().await;
-                    seek_best_item_index(&mut client_lock, tiles, &mut best_item).await?
+                    let mut client = self.info().client().lock().await;
+                    seek_best_item_index(&mut client, tiles, &mut best_item).await?
                 };
                 if best_item.is_empty() {
                     Ok(ResponseResult::KO)
                 } else {
-                    if !self.move_to_tile(tile).await {
-                        return Err(CommandError::RequestError);
-                    }
-                    let mut client_lock = self.info.client().lock().await;
-                    take_object(&mut client_lock, &best_item).await
+                    self.move_to_tile(tile).await?;
+                    let mut client = self.info().client().lock().await;
+                    take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),
@@ -228,8 +226,8 @@ impl Bot {
 
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         loop {
-            let mut client_lock = self.info.client().lock().await;
-            match inventory(&mut client_lock).await? {
+            let mut client = self.info().client().lock().await;
+            match inventory(&mut client).await? {
                 ResponseResult::Inventory(inv) => {
                     if done_dropping_items(&inv) {
                         return Ok(ResponseResult::OK);
@@ -238,7 +236,7 @@ impl Bot {
                         if (item.as_str() == "food" && count > 5)
                             || (item.as_str() != "food" && count > 0)
                         {
-                            match drop_object(&mut client_lock, item.as_str()).await? {
+                            match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),
                             }
@@ -251,20 +249,19 @@ impl Bot {
     }
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut client_lock = self.info.client().lock().await;
-        turn(&mut client_lock, DirectionTurn::Right).await?;
-        turn(&mut client_lock, DirectionTurn::Right).await?;
+        let mut client = self.info().client().lock().await;
+        turn(&mut client, DirectionTurn::Right).await?;
+        turn(&mut client, DirectionTurn::Right).await?;
         Ok(ResponseResult::OK)
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
+        info!("Bot [Queen {}]: backtracking...", self.info().cli_id);
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
         }
-        if !self.move_ai_to_coords(*self.coord()).await {
-            return Err(CommandError::RequestError);
-        }
+        self.move_ai_to_coords(*self.coord()).await?;
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }
@@ -285,8 +282,13 @@ impl Bot {
 
     async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
         let mut res = Ok(ResponseResult::OK);
-        let mut client = self.info.client().lock().await;
+        let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
+            info!(
+                "Bot [Queen {}]: handling message: {}",
+                self.info().cli_id,
+                message.1
+            );
             match message {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<i32>() {
