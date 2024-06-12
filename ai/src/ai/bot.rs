@@ -17,6 +17,7 @@ use crate::{
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
+    move_towards_broadcast::move_towards_broadcast,
     tcp::{
         command_handle::{
             CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
@@ -126,7 +127,7 @@ async fn seek_best_item_index(
 
 fn done_dropping_items(inv: &[(String, i32)]) -> bool {
     for (item, count) in inv {
-        if item.as_str() == "food" && *count > 5 {
+        if item.as_str() == "food" && *count > 10 {
             return false;
         }
         if item.as_str() != "food" && *count > 0 {
@@ -233,7 +234,7 @@ impl Bot {
                         return Ok(ResponseResult::OK);
                     }
                     for (item, count) in inv {
-                        if (item.as_str() == "food" && count > 5)
+                        if (item.as_str() == "food" && count > 10)
                             || (item.as_str() != "food" && count > 0)
                         {
                             match drop_object(&mut client, item.as_str()).await? {
@@ -266,20 +267,6 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    fn handle_queen_message(&self, msg: &str) -> Result<ResponseResult, CommandError> {
-        match msg {
-            "nf" => make_item_prioritary("food"),
-            "nl" => make_item_prioritary("linemate"),
-            "nd" => make_item_prioritary("deraumere"),
-            "ns" => make_item_prioritary("sibur"),
-            "nm" => make_item_prioritary("mendiane"),
-            "np" => make_item_prioritary("phiras"),
-            "nt" => make_item_prioritary("thystame"),
-            _ => return Err(CommandError::InvalidResponse),
-        }
-        Ok(ResponseResult::OK)
-    }
-
     async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
         let mut res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
@@ -295,17 +282,15 @@ impl Bot {
                         cli_id.clone_from(&id);
                     }
                 }
-                (_, msg) => {
+                (dir, msg) => {
                     if !msg.contains(' ') || msg.len() < 2 {
                         continue;
                     }
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<i32>() {
-                            if id == *self.info().cli_id()
-                                && self.handle_queen_message(content.1).is_err()
-                            {
-                                res = Err(CommandError::InvalidResponse);
+                            if id == *self.info().cli_id() {
+                                handle_queen_message(&mut client, (dir, content.1)).await?;
                             }
                         }
                     }
@@ -326,6 +311,24 @@ impl Listeners for Bot {
         }
         Ok(ResponseResult::OK)
     }
+}
+
+async fn handle_queen_message(
+    client: &mut TcpClient,
+    (dir, msg): (DirectionMessage, &str),
+) -> Result<ResponseResult, CommandError> {
+    match msg {
+        "mv" => return move_towards_broadcast(client, dir).await,
+        "nf" => make_item_prioritary("food"),
+        "nl" => make_item_prioritary("linemate"),
+        "nd" => make_item_prioritary("deraumere"),
+        "ns" => make_item_prioritary("sibur"),
+        "nm" => make_item_prioritary("mendiane"),
+        "np" => make_item_prioritary("phiras"),
+        "nt" => make_item_prioritary("thystame"),
+        _ => return Err(CommandError::InvalidResponse),
+    }
+    Ok(ResponseResult::OK)
 }
 
 pub fn wrap_coordinate(coord: i32, max: i32) -> i32 {
