@@ -61,7 +61,7 @@ int select_server(zappy_t *z)
 {
     struct timeval t = {0, 1};
     int retval =
-        select(FD_SETSIZE, &z->server.read_fds, &z->server.write_fds, NULL, &t);
+        select(MAXFD, &z->server.read_fds, &z->server.write_fds, NULL, &t);
     char *line = NULL;
     size_t n = 0;
 
