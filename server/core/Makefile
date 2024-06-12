@@ -77,7 +77,7 @@ SRC = $(addsuffix .c, 				\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
-						time				\
+						tick				\
 					)						\
 					$(addprefix ai/, 	\
 						init				\
