@@ -264,10 +264,20 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     Raylib::beginMode3D(cam);
     Raylib::drawGrid(100, 1.0f);
 
+    //Model3D model("gui/assets/rocks/L_rocks_01.glb");
+    //model.Draw({1,1,1}, {5,5,5}, {1,0,0}, 0);
+
     for (const auto &player : m_players) {
         float playerX = player->getPos().x() * tileSize + tileSize / 2;
         float playerZ = player->getPos().y() * tileSize + tileSize / 2;
         Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 150});
+    }
+
+    for (auto tile : m_map) {
+        float tileX = tile->getPos().x() * tileSize + tileSize / 2;
+        float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
+        Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
+        Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
     }
 
     for (const auto &egg : m_eggs) {
