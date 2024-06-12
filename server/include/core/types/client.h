@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "ai.h"
 #include "core/types/buffer.h"
@@ -30,4 +31,5 @@ typedef struct client_s {
     enum client_type_e type;
     struct queue_command_t *commands;
     char *address;
+    uint32_t port;
 } client_t;

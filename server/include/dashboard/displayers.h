@@ -11,8 +11,7 @@
 
 typedef int (*displayer_t)(client_t *data, int x, int y);
 
-#define REGISTER_DISPLAYER(name) \
-    int display_##name(client_t *data, int x, int y)
+#define REGISTER_DISPLAYER(name) int display_##name(client_t *, int, int)
 
 REGISTER_DISPLAYER(team);
 REGISTER_DISPLAYER(address);

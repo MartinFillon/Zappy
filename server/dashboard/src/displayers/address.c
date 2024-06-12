@@ -6,6 +6,7 @@
 */
 
 #include <raylib.h>
+#include <stdio.h>
 
 #include "core/types/client.h"
 
@@ -13,6 +14,10 @@
 
 int display_address(client_t *client, int x, int y)
 {
-    DrawText(client->address, x, y, FONT_SIZE, WHITE);
+    char *txt = NULL;
+
+    asprintf(&txt, "%s:%u", client->address, client->port);
+    DrawText(txt, x, y, FONT_SIZE, WHITE);
+    free(txt);
     return FONT_SIZE;
 }

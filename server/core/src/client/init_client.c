@@ -10,7 +10,7 @@
 #include "core/client.h"
 #include "core/types/client.h"
 
-client_t init_client(int fd, char *address)
+client_t init_client(int fd, char *address, uint32_t port)
 {
     client_t c = {0};
 
@@ -23,5 +23,6 @@ client_t init_client(int fd, char *address)
     c.type = UNSET;
     c.commands = queue_create_queue_command_t(10);
     c.address = strdup(address);
+    c.port = port;
     return c;
 }
