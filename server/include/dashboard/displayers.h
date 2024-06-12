@@ -17,11 +17,13 @@ REGISTER_DISPLAYER(team);
 REGISTER_DISPLAYER(inventory);
 REGISTER_DISPLAYER(id);
 REGISTER_DISPLAYER(level);
+REGISTER_DISPLAYER(cycle);
 
 static const displayer_t displayers[] = {
     display_id,
     display_team,
     display_level,
+    display_cycle,
     display_inventory,
     NULL,
 };
