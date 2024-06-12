@@ -22,5 +22,5 @@ void display_ticks(zclock_t *const clock, int x, int y)
 
 void display_general_infos(game_t *game)
 {
-    display_ticks(game->clock, 700, 500);
+    display_ticks(game->global, 700, 500);
 }
