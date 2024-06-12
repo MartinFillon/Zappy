@@ -47,5 +47,17 @@ bool has_n_ticks_passed(zclock_t *this, uint n);
  */
 void reset_clock(zclock_t *this);
 
+/**
+ * @brief returns the current time
+ *
+ * @return ztime_t the current time
+ */
 ztime_t get_current_time(void);
+
+/**
+ * @brief returns the current tick
+ * @param this the clock
+ *
+ * @return ztime_t the current tick
+ */
 ztime_t current_tick(zclock_t *const this);
