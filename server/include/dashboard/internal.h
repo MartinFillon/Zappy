@@ -14,6 +14,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define PAGING 4
+#define FONT_SIZE 20
 
 struct draw_state_s {
     size_t width;
@@ -26,3 +27,4 @@ struct draw_state_s {
 void wait_for_connections(void);
 void display_clients(struct client_list *lst, struct draw_state_s *st);
 void poll_events(struct draw_state_s *st);
+void display_general_infos(game_t *game);

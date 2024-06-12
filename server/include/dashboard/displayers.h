@@ -9,9 +9,9 @@
 
 #include "core/types/ai.h"
 
-typedef void (*displayer_t)(ai_t *data, int x, int y);
+typedef int (*displayer_t)(ai_t *data, int x, int y);
 
-#define REGISTER_DISPLAYER(name) void display_##name(ai_t *data, int x, int y)
+#define REGISTER_DISPLAYER(name) int display_##name(ai_t *data, int x, int y)
 
 REGISTER_DISPLAYER(team);
 REGISTER_DISPLAYER(inventory);
@@ -22,6 +22,6 @@ static const displayer_t displayers[] = {
     display_id,
     display_team,
     display_level,
-    // display_inventory,
+    display_inventory,
     NULL,
 };

@@ -46,3 +46,6 @@ bool has_n_ticks_passed(zclock_t *this, uint n);
  * @brief resets the clock
  */
 void reset_clock(zclock_t *this);
+
+ztime_t get_current_time(void);
+ztime_t current_tick(zclock_t *const this);

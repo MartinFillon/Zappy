@@ -25,11 +25,11 @@ game_t init_game(args_infos_t *ag)
     game.teams = vec_create_vector_team_t(10);
     game.ais = vec_create_vector_ai_t(10);
     game.frequency = ag->freq;
-    for (__auto_type i = 0; ag->names[i]; i++) {
+    for (__auto_type i = 0; ag->names[i]; i++)
         vec_pushback_vector_team_t(game.teams, create_team(ag, ag->names[i]));
-    }
     logs(INFO, "Team created successfully\n");
     game.clock = clock_new(ag->freq);
+    game.global = clock_new(ag->freq);
     return game;
 }
 
@@ -41,4 +41,5 @@ void destroy_game(game_t *game)
     vec_foreach_vector_ai_t(game->ais, &destroy_ai);
     vec_destroy_vector_ai_t(game->ais);
     free(game->clock);
+    free(game->global);
 }

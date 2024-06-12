@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -L.. -lmy
+LDLIBS = -L.. -lmy -lm
 
 SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
@@ -77,6 +77,7 @@ SRC = $(addsuffix .c, 				\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
+						tick				\
 					)						\
 					$(addprefix ai/, 	\
 						init				\
