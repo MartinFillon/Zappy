@@ -179,7 +179,7 @@ async fn init_ai(
     let ai = checkout_ai_info(client, response, team, address, p_id).await?;
     // kickstart(ai).await to test or
     match ai.p_id {
-        1 => {
+        0 => {
             let mut empress = empress::Empress::init(ai.clone());
             if let Err(e) = empress.update().await {
                 println!("Error: {}", e);
@@ -269,7 +269,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
     let mut handles = vec![];
     let team = Arc::new(team);
     let address = Arc::new(address);
-    let connection_id = Arc::new(AtomicUsize::new(1));
+    let connection_id = Arc::new(AtomicUsize::new(0));
     let stop_flag = Arc::new(AtomicBool::new(false));
 
     loop {
