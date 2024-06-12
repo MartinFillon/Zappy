@@ -31,7 +31,6 @@ void logs(enum log_level level, char *fmt, ...)
     struct logger_s const *logger = get_logger();
     va_list l;
 
-    dprintf(2, "logger %d\n", logger->level);
     if (logger->level == DISABLE)
         return;
     if (logger->level >= level && level >= ERROR_LEVEL && level <= DEBUG) {
