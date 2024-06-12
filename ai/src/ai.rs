@@ -32,10 +32,7 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
-use tokio::{
-    sync::{Mutex, Semaphore},
-    task,
-};
+use tokio::{sync::Mutex, task};
 
 use log::{debug, info};
 use zappy_macros::Bean;
@@ -44,6 +41,7 @@ use zappy_macros::Bean;
 pub struct AI {
     team: String,
     cli_id: i32,
+    p_id: usize,
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
@@ -75,6 +73,7 @@ impl AI {
     fn new(
         team: String,
         cli_id: i32,
+        p_id: usize,
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
@@ -82,6 +81,7 @@ impl AI {
         Self {
             team,
             cli_id,
+            p_id,
             client,
             map,
             level,
@@ -93,8 +93,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            self.team, self.cli_id, self.map.0, self.map.1, self.level
+            "AI #{} = [team: {}, client: {}, map: ({}, {}), level: {}]",
+            self.p_id, self.team, self.cli_id, self.map.0, self.map.1, self.level
         )
     }
 }
@@ -111,47 +111,64 @@ async fn kickstart(ai: AI) -> io::Result<()> {
     Ok(())
 }
 
-async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) -> io::Result<AI> {
-    info!("Initializing AI...");
+async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
     let mut lines = response.split('\n');
 
-    let client_number = match lines.next() {
-        Some(nbr) => match nbr.parse::<i32>() {
-            Ok(nbr) => nbr,
-            Err(_) => return Err(Error::new(ErrorKind::InvalidData, "Invalid client number.")),
-        },
-        None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    };
-    info!("Client number detected as [{}].", client_number);
+    let client_number = lines
+        .next()
+        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid response."))?
+        .parse::<i32>()
+        .map_err(|_| Error::new(ErrorKind::InvalidData, "Invalid client number."))?;
 
-    let mut ai = match lines.next() {
-        Some(line) => {
-            let mut words = line.split_whitespace();
-            let x = match words.next().and_then(|word| word.parse::<i32>().ok()) {
-                Some(val) => val,
-                None => {
-                    debug!("Failed to parse x coordinate from line: {}", line);
-                    return Err(Error::new(ErrorKind::InvalidData, "Invalid x coordinate."));
-                }
-            };
-            let y = match words.next().and_then(|word| word.parse::<i32>().ok()) {
-                Some(val) => val,
-                None => {
-                    debug!("Failed to parse y coordinate from line: {}", line);
-                    return Err(Error::new(ErrorKind::InvalidData, "Invalid y coordinate."));
-                }
-            };
+    let line = lines
+        .next()
+        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid response."))?;
+
+    let mut words = line.split_whitespace();
+    let x = words
+        .next()
+        .and_then(|word| word.parse::<i32>().ok())
+        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid x coordinate."))?;
+    let y = words
+        .next()
+        .and_then(|word| word.parse::<i32>().ok())
+        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid y coordinate."))?;
+
+    Ok((client_number, x, y))
+}
+
+async fn checkout_ai_info(
+    client: Arc<Mutex<TcpClient>>,
+    response: &str,
+    team: String,
+    p_id: usize,
+) -> io::Result<AI> {
+    match parse_response(response).await {
+        Ok((client_number, x, y)) => {
+            info!("Client number detected as [{}].", client_number);
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
-            println!("AI #{} > {}", client_number, ai);
+            let ai = AI::new(team, client_number, p_id, client.clone(), (x, y), 1);
+            println!("AI #{} > {}", p_id, ai);
             info!("{} initialized.", ai);
-            kickstart(ai.clone()).await?;
-            ai
+            Ok(ai)
         }
-        None => return Err(Error::new(ErrorKind::InvalidData, "Invalid response.")),
-    };
+        Err(e) => {
+            debug!("Failed to parse response: {}", e);
+            Err(e)
+        }
+    }
+}
 
-    Ok(ai)
+async fn init_ai(
+    client: Arc<Mutex<TcpClient>>,
+    response: &str,
+    team: String,
+    p_id: usize,
+) -> io::Result<AI> {
+    info!("Initializing AI...");
+    checkout_ai_info(client, response, team, p_id).await
+    // info!("Connection ID #{} creates <role?>...", id);
+    // handle all types of creation of ia based on id now...
 }
 
 async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> io::Result<AI> {
@@ -175,7 +192,7 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
             }
             _ => {
                 info!("Connection to team successful.");
-                let ai = init_ai(client.clone(), &response, team).await?;
+                let ai = init_ai(client.clone(), &response, team, p_id).await?;
                 Ok(ai)
             }
         }
@@ -188,6 +205,7 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
     }
 }
 
+// indiv testing
 // pub async fn launch(address: String, team: String) -> io::Result<AI> {
 //     let ai = match tcp::handle_tcp(address.clone()).await {
 //         Ok(client) => {
