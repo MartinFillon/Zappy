@@ -74,11 +74,12 @@ static void deserialize(struct draw_state_s *st, json_data_t *json)
     }
 }
 
-extern void *init(void)
+extern void *init(int level)
 {
     struct draw_state_s *st = calloc(1, sizeof(struct draw_state_s));
     json_data_t *f = json_from_file("dashboard_config.json");
 
+    set_log_level(level);
     if (!f) {
         logs(
             ERROR_LEVEL,

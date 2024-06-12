@@ -11,8 +11,7 @@
 
 bool parse_log_level(const char **av, size_t *idx, args_infos_t *args)
 {
-    (void)args;
-    set_log_level_from_str(av[*idx + 1]);
+    args->level = set_log_level_from_str(av[*idx + 1]);
     (*idx)++;
     return true;
 }
