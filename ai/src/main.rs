@@ -5,6 +5,8 @@
 // main
 //
 
+#![allow(dead_code)]
+
 use std::process;
 
 use env_logger::{Builder, Env};
@@ -37,8 +39,6 @@ async fn main() {
             if let Err(e) = ai::launch(address, res.name().clone().unwrap_or_default()).await {
                 eprintln!("Error: {}.", e);
                 process::exit(ERROR_CODE);
-            } else {
-                process::exit(SUCCESS_CODE);
             }
         }
         Err(e) => {

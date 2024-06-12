@@ -251,8 +251,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 let stop_flag = Arc::clone(&stop_flag);
 
                 let handle = task::spawn(async move {
-                    let team_str = &*team;
-                    let result = start_ai(client.clone(), team_str.clone(), id).await;
+                    let result = start_ai(client.clone(), team.to_string(), id).await;
 
                     match result {
                         Ok(_) => {
