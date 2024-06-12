@@ -9,10 +9,13 @@
 
 #include "core/core.h"
 #include "core/server.h"
-#include "dashboard/internal.h"
+
 #include "json/json.h"
+
 #include "logger.h"
 #include "zappy.h"
+
+#include "dashboard/internal.h"
 
 static void init_raylib(struct draw_state_s *st)
 {

@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "core/types/client.h"
+
 #include "dashboard/displayers.h"
 #include "dashboard/internal.h"
 
@@ -18,7 +19,7 @@ static int display_ais(client_t *client, int x, int y)
 
     for (int i = 0; displayers[i] != NULL; i++) {
         pixls += displayers[i](client->ai, x, y);
-        y += 20;
+        y += FONT_SIZE;
     }
     return pixls;
 }
