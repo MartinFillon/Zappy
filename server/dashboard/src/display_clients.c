@@ -18,8 +18,7 @@ static int display_ais(client_t *client, int x, int y)
     int pixls = 0;
 
     for (int i = 0; displayers[i] != NULL; i++) {
-        pixls += displayers[i](client->ai, x, y);
-        y += FONT_SIZE;
+        pixls += displayers[i](client->ai, x, y + pixls);
     }
     return pixls;
 }
