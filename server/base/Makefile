@@ -28,8 +28,7 @@ fclean: clean
 	rm -f $(NAME)
 
 debug: CC = clang
-debug: CFLAGS += -g3 -fsanitize=address
-debug: LDFLAGS += -fsanitize=addres
+debug: CFLAGS += -g3
 debug: fclean all
 
 re: fclean all
