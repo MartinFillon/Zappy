@@ -54,7 +54,11 @@ static void get_starting_pos(
     }
 }
 
-static bool get_min_distance(pos_t *src_pos, pos_t *tile_pos, double *old_dist)
+static bool get_min_distance(
+    const pos_t *src_pos,
+    const pos_t *tile_pos,
+    double *old_dist
+)
 {
     pos_t vec_dist = {0};
     double new_dist = 0.f;
@@ -70,7 +74,7 @@ static bool get_min_distance(pos_t *src_pos, pos_t *tile_pos, double *old_dist)
 }
 
 static int get_shortest_distance_sound(
-    pos_t *src_pos,
+    const pos_t *src_pos,
     pos_t *pos,
     enum direction dir,
     map_t *map
@@ -95,6 +99,31 @@ static int get_shortest_distance_sound(
     return sound_idx;
 }
 
+static void prepare_info_client(
+    char const *msg,
+    client_t *sender,
+    client_t *cli,
+    game_t *g
+)
+{
+    enum direction dir = UP;
+    pos_t pos = {0};
+    int shortest_dir = 0;
+
+    dir = cli->ai->dir;
+    if (!is_coord_equal(&sender->ai->pos, &cli->ai->pos)) {
+        get_starting_pos(&pos, &cli->ai->pos, dir, g->map);
+        shortest_dir = get_shortest_distance_sound(
+            &sender->ai->pos, &pos, dir, g->map);
+    }
+    prepare_response_cat(
+        &cli->io,
+        "message %d, %s\n",
+        shortest_dir,
+        msg
+    );
+}
+
 static void send_to_everyone(
     char const *msg,
     struct client_list *clis,
@@ -102,19 +131,9 @@ static void send_to_everyone(
     game_t *g
 )
 {
-    enum direction dir = UP;
-    pos_t pos = {0};
-
     for (size_t i = 0; i < clis->size; i++) {
         if (clis->data[i].type == AI && valid_client(&clis->data[i], c)) {
-            dir = clis->data[i].ai->dir;
-            get_starting_pos(&pos, &clis->data[i].ai->pos, dir, g->map);
-            prepare_response_cat(
-                &clis->data[i].io,
-                "message %d, %s\n",
-                get_shortest_distance_sound(&c->ai->pos, &pos, dir, g->map),
-                msg
-            );
+            prepare_info_client(msg, c, &clis->data[i], g);
         }
     }
 }
