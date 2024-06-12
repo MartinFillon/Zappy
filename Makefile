@@ -31,6 +31,9 @@ func_tests:
 
 re: fclean all
 
+bonus: re
+	$(MAKE) -C server/dashboard
+
 docs: docs-clean
 	$(MAKE) -C gui docs
 	$(MAKE) -C server docs
