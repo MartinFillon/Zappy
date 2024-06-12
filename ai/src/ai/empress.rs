@@ -36,7 +36,7 @@ impl Empress {
             commands::move_up::move_up(&mut cli).await?;
             commands::fork::fork(&mut cli).await?;
             // Here you can create a queen after the fork with `i` as id.
-            println!("{i}");
+            println!("Queen with id {i}");
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
@@ -50,6 +50,7 @@ impl AIHandler for Empress {
     }
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
+        println!("I AM THE EMPRESS BOW UPPON ME");
         self.spawn_queens().await?;
 
         let mut cli = self.info.client.lock().await;
