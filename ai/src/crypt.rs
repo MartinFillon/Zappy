@@ -14,8 +14,6 @@ use log::debug;
 
 /// The `Crypt` struct holds the encryption key and nonce.
 ///
-/// # Fields
-///
 /// * `key` - A string that represents the encryption key.
 /// * `nonce` - A 12-byte array used as the nonce for encryption and decryption.
 pub struct Crypt {

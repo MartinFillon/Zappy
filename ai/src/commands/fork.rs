@@ -12,10 +12,10 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 pub async fn fork(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    info!("Forking...");
+    debug!("Forking...");
     let response = client.check_dead("Fork\n").await?;
     client.handle_response(response).await
 }

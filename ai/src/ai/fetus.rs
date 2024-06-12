@@ -8,11 +8,7 @@
 use crate::{
     ai::{AIHandler, AI},
     commands,
-    tcp::{
-        self,
-        command_handle::{CommandError, ResponseResult},
-        TcpClient,
-    },
+    tcp::command_handle::{CommandError, ResponseResult},
 };
 
 use async_trait::async_trait;

@@ -22,7 +22,6 @@ use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
 
 use log::info;
-use tokio::{sync::Mutex, task};
 
 #[derive(Debug, Clone, Default)]
 struct LookInfo {
@@ -130,7 +129,7 @@ impl Queen {
     fn convert_to_look_info(&mut self, vec: Vec<String>) {
         self.look.inv.clear();
 
-        let mut inv: &mut Inventory = &mut self.look.inv;
+        let inv: &mut Inventory = &mut self.look.inv;
 
         for elem in vec.iter() {
             match elem.as_str() {
@@ -173,7 +172,7 @@ impl AIHandler for Queen {
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
         self.fork_servant().await?;
         loop {
-            let mut val = {
+            let val = {
                 let mut cli = self.info.client.lock().await;
                 let res = commands::look_around::look_around(&mut cli).await;
                 Queen::handle_eject(&mut cli, res).await

@@ -21,7 +21,7 @@ use tokio::task::JoinHandle;
 
 use zappy_macros::Bean;
 
-use log::{debug, info};
+use log::{debug, error, info, warn};
 
 #[derive(Debug, Bean)]
 pub struct TcpClient {
@@ -67,7 +67,7 @@ impl TcpClient {
     }
 
     pub async fn send_request(&self, request: String) -> io::Result<()> {
-        info!("Sending request: {}", request.trim_end());
+        debug!("Sending request: {}", request.trim_end());
         if let Some(sender) = &self.request_sender {
             sender
                 .send(request)
@@ -82,9 +82,8 @@ impl TcpClient {
     }
 
     pub async fn get_response(&mut self) -> Option<String> {
-        info!("Getting response...");
+        debug!("Getting response...");
         if let Some(receiver) = &mut self.response_receiver {
-            info!("Response received.");
             receiver.recv().await
         } else {
             debug!("No response received.");
@@ -105,18 +104,18 @@ impl TcpClient {
                 result = reader.read(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            info!("Connection closed by the server.");
+                            warn!("Connection closed by the server.");
                             break;
                         }
                         Ok(n) => {
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
-                                debug!("Failed to send response: {}", e);
+                                error!("Failed to send response: {}", e);
                                 break;
                             }
                         }
                         Err(e) => {
-                            debug!("Failed to read from socket: {}", e);
+                            error!("Failed to read from socket: {}", e);
                             break;
                         }
                     }
@@ -125,12 +124,12 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                debug!("Failed to write to socket: {}", e);
+                                error!("Failed to write to socket: {}", e);
                                 break;
                             }
                         }
                         None => {
-                            debug!("Request channel closed.");
+                            warn!("Request channel closed.");
                             break;
                         }
                     }

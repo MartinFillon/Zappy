@@ -14,7 +14,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{debug, info};
+use log::{debug, warn};
 
 #[derive(PartialEq)]
 pub enum ResponseResult {
@@ -72,7 +72,6 @@ pub trait CommandHandler {
 #[async_trait]
 impl CommandHandler for TcpClient {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError> {
-        info!("Sending command: ({})...", command.trim_end());
         if self.send_request(command.to_string()).await.is_err() {
             return Err(CommandError::RequestError);
         }
@@ -83,7 +82,6 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_response(&mut self) -> Result<String, CommandError> {
-        info!("Checking for a response...");
         match self.get_response().await {
             Some(res) => Ok(res),
             None => Err(CommandError::NoResponseReceived),
@@ -91,19 +89,16 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError> {
-        info!("Checking if request receives dead...");
+        debug!("Checking if request receives dead...");
         let response: String = self.send_command(command).await?;
         if response == "dead\n" {
-            debug!("Dead received.");
+            warn!("Dead received.");
             return Err(CommandError::DeadReceived);
         }
-        info!("Dead not received, response is forwarded.");
         Ok(response)
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
-        info!("Handling response: ({})...", response.trim_end());
-
         if response.starts_with("message ") && response.ends_with('\n') {
             if let ResponseResult::Message(msg) = handle_message_response(response)? {
                 self.push_message(msg);
@@ -126,7 +121,7 @@ impl CommandHandler for TcpClient {
 }
 
 fn handle_message_response(response: String) -> Result<ResponseResult, CommandError> {
-    info!("Handling message response...");
+    debug!("Handling message response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() >= 3 && parts[0] == "message" {
@@ -134,15 +129,15 @@ fn handle_message_response(response: String) -> Result<ResponseResult, CommandEr
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionMessage::from_usize(direction) {
                     let final_msg = parts[2..].join(" ");
-                    info!(
+                    debug!(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, final_msg
                     );
                     return Ok(ResponseResult::Message((dir_enum, final_msg)));
                 }
-                debug!("Failed to parse direction {}.", direction);
+                warn!("Failed to parse direction {}.", direction);
             }
-            Err(_) => debug!("Failed to parse direction from message: {}", response),
+            Err(_) => warn!("Failed to parse direction from message: {}", response),
         }
     }
 
@@ -150,22 +145,22 @@ fn handle_message_response(response: String) -> Result<ResponseResult, CommandEr
 }
 
 fn handle_eject_response(response: String) -> Result<ResponseResult, CommandError> {
-    info!("Handling eject response...");
+    debug!("Handling eject response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() == 2 && parts[0] == "eject:" {
         match parts[1].trim_start().parse::<usize>() {
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionEject::from_usize(direction) {
-                    info!(
+                    debug!(
                         "Receiving ejection from direction {} (aka {}).",
                         dir_enum, direction
                     );
                     return Ok(ResponseResult::Eject(dir_enum));
                 }
-                debug!("Failed to parse direction {}.", direction);
+                warn!("Failed to parse direction {}.", direction);
             }
-            Err(_) => debug!(
+            Err(_) => warn!(
                 "Failed to parse direction from eject response: {}",
                 response
             ),
