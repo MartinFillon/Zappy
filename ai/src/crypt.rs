@@ -18,47 +18,40 @@ pub struct Crypt {
 }
 
 impl Crypt {
-    fn new(key: String) -> Self {
+    pub fn new(key: String) -> Self {
         let nonce = derive_nonce_from_string("zappy");
         Self { key, nonce }
     }
 
-    fn get_key(key: &str) -> String {
-        let mut key = key.to_string();
-        key.truncate(32);
-        if key.len() < 32 {
-            key.extend(std::iter::repeat('0').take(32 - key.len()));
-        }
-        key
+    fn get_key(key: &str) -> [u8; 32] {
+        let mut key_bytes = [0u8; 32];
+        let key_slice = key.as_bytes();
+        let len = key_slice.len().min(32);
+        key_bytes[..len].copy_from_slice(&key_slice[..len]);
+        key_bytes
+    }
+
+    fn create_cipher(&self) -> Aes256Gcm {
+        let key_bytes = Crypt::get_key(&self.key);
+        let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+        debug!("Key: {}", encode(key_bytes));
+        Aes256Gcm::new(key)
     }
 
     pub fn encrypt(&self, data: Vec<u8>) -> Option<String> {
-        let key_str = Crypt::get_key(&self.key);
-        let key_bytes = key_str.as_bytes();
-        let key = Key::<Aes256Gcm>::from_slice(key_bytes);
-        debug!("Encrypt's key: {}", encode(key_bytes));
-
+        let cipher = self.create_cipher();
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Encrypt's nonce: {}", encode(self.nonce));
+        debug!("Nonce: {}", encode(self.nonce));
 
-        let cipher = Aes256Gcm::new(key);
-
-        let ciphertext = cipher.encrypt(nonce, data.as_ref()).ok();
-        ciphertext.map(encode)
+        cipher.encrypt(nonce, data.as_ref()).ok().map(encode)
     }
 
     pub fn decrypt(&self, encrypted_data: &str) -> Option<String> {
-        let key_str = Crypt::get_key(&self.key);
-        let key_bytes = key_str.as_bytes();
-        let key = Key::<Aes256Gcm>::from_slice(key_bytes);
-        debug!("Decrypt's key: {}", encode(key_bytes));
-
+        let cipher = self.create_cipher();
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Decrypt's nonce: {}", encode(self.nonce));
+        debug!("Nonce: {}", encode(self.nonce));
 
-        let cipher = Aes256Gcm::new(key);
-
-        let ciphertext = decode(encrypted_data).expect("decoding failure");
+        let ciphertext = decode(encrypted_data).ok()?;
         let decrypted_data = cipher.decrypt(nonce, ciphertext.as_ref()).ok()?;
         String::from_utf8(decrypted_data).ok()
     }
