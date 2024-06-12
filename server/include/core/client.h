@@ -21,8 +21,9 @@
  * @brief Initialize the client
  *
  * @param fd the file descriptor
+ * @param address the address of the client
  */
-client_t init_client(int fd);
+client_t init_client(int fd, char *address);
 
 /**
  * @brief Prepare the response of the client in his @param io parameter.

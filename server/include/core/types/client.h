@@ -29,4 +29,5 @@ typedef struct client_s {
     ai_t *ai; // only for AI clients
     enum client_type_e type;
     struct queue_command_t *commands;
+    char *address;
 } client_t;
