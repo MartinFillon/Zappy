@@ -9,8 +9,9 @@
 #include <memory>
 #include <raylib.h>
 #include <vector>
-#include "../Raylib.hpp"
 #include "../ModelManager/Model3D.hpp"
+#include "../Raylib.hpp"
+#include "Inventory.hpp"
 
 namespace GUI {
 namespace Data {
@@ -244,7 +245,8 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
 
 void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
 {
-    float tileSize = 2.0f;
+    float tileSize = 1.0f;
+
 
     if (Raylib::isKeyPressed('R'))
         cam.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -279,6 +281,19 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
         Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
         Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
+        Inventory inv = tile->getInventory();
+        for (size_t i = 1; i < inv.inv.size(); i++) { // start at O to handle food
+            int size;
+            if (inv.inv[i] == 0)
+                continue;
+            else if (inv.inv[i] == 1)
+                size = 0;
+            else if (inv.inv[i] <= 2)
+                size = 1;
+            else
+                size = 2;
+            qm.Draw(size, i, tileX, tileZ);
+        }
     }
 
     for (const auto &egg : m_eggs) {
