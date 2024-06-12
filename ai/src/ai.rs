@@ -109,7 +109,7 @@ async fn kickstart(ai: AI) -> io::Result<AI> {
     if let Err(e) = empress.update().await {
         println!("Error: {}", e);
     }
-    Ok(ai) // just added fetus to not have infinite loop
+    Ok(ai)
 }
 
 async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
@@ -152,7 +152,6 @@ async fn checkout_ai_info(
             let ai = AI::new(team, client_number, p_id, client.clone(), (x, y), 1);
             println!("AI #{} > {}", p_id, ai);
             info!("{} initialized.", ai);
-            kickstart(ai.clone()).await?; // handle ur ai here to test bruh no from main
             ai
         })
         .map_err(|e| {
