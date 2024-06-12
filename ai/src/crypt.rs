@@ -12,12 +12,27 @@ use sha2::{Digest, Sha256};
 
 use log::debug;
 
+/// The `Crypt` struct holds the encryption key and nonce.
+///
+/// # Fields
+///
+/// * `key` - A string that represents the encryption key.
+/// * `nonce` - A 12-byte array used as the nonce for encryption and decryption.
 pub struct Crypt {
     key: String,
     nonce: [u8; 12],
 }
 
 impl Crypt {
+    /// Creates a new `Crypt` instance with the provided key.
+    ///
+    /// * `key` - A string that represents the encryption key.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// let crypt = Crypt::new("my-secret-key".to_string());
+    /// ```
     pub fn new(key: String) -> Self {
         let nonce = derive_nonce_from_string("zappy");
         Self { key, nonce }
@@ -38,18 +53,42 @@ impl Crypt {
         Aes256Gcm::new(key)
     }
 
+    /// Encrypts the given data.
+    ///
+    /// * `data` - A vector of bytes representing the data to be encrypted.
+    ///
+    /// returns an `Option<String>` containing the encrypted data in hexadecimal format, or `None` if encryption fails.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// let crypt = Crypt::new("my-secret-key".to_string());
+    /// let encrypted = crypt.encrypt(b"Hello, world!".to_vec()).unwrap();
+    /// ```
     pub fn encrypt(&self, data: Vec<u8>) -> Option<String> {
         let cipher = self.create_cipher();
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Nonce: {}", encode(self.nonce));
+        debug!("Encrypting with nonce: {}", encode(self.nonce));
 
         cipher.encrypt(nonce, data.as_ref()).ok().map(encode)
     }
 
+    /// Decrypts the given encrypted data.
+    ///
+    /// * `encrypted_data` - A string slice containing the encrypted data in hexadecimal format.
+    ///
+    /// returns an `Option<String>` containing the decrypted data as a UTF-8 string, or `None` if decryption fails.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// let crypt = Crypt::new("my-secret-key".to_string());
+    /// let decrypted = crypt.decrypt(&encrypted_data).unwrap();
+    /// ```
     pub fn decrypt(&self, encrypted_data: &str) -> Option<String> {
         let cipher = self.create_cipher();
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Nonce: {}", encode(self.nonce));
+        debug!("Decrypting with nonce: {}", encode(self.nonce));
 
         let ciphertext = decode(encrypted_data).ok()?;
         let decrypted_data = cipher.decrypt(nonce, ciphertext.as_ref()).ok()?;
