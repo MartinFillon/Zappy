@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC -D_GNU_SOURCE
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy
+LDLIBS = -lraylib -L.. -lcore
 
 SRC = 	src/dashboard.c			\
 		src/waiting.c			\
@@ -40,6 +40,11 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
+
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug

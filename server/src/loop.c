@@ -20,7 +20,7 @@ int loop_server(args_infos_t *args)
 
     if (!l.loop || init_program(args, &z))
         return ERROR;
-    dt = l.init();
+    dt = l.init(args->level);
     while (l.loop(&z, dt))
         ;
     destroy_program(&z);

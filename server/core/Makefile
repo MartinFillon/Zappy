@@ -109,21 +109,22 @@ SRC = $(addsuffix .c, 				\
 
 OBJ = $(SRC:.c=.o)
 
-NAME = ../libcore.so
+NAME = ../libcore.a
 
 all: $(NAME)
 
-$(NAME): lib $(OBJ)
-	$(CC) -shared -o $(NAME) $(OBJ) $(LDLIBS)
-
-lib:
-	$(MAKE) -C ../lib
+$(NAME): $(OBJ)
+	ar cq -o $(NAME) $(OBJ)
 
 clean:
 	rm -f $(OBJ)
 
 fclean: clean
 	rm -f $(NAME)
+
+debug: CC = clang
+debug: CFLAGS += -g3
+debug: all
 
 re: fclean all
 

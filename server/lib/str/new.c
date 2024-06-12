@@ -12,6 +12,10 @@ str_t *str_snew(char const *data)
 {
     str_t *s = calloc(1, sizeof(str_t));
 
+    if (data == NULL || s == NULL) {
+        free(s);
+        return NULL;
+    }
     s->data = strdup(data);
     s->capacity = strlen(data);
     s->size = strlen(data);

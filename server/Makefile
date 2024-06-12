@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS += -Wall -Wextra -D_GNU_SOURCE
 CPPFLAGS += -iquote./include
-LDLIBS += -L./ -lmy -lm -lcore
+LDLIBS += -L./ -lcore -lm
 
 NAME = ../zappy_server
 
@@ -68,7 +68,11 @@ tests_run:	lib $(TEST_NAME)
 debug: CC = clang
 debug: CFLAGS += -g3 -fsanitize=address
 debug: LDFLAGS += -fsanitize=addres
-debug: fclean all
+debug: fclean
+	$(MAKE) -C core debug
+	$(MAKE) -C lib debug
+	$(MAKE) $(NAME)
+	$(MAKE) -C base debug
 
 re: fclean all
 
