@@ -5,11 +5,19 @@
 // fetus
 //
 
-use crate::ai::{AIHandler, AI};
-use crate::commands;
-use crate::tcp::command_handle::{CommandError, ResponseResult};
+use crate::{
+    ai::{AIHandler, AI},
+    commands,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
+};
 
 use async_trait::async_trait;
+
+use log::info;
 
 #[derive(Debug, Clone)]
 pub struct Fetus {
@@ -30,13 +38,20 @@ impl AIHandler for Fetus {
 
     async fn update(&mut self) -> Result<(), CommandError> {
         let mut client_lock = self.info.client.lock().await;
+        let mut total = 0;
 
-        while let Ok(ResponseResult::OK) =
-            commands::drop_object::drop_object(&mut client_lock, "food").await
-        {
-            println!("Dropping food x1...");
-            commands::drop_object::drop_object(&mut client_lock, "food").await?;
+        loop {
+            let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
+            if let Ok(ResponseResult::OK) = command {
+                println!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
+                total += 1;
+            } else if let Err(e) = command {
+                info!("Fetus dropped x{} food", total);
+                println!("AI #{}: Fetus died.", self.info.cli_id);
+                return Err(e);
+            } else {
+                continue;
+            }
         }
-        Ok(())
     }
 }
