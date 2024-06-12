@@ -5,6 +5,8 @@
 // bot
 //
 
+use std::mem::swap;
+
 use crate::{
     ai::{AIHandler, AI},
     commands::{
@@ -16,7 +18,9 @@ use crate::{
         turn::{turn, DirectionTurn},
     },
     tcp::{
-        command_handle::{CommandError, DirectionEject, ResponseResult},
+        command_handle::{
+            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
+        },
         TcpClient,
     },
 };
@@ -26,9 +30,11 @@ use async_trait::async_trait;
 use log::info;
 use zappy_macros::Bean;
 
+use super::Listeners;
+
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 5;
-const ITEM_PRIORITY: [(&str, usize); 7] = [
+static ITEM_PRIORITY: [(&str, usize); 7] = [
     ("food", 6),
     ("linemate", 1),
     ("deraumere", 2),
@@ -42,6 +48,19 @@ const ITEM_PRIORITY: [(&str, usize); 7] = [
 pub struct Bot {
     info: AI,
     coord: (i32, i32),
+}
+
+fn make_item_prioritary(item: &str) {
+    swap(
+        &mut ITEM_PRIORITY
+            .iter()
+            .max_by(|a, b| a.1.cmp(&b.1))
+            .unwrap_or(&ITEM_PRIORITY[6]),
+        &mut ITEM_PRIORITY
+            .iter()
+            .find(|i| i.0 == item)
+            .unwrap_or(&("", 0)),
+    )
 }
 
 fn get_item_priority(item: &str) -> usize {
@@ -136,6 +155,7 @@ impl AIHandler for Bot {
         info!("Handling bot...");
         let mut idex: usize = 0;
         loop {
+            self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
@@ -246,6 +266,62 @@ impl Bot {
             return Err(CommandError::RequestError);
         }
         self.set_coord((0, 0));
+        Ok(ResponseResult::OK)
+    }
+
+    fn handle_queen_message(&self, msg: &str) -> Result<ResponseResult, CommandError> {
+        match msg {
+            "nf" => make_item_prioritary("food"),
+            "nl" => make_item_prioritary("linemate"),
+            "nd" => make_item_prioritary("deraumere"),
+            "ns" => make_item_prioritary("sibur"),
+            "nm" => make_item_prioritary("mendiane"),
+            "np" => make_item_prioritary("phiras"),
+            "nt" => make_item_prioritary("thystame"),
+            _ => return Err(CommandError::InvalidResponse),
+        }
+        Ok(ResponseResult::OK)
+    }
+
+    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+        let mut res = Ok(ResponseResult::OK);
+        let mut client = self.info.client().lock().await;
+        while let Some(message) = client.pop_message() {
+            match message {
+                (DirectionMessage::Center, msg) => {
+                    if let Ok(id) = msg.parse::<i32>() {
+                        cli_id.clone_from(&id);
+                    }
+                }
+                (_, msg) => {
+                    if !msg.contains(' ') || msg.len() < 2 {
+                        continue;
+                    }
+                    if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                        let content = msg.split_at(idex);
+                        if let Ok(id) = content.0.parse::<i32>() {
+                            if id == *self.info().cli_id()
+                                && self.handle_queen_message(content.1).is_err()
+                            {
+                                res = Err(CommandError::InvalidResponse);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        res
+    }
+}
+
+#[async_trait]
+impl Listeners for Bot {
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
+        let mut id = -1;
+        self.analyse_messages(&mut id).await?;
+        if id != -1 {
+            self.info.set_cli_id(id);
+        }
         Ok(ResponseResult::OK)
     }
 }

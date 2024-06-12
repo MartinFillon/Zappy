@@ -18,7 +18,7 @@ use crate::{
     commands,
     tcp::{
         self,
-        command_handle::{CommandError, ResponseResult},
+        command_handle::{CommandError, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
@@ -41,6 +41,7 @@ pub struct AI {
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
+    messages: Vec<(DirectionMessage, String)>,
 }
 
 #[async_trait]
@@ -59,10 +60,7 @@ pub trait Incantationers {
 
 #[async_trait]
 pub trait Listeners {
-    async fn handle_message(
-        client: &mut TcpClient,
-        res: Result<ResponseResult, CommandError>,
-    ) -> Result<ResponseResult, CommandError>;
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
 impl AI {
@@ -72,6 +70,7 @@ impl AI {
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
+        messages: Vec<(DirectionMessage, String)>,
     ) -> Self {
         Self {
             team,
@@ -79,6 +78,7 @@ impl AI {
             client,
             map,
             level,
+            messages,
         }
     }
 }
@@ -87,8 +87,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            self.team, self.cli_id, self.map.0, self.map.1, self.level
+            "AI = [team: {}, client: {}, map: ({}, {}), level: {}, messages: {:?}]",
+            self.team, self.cli_id, self.map.0, self.map.1, self.level, self.messages
         )
     }
 }
@@ -136,7 +136,7 @@ async fn init_ai(client: Arc<Mutex<TcpClient>>, response: &str, team: String) ->
                 }
             };
             info!("Map size: ({}, {}).", x, y);
-            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1);
+            let ai: AI = AI::new(team, client_number, client.clone(), (x, y), 1, Vec::new());
             println!("AI #{} > {}", client_number, ai);
             info!("{} initialized.", ai);
             // kickstart(ai.clone()).await?; handle ur ai here to test bruh no from main

@@ -58,18 +58,8 @@ impl Incantationers for Knight {
 
 #[async_trait]
 impl Listeners for Knight {
-    async fn handle_message(
-        _client: &mut TcpClient,
-        res: Result<ResponseResult, CommandError>,
-    ) -> Result<ResponseResult, CommandError> {
-        if let Ok(ResponseResult::Message(ref _dir)) = res {
-            todo!()
-            // if checkout_message(client, dir.clone()).await {
-            //     let response: String = client.check_response().await?;
-            //     client.handle_response(response).await?;
-            // }
-        }
-        res
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
+        todo!()
     }
 }
 
