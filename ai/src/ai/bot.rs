@@ -51,7 +51,7 @@ pub struct Bot {
     coord: (i32, i32),
 }
 
-fn make_item_prioritary(item: &str) {
+fn make_item_prioritised(item: &str) {
     swap(
         &mut ITEM_PRIORITY
             .iter()
@@ -319,13 +319,13 @@ async fn handle_queen_message(
 ) -> Result<ResponseResult, CommandError> {
     match msg {
         "mv" => return move_towards_broadcast(client, dir).await,
-        "nf" => make_item_prioritary("food"),
-        "nl" => make_item_prioritary("linemate"),
-        "nd" => make_item_prioritary("deraumere"),
-        "ns" => make_item_prioritary("sibur"),
-        "nm" => make_item_prioritary("mendiane"),
-        "np" => make_item_prioritary("phiras"),
-        "nt" => make_item_prioritary("thystame"),
+        "nf" => make_item_prioritised("food"),
+        "nl" => make_item_prioritised("linemate"),
+        "nd" => make_item_prioritised("deraumere"),
+        "ns" => make_item_prioritised("sibur"),
+        "nm" => make_item_prioritised("mendiane"),
+        "np" => make_item_prioritised("phiras"),
+        "nt" => make_item_prioritised("thystame"),
         _ => return Err(CommandError::InvalidResponse),
     }
     Ok(ResponseResult::OK)
