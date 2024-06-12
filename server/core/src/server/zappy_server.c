@@ -57,11 +57,25 @@ static void handle_client(zappy_t *z)
     }
 }
 
+static int get_max_fd(struct client_list *list)
+{
+    int mx = -1;
+
+    for (size_t i = 0; i < list->size; i++)
+        mx = MAX(list->data[i].fd, mx);
+    return mx;
+}
+
 int select_server(zappy_t *z)
 {
     struct timeval t = {0, 1};
-    int retval =
-        select(SOMAXCONN, &z->server.read_fds, &z->server.write_fds, NULL, &t);
+    int retval = select(
+        get_max_fd(z->clients),
+        &z->server.read_fds,
+        &z->server.write_fds,
+        NULL,
+        &t
+    );
     char *line = NULL;
     size_t n = 0;
 

@@ -26,3 +26,5 @@
 #define REFILL_TICKS 20
 
 #define BUFF_SIZE 1024
+
+#define MAX(x, y) (x >= y ? x : y)
