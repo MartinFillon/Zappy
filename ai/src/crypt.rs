@@ -39,15 +39,12 @@ impl Crypt {
         debug!("Encrypt's key: {}", encode(key_bytes));
 
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Encrypt's nonce: {}", encode(&self.nonce));
+        debug!("Encrypt's nonce: {}", encode(self.nonce));
 
         let cipher = Aes256Gcm::new(key);
 
-        let ciphertext = cipher
-            .encrypt(nonce, data.as_ref())
-            .map_or(None, |f| Some(f));
-
-        ciphertext.map(|f| encode(f))
+        let ciphertext = cipher.encrypt(nonce, data.as_ref()).ok();
+        ciphertext.map(encode)
     }
 
     pub fn decrypt(&self, encrypted_data: &str) -> Option<String> {
@@ -57,16 +54,13 @@ impl Crypt {
         debug!("Decrypt's key: {}", encode(key_bytes));
 
         let nonce = Nonce::from_slice(&self.nonce);
-        debug!("Decrypt's nonce: {}", encode(&self.nonce));
+        debug!("Decrypt's nonce: {}", encode(self.nonce));
 
         let cipher = Aes256Gcm::new(key);
 
         let ciphertext = decode(encrypted_data).expect("decoding failure");
-        let decrypted_data = cipher
-            .decrypt(nonce, ciphertext.as_ref())
-            .map_or(None, |f| Some(f))?;
-
-        String::from_utf8(decrypted_data).map_or(None, |f| Some(f))
+        let decrypted_data = cipher.decrypt(nonce, ciphertext.as_ref()).ok()?;
+        String::from_utf8(decrypted_data).ok()
     }
 }
 
