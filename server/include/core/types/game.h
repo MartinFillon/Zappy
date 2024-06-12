@@ -27,4 +27,5 @@ typedef struct {
     long frequency;
 
     zclock_t *clock;
+    zclock_t *global;
 } game_t;

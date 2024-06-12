@@ -13,19 +13,25 @@
 #include "core/types/ai.h"
 #include "core/types/object.h"
 
-static void display_object(const char *const name, size_t count, int x, int y)
+#include "dashboard/internal.h"
+
+static int display_object(const char *const name, size_t count, int x, int y)
 {
     char *txt = NULL;
 
     asprintf(&txt, "%s %ld", name, count);
-    DrawText(txt, x, y, 20, WHITE);
+    DrawText(txt, x, y, FONT_SIZE, WHITE);
     free(txt);
+    return FONT_SIZE;
 }
 
-void display_inventory(ai_t *ai, int x, int y)
+int display_inventory(ai_t *ai, int x, int y)
 {
+    int pixel_drawn = 0;
+
     for (size_t i = 0; i < OBJ_COUNT; i++) {
-        display_object(all_obj[i].name, ai->inventory[i], x, y);
-        y += 20;
+        pixel_drawn += display_object(all_obj[i].name, ai->inventory[i], x, y);
+        y += FONT_SIZE;
     }
+    return pixel_drawn;
 }

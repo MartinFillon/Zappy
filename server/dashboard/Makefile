@@ -20,6 +20,7 @@ SRC = 	src/dashboard.c			\
 		src/events.c 			\
 		src/event_handlers/keys/left.c	\
 		src/event_handlers/keys/right.c	\
+		src/display_general.c	\
 
 OBJ = $(SRC:.c=.o)
 

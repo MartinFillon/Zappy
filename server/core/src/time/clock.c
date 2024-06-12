@@ -11,16 +11,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "core/types/clock.h"
+#include "core/clock.h"
 #include "logger.h"
-
-static ztime_t get_current_time(void)
-{
-    struct timeval tp;
-
-    gettimeofday(&tp, NULL);
-    return tp.tv_sec * 1000000 + tp.tv_usec;
-}
 
 zclock_t *clock_new(double frequency)
 {
