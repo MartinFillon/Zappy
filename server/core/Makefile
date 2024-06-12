@@ -125,6 +125,11 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
+
 re: fclean all
 
 .PHONY: all clean fclean re
