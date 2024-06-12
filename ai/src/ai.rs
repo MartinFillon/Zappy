@@ -167,13 +167,14 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
+                debug!("Server doesn't handle any more connection");
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
                 ))
             }
             _ => {
-                info!("Connection to team successful");
+                info!("Connection to team successful.");
                 let ai = init_ai(client.clone(), &response, team).await?;
                 Ok(ai)
             }
@@ -212,7 +213,6 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
 
 // multi-connect
 pub async fn launch(address: String, team: String) -> io::Result<()> {
-    let semaphore = Arc::new(Semaphore::new(100)); // test w 100
     let mut handles = vec![];
     let team = Arc::new(team);
     let connection_id = Arc::new(AtomicUsize::new(0));
@@ -223,15 +223,6 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             println!("Stop flag is set, breaking the loop.");
             break;
         }
-
-        let permit = match semaphore.clone().acquire_owned().await {
-            Ok(permit) => permit,
-            Err(_) => {
-                println!("Failed to acquire semaphore permit.");
-                break;
-            }
-        };
-
         match tcp::handle_tcp(address.clone()).await {
             Ok(client) => {
                 let team = Arc::clone(&team);
@@ -242,7 +233,6 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 let handle = task::spawn(async move {
                     let team_str = &*team;
                     let result = start_ai(client.clone(), team_str.clone(), id).await;
-                    drop(permit);
 
                     match result {
                         Ok(_) => {
