@@ -237,12 +237,20 @@ async fn start_ai(
     }
 }
 
-pub async fn fork_launch(address: String, team: String, from_ai: AI) -> io::Result<AI> {
+pub async fn fork_launch(
+    address: String,
+    team: String,
+    from_ai: AI,
+    set_id: Option<usize>,
+) -> io::Result<AI> {
     match tcp::handle_tcp(address.clone()).await {
         Ok(client) => {
             info!("Client connected successfully.");
             let client = Arc::new(Mutex::new(client));
-            let id = from_ai.p_id + 1;
+            let id = match set_id {
+                None => from_ai.p_id + 1,
+                Some(res) => res,
+            };
 
             let handle = task::spawn(async move {
                 start_ai(client.clone(), team.to_string(), address, id, false).await
