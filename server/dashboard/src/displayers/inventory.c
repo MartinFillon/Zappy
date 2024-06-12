@@ -25,12 +25,13 @@ static int display_object(const char *const name, size_t count, int x, int y)
     return FONT_SIZE;
 }
 
-int display_inventory(ai_t *ai, int x, int y)
+int display_inventory(client_t *client, int x, int y)
 {
     int pixel_drawn = 0;
 
     for (size_t i = 0; i < OBJ_COUNT; i++) {
-        pixel_drawn += display_object(all_obj[i].name, ai->inventory[i], x, y);
+        pixel_drawn +=
+            display_object(all_obj[i].name, client->ai->inventory[i], x, y);
         y += FONT_SIZE;
     }
     return pixel_drawn;
