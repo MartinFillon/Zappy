@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -L.. -lmy -lcore
+LDLIBS = -L.. -lcore
 
 SRC = src/base.c
 
@@ -27,6 +27,10 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
+debug: CC = clang
+debug: CFLAGS += -g3
+debug: fclean all
+
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug

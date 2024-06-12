@@ -35,11 +35,12 @@ void handle_server_cmd(char const *cmd, zappy_t *z)
     str_free(str_cmd);
     if (!args)
         return logs(ERROR_LEVEL, "Allocation Error\n");
+    if (args->size == 0)
+        return vec_free_vector_str_t(args, str_free);
     for (size_t i = 0; SERV_CMDS[i].name != NULL; i++) {
         if (strcmp(SERV_CMDS[i].name, args->data[0]->data) == 0) {
             run_serv_functions(z, &SERV_CMDS[i], args);
-            vec_free_vector_str_t(args, str_free);
-            return;
+            return vec_free_vector_str_t(args, str_free);
         }
     }
     vec_free_vector_str_t(args, str_free);

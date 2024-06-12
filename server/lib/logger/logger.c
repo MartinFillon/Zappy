@@ -41,11 +41,12 @@ void logs(enum log_level level, char *fmt, ...)
     }
 }
 
-void set_log_level(enum log_level level)
+int set_log_level(enum log_level level)
 {
     struct logger_s *l = get_mut_logger();
 
     l->level = level;
+    return level;
 }
 
 void set_log_fd(int fd)
@@ -55,11 +56,12 @@ void set_log_fd(int fd)
     l->fd = fd;
 }
 
-void set_log_level_from_str(char const *str)
+int set_log_level_from_str(char const *str)
 {
     for (__auto_type i = 0; LEVELS[i].str; i++)
         if (strcmp(str, LEVELS[i].str) == 0)
             return set_log_level(LEVELS[i].level);
     set_log_level(ERROR_LEVEL);
     logs(ERROR_LEVEL, "Unknown level setting back to default: ERROR\n");
+    return ERROR_LEVEL;
 }
