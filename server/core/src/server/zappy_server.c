@@ -20,14 +20,21 @@
 #include "macros.h"
 #include "zappy.h"
 
+static void handle_client_closing(zappy_t *z, int i)
+{
+    if (z->clients->data[i].type != AI) {
+        close_client(&z->clients->data[i], z->clients);
+        vec_erase_at_client_list(z->clients, i);
+    } else {
+        kill_ai(z->clients, z->game.ais, i);
+    }
+}
+
 static void handle_cli_isset(zappy_t *z, int i)
 {
-    if (FD_ISSET(z->clients->data[i].fd, &z->server.read_fds)) {
-        if (read_client(&z->clients->data[i]) == ERROR) {
-            close_client(&z->clients->data[i], z->clients);
-            vec_erase_at_client_list(z->clients, i);
-        }
-    }
+    if (FD_ISSET(z->clients->data[i].fd, &z->server.read_fds))
+        if (read_client(&z->clients->data[i]) == ERROR)
+            handle_client_closing(z, i);
     if (FD_ISSET(z->clients->data[i].fd, &z->server.write_fds) &&
         z->clients->data[i].io.is_ready) {
         z->clients->data[i].io.is_ready = false;

@@ -14,6 +14,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define PAGING 4
+#define FONT_SIZE 20
 
 struct draw_state_s {
     size_t width;

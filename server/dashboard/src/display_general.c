@@ -11,12 +11,14 @@
 #include "core/clock.h"
 #include "core/types/game.h"
 
+#include "dashboard/internal.h"
+
 void display_ticks(zclock_t *const clock, int x, int y)
 {
     char *txt = NULL;
 
     asprintf(&txt, "Tick %llu", current_tick(clock));
-    DrawText(txt, x, y, 20, WHITE);
+    DrawText(txt, x, y, FONT_SIZE, WHITE);
     free(txt);
 }
 
