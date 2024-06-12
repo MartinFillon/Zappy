@@ -10,10 +10,12 @@
 #pragma once
 
 #include <raylib.h>
+#include <string>
 
 class Model3D {
   public:
-    Model3D(const char *modelPath, const char *texturePath = nullptr);
+    Model3D() {}
+    Model3D(const std::string &modelPath, const std::string &texturePath = "");
     ~Model3D();
 
     void Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle) const;

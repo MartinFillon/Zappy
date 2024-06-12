@@ -244,7 +244,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
 
 void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
 {
-    float tileSize = 1.0f;
+    float tileSize = 2.0f;
 
     if (Raylib::isKeyPressed('R'))
         cam.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -264,8 +264,9 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     Raylib::beginMode3D(cam);
     Raylib::drawGrid(100, 1.0f);
 
-    //Model3D model("gui/assets/rocks/L_rocks_01.glb");
-    //model.Draw({1,1,1}, {5,5,5}, {1,0,0}, 0);
+    if (qm.getSize() == 0) {
+        qm.init();
+    }
 
     for (const auto &player : m_players) {
         float playerX = player->getPos().x() * tileSize + tileSize / 2;

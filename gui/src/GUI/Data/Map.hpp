@@ -16,6 +16,7 @@
 #include "Player.hpp"
 #include "Pos.hpp"
 #include "Tile.hpp"
+#include "../ModelManager/RessourcesManager.hpp"
 
 namespace GUI {
 namespace Data {
@@ -47,6 +48,7 @@ class Map {
     std::vector<std::shared_ptr<Egg>> m_eggs;
     Pos<int, 2> m_size;
     mutable int x, y, end_x, end_y;
+    mutable RessourcesManager qm;
 };
 
 } // namespace Data

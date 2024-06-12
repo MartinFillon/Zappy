@@ -6,20 +6,19 @@
 */
 
 #include "Model3D.hpp"
+#include <raylib.h>
 
-Model3D::Model3D(const char *modelPath, const char *texturePath)
+Model3D::Model3D(const std::string &modelPath, const std::string &texturePath)
 {
-    model = LoadModel(modelPath);
-    if (texturePath) {
-        texture = LoadTexture(texturePath);
+    model = LoadModel(modelPath.c_str());
+    if (!texturePath.empty()) {
+        texture = LoadTexture(texturePath.c_str());
         model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
     }
 }
 
 Model3D::~Model3D()
 {
-    UnloadModel(model);
-    UnloadTexture(texture);
 }
 
 void Model3D::Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle) const
