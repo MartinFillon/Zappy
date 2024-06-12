@@ -10,6 +10,7 @@
 #![allow(unused_mut)]
 
 pub mod bot;
+pub mod empress;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
@@ -104,11 +105,11 @@ impl Display for AI {
 async fn kickstart(ai: AI) -> io::Result<AI> {
     info!("Sending startup commands...");
 
-    let mut fetus = fetus::Fetus::init(ai.clone());
-    if let Err(e) = fetus.update().await {
+    let mut empress = empress::Empress::init(ai.clone());
+    if let Err(e) = empress.update().await {
         println!("Error: {}", e);
     }
-    Ok(ai) // just added fetus to not have infinite loop
+    Ok(ai)
 }
 
 async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
