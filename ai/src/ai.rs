@@ -9,12 +9,12 @@
 #![allow(unused_imports)]
 #![allow(unused_mut)]
 
+pub mod ai_create;
 pub mod bot;
 pub mod empress;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
-pub mod ai_create;
 
 use crate::{
     commands,
@@ -41,6 +41,7 @@ use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
 pub struct AI {
+    address: String,
     team: String,
     cli_id: i32,
     p_id: usize,
@@ -74,6 +75,7 @@ pub trait Listeners {
 impl AI {
     fn new(
         team: String,
+        address: String,
         cli_id: i32,
         p_id: usize,
         client: Arc<Mutex<TcpClient>>,
@@ -82,6 +84,7 @@ impl AI {
     ) -> Self {
         Self {
             team,
+            address,
             cli_id,
             p_id,
             client,
@@ -99,28 +102,6 @@ impl Display for AI {
             self.p_id, self.team, self.cli_id, self.map.0, self.map.1, self.level
         )
     }
-}
-
-// test here
-#[allow(dead_code)]
-async fn kickstart(ai: AI) -> io::Result<AI> {
-    info!("Sending startup commands...");
-
-    match ai.p_id {
-        0 => {
-            let mut empress = empress::Empress::init(ai.clone());
-            if let Err(e) = empress.update().await {
-                println!("Error: {}", e);
-            }
-        }
-        _ => {
-            let mut fetus = fetus::Fetus::init(ai.clone());
-            if let Err(e) = fetus.update().await {
-                println!("Error: {}", e);
-            }
-        }
-    };
-    Ok(ai)
 }
 
 async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
@@ -153,6 +134,7 @@ async fn checkout_ai_info(
     client: Arc<Mutex<TcpClient>>,
     response: &str,
     team: String,
+    address: String,
     p_id: usize,
 ) -> io::Result<AI> {
     parse_response(response)
@@ -160,7 +142,15 @@ async fn checkout_ai_info(
         .map(|(client_number, x, y)| {
             info!("Client number detected as [{}].", client_number);
             info!("Map size: ({}, {}).", x, y);
-            let ai = AI::new(team, client_number, p_id, client.clone(), (x, y), 1);
+            let ai = AI::new(
+                team,
+                address,
+                client_number,
+                p_id,
+                client.clone(),
+                (x, y),
+                1,
+            );
             println!("AI #{} > {}", p_id, ai);
             info!("{} initialized.", ai);
             ai
@@ -171,20 +161,47 @@ async fn checkout_ai_info(
         })
 }
 
+// test here
+#[allow(dead_code)]
+async fn kickstart(ai: AI) -> io::Result<AI> {
+    info!("Sending startup commands...");
+    Ok(ai)
+}
+
 async fn init_ai(
     client: Arc<Mutex<TcpClient>>,
     response: &str,
     team: String,
+    address: String,
     p_id: usize,
 ) -> io::Result<AI> {
-    info!("Initializing AI...");
-    let ai = checkout_ai_info(client, response, team, p_id).await?;
-    kickstart(ai).await
-    // info!("Connection ID #{} creates <role?>...", id);
-    // handle all types of creation of ia based on id now...
+    info!("Initializing AI #{}...", p_id);
+    let ai = checkout_ai_info(client, response, team, address, p_id).await?;
+    // kickstart(ai).await to test or
+    match ai.p_id {
+        1 => {
+            let mut empress = empress::Empress::init(ai.clone());
+            if let Err(e) = empress.update().await {
+                println!("Error: {}", e);
+            }
+        }
+        _ => {
+            let mut fetus = fetus::Fetus::init(ai.clone());
+            if let Err(e) = fetus.update().await {
+                println!("Error: {}", e);
+            }
+        }
+    };
+    Ok(ai)
 }
 
-async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> io::Result<AI> {
+async fn start_ai(
+    client: Arc<Mutex<TcpClient>>,
+    team: String,
+    address: String,
+    p_id: usize,
+    start: bool,
+) -> io::Result<AI> {
     info!("Starting AI process n{}...", p_id);
     {
         let mut client_lock = client.lock().await;
@@ -197,7 +214,7 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
-                debug!("Server doesn't handle any more connection");
+                debug!("Server doesn't handle any more connection.");
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
@@ -205,7 +222,12 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
             }
             _ => {
                 info!("Connection to team successful.");
-                let ai = init_ai(client.clone(), &response, team, p_id).await?;
+                let ai = match start {
+                    true => init_ai(client.clone(), &response, team, address, p_id).await?,
+                    false => {
+                        checkout_ai_info(client.clone(), &response, team, address, p_id).await?
+                    }
+                };
                 Ok(ai)
             }
         }
@@ -218,35 +240,36 @@ async fn start_ai(client: Arc<Mutex<TcpClient>>, team: String, p_id: usize) -> i
     }
 }
 
-// indiv testing
-// pub async fn launch(address: String, team: String) -> io::Result<AI> {
-//     let ai = match tcp::handle_tcp(address.clone()).await {
-//         Ok(client) => {
-//             info!("Client connected successfully.");
-//             let client = Arc::new(Mutex::new(client));
-//             match start_ai(client.clone(), team.clone()).await {
-//                 Ok(ai) => {
-//                     println!("ok");
-//                     ai
-//                 }
-//                 Err(e) => {
-//                     eprintln!("Launch Error {}", e);
-//                     return Err(Error::new(e.kind(), e));
-//                 }
-//             }
-//         }
-//         Err(e) => {
-//             return Err(Error::new(e.kind(), e));
-//         }
-//     };
-//     Ok(ai)
-// }
+pub async fn fork_launch(address: String, team: String, from_ai: AI) -> io::Result<AI> {
+    match tcp::handle_tcp(address.clone()).await {
+        Ok(client) => {
+            info!("Client connected successfully.");
+            let client = Arc::new(Mutex::new(client));
+            let id = from_ai.p_id + 1;
 
-// multi-connect
+            let handle = task::spawn(async move {
+                start_ai(client.clone(), team.to_string(), address, id, false).await
+            });
+
+            if let Err(e) = handle.await {
+                println!("Task failed: {:?}", e);
+            }
+        }
+        Err(e) => {
+            return Err(Error::new(e.kind(), e));
+        }
+    };
+    Err(Error::new(
+        ErrorKind::ConnectionRefused,
+        "Couldn't reach host.",
+    ))
+}
+
 pub async fn launch(address: String, team: String) -> io::Result<()> {
     let mut handles = vec![];
     let team = Arc::new(team);
-    let connection_id = Arc::new(AtomicUsize::new(0));
+    let address = Arc::new(address);
+    let connection_id = Arc::new(AtomicUsize::new(1));
     let stop_flag = Arc::new(AtomicBool::new(false));
 
     loop {
@@ -255,15 +278,23 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             break;
         }
 
-        match tcp::handle_tcp(address.clone()).await {
+        match tcp::handle_tcp(address.to_string()).await {
             Ok(client) => {
                 let team = Arc::clone(&team);
+                let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
                 let stop_flag = Arc::clone(&stop_flag);
 
                 let handle = task::spawn(async move {
-                    let result = start_ai(client.clone(), team.to_string(), id).await;
+                    let result = start_ai(
+                        client.clone(),
+                        team.to_string(),
+                        address.to_string(),
+                        id,
+                        true,
+                    )
+                    .await;
 
                     match result {
                         Ok(_) => {
