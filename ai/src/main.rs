@@ -13,6 +13,7 @@ use env_logger::{Builder, Env};
 use log::info;
 
 pub mod ai;
+pub mod cipher;
 pub mod commands;
 pub mod elevation;
 pub mod flags;
