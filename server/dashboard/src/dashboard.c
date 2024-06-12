@@ -33,6 +33,7 @@ extern bool server_runner(zappy_t *z, void *dt)
         wait_for_connections();
     else
         display_clients(z->clients, s);
+    display_general_infos(&z->game);
     EndDrawing();
     return core(z) && !WindowShouldClose();
 }
