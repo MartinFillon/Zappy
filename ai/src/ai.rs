@@ -14,6 +14,7 @@ pub mod empress;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
+pub mod ai_create;
 
 use crate::{
     commands,
@@ -105,10 +106,20 @@ impl Display for AI {
 async fn kickstart(ai: AI) -> io::Result<AI> {
     info!("Sending startup commands...");
 
-    let mut empress = empress::Empress::init(ai.clone());
-    if let Err(e) = empress.update().await {
-        println!("Error: {}", e);
-    }
+    match ai.p_id {
+        0 => {
+            let mut empress = empress::Empress::init(ai.clone());
+            if let Err(e) = empress.update().await {
+                println!("Error: {}", e);
+            }
+        }
+        _ => {
+            let mut fetus = fetus::Fetus::init(ai.clone());
+            if let Err(e) = fetus.update().await {
+                println!("Error: {}", e);
+            }
+        }
+    };
     Ok(ai)
 }
 
