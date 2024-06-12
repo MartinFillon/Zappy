@@ -34,7 +34,7 @@ use std::sync::{
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, info};
+use log::{debug, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -101,14 +101,14 @@ impl Display for AI {
 
 // test here
 #[allow(dead_code)]
-async fn kickstart(ai: AI) -> io::Result<()> {
+async fn kickstart(ai: AI) -> io::Result<AI> {
     info!("Sending startup commands...");
 
     let mut fetus = fetus::Fetus::init(ai.clone());
     if let Err(e) = fetus.update().await {
         println!("Error: {}", e);
     }
-    Ok(())
+    Ok(ai) // just added fetus to not have infinite loop
 }
 
 async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
@@ -166,7 +166,8 @@ async fn init_ai(
     p_id: usize,
 ) -> io::Result<AI> {
     info!("Initializing AI...");
-    checkout_ai_info(client, response, team, p_id).await
+    let ai = checkout_ai_info(client, response, team, p_id).await?;
+    kickstart(ai).await
     // info!("Connection ID #{} creates <role?>...", id);
     // handle all types of creation of ia based on id now...
 }
