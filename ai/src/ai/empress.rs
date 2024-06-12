@@ -26,10 +26,7 @@ pub struct Empress {
 impl Empress {
     /// Creates a new [`Empress`].
     fn new(info: AI) -> Self {
-        Self {
-            info,
-            id: 0_usize,
-        }
+        Self { info, id: 0_usize }
     }
 
     async fn spawn_queens(&mut self) -> Result<(), command_handle::CommandError> {
