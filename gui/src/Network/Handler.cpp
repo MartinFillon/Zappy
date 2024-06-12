@@ -12,7 +12,7 @@
 namespace Network {
 
 Handler::Handler(const std::string &machine, int port)
-    : machine(machine), port(port), io_context(), socket(io_context), running(false)
+    : machine(machine), port(port), io_context(), socket(io_context), running(false), handlerEnd(false)
 {
 }
 
@@ -66,9 +66,6 @@ bool Handler::getMessage(std::string &message)
 
 void Handler::sendMessage(const std::string &message)
 {
-    if (running == false) {
-        return;
-    }
     std::scoped_lock lock(socketMutex);
 
     try {
@@ -103,14 +100,13 @@ void Handler::run()
             getMessage(message);
         }
 
-        while (running) {
+        while (!handlerEnd) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             requestMapSize();
             requestMapContent();
             requestTimeUnit();
         }
     } catch (const std::exception &e) {
-        std::cerr << "Network error: " << e.what() << std::endl;
         running = false;
     }
 
@@ -150,8 +146,6 @@ void Handler::receiveMessages()
                     line.pop_back();
                 }
                 std::scoped_lock lock(mutex);
-                // debug print
-                // std::cout << line << std::endl;
                 mQ.push(line);
                 cv.notify_one();
                 data.erase(0, pos + 1);
@@ -163,6 +157,7 @@ void Handler::receiveMessages()
             running = false;
         }
     }
+    handlerEnd = true;
 }
 
 } // namespace Network
