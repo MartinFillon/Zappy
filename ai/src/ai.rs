@@ -143,20 +143,20 @@ async fn checkout_ai_info(
     team: String,
     p_id: usize,
 ) -> io::Result<AI> {
-    match parse_response(response).await {
-        Ok((client_number, x, y)) => {
+    parse_response(response)
+        .await
+        .map(|(client_number, x, y)| {
             info!("Client number detected as [{}].", client_number);
             info!("Map size: ({}, {}).", x, y);
             let ai = AI::new(team, client_number, p_id, client.clone(), (x, y), 1);
             println!("AI #{} > {}", p_id, ai);
             info!("{} initialized.", ai);
-            Ok(ai)
-        }
-        Err(e) => {
+            ai
+        })
+        .map_err(|e| {
             debug!("Failed to parse response: {}", e);
-            Err(e)
-        }
-    }
+            e
+        })
 }
 
 async fn init_ai(
@@ -241,6 +241,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             println!("Stop flag is set, breaking the loop.");
             break;
         }
+
         match tcp::handle_tcp(address.clone()).await {
             Ok(client) => {
                 let team = Arc::clone(&team);
