@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{AIHandler, Incantationers, AI},
-    commands,
+    commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::backtrack_eject,
     tcp::{
@@ -65,19 +65,74 @@ impl Queen {
         }
     }
 
-    async fn incantate(&mut self) {
+    /**
+        Move [`queen`] at level 4,
+        we assume that all the queens have the same direction
+    */
+    async fn move_queen_first_step(&mut self) -> Result<(), CommandError>
+    {
+        if self.info.p_id == 2 | 4 {
+            return Ok(());
+        }
+        // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
-        let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
+        let _ = commands::move_up::move_up(&mut cli).await?;
+        let mut val = commands::broadcast::broadcast(
+            &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
+        let _ = Queen::handle_eject(&mut cli, Ok(val)).await?;
+        Ok(())
+    }
 
-        let mut val = commands::incantation::incantation(&mut cli).await;
-        val = Queen::handle_eject(&mut cli, val).await;
-        match val {
+    /**
+        Move [`queen`] at level 6,
+        we will move queen's direction and then reunite them in a single tile
+    */
+    async fn move_queen_second_step(&mut self) -> Result<(), CommandError>
+    {
+        match self.info.p_id {
+            1 | 2 => {
+                // Check que les queens en face peut
+                let mut cli = self.info.client.lock().await;
+                let _ = commands::move_up::move_up(&mut cli).await?;
+                let _ = commands::broadcast::broadcast(
+                    &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
+                ()
+            },
+            3 | 4 => {
+                // Check que les queens en face peut
+                let mut cli = self.info.client.lock().await;
+                let _ = commands::move_up::move_up(&mut cli).await?;
+                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
+                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
+                commands::broadcast::broadcast(
+                    &mut cli, format!("{} ml", self.info.p_id).as_str()).await?;
+                ()
+            },
+            _ => ()
+        }
+        Ok(())
+    }
+
+    async fn incantate(&mut self) -> Result<(), command_handle::CommandError> {
+        let incant_res = {
+            let mut cli = self.info.client.lock().await;
+            let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
+            let mut val =
+                commands::incantation::incantation(&mut cli).await;
+            Queen::handle_eject(&mut cli, val).await
+        };
+        match incant_res { // Move it somewhere else because we have to check for each queen.
             Ok(ResponseResult::Incantation(lvl)) => {
                 self.info.level = lvl;
                 println!("{}", self);
-            }
-            Err(err) => println!("{}", err),
-            _ => (),
+                match lvl {
+                    4 => self.move_queen_first_step().await,
+                    6 => self.move_queen_second_step().await,
+                    _ => Ok(())
+                }
+            },
+            Err(err) => Ok(println!("{}", err)),
+            _ => Ok(()),
         }
     }
 
@@ -167,6 +222,7 @@ impl Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
+        // After this the queen must turn to the direction of message "Done"
         Self::new(info)
     }
 
@@ -195,7 +251,7 @@ impl AIHandler for Queen {
 
             if self.check_requirement() {
                 info!("Ai {} is incanting", self.info.cli_id);
-                self.incantate().await;
+                self.incantate().await?;
             }
         }
     }
