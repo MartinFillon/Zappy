@@ -5,6 +5,8 @@
 // bot
 //
 
+use std::mem::swap;
+
 use crate::{
     ai::{AIHandler, AI},
     commands::{
@@ -15,8 +17,11 @@ use crate::{
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
+    move_towards_broadcast::move_towards_broadcast,
     tcp::{
-        command_handle::{CommandError, DirectionEject, ResponseResult},
+        command_handle::{
+            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
+        },
         TcpClient,
     },
 };
@@ -26,9 +31,11 @@ use async_trait::async_trait;
 use log::info;
 use zappy_macros::Bean;
 
+use super::Listeners;
+
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 5;
-const ITEM_PRIORITY: [(&str, usize); 7] = [
+static ITEM_PRIORITY: [(&str, usize); 7] = [
     ("food", 6),
     ("linemate", 1),
     ("deraumere", 2),
@@ -42,6 +49,19 @@ const ITEM_PRIORITY: [(&str, usize); 7] = [
 pub struct Bot {
     info: AI,
     coord: (i32, i32),
+}
+
+fn make_item_prioritised(item: &str) {
+    swap(
+        &mut ITEM_PRIORITY
+            .iter()
+            .max_by(|a, b| a.1.cmp(&b.1))
+            .unwrap_or(&ITEM_PRIORITY[6]),
+        &mut ITEM_PRIORITY
+            .iter()
+            .find(|i| i.0 == item)
+            .unwrap_or(&("", 0)),
+    )
 }
 
 fn get_item_priority(item: &str) -> usize {
@@ -107,7 +127,7 @@ async fn seek_best_item_index(
 
 fn done_dropping_items(inv: &[(String, i32)]) -> bool {
     for (item, count) in inv {
-        if item.as_str() == "food" && *count > 5 {
+        if item.as_str() == "food" && *count > 10 {
             return false;
         }
         if item.as_str() != "food" && *count > 0 {
@@ -133,9 +153,10 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot...");
+        info!("Handling bot [Queen {}]...", self.info().cli_id);
         let mut idex: usize = 0;
         loop {
+            self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
@@ -155,7 +176,7 @@ impl Bot {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         info!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
-        let (width, height) = (self.info.map().0 / 2, self.info.map().1 / 2);
+        let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
 
         info!(
             "Coordinated updated from: ({}, {})",
@@ -182,24 +203,22 @@ impl Bot {
 
     pub async fn seek_objects(&mut self) -> Result<ResponseResult, CommandError> {
         let res = {
-            let mut client_lock = self.info.client().lock().await;
-            look_around(&mut client_lock).await?
+            let mut client = self.info().client().lock().await;
+            look_around(&mut client).await?
         };
         match res {
             ResponseResult::Tiles(tiles) => {
                 let mut best_item = String::new();
                 let tile = {
-                    let mut client_lock = self.info.client().lock().await;
-                    seek_best_item_index(&mut client_lock, tiles, &mut best_item).await?
+                    let mut client = self.info().client().lock().await;
+                    seek_best_item_index(&mut client, tiles, &mut best_item).await?
                 };
                 if best_item.is_empty() {
                     Ok(ResponseResult::KO)
                 } else {
-                    if !self.move_to_tile(tile).await {
-                        return Err(CommandError::RequestError);
-                    }
-                    let mut client_lock = self.info.client().lock().await;
-                    take_object(&mut client_lock, &best_item).await
+                    self.move_to_tile(tile).await?;
+                    let mut client = self.info().client().lock().await;
+                    take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),
@@ -208,17 +227,17 @@ impl Bot {
 
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         loop {
-            let mut client_lock = self.info.client().lock().await;
-            match inventory(&mut client_lock).await? {
+            let mut client = self.info().client().lock().await;
+            match inventory(&mut client).await? {
                 ResponseResult::Inventory(inv) => {
                     if done_dropping_items(&inv) {
                         return Ok(ResponseResult::OK);
                     }
                     for (item, count) in inv {
-                        if (item.as_str() == "food" && count > 5)
+                        if (item.as_str() == "food" && count > 10)
                             || (item.as_str() != "food" && count > 0)
                         {
-                            match drop_object(&mut client_lock, item.as_str()).await? {
+                            match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),
                             }
@@ -231,23 +250,85 @@ impl Bot {
     }
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut client_lock = self.info.client().lock().await;
-        turn(&mut client_lock, DirectionTurn::Right).await?;
-        turn(&mut client_lock, DirectionTurn::Right).await?;
+        let mut client = self.info().client().lock().await;
+        turn(&mut client, DirectionTurn::Right).await?;
+        turn(&mut client, DirectionTurn::Right).await?;
         Ok(ResponseResult::OK)
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
+        info!("Bot [Queen {}]: backtracking...", self.info().cli_id);
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
         }
-        if !self.move_ai_to_coords(*self.coord()).await {
-            return Err(CommandError::RequestError);
-        }
+        self.move_ai_to_coords(*self.coord()).await?;
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }
+
+    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+        let mut res = Ok(ResponseResult::OK);
+        let mut client = self.info().client().lock().await;
+        while let Some(message) = client.pop_message() {
+            info!(
+                "Bot [Queen {}]: handling message: {}",
+                self.info().cli_id,
+                message.1
+            );
+            match message {
+                (DirectionMessage::Center, msg) => {
+                    if let Ok(id) = msg.parse::<i32>() {
+                        cli_id.clone_from(&id);
+                    }
+                }
+                (dir, msg) => {
+                    if !msg.contains(' ') || msg.len() < 2 {
+                        continue;
+                    }
+                    if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                        let content = msg.split_at(idex);
+                        if let Ok(id) = content.0.parse::<i32>() {
+                            if id == *self.info().cli_id() {
+                                handle_queen_message(&mut client, (dir, content.1)).await?;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        res
+    }
+}
+
+#[async_trait]
+impl Listeners for Bot {
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
+        let mut id = -1;
+        self.analyse_messages(&mut id).await?;
+        if id != -1 {
+            self.info.set_cli_id(id);
+        }
+        Ok(ResponseResult::OK)
+    }
+}
+
+async fn handle_queen_message(
+    client: &mut TcpClient,
+    (dir, msg): (DirectionMessage, &str),
+) -> Result<ResponseResult, CommandError> {
+    match msg {
+        "mv" => return move_towards_broadcast(client, dir).await,
+        "nf" => make_item_prioritised("food"),
+        "nl" => make_item_prioritised("linemate"),
+        "nd" => make_item_prioritised("deraumere"),
+        "ns" => make_item_prioritised("sibur"),
+        "nm" => make_item_prioritised("mendiane"),
+        "np" => make_item_prioritised("phiras"),
+        "nt" => make_item_prioritised("thystame"),
+        _ => return Err(CommandError::InvalidResponse),
+    }
+    Ok(ResponseResult::OK)
 }
 
 pub fn wrap_coordinate(coord: i32, max: i32) -> i32 {

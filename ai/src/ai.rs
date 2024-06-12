@@ -19,7 +19,7 @@ use crate::{
     commands,
     tcp::{
         self,
-        command_handle::{CommandError, ResponseResult},
+        command_handle::{CommandError, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
@@ -64,10 +64,7 @@ pub trait Incantationers {
 
 #[async_trait]
 pub trait Listeners {
-    async fn handle_message(
-        client: &mut TcpClient,
-        res: Result<ResponseResult, CommandError>,
-    ) -> Result<ResponseResult, CommandError>;
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
 impl AI {

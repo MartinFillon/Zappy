@@ -7,10 +7,12 @@
 
 use crate::{
     ai::{AIHandler, Incantationers, AI},
-    commands,
-    move_towards_broadcast::backtrack_eject,
+    commands::{self, inventory, take_object},
+    move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
-        command_handle::{CommandError, CommandHandler, DirectionEject, ResponseResult},
+        command_handle::{
+            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
+        },
         TcpClient,
     },
 };
@@ -21,10 +23,11 @@ use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
 
 use log::info;
+use zappy_macros::Bean;
 
 use super::Listeners;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct Knight {
     info: AI,
 }
@@ -36,7 +39,28 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        todo!()
+        info!("Handling knight [Queen {}]...", self.info().cli_id);
+        self.handle_message().await?;
+
+        if self.info().level == 6 && (self.info().cli_id == 7 || self.info().cli_id == 8) {
+            // die
+            todo!()
+        }
+        if self.check_food().await? < 8 {
+            info!(
+                "Knight [Queen {}]: not enough food, producing more...",
+                self.info().cli_id
+            );
+            // create fetus
+            while self.check_food().await? < 10 {
+                self.handle_message().await?;
+                let mut client = self.info().client().lock().await;
+                let res = take_object::take_object(&mut client, "food").await;
+                Knight::handle_eject(&mut client, res).await?;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -58,24 +82,65 @@ impl Incantationers for Knight {
 
 #[async_trait]
 impl Listeners for Knight {
-    async fn handle_message(
-        _client: &mut TcpClient,
-        res: Result<ResponseResult, CommandError>,
-    ) -> Result<ResponseResult, CommandError> {
-        if let Ok(ResponseResult::Message(ref _dir)) = res {
-            todo!()
-            // if checkout_message(client, dir.clone()).await {
-            //     let response: String = client.check_response().await?;
-            //     client.handle_response(response).await?;
-            // }
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
+        let mut id = -1;
+        self.analyse_messages(&mut id).await?;
+        if id != -1 {
+            self.info.set_cli_id(id);
         }
-        res
+        Ok(ResponseResult::OK)
     }
 }
 
 impl Knight {
     fn new(info: AI) -> Self {
         Self { info }
+    }
+
+    async fn check_food(&mut self) -> Result<i32, CommandError> {
+        let mut client = self.info().client().lock().await;
+        let res = inventory::inventory(&mut client).await;
+        if let ResponseResult::Inventory(inv) = Knight::handle_eject(&mut client, res).await? {
+            return Ok(inv[0].1);
+        }
+        Err(CommandError::InvalidResponse)
+    }
+
+    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+        let mut client = self.info().client().lock().await;
+        while let Some(message) = client.pop_message() {
+            info!(
+                "Knight [Queen {}]: handling message: {}",
+                self.info().cli_id,
+                message.1
+            );
+            match message {
+                (DirectionMessage::Center, msg) => {
+                    if let Ok(id) = msg.parse::<i32>() {
+                        cli_id.clone_from(&(id + 4));
+                    }
+                }
+                (dir, msg) => {
+                    if !msg.contains(' ') || msg.len() < 2 {
+                        continue;
+                    }
+                    if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                        let content = msg.split_at(idex);
+                        if let Ok(id) = content.0.parse::<i32>() {
+                            if id == *self.info().cli_id() {
+                                if content.1 == "mv" {
+                                    let res = move_towards_broadcast(&mut client, dir).await;
+                                    Knight::handle_eject(&mut client, res).await?;
+                                } else {
+                                    return Err(CommandError::InvalidResponse);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(ResponseResult::OK)
     }
 }
 

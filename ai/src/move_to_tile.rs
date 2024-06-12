@@ -8,10 +8,13 @@
 use crate::{
     ai::bot::Bot,
     commands::{
-        move_up::{self, move_up},
+        move_up,
         turn::{self, DirectionTurn},
     },
-    tcp::{command_handle::ResponseResult, TcpClient},
+    tcp::{
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
 };
 
 use log::info;
@@ -62,70 +65,46 @@ fn get_tile_coordinates(tile: usize, lvl: usize) -> Option<(i32, i32)> {
     Some((x, y))
 }
 
-pub async fn move_left(client: &mut TcpClient, x: i32) -> bool {
-    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
-        // to handle eject/message
-        for _ in 0..=(-x) {
-            if move_up::move_up(client).await.is_err() {
-                // to handle eject/message
-                return false;
-            }
-        }
-        if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
-            // to handle eject/message
-            return true;
-        }
-    }
-    false
+pub async fn move_left(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    turn::turn(client, DirectionTurn::Left).await?;
+    move_up::move_up(client).await?;
+    turn::turn(client, DirectionTurn::Right).await?;
+    Ok(ResponseResult::OK)
 }
 
-pub async fn move_right(client: &mut TcpClient, x: i32) -> bool {
-    if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Right).await {
-        // to handle eject/message
-        for _ in 0..=x {
-            if move_up::move_up(client).await.is_err() {
-                // to handle eject/message
-                return false;
-            }
-        }
-        if let Ok(ResponseResult::OK) = turn::turn(client, DirectionTurn::Left).await {
-            // to handle eject/message
-            return true;
-        }
-    }
-    false
+pub async fn move_right(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    turn::turn(client, DirectionTurn::Right).await?;
+    move_up::move_up(client).await?;
+    turn::turn(client, DirectionTurn::Left).await?;
+    Ok(ResponseResult::OK)
 }
 
 impl Bot {
-    pub async fn move_ai_to_coords(&mut self, (x, y): (i32, i32)) -> bool {
-        let mut client_lock = self.info().client().lock().await;
-        if (x < 0 && !move_left(&mut client_lock, x).await)
-            || (x > 0 && !move_right(&mut client_lock, x).await)
-        {
-            // to handle eject/message
-            return false;
+    pub async fn move_ai_to_coords(
+        &mut self,
+        (x, y): (i32, i32),
+    ) -> Result<ResponseResult, CommandError> {
+        let mut client = self.info().client().lock().await;
+        if x < 0 {
+            move_left(&mut client).await?;
+        }
+        if x > 0 {
+            move_right(&mut client).await?;
         }
         for _ in 0..=y {
-            if move_up(&mut client_lock).await.is_err() {
-                // to handle eject/message
-                return false;
-            }
+            move_up::move_up(&mut client).await?;
         }
-        true
+        Ok(ResponseResult::OK)
     }
 
-    pub async fn move_to_tile(&mut self, tile: usize) -> bool {
+    pub async fn move_to_tile(&mut self, tile: usize) -> Result<ResponseResult, CommandError> {
         info!("Moving to tile {}...", tile);
         match get_tile_coordinates(tile, *self.info().level()) {
             Some(coords) => {
-                if self.move_ai_to_coords(coords).await {
-                    self.update_coord_movement(coords);
-                    true
-                } else {
-                    false
-                }
+                self.update_coord_movement(coords);
+                self.move_ai_to_coords(coords).await
             }
-            None => false,
+            None => Err(CommandError::RequestError),
         }
     }
 }
