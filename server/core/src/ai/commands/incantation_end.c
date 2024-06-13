@@ -129,14 +129,14 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
         return prepare_response_cat(&cli->io, "ko\n");
     }
     if (cli->ai->incant.last_verif) {
+        consume_tile_incantation(
+            cli->ai->level - 1, s->game->map, cli->ai->pos.y, cli->ai->pos.x
+        );
         increment_all_levels(s->game, cli->ai->id);
         sprintf(msg, "Current level: %ld\n", cli->ai->level);
     } else {
         sprintf(msg, "ko\n");
     }
     end_ais_elevation(s->clients, cli, msg);
-    consume_tile_incantation(
-        cli->ai->level, s->game->map, cli->ai->pos.y, cli->ai->pos.x
-    );
     send_incantation_end(cli, s->clients);
 }
