@@ -183,12 +183,30 @@ void move_by_dir(pos_t *pos, enum direction dir, map_t *map);
  */
 void broadcast(struct vector_int *v, char *fmt, ...);
 
+/**
+ * @brief Prepare the response of the client in his @param io parameter.
+ * @param io Input/Output structure containing the response buffer/size
+ * @param fmt the message to send
+ * @param args the arguments to replace in the message
+ */
 void prepare_response_cat_va(io_t *io, char *fmt, va_list args);
 
+/**
+ * @brief Broadcast a message to all clients of a specific type
+ *
+ * @param type the type of the client
+ * @param clients the list of clients
+ * @param fmt the message to send
+ */
 void broadcast_to(
     enum client_type_e type,
     struct client_list *clients,
     char *fmt,
     ...
 );
+
+/**
+ * @brief Destroy the client
+ * @param c the client structure
+ */
 void destroy_client(client_t *c);

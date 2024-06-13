@@ -9,7 +9,6 @@
 
 #include "route.h"
 
-#include "core/router/defs/player/incantation.h"
 #include "defs/map/content.h"
 #include "defs/map/size.h"
 #include "defs/map/tile.h"
@@ -17,6 +16,7 @@
 #include "defs/player/eject.h"
 #include "defs/player/fork.h"
 #include "defs/player/forward.h"
+#include "defs/player/incantation.h"
 #include "defs/player/inventory.h"
 #include "defs/player/level.h"
 #include "defs/player/look.h"
