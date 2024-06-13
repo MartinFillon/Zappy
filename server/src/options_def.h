@@ -70,6 +70,16 @@ static const option_t TEAM_NAMES = {
     .required = true,
 };
 
+static const option_t DISPLAYER = {
+    .identifier = "-d",
+    .type = STRING,
+    .has_default = true,
+    .default_value =
+        {
+            .string = "server/base.so",
+        },
+};
+
 static const option_t OPTIONS[] = {
     LOGGER_MODE,
     PORT,
@@ -78,6 +88,7 @@ static const option_t OPTIONS[] = {
     FREQUENCY,
     CLIENT_NUMBER,
     TEAM_NAMES,
+    DISPLAYER,
     {
         .identifier = NULL,
         .type = STRING,

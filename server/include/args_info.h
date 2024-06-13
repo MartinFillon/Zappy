@@ -24,6 +24,8 @@ typedef struct args_infos_s {
 
     int freq; // Default 100
     int level;
+
+    str_t *displayer_path;
 } args_infos_t;
 
 /**

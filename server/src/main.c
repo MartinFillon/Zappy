@@ -36,6 +36,7 @@ static void fill_infos(args_infos_t *infos, struct args *const ag)
     infos->freq = get_arg(ag, "-f").unsigned_number;
     infos->names = get_arg(ag, "-n").string_list;
     infos->level = set_log_level_from_str(log_level ? log_level->data : NULL);
+    infos->displayer_path = get_arg(ag, "-d").string;
 }
 
 static struct options *create_opts(void)
@@ -61,9 +62,10 @@ int main(int ac, char **av)
     struct options *opts = create_opts();
 
     srand(time(NULL));
+    set_log_level(WARNING);
     ag = parse(av, ac, opts);
     if (ag == NULL) {
-        dprintf(2, "Error parsing arguments\n");
+        logs(ERROR_LEVEL, "Error parsing arguments\n");
         return EPI_ERROR;
     }
     fill_infos(&args, ag);

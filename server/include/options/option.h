@@ -28,11 +28,19 @@ union data {
     struct vector_str_t *string_list;
 };
 
+union default_data {
+    int number;
+    unsigned int unsigned_number;
+    char *string;
+    double flt;
+    bool boolean;
+};
+
 typedef struct {
     char *identifier;
     enum arg_type type;
     bool has_default;
-    union data default_value;
+    union default_data default_value;
     bool required;
 } option_t;
 

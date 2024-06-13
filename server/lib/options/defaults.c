@@ -13,7 +13,7 @@
 
 static void warn_using_default(option_t *opt)
 {
-    logs(WARNING, "Using default value for option %s", opt->identifier);
+    logs(WARNING, "Using default value for option %s\n", opt->identifier);
 }
 
 void search_opt(option_t *opts, struct args *arguments, bool *found)
@@ -22,6 +22,29 @@ void search_opt(option_t *opts, struct args *arguments, bool *found)
         if (!strcmp(opts->identifier, arguments->data[j].option->identifier)) {
             *found = true;
         }
+    }
+}
+
+void set_default(union data *v, union default_data *d, enum arg_type type)
+{
+    switch (type) {
+        case INT:
+            v->number = d->number;
+            break;
+        case STRING:
+            v->string = str_snew(d->string);
+            break;
+        case BOOL:
+            v->boolean = d->boolean;
+            break;
+        case FLOAT:
+            v->flt = d->flt;
+            break;
+        case UINT:
+            v->unsigned_number = d->unsigned_number;
+            break;
+        case STRING_LIST:
+            break;
     }
 }
 
@@ -34,10 +57,9 @@ void set_defaults(struct options *opts, struct args *arguments)
         search_opt(&opts->data[i], arguments, &found);
         if (!found && opts->data[i].has_default) {
             new.option = &opts->data[i];
-            if (opts->data[i].type == STRING)
-                new.value.string = str_dup(opts->data[i].default_value.string);
-            else
-                new.value = opts->data[i].default_value;
+            set_default(
+                &new.value, &opts->data[i].default_value, opts->data[i].type
+            );
             warn_using_default(&opts->data[i]);
             vec_pushback_args(arguments, new);
         }

@@ -9,24 +9,14 @@
 #include <stdlib.h>
 
 typedef struct {
-    char *data;
     size_t size;
     size_t capacity;
+    char *data;
 } str_t;
 
 #define TYPE str_t *
 #define NAME vector_str_t
 #include "vector.h"
-
-#define STR_TMP_SIZE 1024
-
-typedef struct {
-    char data[STR_TMP_SIZE];
-    size_t size;
-    size_t capacity;
-} __str_tmp_t;
-
-#define STR(s) ((str_t *)(&(__str_tep_t){s, strlen(s), STR_TMP_SIZE}))
 
 /**
 ** @brief create a str
