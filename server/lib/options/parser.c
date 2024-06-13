@@ -86,12 +86,15 @@ static bool parse_inner(parser_t *parser, struct args *lst)
     return parse_argument(lst, parser, opt);
 }
 
-void free_args(struct args *lst)
+void free_args(struct args *ag)
 {
-    for (size_t i = 0; i < lst->size; i++)
-        if (lst->data[i].option->type == STRING)
-            free(lst->data[i].value.string);
-    vec_destroy_args(lst);
+    for (size_t i = 0; i < ag->size; i++) {
+        if (ag->data[i].option->type == STRING_LIST)
+            vec_free_vector_str_t(ag->data[i].value.string_list, str_free);
+        if (ag->data[i].option->type == STRING)
+            str_free(ag->data[i].value.string);
+    }
+    vec_destroy_args(ag);
 }
 
 struct args *parse(char **args, size_t count, struct options *opts)
@@ -101,11 +104,10 @@ struct args *parse(char **args, size_t count, struct options *opts)
     bool error = false;
 
     for (; parser.idx < parser.args_size; parser.idx++) {
-        logs(DEBUG, "idx: %d\n", parser.idx);
-        logs(DEBUG, "Parsing: %s\n", args[parser.idx]);
         error |= parse_inner(&parser, lst);
     }
-    if (error) {
+    set_defaults(opts, lst);
+    if (error || !check_required(opts, lst)) {
         free_args(lst);
         return NULL;
     }

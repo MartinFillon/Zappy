@@ -50,13 +50,7 @@ static struct options *create_opts(void)
 
 static void destroy_args(struct args *ag, struct options *opts)
 {
-    for (size_t i = 0; i < ag->size; i++) {
-        if (ag->data[i].option->type == STRING_LIST)
-            vec_free_vector_str_t(ag->data[i].value.string_list, str_free);
-        if (ag->data[i].option->type == STRING)
-            str_free(ag->data[i].value.string);
-    }
-    vec_destroy_args(ag);
+    free_args(ag);
     vec_destroy_options(opts);
 }
 

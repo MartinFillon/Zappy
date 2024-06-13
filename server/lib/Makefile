@@ -34,6 +34,8 @@ SRC =   str/str.c\
 		utils/is_coord_equals.c\
 		options/parser.c\
 		options/getters.c\
+		options/defaults.c\
+		options/required.c\
 		options/converters/string.c\
 		options/converters/int.c\
 		options/converters/uint.c\

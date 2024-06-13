@@ -43,3 +43,25 @@ struct args *parse(char **args, size_t count, struct options *opts);
  * @return union data The value of the argument
  */
 union data get_arg(struct args *args, char *name);
+
+/**
+ * @brief Free the argument struct
+ * @param ag The argument struct to free
+ */
+void free_args(struct args *ag);
+
+/**
+ * @brief set the default values for the options
+ * @param opts The options to set the default values for
+ * @param arguments The arguments to set the values with
+ */
+void set_defaults(struct options *opts, struct args *arguments);
+
+/**
+ * @brief Check if the required options are present in the arguments
+ * @param opts The options to check the required options for
+ * @param arguments The arguments to check the required options with
+ *
+ * @return bool true if all the required options are present, false otherwise
+ */
+bool check_required(struct options *opts, struct args *arguments);
