@@ -65,14 +65,13 @@ $(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
 tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
 
+debug_submodules:
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)
+
 debug: CC = clang
-debug: CFLAGS += -g3
-# debug: LDFLAGS += -fsanitize=addres
-debug: fclean
-	$(MAKE) -C core debug
-	$(MAKE) -C lib debug
-	$(MAKE) -C base debug
-debug: all
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean debug_submodules all
 
 re: fclean all
 

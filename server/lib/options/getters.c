@@ -17,5 +17,5 @@ union data get_arg(struct args *args, char *name)
             return args->data[i].value;
         }
     }
-    return (union data){0};
+    return (union data){.string = NULL};
 }

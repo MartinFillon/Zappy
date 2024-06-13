@@ -27,13 +27,15 @@ static void sig(int signum)
 
 static void fill_infos(args_infos_t *infos, struct args *const ag)
 {
+    str_t *log_level = get_arg(ag, "-l").string;
+
     infos->clients_nb = get_arg(ag, "-c").unsigned_number;
     infos->port = get_arg(ag, "-p").unsigned_number;
     infos->width = get_arg(ag, "-x").unsigned_number;
     infos->height = get_arg(ag, "-y").unsigned_number;
     infos->freq = get_arg(ag, "-f").unsigned_number;
     infos->names = get_arg(ag, "-n").string_list;
-    infos->level = set_log_level_from_str(get_arg(ag, "-l").string->data);
+    infos->level = set_log_level_from_str(log_level ? log_level->data : NULL);
 }
 
 static struct options *create_opts(void)
@@ -44,6 +46,18 @@ static struct options *create_opts(void)
         vec_pushback_options(opts, OPTIONS[i]);
     }
     return opts;
+}
+
+static void destroy_args(struct args *ag, struct options *opts)
+{
+    for (size_t i = 0; i < ag->size; i++) {
+        if (ag->data[i].option->type == STRING_LIST)
+            vec_free_vector_str_t(ag->data[i].value.string_list, str_free);
+        if (ag->data[i].option->type == STRING)
+            str_free(ag->data[i].value.string);
+    }
+    vec_destroy_args(ag);
+    vec_destroy_options(opts);
 }
 
 int main(int ac, char **av)
@@ -62,6 +76,7 @@ int main(int ac, char **av)
     signal(SIGINT, &sig);
     if (loop_server(&args) == ERROR)
         return EPI_ERROR;
+    destroy_args(ag, opts);
     logs(INFO, "Server stopped\n");
     return SUCCESS;
 }
