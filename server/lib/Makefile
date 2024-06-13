@@ -35,7 +35,10 @@ SRC =   str/str.c\
 		options/parser.c\
 		options/converters/string.c\
 		options/converters/int.c\
-		options/converters/uint.c
+		options/converters/uint.c\
+		options/converters/boolean.c\
+		options/converters/float.c\
+		options/converters/string_list.c\
 
 NAME = ../libcore.a
 

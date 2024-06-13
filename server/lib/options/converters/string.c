@@ -5,13 +5,11 @@
 ** string
 */
 
-#include <string.h>
-
 #include "options/option.h"
 #include "options/parser.h"
 
-bool convert_uint(argument_t *arg, parser_t *const p)
+bool convert_string(argument_t *arg, parser_t *p)
 {
-    arg->value.string = strdup(p->args[p->idx]);
+    arg->value.string = str_snew(p->args[p->idx]);
     return false;
 }

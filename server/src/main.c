@@ -35,29 +35,14 @@ int main(int ac, char **av)
     vec_pushback_options(opts, (option_t){.identifier = "-x", .type = UINT});
     vec_pushback_options(opts, (option_t){.identifier = "-y", .type = UINT});
     vec_pushback_options(opts, (option_t){.identifier = "-f", .type = UINT});
+    vec_pushback_options(
+        opts, (option_t){.identifier = "-c", .type = STRING_LIST}
+    );
     struct args *ag = parse(av, ac, opts);
 
-    for (size_t i = 0; i < ag->size; i++) {
-        dprintf(2, "%s=", ag->data[i].option->identifier);
-        switch (ag->data[i].option->type) {
-            case INT:
-                dprintf(2, "%d\n", ag->data[i].value.number);
-                break;
-            case STRING:
-                dprintf(2, "%s\n", ag->data[i].value.string);
-                break;
-            case UINT:
-                dprintf(2, "%u\n", ag->data[i].value.unsigned_number);
-                break;
-            case FLOAT:
-                dprintf(2, "%f\n", ag->data[i].value.flt);
-                break;
-            case BOOL:
-                dprintf(
-                    2, "%s\n", ag->data[i].value.boolean ? "true" : "false"
-                );
-                break;
-        }
+    if (ag == NULL) {
+        dprintf(2, "Error parsing arguments\n");
+        return 84;
     }
     // args_infos_t args = {0};
 

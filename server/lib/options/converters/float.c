@@ -5,16 +5,14 @@
 ** int
 */
 
-#include <stdlib.h>
-
 #include "options/option.h"
 #include "options/parser.h"
 
-bool convert_uint(argument_t *arg, parser_t *p)
+bool convert_float(argument_t *arg, parser_t *p)
 {
     char *eptr = NULL;
 
-    arg->value.unsigned_number = strtoul(p->args[p->idx], &eptr, 10);
+    arg->value.flt = strtod(p->args[p->idx], &eptr);
     if (eptr != NULL && eptr[0] != '\0') {
         return true;
     }

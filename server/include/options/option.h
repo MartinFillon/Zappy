@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include "str.h"
 
 enum arg_type {
     INT,
@@ -15,6 +16,7 @@ enum arg_type {
     UINT,
     FLOAT,
     BOOL,
+    STRING_LIST,
 };
 
 typedef struct {
@@ -28,8 +30,9 @@ typedef struct {
     union data {
         int number;
         unsigned int unsigned_number;
-        char *string;
+        str_t *string;
         double flt;
         bool boolean;
+        struct vector_str_t *string_list;
     } value;
 } argument_t;

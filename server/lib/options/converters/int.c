@@ -8,7 +8,7 @@
 #include "options/option.h"
 #include "options/parser.h"
 
-bool convert_uint(argument_t *arg, parser_t *const p)
+bool convert_int(argument_t *arg, parser_t *p)
 {
     char *eptr = NULL;
 

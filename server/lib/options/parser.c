@@ -100,7 +100,8 @@ struct args *parse(char **args, size_t count, struct options *opts)
     parser_t parser = {opts, args, count, 1};
     bool error = false;
 
-    for (; parser.idx < count; parser.idx++) {
+    for (; parser.idx < parser.args_size; parser.idx++) {
+        logs(DEBUG, "idx: %d\n", parser.idx);
         logs(DEBUG, "Parsing: %s\n", args[parser.idx]);
         error |= parse_inner(&parser, lst);
     }

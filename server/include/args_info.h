@@ -9,13 +9,15 @@
 
 #include <stdbool.h>
 
+#include "str.h"
+
 typedef struct args_infos_s {
     int port;
 
     int width;
     int height;
 
-    char **names;
+    struct vector_str_t *names;
     int team_count;
 
     int clients_nb;
