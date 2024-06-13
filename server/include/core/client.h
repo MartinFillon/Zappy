@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdarg.h>
+#include <sys/types.h>
 
 #include "core/types/ai.h"
 #include "core/types/client.h"
@@ -21,8 +22,9 @@
  * @brief Initialize the client
  *
  * @param fd the file descriptor
+ * @param address the address of the client
  */
-client_t init_client(int fd);
+client_t init_client(int fd, char *address, uint32_t port);
 
 /**
  * @brief Prepare the response of the client in his @param io parameter.

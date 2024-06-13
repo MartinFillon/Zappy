@@ -17,6 +17,8 @@ SRC = 	src/dashboard.c			\
 		src/displayers/team.c	\
 		src/displayers/inventory.c	\
 		src/displayers/level.c	\
+		src/displayers/ticks.c	\
+		src/displayers/address.c	\
 		src/events.c 			\
 		src/event_handlers/keys/left.c	\
 		src/event_handlers/keys/right.c	\
