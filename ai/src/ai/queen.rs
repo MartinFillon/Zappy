@@ -6,7 +6,7 @@
 //
 
 use crate::{
-    ai::{AIHandler, Incantationers, AI},
+    ai::{ai_create::{start_bot_ai, start_knight_ai}, AIHandler, Incantationers, AI},
     commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::backtrack_eject,
@@ -21,7 +21,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::info;
+use log::{error, info};
 
 #[derive(Debug, Clone, Default)]
 struct LookInfo {
@@ -35,7 +35,10 @@ pub struct Queen {
     inv: Inventory,
     look: LookInfo,
     requirement: Config,
+    can_move: bool,
 }
+
+const NB_INIT_BOTS: usize = 2;
 
 #[async_trait]
 impl Incantationers for Queen {
@@ -61,6 +64,7 @@ impl Queen {
             inv: Default::default(),
             look: Default::default(),
             requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
+            can_move: false,
         }
     }
 
@@ -75,10 +79,10 @@ impl Queen {
         }
         // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
-        let _ = commands::move_up::move_up(&mut cli).await?;
-        let mut val = commands::broadcast::broadcast(
+        commands::move_up::move_up(&mut cli).await?;
+        let broad_res = commands::broadcast::broadcast(
             &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
-        let _ = Queen::handle_eject(&mut cli, Ok(val)).await?;
+        Queen::handle_eject(&mut cli, Ok(broad_res)).await?;
         Ok(())
     }
 
@@ -92,15 +96,15 @@ impl Queen {
             1 | 2 => {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
-                let _ = commands::move_up::move_up(&mut cli).await?;
-                let _ = commands::broadcast::broadcast(
+                commands::move_up::move_up(&mut cli).await?;
+                commands::broadcast::broadcast(
                     &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
                 ()
             },
             3 | 4 => {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
-                let _ = commands::move_up::move_up(&mut cli).await?;
+                commands::move_up::move_up(&mut cli).await?;
                 commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
                 commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
                 commands::broadcast::broadcast(
@@ -125,9 +129,9 @@ impl Queen {
         {
             let mut cli = self.info.client.lock().await;
             commands::broadcast::broadcast(&mut cli, "Incantation !").await?;
-            let mut val =
+            let incant_res =
                 commands::incantation::incantation(&mut cli).await;
-            Queen::handle_eject(&mut cli, val).await?
+            Queen::handle_eject(&mut cli, incant_res).await?
         };
         Ok(())
     }
@@ -145,19 +149,25 @@ impl Queen {
 
     async fn fork_servant(&mut self) -> Result<(), command_handle::CommandError> {
         let mut cli = self.info.client.lock().await;
-        commands::fork::fork(&mut cli).await?;
 
-        // PlaceHolder for Knight creation
+        commands::fork::fork(&mut cli).await?;
+        if let Err(err) = start_knight_ai(self.info.clone(), Some(self.info.p_id + 4)).await {
+            error!("{err}");
+            return Err(CommandError::RequestError);
+        }
+
         commands::broadcast::broadcast(&mut cli, format!("{}", 0).as_str()).await?;
         info!("I as the queen ({}), bestow my life uppon you\n", 0);
 
-        commands::fork::fork(&mut cli).await?;
-        // PlaceHolder for Bot creation
+        for _ in 0..NB_INIT_BOTS {
+            commands::fork::fork(&mut cli).await?;
+            if let Err(err) = start_bot_ai(self.info.clone(), Some(self.info.p_id)).await {
+                error!("{err}");
+                return Err(CommandError::RequestError);
+            }
+        }
 
-        commands::fork::fork(&mut cli).await?;
-        // PlaceHolder for Bot creation
-
-        info!("Miserable peasants... Serve me.\n");
+        info!("Miserable peasants... SERVE ME.\n");
 
         Ok(())
     }
@@ -225,21 +235,21 @@ impl AIHandler for Queen {
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
         self.fork_servant().await?;
         loop {
-            let val = {
+            let look_res = {
                 let mut cli = self.info.client.lock().await;
                 let res = commands::look_around::look_around(&mut cli).await;
                 Queen::handle_eject(&mut cli, res).await
             };
-            if let Ok(ResponseResult::Tiles(vec)) = val {
+            if let Ok(ResponseResult::Tiles(vec)) = look_res {
                 self.convert_to_look_info(vec[0].clone());
             }
 
-            let val = {
+            let inventory_res = {
                 let mut cli = self.info.client.lock().await;
                 let res = commands::inventory::inventory(&mut cli).await;
                 Queen::handle_eject(&mut cli, res).await
             };
-            if let Ok(ResponseResult::Inventory(vec)) = val {
+            if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
                 self.convert_to_inv(vec);
             }
 
