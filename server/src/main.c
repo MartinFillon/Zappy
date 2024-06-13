@@ -7,6 +7,7 @@
 
 #include <signal.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -30,8 +31,34 @@ int main(int ac, char **av)
     struct options *opts = vec_create_options(1);
 
     vec_pushback_options(opts, (option_t){.identifier = "-l", .type = STRING});
+    vec_pushback_options(opts, (option_t){.identifier = "-p", .type = UINT});
+    vec_pushback_options(opts, (option_t){.identifier = "-x", .type = UINT});
+    vec_pushback_options(opts, (option_t){.identifier = "-y", .type = UINT});
+    vec_pushback_options(opts, (option_t){.identifier = "-f", .type = UINT});
+    struct args *ag = parse(av, ac, opts);
 
-    parse(av, ac, opts);
+    for (size_t i = 0; i < ag->size; i++) {
+        dprintf(2, "%s=", ag->data[i].option->identifier);
+        switch (ag->data[i].option->type) {
+            case INT:
+                dprintf(2, "%d\n", ag->data[i].value.number);
+                break;
+            case STRING:
+                dprintf(2, "%s\n", ag->data[i].value.string);
+                break;
+            case UINT:
+                dprintf(2, "%u\n", ag->data[i].value.unsigned_number);
+                break;
+            case FLOAT:
+                dprintf(2, "%f\n", ag->data[i].value.flt);
+                break;
+            case BOOL:
+                dprintf(
+                    2, "%s\n", ag->data[i].value.boolean ? "true" : "false"
+                );
+                break;
+        }
+    }
     // args_infos_t args = {0};
 
     // srand(time(NULL));

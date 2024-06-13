@@ -33,10 +33,32 @@ static option_t *get_option(char *const arg, struct options *const opts)
     return NULL;
 }
 
-static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
+static bool fill_argument(
+    fconverter_t *f,
+    option_t *opts,
+    parser_t *p,
+    struct args *lst
+)
+{
+    argument_t argument = {0};
+
+    argument.option = opts;
+    if ((*f)(&argument, p)) {
+        logs(
+            ERROR_LEVEL,
+            "Invalid argument for option %s: %s\n",
+            argument.option->identifier,
+            p->args[p->idx]
+        );
+        return true;
+    }
+    vec_pushback_args(lst, argument);
+    return false;
+}
+
+static bool parse_argument(struct args *lst, parser_t *p, option_t *opts)
 {
     fconverter_t f = find_converter(opts->type);
-    argument_t argument = {0};
 
     if (f == NULL) {
         logs(
@@ -46,10 +68,7 @@ static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
         );
         return true;
     }
-    argument.value = f(arg);
-    argument.option = opts;
-    vec_pushback_args(lst, argument);
-    return false;
+    return fill_argument(&f, opts, p, lst);
 }
 
 static bool parse_inner(parser_t *parser, struct args *lst)
@@ -61,10 +80,10 @@ static bool parse_inner(parser_t *parser, struct args *lst)
         return true;
     parser->idx += 1;
     if (parser->idx >= parser->args_size) {
-        logs(DEBUG, "Missing value for argument: %s\n", opt->identifier);
+        logs(ERROR_LEVEL, "Missing value for argument: %s\n", opt->identifier);
         return true;
     }
-    return parse_argument(lst, parser->args[parser->idx], opt);
+    return parse_argument(lst, parser, opt);
 }
 
 void free_args(struct args *lst)

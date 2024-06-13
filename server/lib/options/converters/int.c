@@ -2,16 +2,19 @@
 ** EPITECH PROJECT, 2024
 ** zappy
 ** File description:
-** string
+** int
 */
-
-#include <string.h>
 
 #include "options/option.h"
 #include "options/parser.h"
 
 bool convert_uint(argument_t *arg, parser_t *const p)
 {
-    arg->value.string = strdup(p->args[p->idx]);
+    char *eptr = NULL;
+
+    arg->value.number = strtol(p->args[p->idx], &eptr, 10);
+    if (eptr != NULL && eptr[0] != '\0') {
+        return true;
+    }
     return false;
 }
