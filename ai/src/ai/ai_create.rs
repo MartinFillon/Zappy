@@ -5,7 +5,7 @@
 // ai_create
 //
 
-use crate::ai::{empress, fetus, fork_launch, knight, queen, AIHandler, AI};
+use crate::ai::{bot, empress, fetus, fork_launch, knight, queen, AIHandler, AI};
 
 use std::io::{self};
 
@@ -54,6 +54,18 @@ pub async fn start_knight_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
 
     let mut knight = knight::Knight::init(ai.clone());
     if let Err(e) = knight.update().await {
+        println!("Error: {}", e);
+    }
+    Ok(ai)
+}
+
+pub async fn start_bot_ai(from_ai: AI, id: Option<usize>) -> io::Result<AI> {
+    info!("Connection ID #{} creates bot...", from_ai.p_id);
+    let (address, team) = (from_ai.address.clone(), from_ai.team.clone());
+    let ai = fork_launch(address, team, from_ai, id).await?;
+
+    let mut bot = bot::Bot::init(ai.clone());
+    if let Err(e) = bot.update().await {
         println!("Error: {}", e);
     }
     Ok(ai)
