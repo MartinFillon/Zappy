@@ -18,6 +18,9 @@
 #include "Tile.hpp"
 #include "../ModelManager/RessourcesManager.hpp"
 
+#define SIZE_STEP_1 1
+#define SIZE_STEP_2 2
+
 namespace GUI {
 namespace Data {
 
