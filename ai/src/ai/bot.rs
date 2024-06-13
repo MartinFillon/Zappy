@@ -16,7 +16,7 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::move_up,
+        move_up::{self, move_up},
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
@@ -156,21 +156,23 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot [Queen {}]...", self.info().cli_id);
         let mut idex: usize = 0;
         loop {
+            info!("Handling bot [Queen {}]...", self.info().p_id);
             self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
-                break;
+                idex = 0;
+                continue;
             }
-            if self.seek_objects().await? != ResponseResult::KO {
-                break;
+            if self.seek_objects().await? == ResponseResult::KO {
+                let mut client = self.info().client().lock().await;
+                move_up::move_up(&mut client).await?;
+                continue;
             }
             idex += 1;
         }
-        Ok(())
     }
 }
 
@@ -260,7 +262,7 @@ impl Bot {
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
-        info!("Bot [Queen {}]: backtracking...", self.info().cli_id);
+        info!("Bot [Queen {}]: backtracking...", self.info().p_id);
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
@@ -270,19 +272,19 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
         let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
                 "Bot [Queen {}]: handling message: {}",
-                self.info().cli_id,
+                self.info().p_id,
                 message.1
             );
             match message {
                 (DirectionMessage::Center, msg) => {
-                    if let Ok(id) = msg.parse::<i32>() {
-                        cli_id.clone_from(&id);
+                    if let Ok(id) = msg.parse::<usize>() {
+                        p_id.clone_from(&id);
                     }
                 }
                 (dir, msg) => {
@@ -291,8 +293,8 @@ impl Bot {
                     }
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
-                        if let Ok(id) = content.0.parse::<i32>() {
-                            if id == *self.info().cli_id() {
+                        if let Ok(id) = content.0.parse::<usize>() {
+                            if id == *self.info().p_id() {
                                 handle_queen_message(&mut client, (dir, content.1)).await?;
                             }
                         }
@@ -307,10 +309,10 @@ impl Bot {
 #[async_trait]
 impl Listeners for Bot {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut id = -1;
+        let mut id: usize = 0;
         self.analyse_messages(&mut id).await?;
-        if id != -1 {
-            self.info.set_cli_id(id);
+        if id != 0 {
+            self.info.set_p_id(id);
         }
         Ok(ResponseResult::OK)
     }
@@ -329,7 +331,7 @@ async fn handle_queen_message(
         "nm" => make_item_prioritised("mendiane"),
         "np" => make_item_prioritised("phiras"),
         "nt" => make_item_prioritised("thystame"),
-        _ => return Err(CommandError::InvalidResponse),
+        _ => {}
     }
     Ok(ResponseResult::OK)
 }

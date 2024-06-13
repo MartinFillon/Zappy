@@ -9,9 +9,9 @@ use crate::{
     ai::{ai_create::{start_bot_ai, start_knight_ai}, AIHandler, Incantationers, AI},
     commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
-    move_towards_broadcast::backtrack_eject,
+    move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
-        command_handle::{self, CommandError, CommandHandler, ResponseResult},
+        command_handle::{self, CommandError, CommandHandler, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
@@ -22,6 +22,12 @@ use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
 
 use log::{error, info};
+use zappy_macros::Bean;
+
+use super::Listeners;
+
+const NB_INIT_BOTS: usize = 2;
+const QUEENS_IDS: [usize; 4] = [2, 1, 4, 3];
 
 #[derive(Debug, Clone, Default)]
 struct LookInfo {
@@ -29,7 +35,7 @@ struct LookInfo {
     inv: Inventory,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct Queen {
     pub info: AI,
     inv: Inventory,
@@ -37,8 +43,6 @@ pub struct Queen {
     requirement: Config,
     can_move: bool,
 }
-
-const NB_INIT_BOTS: usize = 2;
 
 #[async_trait]
 impl Incantationers for Queen {
@@ -53,6 +57,18 @@ impl Incantationers for Queen {
             }
         }
         res
+    }
+}
+
+#[async_trait]
+impl Listeners for Queen {
+    async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
+        let mut can_move = false;
+        self.analyse_messages(&mut can_move).await?;
+        if can_move {
+            self.set_can_move(true);
+        }
+        Ok(ResponseResult::OK)
     }
 }
 
@@ -72,8 +88,7 @@ impl Queen {
         Move [`queen`] at level 4,
         we assume that all the queens have the same direction
     */
-    async fn move_queen_first_step(&mut self) -> Result<(), CommandError>
-    {
+    async fn move_queen_first_step(&mut self) -> Result<(), CommandError> {
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
@@ -81,7 +96,7 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
         let broad_res = commands::broadcast::broadcast(
-            &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
+            &mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
         Queen::handle_eject(&mut cli, Ok(broad_res)).await?;
         Ok(())
     }
@@ -90,38 +105,36 @@ impl Queen {
         Move [`queen`] at level 6,
         we will move queen's direction and then reunite them in a single tile
     */
-    async fn move_queen_second_step(&mut self) -> Result<(), CommandError>
-    {
+    async fn move_queen_second_step(&mut self) -> Result<(), CommandError> {
         match self.info.p_id {
             1 | 2 => {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
                 commands::move_up::move_up(&mut cli).await?;
                 commands::broadcast::broadcast(
-                    &mut cli, format!("{} mr", self.info.p_id).as_str()).await?;
+                    &mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
                 ()
             },
             3 | 4 => {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
+                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
+                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
                 commands::move_up::move_up(&mut cli).await?;
-                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
-                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
-                commands::broadcast::broadcast(
-                    &mut cli, format!("{} ml", self.info.p_id).as_str()).await?;
-                ()
-            },
-            _ => ()
+                commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
+                    .await?;
+            }
+            _ => (),
         }
         Ok(())
     }
 
-    async fn check_move_elevation(&mut self) -> Result<(), command_handle::CommandError>
-    {
-        match self.info.level { // Move it somewhere else because we have to check for each queen.
+    async fn check_move_elevation(&mut self) -> Result<(), command_handle::CommandError> {
+        match self.info.level {
+            // Move it somewhere else because we have to check for each queen.
             4 => self.move_queen_first_step().await,
             6 => self.move_queen_second_step().await,
-            _ => Ok(())
+            _ => Ok(()),
         }
     }
 
@@ -156,7 +169,7 @@ impl Queen {
             return Err(CommandError::RequestError);
         }
 
-        commands::broadcast::broadcast(&mut cli, format!("{}", 0).as_str()).await?;
+        commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
         info!("I as the queen ({}), bestow my life uppon you\n", 0);
 
         for _ in 0..NB_INIT_BOTS {
@@ -165,6 +178,7 @@ impl Queen {
                 error!("{err}");
                 return Err(CommandError::RequestError);
             }
+            commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
         }
 
         info!("Miserable peasants... SERVE ME.\n");
@@ -222,6 +236,55 @@ impl Queen {
                 _ => (),
             }
         }
+    }
+
+    async fn handle_message_content(
+        &self,
+        client: &mut TcpClient,
+        id: usize,
+        dir: DirectionMessage,
+        msg: &str,
+        can_move: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
+        if msg.starts_with("lvl ") {
+            if let Ok(lvl) = msg.split_at(3).1.parse::<i32>() {
+                if (lvl == 4 && id == QUEENS_IDS[self.info().p_id - 1])
+                    || (lvl == 6
+                        && ((id == 1 | 2 && self.info().cli_id == 3 | 4)
+                            || (id == 3 | 4 && self.info().cli_id == 1 | 2)))
+                {
+                    *can_move = true;
+                }
+            }
+        } else if msg == "Done" {
+            turn_towards_broadcast(client, dir).await?;
+        }
+        Ok(ResponseResult::OK)
+    }
+
+    async fn analyse_messages(
+        &mut self,
+        can_move: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
+        let mut client = self.info().client().lock().await;
+        while let Some((dir, msg)) = client.pop_message() {
+            info!(
+                "Knight [Queen {}]: handling message: {}",
+                self.info().cli_id,
+                msg
+            );
+            if !msg.contains(' ') || msg.len() < 2 {
+                continue;
+            }
+            if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                let content = msg.split_at(idex);
+                if let Ok(id) = content.0.parse::<usize>() {
+                    self.handle_message_content(&mut client, id, dir, content.1, can_move)
+                        .await?;
+                }
+            }
+        }
+        Ok(ResponseResult::OK)
     }
 }
 
