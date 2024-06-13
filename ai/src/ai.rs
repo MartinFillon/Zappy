@@ -38,8 +38,8 @@ use zappy_macros::Bean;
 pub struct AI {
     address: String,
     team: String,
-    cli_id: i32,
-    p_id: usize,
+    cli_id: usize,
+    p_id: i32,
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
@@ -68,8 +68,8 @@ impl AI {
     fn new(
         team: String,
         address: String,
-        cli_id: i32,
-        p_id: usize,
+        cli_id: usize,
+        p_id: i32,
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
@@ -90,8 +90,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI #{} = [team: {}, client: {}, map: ({}, {}), level: {}]",
-            self.p_id, self.team, self.cli_id, self.map.0, self.map.1, self.level
+            "AI #{} = [team: {}, player ID: {}, map: ({}, {}), level: {}]",
+            self.cli_id, self.team, self.p_id, self.map.0, self.map.1, self.level
         )
     }
 }
@@ -127,24 +127,16 @@ async fn checkout_ai_info(
     response: &str,
     team: String,
     address: String,
-    p_id: usize,
+    (c_id, p_id): (usize, i32),
 ) -> io::Result<AI> {
     parse_response(response)
         .await
         .map(|(client_number, x, y)| {
             info!("Client number detected as [{}].", client_number);
             info!("Map size: ({}, {}).", x, y);
-            let ai = AI::new(
-                team,
-                address,
-                client_number,
-                p_id,
-                client.clone(),
-                (x, y),
-                1,
-            );
-            println!("AI #{} > {}", p_id, ai);
-            info!("{} initialized.", ai);
+            let ai = AI::new(team, address, c_id, p_id, client.clone(), (x, y), 1);
+            println!("New! >> {}", ai);
+            info!("AI #{} is initialized.", ai.cli_id);
             ai
         })
         .map_err(|e| {
@@ -158,11 +150,12 @@ async fn init_ai(
     response: &str,
     team: String,
     address: String,
-    p_id: usize,
+    (c_id, p_id): (usize, i32),
 ) -> io::Result<AI> {
-    info!("Initializing AI #{}...", p_id);
-    let ai = checkout_ai_info(client, response, team, address, p_id).await?;
-    match ai.p_id {
+    info!("Initializing AI #{}...", c_id);
+
+    let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
+    match ai.cli_id {
         0 => {
             let mut empress = empress::Empress::init(ai.clone());
             if let Err(e) = empress.update().await {
@@ -183,10 +176,10 @@ async fn start_ai(
     client: Arc<Mutex<TcpClient>>,
     team: String,
     address: String,
-    p_id: usize,
+    (c_id, p_id): (usize, i32),
     start: bool,
 ) -> io::Result<AI> {
-    println!("Starting AI process n{}...", p_id);
+    println!("Starting AI process n{}...", c_id);
     {
         let client_lock = client.lock().await;
         client_lock.send_request(team.clone() + "\n").await?;
@@ -207,9 +200,10 @@ async fn start_ai(
             _ => {
                 info!("Connection to team successful.");
                 let ai = match start {
-                    true => init_ai(client.clone(), &response, team, address, p_id).await?,
+                    true => init_ai(client.clone(), &response, team, address, (c_id, p_id)).await?,
                     false => {
-                        checkout_ai_info(client.clone(), &response, team, address, p_id).await?
+                        checkout_ai_info(client.clone(), &response, team, address, (c_id, p_id))
+                            .await?
                     }
                 };
                 Ok(ai)
@@ -228,19 +222,23 @@ pub async fn fork_launch(
     address: String,
     team: String,
     from_ai: AI,
-    set_id: Option<usize>,
+    set_id: Option<i32>,
 ) -> io::Result<AI> {
     match tcp::handle_tcp(address.clone(), team.clone()).await {
         Ok(client) => {
             debug!("Client connected successfully.");
             let client = Arc::new(Mutex::new(client));
-            let id = match set_id {
-                None => from_ai.p_id + 1,
-                Some(res) => res,
-            };
+            let id = set_id.unwrap_or(0);
 
             let handle = task::spawn(async move {
-                start_ai(client.clone(), team.to_string(), address, id, false).await
+                start_ai(
+                    client.clone(),
+                    team.to_string(),
+                    address,
+                    (from_ai.cli_id, id),
+                    false,
+                )
+                .await
             });
 
             if let Err(e) = handle.await {
@@ -283,7 +281,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                         client.clone(),
                         team.to_string(),
                         address.to_string(),
-                        id,
+                        (id, 0),
                         true,
                     )
                     .await;

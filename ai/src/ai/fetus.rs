@@ -39,11 +39,11 @@ impl AIHandler for Fetus {
         loop {
             let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
-                println!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
+                info!("AI #{}: Fetus dropping food x1...", self.info.p_id);
                 total += 1;
             } else if let Err(e) = command {
                 info!("Fetus dropped x{} food", total);
-                println!("AI #{}: Fetus died.", self.info.cli_id);
+                println!("AI #{}: Fetus died.", self.info.p_id);
                 return Err(e);
             } else {
                 continue;

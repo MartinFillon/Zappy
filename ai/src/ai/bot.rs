@@ -292,7 +292,7 @@ impl Bot {
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<i32>() {
-                            if id == *self.info().cli_id() {
+                            if id == *self.info().p_id() {
                                 handle_queen_message(&mut client, (dir, content.1)).await?;
                             }
                         }
@@ -310,7 +310,7 @@ impl Listeners for Bot {
         let mut id = -1;
         self.analyse_messages(&mut id).await?;
         if id != -1 {
-            self.info.set_cli_id(id);
+            self.info.set_p_id(id);
         }
         Ok(ResponseResult::OK)
     }

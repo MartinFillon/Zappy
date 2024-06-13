@@ -9,6 +9,7 @@
 
 use crate::{
     ai::{AIHandler, Incantationers, AI},
+    commands,
     commands::{inventory, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
@@ -44,9 +45,8 @@ impl AIHandler for Knight {
         info!("Handling knight [Queen {}]...", self.info().cli_id);
         self.handle_message().await?;
 
-        if self.info().level == 6 && (self.info().cli_id == 7 || self.info().cli_id == 8) {
-            // die
-            todo!()
+        if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
+            return Err(CommandError::DeadReceived);
         }
         if self.check_food().await? < 8 {
             info!(
@@ -88,7 +88,7 @@ impl Listeners for Knight {
         let mut id = -1;
         self.analyse_messages(&mut id).await?;
         if id != -1 {
-            self.info.set_cli_id(id);
+            self.info.set_p_id(id);
         }
         Ok(ResponseResult::OK)
     }
@@ -97,6 +97,26 @@ impl Listeners for Knight {
 impl Knight {
     fn new(info: AI) -> Self {
         Self { info }
+    }
+
+    // if really want
+    async fn die(&mut self, id: usize) {
+        let mut client_lock = self.info.client.lock().await;
+        let mut total = 0;
+
+        println!("Knight #{} is killing himself.", id);
+        loop {
+            let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
+            if let Ok(ResponseResult::OK) = command {
+                info!("Knight #{} dropping food x1...", self.info.cli_id);
+                total += 1;
+            }
+            if command.is_err() {
+                info!("Fetus dropped x{} food", total);
+                info!("Knight #{} died.", self.info.cli_id);
+                break;
+            }
+        }
     }
 
     async fn check_food(&mut self) -> Result<i32, CommandError> {
@@ -129,7 +149,7 @@ impl Knight {
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<i32>() {
-                            if id == *self.info().cli_id() {
+                            if id == *self.info().p_id() {
                                 if content.1 == "mv" {
                                     let res = move_towards_broadcast(&mut client, dir).await;
                                     Knight::handle_eject(&mut client, res).await?;
