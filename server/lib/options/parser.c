@@ -6,10 +6,10 @@
 */
 
 #include <stdlib.h>
+
 #include "logger.h"
 #include "options/converter.h"
 #include "options/option.h"
-
 #include "options/parser.h"
 
 static union data (*find_converter(enum arg_type type))(char const *)
@@ -57,35 +57,43 @@ static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
     return true;
 }
 
-static bool parse_inner(
-    char **args,
-    size_t *i,
-    size_t max,
-    struct options *opts,
-    struct args *lst
-)
+static bool parse_inner(parser_t *parser, struct args *lst)
 {
     option_t *opt = NULL;
 
-    opt = get_option(args[*i], opts);
+    opt = get_option(parser->args[parser->idx], parser->options);
     if (opt == NULL)
         return false;
-    *i += 1;
-    if (*i >= max) {
+    parser->idx += 1;
+    if (parser->idx >= parser->args_size) {
         logs(DEBUG, "Missing value for argument: %s\n", opt->identifier);
         return false;
     }
-    parse_argument(lst, args[*i], opt);
+    parse_argument(lst, parser->args[parser->idx], opt);
     return true;
+}
+
+void free_args(struct args *lst)
+{
+    for (size_t i = 0; i < lst->size; i++)
+        if (lst->data[i].option->type == STRING)
+            free(lst->data[i].value.string);
+    vec_destroy_args(lst);
 }
 
 struct args *parse(char **args, size_t count, struct options *opts)
 {
     struct args *lst = vec_create_args(count);
+    parser_t parser = {opts, args, count, 1};
+    bool error = false;
 
-    for (size_t i = 1; i < count; i++) {
-        logs(DEBUG, "Parsing: %s\n", args[i]);
-        parse_inner(args, &i, count, opts, lst);
+    for (; parser.idx < count; parser.idx++) {
+        logs(DEBUG, "Parsing: %s\n", args[parser.idx]);
+        error |= !parse_inner(&parser, lst);
+    }
+    if (error) {
+        free_args(lst);
+        return NULL;
     }
     return NULL;
 }
