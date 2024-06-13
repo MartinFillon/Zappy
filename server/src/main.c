@@ -17,46 +17,51 @@
 #include "macros.h"
 #include "options/option.h"
 #include "options/parser.h"
-#include "utils.h"
 #include "args_info.h"
+#include "options_def.h"
 
 static void sig(int signum)
 {
     (void)signum;
 }
 
+static void fill_infos(args_infos_t *infos, struct args *const ag)
+{
+    infos->clients_nb = get_arg(ag, "-c").unsigned_number;
+    infos->port = get_arg(ag, "-p").unsigned_number;
+    infos->width = get_arg(ag, "-x").unsigned_number;
+    infos->height = get_arg(ag, "-y").unsigned_number;
+    infos->freq = get_arg(ag, "-f").unsigned_number;
+    infos->names = get_arg(ag, "-n").string_list;
+    infos->level = set_log_level_from_str(get_arg(ag, "-l").string->data);
+}
+
+static struct options *create_opts(void)
+{
+    struct options *opts = vec_create_options(7);
+
+    for (int i = 0; OPTIONS[i].identifier != NULL; i++) {
+        vec_pushback_options(opts, OPTIONS[i]);
+    }
+    return opts;
+}
+
 int main(int ac, char **av)
 {
-    set_log_level(DEBUG);
-    struct options *opts = vec_create_options(1);
+    args_infos_t args = {0};
+    struct args *ag = NULL;
+    struct options *opts = create_opts();
 
-    vec_pushback_options(opts, (option_t){.identifier = "-l", .type = STRING});
-    vec_pushback_options(opts, (option_t){.identifier = "-p", .type = UINT});
-    vec_pushback_options(opts, (option_t){.identifier = "-x", .type = UINT});
-    vec_pushback_options(opts, (option_t){.identifier = "-y", .type = UINT});
-    vec_pushback_options(opts, (option_t){.identifier = "-f", .type = UINT});
-    vec_pushback_options(
-        opts, (option_t){.identifier = "-c", .type = STRING_LIST}
-    );
-    struct args *ag = parse(av, ac, opts);
-
+    srand(time(NULL));
+    ag = parse(av, ac, opts);
     if (ag == NULL) {
         dprintf(2, "Error parsing arguments\n");
-        return 84;
+        return EPI_ERROR;
     }
-    // args_infos_t args = {0};
-
-    // srand(time(NULL));
-    // if (ac == 2 && (!strcmp(av[1], "--help") || !strcmp(av[1], "-h"))) {
-    //     display_help();
-    //     return SUCCESS;
-    // }
-    // if (parse_command_line(av, &args) == false)
-    //     return EPI_ERROR;
-    // signal(SIGINT, &sig);
-    // if (loop_server(&args) == ERROR)
-    //     return EPI_ERROR;
-    // my_free_box(args.names);
-    // logs(INFO, "Server stopped\n");
+    fill_infos(&args, ag);
+    signal(SIGINT, &sig);
+    if (loop_server(&args) == ERROR)
+        return EPI_ERROR;
+    logs(INFO, "Server stopped\n");
     return SUCCESS;
 }

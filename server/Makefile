@@ -66,13 +66,13 @@ tests_run:	lib $(TEST_NAME)
 	./$(TEST_NAME)
 
 debug: CC = clang
-debug: CFLAGS += -g3 -fsanitize=address
-debug: LDFLAGS += -fsanitize=addres
+debug: CFLAGS += -g3
+# debug: LDFLAGS += -fsanitize=addres
 debug: fclean
 	$(MAKE) -C core debug
 	$(MAKE) -C lib debug
-	$(MAKE) $(NAME)
 	$(MAKE) -C base debug
+debug: all
 
 re: fclean all
 

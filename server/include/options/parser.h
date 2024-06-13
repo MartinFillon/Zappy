@@ -34,3 +34,12 @@ typedef struct {
  * @return struct args* The parsed arguments
  */
 struct args *parse(char **args, size_t count, struct options *opts);
+
+/**
+ * @brief Get the argument value from the argument struct
+ * @param args The argument list
+ * @param name The name of the argument
+ *
+ * @return union data The value of the argument
+ */
+union data get_arg(struct args *args, char *name);

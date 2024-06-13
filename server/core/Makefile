@@ -13,13 +13,6 @@ LDLIBS = -L.. -lmy -lm
 SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					core					\
-					$(addprefix cmd_line/, 	\
-						display_help 			\
-						handle_cmd_line 		\
-						handle_nb_flags			\
-						handle_name_flag		\
-						log_level				\
-					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
 							initializer		\

@@ -27,5 +27,6 @@ bool convert_string_list(argument_t *arg, parser_t *p)
             arg->value.string_list, str_snew(p->args[p->idx++])
         );
     }
+    p->idx--;
     return false;
 }
