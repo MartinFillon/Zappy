@@ -28,6 +28,8 @@ void destroy_client(client_t *c)
     for (size_t i = 0; i < c->commands->size; i++)
         str_free(c->commands->data[i]);
     queue_destroy_queue_command_t(c->commands);
+    free(c->address);
+    c->address = NULL;
 }
 
 void close_client(client_t *c, struct client_list *clients)

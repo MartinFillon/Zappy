@@ -25,9 +25,9 @@ static void *load_function(char const *name, void *handle)
 
 static lib_t error_case(char const *file)
 {
-    if (strcmp(file, "base.so") == 0)
+    if (strcmp(file, "server/base.so") == 0)
         return (lib_t){NULL, NULL, NULL, NULL};
-    return open_dhl("base.so");
+    return open_dhl("server/base.so");
 }
 
 lib_t open_dhl(char const *file)
@@ -42,7 +42,7 @@ lib_t open_dhl(char const *file)
     dlerror();
     l.loop =
         (bool (*)(zappy_t *, void *))load_function("server_runner", l.handle);
-    l.init = (void *(*)(void))load_function("init", l.handle);
+    l.init = (void *(*)(int))load_function("init", l.handle);
     l.destroy = (void (*)(void *))load_function("destroy_renderer", l.handle);
     if (l.loop == NULL || l.init == NULL || l.destroy == NULL) {
         close_dhl(&l);

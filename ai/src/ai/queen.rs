@@ -57,7 +57,6 @@ impl Incantationers for Queen {
 impl Queen {
     /// Creates a new [`Queen`].
     fn new(info: AI) -> Self {
-        // Requirement !
         Self {
             info,
             inv: Default::default(),
@@ -90,6 +89,25 @@ impl Queen {
         if let Ok(ResponseResult::OK) = commands::take_object::take_object(&mut cli, "food").await {
             self.inv.set_food(self.inv.food() + 1);
         }
+        Ok(())
+    }
+
+    async fn fork_servant(&mut self) -> Result<(), command_handle::CommandError> {
+        let mut cli = self.info.client.lock().await;
+        commands::fork::fork(&mut cli).await?;
+
+        // PlaceHolder for Knight creation
+        commands::broadcast::broadcast(&mut cli, format!("{}", 0).as_str()).await?;
+        info!("I as the queen ({}), bestow my life uppon you\n", 0);
+
+        commands::fork::fork(&mut cli).await?;
+        // PlaceHolder for Bot creation
+
+        commands::fork::fork(&mut cli).await?;
+        // PlaceHolder for Bot creation
+
+        info!("Miserable peasants... Serve me.\n");
+
         Ok(())
     }
 
@@ -153,6 +171,7 @@ impl AIHandler for Queen {
     }
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
+        self.fork_servant().await?;
         loop {
             let mut val = {
                 let mut cli = self.info.client.lock().await;

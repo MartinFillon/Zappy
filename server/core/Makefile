@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC
 CPPFLAGS = -iquote../include
-LDLIBS = -L.. -lmy
+LDLIBS = -L.. -lmy -lm
 
 SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
@@ -47,12 +47,12 @@ SRC = $(addsuffix .c, 				\
 						destroy_server		\
 						execute 			\
 						$(addprefix cmd/, 	\
-							handle_cmds 	\
-							handle_display 	\
-							handle_ais_info	\
-							handle_eggs_info\
-							handle_help 	\
-							handle_kill_player 	\
+							cmds 	\
+							display 	\
+							ais_info	\
+							eggs_info\
+							help 	\
+							kill_player 	\
 							godmode			\
 							give			\
 							teleport		\
@@ -77,21 +77,24 @@ SRC = $(addsuffix .c, 				\
 					)						\
 					$(addprefix time/, 	\
 						clock				\
+						tick				\
 					)						\
 					$(addprefix ai/, 	\
 						init				\
 						eat					\
-						handle_look			\
-						handle_forward		\
-						handle_rotate		\
-						handle_broadcast 	\
-						handle_take_object 	\
-						handle_set_object 	\
-						handle_inventory 	\
-						handle_connect_nbr 	\
-						handle_fork 		\
-						handle_eject 		\
-						handle_incantation 	\
+						$(addprefix commands/,\
+							look			\
+							forward		\
+							rotate		\
+							broadcast 	\
+							take_object 	\
+							set_object 	\
+							inventory 	\
+							connect_nbr 	\
+							fork 		\
+							eject 		\
+							incantation 	\
+						)\
 						destroy				\
 					)\
 					$(addprefix router/, 	\
@@ -108,21 +111,22 @@ SRC = $(addsuffix .c, 				\
 
 OBJ = $(SRC:.c=.o)
 
-NAME = ../libcore.so
+NAME = ../libcore.a
 
 all: $(NAME)
 
-$(NAME): lib $(OBJ)
-	$(CC) -shared -o $(NAME) $(OBJ) $(LDLIBS)
-
-lib:
-	$(MAKE) -C ../lib
+$(NAME): $(OBJ)
+	ar cq -o $(NAME) $(OBJ)
 
 clean:
 	rm -f $(OBJ)
 
 fclean: clean
 	rm -f $(NAME)
+
+debug: CC = clang
+debug: CFLAGS += -g3
+debug: all
 
 re: fclean all
 

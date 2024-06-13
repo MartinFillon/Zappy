@@ -105,7 +105,11 @@ impl CommandHandler for TcpClient {
         info!("Handling response: ({})...", response.trim_end());
 
         if response.starts_with("message ") && response.ends_with('\n') {
-            return handle_message_response(response);
+            if let ResponseResult::Message(msg) = handle_message_response(response)? {
+                self.push_message(msg);
+            }
+            let res = self.check_response().await?;
+            return self.handle_response(res).await;
         }
 
         if response.starts_with("eject: ") && response.ends_with('\n') {

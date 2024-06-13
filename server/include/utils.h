@@ -30,15 +30,6 @@ void va_free(int nb, ...);
 int modulo(int nb, int m);
 
 /**
- * @brief Parse a number from a string
- *
- * @param args the string to parse
- * @param n the number to store the result
- * @return true if success, false if error
- */
-[[nodiscard]] bool parse_number(char *restrict args, long *restrict n);
-
-/**
  * @brief Check if there is not any args
  *
  * @param arg the string parameter to check

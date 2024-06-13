@@ -11,7 +11,7 @@
 
 typedef struct {
     bool (*loop)(zappy_t *, void *);
-    void *(*init)(void);
+    void *(*init)(int);
     void (*destroy)(void *);
     void *handle;
 } lib_t;

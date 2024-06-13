@@ -11,6 +11,7 @@ pub mod command_handle;
 
 use std::io::{Error, ErrorKind};
 
+use command_handle::DirectionMessage;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
@@ -28,6 +29,7 @@ pub struct TcpClient {
     request_sender: Option<Sender<String>>,
     response_receiver: Option<Receiver<String>>,
     connection_handle: Option<JoinHandle<()>>,
+    messages: Vec<(DirectionMessage, String)>,
 }
 
 impl TcpClient {
@@ -37,6 +39,7 @@ impl TcpClient {
             request_sender: None,
             response_receiver: None,
             connection_handle: None,
+            messages: Vec::new(),
         }
     }
 
@@ -134,6 +137,14 @@ impl TcpClient {
                 }
             }
         }
+    }
+
+    pub fn push_message(&mut self, message: (DirectionMessage, String)) {
+        self.messages.push(message)
+    }
+
+    pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
+        self.messages.pop()
     }
 }
 

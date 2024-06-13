@@ -21,8 +21,9 @@ extern bool server_runner(zappy_t *z, void *dt)
     return core(z);
 }
 
-extern void *init(void)
+extern void *init(int level)
 {
+    set_log_level(level);
     return NULL;
 }
 

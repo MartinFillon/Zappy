@@ -2,6 +2,7 @@ zappy_server
 zappy_ai
 zappy_gui
 *.o
+*.a
 Cargo.lock
 target/
 coding-style-reports.log

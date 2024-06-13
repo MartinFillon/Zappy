@@ -9,10 +9,13 @@
 
 #include "core/core.h"
 #include "core/server.h"
-#include "dashboard/internal.h"
+
 #include "json/json.h"
+
 #include "logger.h"
 #include "zappy.h"
+
+#include "dashboard/internal.h"
 
 static void init_raylib(struct draw_state_s *st)
 {
@@ -33,6 +36,7 @@ extern bool server_runner(zappy_t *z, void *dt)
         wait_for_connections();
     else
         display_clients(z->clients, s);
+    display_general_infos(&z->game);
     EndDrawing();
     return core(z) && !WindowShouldClose();
 }
@@ -70,11 +74,12 @@ static void deserialize(struct draw_state_s *st, json_data_t *json)
     }
 }
 
-extern void *init(void)
+extern void *init(int level)
 {
     struct draw_state_s *st = calloc(1, sizeof(struct draw_state_s));
     json_data_t *f = json_from_file("dashboard_config.json");
 
+    set_log_level(level);
     if (!f) {
         logs(
             ERROR_LEVEL,

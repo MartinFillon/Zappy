@@ -8,7 +8,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fPIC -D_GNU_SOURCE
 CPPFLAGS = -iquote../include
-LDLIBS = -lraylib -L.. -lmy
+LDLIBS = -lraylib -L.. -lcore
 
 SRC = 	src/dashboard.c			\
 		src/waiting.c			\
@@ -17,9 +17,12 @@ SRC = 	src/dashboard.c			\
 		src/displayers/team.c	\
 		src/displayers/inventory.c	\
 		src/displayers/level.c	\
+		src/displayers/ticks.c	\
+		src/displayers/address.c	\
 		src/events.c 			\
 		src/event_handlers/keys/left.c	\
 		src/event_handlers/keys/right.c	\
+		src/display_general.c	\
 
 OBJ = $(SRC:.c=.o)
 
@@ -39,6 +42,11 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
+debug: CC = clang
+debug: CFLAGS += -g3 -fsanitize=address
+debug: LDFLAGS += -fsanitize=addres
+debug: fclean all
+
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug

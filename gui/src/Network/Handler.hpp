@@ -141,6 +141,7 @@ class Handler {
     asio::io_context io_context;  ///< The asio io_context for network operations.
     asio::ip::tcp::socket socket; ///< The TCP socket for communication with the server.
     std::atomic<bool> running;    ///< Flag indicating if the network communication is running.
+    std::atomic<bool> handlerEnd; ///< Flag indicating for the thread request every second the end of the handler thread
     std::thread networkThread;    ///< The thread for running the network communication loop.
     std::queue<std::string> mQ;   ///< The message queue for storing received messages.
     std::mutex mutex;             ///< Mutex for protecting access to the message queue.

@@ -21,6 +21,7 @@ typedef struct args_infos_s {
     int clients_nb;
 
     int freq; // Default 100
+    int level;
 } args_infos_t;
 
 /**

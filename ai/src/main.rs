@@ -5,6 +5,8 @@
 // main
 //
 
+#![allow(dead_code)]
+
 use std::process;
 
 use env_logger::{Builder, Env};
@@ -45,5 +47,4 @@ async fn main() {
             process::exit(ERROR_CODE)
         }
     }
-    process::exit(SUCCESS_CODE);
 }
