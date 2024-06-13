@@ -116,7 +116,11 @@ impl CommandHandler for TcpClient {
             "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
-            _ => Err(CommandError::InvalidResponse),
+            x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
+            _ => {
+                warn!("Invalid Response: ({}).", response.trim_end());
+                Err(CommandError::InvalidResponse)
+            }
         }
     }
 }
