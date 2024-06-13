@@ -10,12 +10,15 @@ use aes_gcm::{Aes256Gcm, Key, Nonce};
 use hex::{decode, encode};
 use sha2::{Digest, Sha256};
 
+use zappy_macros::Bean;
+
 use log::debug;
 
 /// The `Crypt` struct holds the encryption key and nonce.
 ///
 /// * `key` - A string that represents the encryption key.
 /// * `nonce` - A 12-byte array used as the nonce for encryption and decryption.
+#[derive(Debug, Bean)]
 pub struct Crypt {
     key: String,
     nonce: [u8; 12],

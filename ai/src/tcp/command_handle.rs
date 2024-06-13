@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use crate::tcp::TcpClient;
+use crate::{crypt::Crypt, tcp::TcpClient};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -59,6 +59,7 @@ pub enum CommandError {
     NoResponseReceived,
     InvalidResponse,
     DeadReceived,
+    InvalidKey,
 }
 
 #[async_trait]
@@ -100,7 +101,7 @@ impl CommandHandler for TcpClient {
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
         if response.starts_with("message ") && response.ends_with('\n') {
-            if let ResponseResult::Message(msg) = handle_message_response(response)? {
+            if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
             }
             let res = self.check_response().await?;
@@ -120,7 +121,10 @@ impl CommandHandler for TcpClient {
     }
 }
 
-fn handle_message_response(response: String) -> Result<ResponseResult, CommandError> {
+fn handle_message_response(
+    response: String,
+    crypt: &Crypt,
+) -> Result<ResponseResult, CommandError> {
     debug!("Handling message response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
@@ -129,9 +133,13 @@ fn handle_message_response(response: String) -> Result<ResponseResult, CommandEr
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionMessage::from_usize(direction) {
                     let final_msg = parts[2..].join(" ");
+                    let decrypted_message = match crypt.decrypt(&final_msg) {
+                        Some(data) => data,
+                        None => return Ok(ResponseResult::OK),
+                    };
                     debug!(
                         "Message received from direction {} (aka {}): {}",
-                        dir_enum, direction, final_msg
+                        dir_enum, direction, decrypted_message
                     );
                     return Ok(ResponseResult::Message((dir_enum, final_msg)));
                 }
@@ -238,6 +246,9 @@ impl Display for CommandError {
             }
             CommandError::InvalidResponse => write!(f, "Invalid response, unknown."),
             CommandError::DeadReceived => write!(f, "Dead has been received, end of program."),
+            CommandError::InvalidKey => {
+                write!(f, "Invalid key, message for broadcast can't be encrypted.")
+            }
         }
     }
 }

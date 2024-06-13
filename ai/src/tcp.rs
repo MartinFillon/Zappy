@@ -9,6 +9,8 @@
 
 pub mod command_handle;
 
+use crate::crypt::Crypt;
+
 use std::io::{Error, ErrorKind};
 
 use command_handle::DirectionMessage;
@@ -30,16 +32,18 @@ pub struct TcpClient {
     response_receiver: Option<Receiver<String>>,
     connection_handle: Option<JoinHandle<()>>,
     messages: Vec<(DirectionMessage, String)>,
+    crypt: Crypt,
 }
 
 impl TcpClient {
-    pub fn new(addr: &str) -> Self {
+    pub fn new(addr: &str, team: String) -> Self {
         Self {
             addr: addr.to_string(),
             request_sender: None,
             response_receiver: None,
             connection_handle: None,
             messages: Vec::new(),
+            crypt: Crypt::new(team),
         }
     }
 
@@ -147,8 +151,8 @@ impl TcpClient {
     }
 }
 
-pub async fn handle_tcp(address: String) -> io::Result<TcpClient> {
-    let mut client = TcpClient::new(address.as_str());
+pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> {
+    let mut client = TcpClient::new(address.as_str(), team);
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {

@@ -230,7 +230,7 @@ pub async fn fork_launch(
     from_ai: AI,
     set_id: Option<usize>,
 ) -> io::Result<AI> {
-    match tcp::handle_tcp(address.clone()).await {
+    match tcp::handle_tcp(address.clone(), team.clone()).await {
         Ok(client) => {
             debug!("Client connected successfully.");
             let client = Arc::new(Mutex::new(client));
@@ -269,10 +269,10 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             println!("Stop flag is set, breaking the loop.");
             break;
         }
+        let team = Arc::clone(&team);
 
-        match tcp::handle_tcp(address.to_string()).await {
+        match tcp::handle_tcp(address.to_string(), team.to_string()).await {
             Ok(client) => {
-                let team = Arc::clone(&team);
                 let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
