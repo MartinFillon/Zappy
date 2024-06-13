@@ -19,6 +19,7 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
     } else {
         SetTraceLogLevel(LOG_ERROR);
     }
+    SetTraceLogLevel(LOG_ALL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(width, height, "Zappy");
     SetTargetFPS(60);

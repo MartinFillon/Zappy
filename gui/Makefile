@@ -11,30 +11,33 @@ LDFLAGS = -lraylib -lpthread
 
 NAME = ../zappy_gui
 
-SRC = $(BASE_SRC) 						\
-	$(addsuffix .cpp,					\
-		$(addprefix src/,				\
-			$(addprefix ArgParser/,		\
-				ArgParser				\
-			)							\
-			$(addprefix Network/,		\
-				Handler					\
-				Handler_queries         \
-			)							\
-			$(addprefix GUI/,			\
-				$(addprefix Data/,		\
-					Inventory			\
-					Map					\
-					Player				\
-				)						\
-				Raylib					\
-				Display					\
-				ServerMessageHandler	\
-				MessageBox				\
-				InfoBox					\
-				TimeUnitInput			\
-			)							\
-		)								\
+SRC = $(BASE_SRC) 							\
+	$(addsuffix .cpp,						\
+		$(addprefix src/,					\
+			$(addprefix ArgParser/,			\
+				ArgParser					\
+			)								\
+			$(addprefix Network/,			\
+				Handler						\
+				Handler_queries         	\
+			)								\
+			$(addprefix GUI/,				\
+				$(addprefix Data/,			\
+					Inventory				\
+					Map						\
+					Player					\
+				)							\
+				$(addprefix ModelManager/,	\
+					Model3D					\
+				)							\
+				Raylib						\
+				Display						\
+				ServerMessageHandler		\
+				MessageBox					\
+				InfoBox						\
+				TimeUnitInput				\
+			)								\
+		)									\
 	)
 BASE_SRC = src/main.cpp
 

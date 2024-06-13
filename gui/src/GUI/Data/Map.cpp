@@ -6,6 +6,12 @@
 */
 
 #include "Map.hpp"
+#include <memory>
+#include <raylib.h>
+#include <vector>
+#include "../ModelManager/Model3D.hpp"
+#include "../Raylib.hpp"
+#include "Inventory.hpp"
 
 namespace GUI {
 namespace Data {
@@ -154,9 +160,9 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
         float playerCenterZ = player->getPos().y() * tileSize + tileSize / 2.0f;
-        collisionTmp = Raylib::getRayCollisionSphere(ray,
-            (Vector3){playerCenterX, tileSize / 6.0f + tileSize / 2.0f, playerCenterZ},
-            tileSize / 6.0f);
+        collisionTmp = Raylib::getRayCollisionSphere(
+            ray, (Vector3){playerCenterX, tileSize / 6.0f + tileSize / 2.0f, playerCenterZ}, tileSize / 6.0f
+        );
         if (collisionTmp.hit && (!collision.hit || collisionTmp.distance < collision.distance)) {
             collision = collisionTmp;
             tmpInfo.setItem(player);
@@ -242,37 +248,60 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     float tileSize = 1.0f;
 
 
-    if (Raylib::isKeyPressed('R')) cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
-    if (Raylib::isKeyPressed('F')) isCameraFree = !isCameraFree;
+    if (Raylib::isKeyPressed('R'))
+        cam.target = (Vector3){0.0f, 0.0f, 0.0f};
+    if (Raylib::isKeyPressed('F'))
+        isCameraFree = !isCameraFree;
     if (Raylib::isKeyPressed('C')) {
-        if (showCursor) Raylib::disableCursor();
-        else Raylib::enableCursor();
+        if (showCursor)
+            Raylib::disableCursor();
+        else
+            Raylib::enableCursor();
         showCursor = !showCursor;
-    };
-    if (isCameraFree) Raylib::updateCamera(cam, CAMERA_FREE);
+    }
+    if (isCameraFree)
+        Raylib::updateCamera(cam, CAMERA_FREE);
 
     Raylib::clearBackground(RAYWHITE);
     Raylib::beginMode3D(cam);
-
     Raylib::drawGrid(100, 1.0f);
+
+    if (qm.getSize() == 0) {
+        qm.init();
+    }
+
+    for (const auto &player : m_players) {
+        float playerX = player->getPos().x() * tileSize + tileSize / 2;
+        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
+        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 150});
+    }
+
     for (auto tile : m_map) {
         float tileX = tile->getPos().x() * tileSize + tileSize / 2;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
         Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
         Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
+        Inventory inv = tile->getInventory();
+        for (size_t i = 1; i < inv.inv.size(); i++) { // start at O to handle food
+            int size;
+            if (inv.inv[i] == 0)
+                continue;
+            else if (inv.inv[i] == 1)
+                size = 0;
+            else if (inv.inv[i] <= 2)
+                size = 1;
+            else
+                size = 2;
+            qm.Draw(size, i, tileX, tileZ);
+        }
     }
-    for (const auto &player : m_players) {
-        float playerX = player->getPos().x() * tileSize + tileSize / 2;
-        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
 
-        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2 ,playerZ}, tileSize / 6, Color{0, 121, 241, 150});
-    }
     for (const auto &egg : m_eggs) {
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
-
         Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
     }
+
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
         float itemX = (item->getPos().x() + info.getPosTile().x()) * tileSize + tileSize / 2;
@@ -282,6 +311,7 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         float sizeCube = tileSize * info.getSize() + 2 * plus;
         Raylib::drawCubeWires({itemX, itemY, itemZ}, sizeCube, GREEN);
     }
+
     Raylib::endMode3D();
 }
 
