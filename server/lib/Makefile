@@ -31,7 +31,8 @@ SRC =   str/str.c\
 		utils/vec_cmp.c\
 		utils/is_empty.c\
 		utils/is_number.c\
-		utils/is_coord_equals.c
+		utils/is_coord_equals.c\
+		utils/freeze_ai.c
 
 NAME = ../libcore.a
 
