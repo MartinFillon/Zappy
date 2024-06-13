@@ -11,9 +11,11 @@
 
 #include "options/option.h"
 
+typedef union data (*fconverter_t)(char const *);
+
 typedef struct {
     enum arg_type type;
-    union data (*converter)(char const *);
+    fconverter_t converter;
 } converter_t;
 
 #define REGISTER_CONVERTER(name) union data convert_##name(char const *)

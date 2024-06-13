@@ -12,7 +12,7 @@
 #include "options/option.h"
 #include "options/parser.h"
 
-static union data (*find_converter(enum arg_type type))(char const *)
+static fconverter_t find_converter(enum arg_type type)
 {
     for (size_t i = 0; CONVERTERS[i].converter != NULL; i++) {
         if (CONVERTERS[i].type == type)
@@ -35,8 +35,8 @@ static option_t *get_option(char *const arg, struct options *const opts)
 
 static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
 {
-    union data (*f)(char const *) = find_converter(opts->type);
-    union data v = {0};
+    fconverter_t f = find_converter(opts->type);
+    argument_t argument = {0};
 
     if (f == NULL) {
         logs(
@@ -46,14 +46,9 @@ static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
         );
         return true;
     }
-    v = f(arg);
-    vec_pushback_args(
-        lst,
-        (argument_t){
-            .option = opts,
-            .value = v,
-        }
-    );
+    argument.value = f(arg);
+    argument.option = opts;
+    vec_pushback_args(lst, argument);
     return false;
 }
 
