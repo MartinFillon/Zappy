@@ -6,7 +6,10 @@
 //
 
 use crate::{
-    ai::{ai_create::{start_bot_ai, start_knight_ai}, AIHandler, Incantationers, AI},
+    ai::{
+        ai_create::{start_bot_ai, start_knight_ai},
+        AIHandler, Incantationers, AI,
+    },
     commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
@@ -95,8 +98,9 @@ impl Queen {
         // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
-        let broad_res = commands::broadcast::broadcast(
-            &mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
+        let broad_res =
+            commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
+                .await?;
         Queen::handle_eject(&mut cli, Ok(broad_res)).await?;
         Ok(())
     }
@@ -111,10 +115,9 @@ impl Queen {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
                 commands::move_up::move_up(&mut cli).await?;
-                commands::broadcast::broadcast(
-                    &mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
-                ()
-            },
+                commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
+                    .await?;
+            }
             3 | 4 => {
                 // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
@@ -142,8 +145,7 @@ impl Queen {
         {
             let mut cli = self.info.client.lock().await;
             commands::broadcast::broadcast(&mut cli, "Incantation !").await?;
-            let incant_res =
-                commands::incantation::incantation(&mut cli).await;
+            let incant_res = commands::incantation::incantation(&mut cli).await;
             Queen::handle_eject(&mut cli, incant_res).await?
         };
         Ok(())
