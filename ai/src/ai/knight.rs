@@ -42,7 +42,7 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling knight [Queen {}]...", self.info().cli_id);
+        info!("Handling knight [Queen {}]...", self.info().p_id);
         self.handle_message().await?;
 
         if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
@@ -51,7 +51,7 @@ impl AIHandler for Knight {
         if self.check_food().await? < 8 {
             info!(
                 "Knight [Queen {}]: not enough food, producing more...",
-                self.info().cli_id
+                self.info().p_id
             );
             // create fetus
             while self.check_food().await? < 10 {
@@ -108,12 +108,12 @@ impl Knight {
         loop {
             let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
-                info!("Knight #{} dropping food x1...", self.info.cli_id);
+                info!("Knight #{} dropping food x1...", self.info.p_id);
                 total += 1;
             }
             if command.is_err() {
                 info!("Fetus dropped x{} food", total);
-                info!("Knight #{} died.", self.info.cli_id);
+                info!("Knight #{} died.", self.info.p_id);
                 break;
             }
         }
@@ -128,18 +128,18 @@ impl Knight {
         Err(CommandError::InvalidResponse)
     }
 
-    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(&mut self, p_id: &mut i32) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
                 "Knight [Queen {}]: handling message: {}",
-                self.info().cli_id,
+                self.info().p_id,
                 message.1
             );
             match message {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<i32>() {
-                        cli_id.clone_from(&(id + 4));
+                        p_id.clone_from(&(id + 4));
                     }
                 }
                 (dir, msg) => {

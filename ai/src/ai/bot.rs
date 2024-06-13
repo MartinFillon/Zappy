@@ -156,7 +156,7 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot [Queen {}]...", self.info().cli_id);
+        info!("Handling bot [Queen {}]...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
             self.handle_message().await?;
@@ -260,7 +260,7 @@ impl Bot {
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
-        info!("Bot [Queen {}]: backtracking...", self.info().cli_id);
+        info!("Bot [Queen {}]: backtracking...", self.info().p_id);
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
@@ -270,19 +270,19 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(&mut self, p_id: &mut i32) -> Result<ResponseResult, CommandError> {
         let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
                 "Bot [Queen {}]: handling message: {}",
-                self.info().cli_id,
+                self.info().p_id,
                 message.1
             );
             match message {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<i32>() {
-                        cli_id.clone_from(&id);
+                        p_id.clone_from(&id);
                     }
                 }
                 (dir, msg) => {
