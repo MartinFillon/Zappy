@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 fn read_output(raw: String) -> Vec<Vec<String>> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
@@ -31,12 +31,12 @@ fn read_output(raw: String) -> Vec<Vec<String>> {
             acc
         },
     );
-    info!("Tiles: {:?}", tiles);
+    debug!("Tiles: {:?}", tiles);
     tiles
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    info!("Looking around...");
+    debug!("Looking around...");
     let response = client.check_dead("Look\n").await?;
 
     Ok(ResponseResult::Tiles(read_output(response)))

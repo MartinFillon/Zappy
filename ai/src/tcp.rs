@@ -9,6 +9,8 @@
 
 pub mod command_handle;
 
+use crate::crypt::Crypt;
+
 use std::io::{Error, ErrorKind};
 
 use command_handle::DirectionMessage;
@@ -21,7 +23,7 @@ use tokio::task::JoinHandle;
 
 use zappy_macros::Bean;
 
-use log::{debug, info};
+use log::{debug, error, info, warn};
 
 #[derive(Debug, Bean)]
 pub struct TcpClient {
@@ -30,16 +32,18 @@ pub struct TcpClient {
     response_receiver: Option<Receiver<String>>,
     connection_handle: Option<JoinHandle<()>>,
     messages: Vec<(DirectionMessage, String)>,
+    crypt: Crypt,
 }
 
 impl TcpClient {
-    pub fn new(addr: &str) -> Self {
+    pub fn new(addr: &str, team: String) -> Self {
         Self {
             addr: addr.to_string(),
             request_sender: None,
             response_receiver: None,
             connection_handle: None,
             messages: Vec::new(),
+            crypt: Crypt::new(team),
         }
     }
 
@@ -67,7 +71,7 @@ impl TcpClient {
     }
 
     pub async fn send_request(&self, request: String) -> io::Result<()> {
-        info!("Sending request: {}", request.trim_end());
+        debug!("Sending request: {}", request.trim_end());
         if let Some(sender) = &self.request_sender {
             sender
                 .send(request)
@@ -82,9 +86,8 @@ impl TcpClient {
     }
 
     pub async fn get_response(&mut self) -> Option<String> {
-        info!("Getting response...");
+        debug!("Getting response...");
         if let Some(receiver) = &mut self.response_receiver {
-            info!("Response received.");
             receiver.recv().await
         } else {
             debug!("No response received.");
@@ -105,18 +108,18 @@ impl TcpClient {
                 result = reader.read(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            info!("Connection closed by the server.");
+                            warn!("Connection closed by the server.");
                             break;
                         }
                         Ok(n) => {
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
-                                debug!("Failed to send response: {}", e);
+                                error!("Failed to send response: {}", e);
                                 break;
                             }
                         }
                         Err(e) => {
-                            debug!("Failed to read from socket: {}", e);
+                            error!("Failed to read from socket: {}", e);
                             break;
                         }
                     }
@@ -125,12 +128,12 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                debug!("Failed to write to socket: {}", e);
+                                error!("Failed to write to socket: {}", e);
                                 break;
                             }
                         }
                         None => {
-                            debug!("Request channel closed.");
+                            warn!("Request channel closed.");
                             break;
                         }
                     }
@@ -148,8 +151,8 @@ impl TcpClient {
     }
 }
 
-pub async fn handle_tcp(address: String) -> io::Result<TcpClient> {
-    let mut client = TcpClient::new(address.as_str());
+pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> {
+    let mut client = TcpClient::new(address.as_str(), team);
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {

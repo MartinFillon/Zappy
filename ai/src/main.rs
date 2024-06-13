@@ -10,10 +10,11 @@
 use std::process;
 
 use env_logger::{Builder, Env};
-use log::info;
+use log::debug;
 
 pub mod ai;
 pub mod commands;
+pub mod crypt;
 pub mod elevation;
 pub mod flags;
 pub mod move_to_tile;
@@ -30,7 +31,7 @@ async fn main() {
 
     match flags::check_flags() {
         Ok(res) => {
-            info!("Arguments set:\n{}", res.clone());
+            debug!("Arguments set:\n{}", res.clone());
             let address: String = format!(
                 "{}:{}",
                 res.clone().machine(),

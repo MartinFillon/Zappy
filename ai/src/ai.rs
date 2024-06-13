@@ -6,8 +6,6 @@
 //
 
 #![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
 
 pub mod ai_create;
 pub mod bot;
@@ -16,13 +14,10 @@ pub mod fetus;
 pub mod knight;
 pub mod queen;
 
-use crate::{
-    commands,
-    tcp::{
-        self,
-        command_handle::{CommandError, DirectionMessage, ResponseResult},
-        TcpClient,
-    },
+use crate::tcp::{
+    self,
+    command_handle::{CommandError, ResponseResult},
+    TcpClient,
 };
 
 use std::fmt;
@@ -158,13 +153,6 @@ async fn checkout_ai_info(
         })
 }
 
-// test here
-#[allow(dead_code)]
-async fn kickstart(ai: AI) -> io::Result<AI> {
-    info!("Sending startup commands...");
-    Ok(ai)
-}
-
 async fn init_ai(
     client: Arc<Mutex<TcpClient>>,
     response: &str,
@@ -174,7 +162,6 @@ async fn init_ai(
 ) -> io::Result<AI> {
     info!("Initializing AI #{}...", p_id);
     let ai = checkout_ai_info(client, response, team, address, p_id).await?;
-    // kickstart(ai).await to test or
     match ai.p_id {
         0 => {
             let mut empress = empress::Empress::init(ai.clone());
@@ -199,9 +186,9 @@ async fn start_ai(
     p_id: usize,
     start: bool,
 ) -> io::Result<AI> {
-    info!("Starting AI process n{}...", p_id);
+    println!("Starting AI process n{}...", p_id);
     {
-        let mut client_lock = client.lock().await;
+        let client_lock = client.lock().await;
         client_lock.send_request(team.clone() + "\n").await?;
     }
     if let Some(response) = {
@@ -237,12 +224,20 @@ async fn start_ai(
     }
 }
 
-pub async fn fork_launch(address: String, team: String, from_ai: AI) -> io::Result<AI> {
-    match tcp::handle_tcp(address.clone()).await {
+pub async fn fork_launch(
+    address: String,
+    team: String,
+    from_ai: AI,
+    set_id: Option<usize>,
+) -> io::Result<AI> {
+    match tcp::handle_tcp(address.clone(), team.clone()).await {
         Ok(client) => {
-            info!("Client connected successfully.");
+            debug!("Client connected successfully.");
             let client = Arc::new(Mutex::new(client));
-            let id = from_ai.p_id + 1;
+            let id = match set_id {
+                None => from_ai.p_id + 1,
+                Some(res) => res,
+            };
 
             let handle = task::spawn(async move {
                 start_ai(client.clone(), team.to_string(), address, id, false).await
@@ -274,10 +269,10 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             println!("Stop flag is set, breaking the loop.");
             break;
         }
+        let team = Arc::clone(&team);
 
-        match tcp::handle_tcp(address.to_string()).await {
+        match tcp::handle_tcp(address.to_string(), team.to_string()).await {
             Ok(client) => {
-                let team = Arc::clone(&team);
                 let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
@@ -315,7 +310,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
     }
 
     if handles.is_empty() {
-        debug!("Connection refused, handles is empty.");
+        warn!("Connection refused, handles is empty.");
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",

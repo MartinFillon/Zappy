@@ -16,7 +16,7 @@ use std::str::FromStr;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use log::info;
+use log::{debug, info};
 use zappy_macros::Bean;
 
 const LOCALHOST: &str = "127.0.0.1";
@@ -54,7 +54,7 @@ impl Display for Flags {
 }
 
 fn parse_arg<T: FromStr>(arg_type: &str, arg: Option<OsString>) -> Result<T, String> {
-    info!("Parsing argument for {}...", arg_type);
+    debug!("Parsing argument for {}...", arg_type);
     arg.ok_or_else(|| format!("Flag `{}` argument is missing.", arg_type))
         .and_then(|arg| {
             arg.into_string()

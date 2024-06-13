@@ -5,9 +5,11 @@
 // knight
 //
 
+#![allow(unused_imports)]
+
 use crate::{
     ai::{AIHandler, Incantationers, AI},
-    commands::{self, inventory, take_object},
+    commands::{inventory, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{

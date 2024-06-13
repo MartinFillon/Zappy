@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 fn read_output(raw: String) -> Vec<(String, i32)> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
@@ -30,12 +30,12 @@ fn read_output(raw: String) -> Vec<(String, i32)> {
         },
     );
 
-    info!("Inventory: {:?}", inventory);
+    debug!("Inventory: {:?}", inventory);
     inventory
 }
 
 pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    info!("Checking inventory...");
+    debug!("Checking inventory...");
     let response = client.check_dead("Inventory\n").await?;
     if client.handle_response(response.clone()).await.is_err() {
         return Ok(ResponseResult::Inventory(read_output(response)));
