@@ -21,7 +21,7 @@ class Model3D {
     void Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle) const;
     void SetTexture(const char *texturePath);
 
-  private:
     Model model;
+  private:
     Texture2D texture;
 };
