@@ -8,11 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "core/client.h"
-#include "core/incantation.h"
 #include "core/router/route.h"
 #include "core/types/ai.h"
 #include "core/types/client.h"
 #include "core/types/game.h"
+#include "core/types/incantation.h"
 #include "core/types/map.h"
 #include "core/types/object.h"
 #include "core/types/position.h"

@@ -12,11 +12,11 @@
 
 #include "dashboard/internal.h"
 
-int display_id(ai_t *ai, int x, int y)
+int display_id(client_t *client, int x, int y)
 {
     char *txt = NULL;
 
-    asprintf(&txt, "AI %d", ai->id);
+    asprintf(&txt, "AI %d", client->ai->id);
     DrawText(txt, x, y, FONT_SIZE, WHITE);
     free(txt);
     return FONT_SIZE;

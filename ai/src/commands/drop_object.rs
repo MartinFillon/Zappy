@@ -12,13 +12,13 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 pub async fn drop_object(
     client: &mut TcpClient,
     obj: &str,
 ) -> Result<ResponseResult, CommandError> {
-    info!("Dropping object: ({})...", obj);
+    debug!("Dropping object: ({})...", obj);
     let response = client.check_dead(&format!("Set {}\n", obj)).await?;
     client.handle_response(response).await
 }
