@@ -210,12 +210,13 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
             float tileX = x * tileSize + start_x;
             float tileY = y * tileSize + start_y;
 
+            Raylib::drawSquare(tileX, tileY, tileSize, BROWN);
             for (int i = 0; i < 7; ++i) {
+                if (ressources[i] == 0)
+                    continue;
+                Color color = (ressources[i] <= SIZE_STEP_1) ? RED : (ressources[i] <= SIZE_STEP_2) ? ORANGE : GREEN;
                 float ressourceX = tileX + (i % 3) * tileSize / 3;
                 float ressourceY = tileY + (i / 3) * tileSize / 3;
-                Color color = RED;
-                if (ressources[i] > 0)
-                    color = (ressources[i] < 2) ? ORANGE : GREEN;
                 Raylib::drawSquare(ressourceX, ressourceY, tileSize / 3, color);
             }
             Raylib::drawSquareLines(tileX, tileY, tileSize, BLACK);
@@ -246,7 +247,6 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
 void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
 {
     float tileSize = 1.0f;
-
 
     if (Raylib::isKeyPressed('R'))
         cam.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -282,16 +282,11 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
         Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
         Inventory inv = tile->getInventory();
-        for (size_t i = 1; i < inv.inv.size(); i++) { // start at O to handle food
-            int size;
-            if (inv.inv[i] == 0)
+        for (size_t i = 0; i < inv.inv.size(); i++) {
+            if (inv.inv[i] == 0) {
                 continue;
-            else if (inv.inv[i] == 1)
-                size = 0;
-            else if (inv.inv[i] <= 2)
-                size = 1;
-            else
-                size = 2;
+            }
+            int size = (inv.inv[i] <= SIZE_STEP_1) ? 0 : (inv.inv[i] <= SIZE_STEP_2) ? 1 : 2;
             qm.Draw(size, i, tileX, tileZ);
         }
     }
