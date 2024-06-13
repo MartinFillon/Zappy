@@ -17,13 +17,6 @@
 #define NAME args
 #include "vector.h"
 
-typedef struct {
-    struct options *options;
-    char **args;
-    size_t args_size;
-    size_t idx;
-} parser_t;
-
 /**
  * @brief Parse the arguments according to the options defined in the third
  * argument and return a struct containing the arguments
