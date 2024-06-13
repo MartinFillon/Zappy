@@ -113,27 +113,24 @@ impl Queen {
         Ok(())
     }
 
+    async fn check_move_elevation(&mut self) -> Result<(), command_handle::CommandError>
+    {
+        match self.info.level { // Move it somewhere else because we have to check for each queen.
+            4 => self.move_queen_first_step().await,
+            6 => self.move_queen_second_step().await,
+            _ => Ok(())
+        }
+    }
+
     async fn incantate(&mut self) -> Result<(), command_handle::CommandError> {
-        let incant_res = {
+        {
             let mut cli = self.info.client.lock().await;
-            let _ = commands::broadcast::broadcast(&mut cli, "Incantation !").await;
+            commands::broadcast::broadcast(&mut cli, "Incantation !").await?;
             let mut val =
                 commands::incantation::incantation(&mut cli).await;
-            Queen::handle_eject(&mut cli, val).await
+            Queen::handle_eject(&mut cli, val).await?
         };
-        match incant_res { // Move it somewhere else because we have to check for each queen.
-            Ok(ResponseResult::Incantation(lvl)) => {
-                self.info.level = lvl;
-                println!("{}", self);
-                match lvl {
-                    4 => self.move_queen_first_step().await,
-                    6 => self.move_queen_second_step().await,
-                    _ => Ok(())
-                }
-            },
-            Err(err) => Ok(println!("{}", err)),
-            _ => Ok(()),
-        }
+        Ok(())
     }
 
     async fn check_enough_food(&mut self, min: usize) -> Result<(), command_handle::CommandError> {
