@@ -44,7 +44,7 @@ static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
             "Couldn't find a converter for the argument %s\n",
             opts->type
         );
-        return false;
+        return true;
     }
     v = f(arg);
     vec_pushback_args(
@@ -54,7 +54,7 @@ static bool parse_argument(struct args *lst, char *const arg, option_t *opts)
             .value = v,
         }
     );
-    return true;
+    return false;
 }
 
 static bool parse_inner(parser_t *parser, struct args *lst)
@@ -63,14 +63,13 @@ static bool parse_inner(parser_t *parser, struct args *lst)
 
     opt = get_option(parser->args[parser->idx], parser->options);
     if (opt == NULL)
-        return false;
+        return true;
     parser->idx += 1;
     if (parser->idx >= parser->args_size) {
         logs(DEBUG, "Missing value for argument: %s\n", opt->identifier);
-        return false;
+        return true;
     }
-    parse_argument(lst, parser->args[parser->idx], opt);
-    return true;
+    return parse_argument(lst, parser->args[parser->idx], opt);
 }
 
 void free_args(struct args *lst)
@@ -89,11 +88,11 @@ struct args *parse(char **args, size_t count, struct options *opts)
 
     for (; parser.idx < count; parser.idx++) {
         logs(DEBUG, "Parsing: %s\n", args[parser.idx]);
-        error |= !parse_inner(&parser, lst);
+        error |= parse_inner(&parser, lst);
     }
     if (error) {
         free_args(lst);
         return NULL;
     }
-    return NULL;
+    return lst;
 }
