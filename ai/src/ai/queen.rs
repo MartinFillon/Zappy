@@ -24,7 +24,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{error, info};
+use log::{error, info, warn};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -322,7 +322,10 @@ impl AIHandler for Queen {
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);
-                self.incantate().await;
+                if let Err(e) = self.incantate().await {
+                    warn!("Error from incantation: {}", e);
+                    println!("Error with Queen #{} incantating.", self.info.p_id);
+                }
             }
         }
     }

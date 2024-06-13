@@ -11,7 +11,7 @@ use std::io::{self};
 
 use log::info;
 
-pub async fn start_empress_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
+pub async fn start_empress_ai(from_ai: AI, id: Option<usize>) -> io::Result<AI> {
     info!("Connection ID #{} creates empress...", from_ai.cli_id);
     let (address, team) = (from_ai.address.clone(), from_ai.team.clone());
     let ai = fork_launch(address, team, from_ai, id).await?;
@@ -23,7 +23,7 @@ pub async fn start_empress_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
     Ok(ai)
 }
 
-pub async fn start_queen_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
+pub async fn start_queen_ai(from_ai: AI, id: Option<usize>) -> io::Result<AI> {
     info!("Connection ID #{} creates queen...", from_ai.cli_id);
     let (address, team) = (from_ai.address.clone(), from_ai.team.clone());
     let ai = fork_launch(address, team, from_ai, id).await?;
@@ -35,7 +35,7 @@ pub async fn start_queen_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
     Ok(ai)
 }
 
-pub async fn start_fetus_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
+pub async fn start_fetus_ai(from_ai: AI, id: Option<usize>) -> io::Result<AI> {
     info!("Connection ID #{} creates fetus...", from_ai.cli_id);
     let (address, team) = (from_ai.address.clone(), from_ai.team.clone());
     let ai = fork_launch(address, team, from_ai, id).await?;
@@ -47,7 +47,7 @@ pub async fn start_fetus_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
     Ok(ai)
 }
 
-pub async fn start_knight_ai(from_ai: AI, id: Option<i32>) -> io::Result<AI> {
+pub async fn start_knight_ai(from_ai: AI, id: Option<usize>) -> io::Result<AI> {
     info!("Connection ID #{} creates knight...", from_ai.cli_id);
     let (address, team) = (from_ai.address.clone(), from_ai.team.clone());
     let ai = fork_launch(address, team, from_ai, id).await?;

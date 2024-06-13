@@ -39,7 +39,7 @@ pub struct AI {
     address: String,
     team: String,
     cli_id: usize,
-    p_id: i32,
+    p_id: usize,
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
@@ -69,7 +69,7 @@ impl AI {
         team: String,
         address: String,
         cli_id: usize,
-        p_id: i32,
+        p_id: usize,
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
@@ -127,7 +127,7 @@ async fn checkout_ai_info(
     response: &str,
     team: String,
     address: String,
-    (c_id, p_id): (usize, i32),
+    (c_id, p_id): (usize, usize),
 ) -> io::Result<AI> {
     parse_response(response)
         .await
@@ -150,7 +150,7 @@ async fn init_ai(
     response: &str,
     team: String,
     address: String,
-    (c_id, p_id): (usize, i32),
+    (c_id, p_id): (usize, usize),
 ) -> io::Result<AI> {
     info!("Initializing AI #{}...", c_id);
 
@@ -176,7 +176,7 @@ async fn start_ai(
     client: Arc<Mutex<TcpClient>>,
     team: String,
     address: String,
-    (c_id, p_id): (usize, i32),
+    (c_id, p_id): (usize, usize),
     start: bool,
 ) -> io::Result<AI> {
     println!("Starting AI process n{}...", c_id);
@@ -222,7 +222,7 @@ pub async fn fork_launch(
     address: String,
     team: String,
     from_ai: AI,
-    set_id: Option<i32>,
+    set_id: Option<usize>,
 ) -> io::Result<AI> {
     match tcp::handle_tcp(address.clone(), team.clone()).await {
         Ok(client) => {

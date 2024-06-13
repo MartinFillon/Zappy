@@ -8,7 +8,7 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{AIHandler, Incantationers, AI},
+    ai::{ai_create, AIHandler, Incantationers, AI},
     commands,
     commands::{inventory, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
@@ -47,14 +47,14 @@ impl AIHandler for Knight {
             self.handle_message().await?;
 
             if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
-                break; // die or return Err(CommandError::DeadReceived) ??
+                return Err(CommandError::DeadReceived);
             }
             if self.check_food().await? < 8 {
                 info!(
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
                 );
-                // create fetus
+                let _ = ai_create::start_fetus_ai(self.info().clone(), None).await;
                 while self.check_food().await? < 10 {
                     self.handle_message().await?;
                     let mut client = self.info().client().lock().await;
@@ -63,8 +63,6 @@ impl AIHandler for Knight {
                 }
             }
         }
-
-        Ok(())
     }
 }
 
