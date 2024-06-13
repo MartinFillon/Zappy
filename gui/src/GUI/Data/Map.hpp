@@ -9,13 +9,17 @@
 
 #include <memory>
 #include <vector>
+#include <raylib.h>
 
-#include "../Raylib.hpp"
 #include "../InfoBox.hpp"
 #include "Egg.hpp"
 #include "Player.hpp"
 #include "Pos.hpp"
 #include "Tile.hpp"
+#include "../ModelManager/RessourcesManager.hpp"
+
+#define SIZE_STEP_1 1
+#define SIZE_STEP_2 2
 
 namespace GUI {
 namespace Data {
@@ -47,6 +51,7 @@ class Map {
     std::vector<std::shared_ptr<Egg>> m_eggs;
     Pos<int, 2> m_size;
     mutable int x, y, end_x, end_y;
+    mutable RessourcesManager qm;
 };
 
 } // namespace Data

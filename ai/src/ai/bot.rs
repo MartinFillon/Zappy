@@ -5,6 +5,9 @@
 // bot
 //
 
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use std::mem::swap;
 
 use crate::{
@@ -28,7 +31,7 @@ use crate::{
 
 use async_trait::async_trait;
 
-use log::info;
+use log::{debug, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -174,11 +177,11 @@ impl AIHandler for Bot {
 impl Bot {
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
-        info!("Updating movement of offset: ({}, {})...", d.0, d.1);
+        debug!("Updating movement of offset: ({}, {})...", d.0, d.1);
 
         let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
 
-        info!(
+        debug!(
             "Coordinated updated from: ({}, {})",
             self.coord().0,
             self.coord().1
@@ -187,12 +190,12 @@ impl Bot {
         let wrapped_x = wrap_coordinate(x, width);
         let wrapped_y = wrap_coordinate(y, height);
 
-        info!("To: ({}, {})", wrapped_x, wrapped_y);
+        debug!("To: ({}, {})", wrapped_x, wrapped_y);
         self.set_coord((wrapped_x, wrapped_y));
     }
 
     fn update_eject_coord(&mut self, direction: DirectionEject) {
-        info!("Updating movement from Direction: {}...", direction);
+        debug!("Updating movement from Direction: {}...", direction);
         match direction {
             DirectionEject::North => self.update_coord_movement((0, 1)),
             DirectionEject::East => self.update_coord_movement((1, 0)),
@@ -268,7 +271,7 @@ impl Bot {
     }
 
     async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
-        let mut res = Ok(ResponseResult::OK);
+        let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(

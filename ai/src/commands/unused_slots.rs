@@ -12,10 +12,10 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 pub async fn unused_slots(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    info!("Checking unused slots...");
+    debug!("Checking unused slots...");
     let response = client.check_dead("Connect_nbr\n").await?;
     match response.parse::<usize>() {
         Ok(nb) => Ok(ResponseResult::Value(nb)),

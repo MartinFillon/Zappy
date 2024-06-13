@@ -13,21 +13,37 @@
 typedef void (*unknown_route_callback_t)(client_t *);
 typedef void (*invalid_args_callback_t)(client_t *);
 
+/**
+ * @brief Callback for unknown route on gui clients
+ * @param c the client
+ */
 static inline void gui_unknown_route(client_t *c)
 {
     prepare_response_cat(&c->io, "suc\n");
 }
 
+/**
+ * @brief Callback for unknown route on default clients
+ * @param c the client
+ */
 static inline void default_unknown_route(client_t *c)
 {
     prepare_response_cat(&c->io, "ko\n");
 }
 
+/**
+ * @brief Callback for invalid args on default clients
+ * @param c the client
+ */
 static inline void default_invalid_args(client_t *c)
 {
     prepare_response_cat(&c->io, "ko\n");
 }
 
+/**
+ * @brief Callback for invalid args on gui clients
+ * @param c the client
+ */
 static inline void gui_invalid_args(client_t *c)
 {
     prepare_response_cat(&c->io, "sbp\n");

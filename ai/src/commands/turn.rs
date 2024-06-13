@@ -15,7 +15,7 @@ use crate::tcp::{
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use log::info;
+use log::debug;
 
 #[derive(Debug, Clone, Copy)]
 pub enum DirectionTurn {
@@ -35,7 +35,7 @@ pub async fn turn(
     client: &mut TcpClient,
     dir: DirectionTurn,
 ) -> Result<ResponseResult, CommandError> {
-    info!("Turning {}...", dir);
+    debug!("Turning {}...", dir);
 
     let response = client
         .check_dead(&format!("{}\n", DIRECTIONS[dir as usize]))

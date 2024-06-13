@@ -21,7 +21,8 @@ static int fill_client(
     struct sockaddr_in *addr
 )
 {
-    client_t c = init_client(fd);
+    client_t c =
+        init_client(fd, inet_ntoa(addr->sin_addr), ntohs(addr->sin_port));
 
     prepare_response_cat(&c.io, "WELCOME\n");
     logs(
