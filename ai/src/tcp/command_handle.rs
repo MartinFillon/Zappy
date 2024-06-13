@@ -14,7 +14,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{debug, warn};
+use log::{debug, info, warn};
 
 #[derive(PartialEq)]
 pub enum ResponseResult {
@@ -132,12 +132,13 @@ fn handle_message_response(
         match parts[1].trim_end_matches(',').parse::<usize>() {
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionMessage::from_usize(direction) {
-                    let final_msg = parts[2..].join(" ");
+                    let final_msg: String = parts[2..].join(" ");
+                    debug!("Encrypted message received: {}", final_msg);
                     let decrypted_message = match crypt.decrypt(&final_msg) {
                         Some(data) => data,
                         None => return Ok(ResponseResult::OK),
                     };
-                    debug!(
+                    info!(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
@@ -160,7 +161,7 @@ fn handle_eject_response(response: String) -> Result<ResponseResult, CommandErro
         match parts[1].trim_start().parse::<usize>() {
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionEject::from_usize(direction) {
-                    debug!(
+                    info!(
                         "Receiving ejection from direction {} (aka {}).",
                         dir_enum, direction
                     );

@@ -50,7 +50,6 @@ impl Crypt {
     fn create_cipher(&self) -> Aes256Gcm {
         let key_bytes = Crypt::get_key(&self.key);
         let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
-        debug!("Key: {}", encode(key_bytes));
         Aes256Gcm::new(key)
     }
 
