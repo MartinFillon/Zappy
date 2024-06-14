@@ -12,11 +12,16 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::info;
+use log::debug;
 
 pub async fn broadcast(client: &mut TcpClient, msg: &str) -> Result<ResponseResult, CommandError> {
-    info!("Broadcasting: ({})...", msg);
-
+    debug!("Broadcasting: ({})...", msg);
     let response = client.check_dead(&format!("Broadcast {}\n", msg)).await?;
-    client.handle_response(response).await
+
+    let key = client.crypt();
+    let encrypted_res = match key.encrypt(response.as_bytes().to_vec()) {
+        Some(data) => data,
+        None => return Err(CommandError::InvalidKey),
+    };
+    client.handle_response(encrypted_res).await
 }

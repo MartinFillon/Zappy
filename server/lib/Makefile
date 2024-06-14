@@ -43,6 +43,7 @@ SRC =   str/str.c\
 		options/converters/float.c\
 		options/converters/string_list.c\
 		options/help.c\
+		utils/freeze_ai.c
 
 NAME = ../libcore.a
 

@@ -5,6 +5,9 @@
 // empress
 //
 
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use crate::{
     ai::{AIHandler, Incantationers, AI},
     commands::{self},

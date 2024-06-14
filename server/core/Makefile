@@ -22,6 +22,7 @@ SRC = $(addsuffix .c, 				\
 							get_tile		\
 							display_map 	\
 							send_info_tile 	\
+							verif_tile_requirement	\
 						)\
 						$(addprefix team/,	\
 							egg				\
@@ -86,7 +87,8 @@ SRC = $(addsuffix .c, 				\
 							connect_nbr 	\
 							fork 		\
 							eject 		\
-							incantation 	\
+							incantation_start 	\
+							incantation_end 	\
 						)\
 						destroy				\
 					)\
