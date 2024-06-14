@@ -91,10 +91,10 @@ ZAPPY_LOG=info ./zappy_ai
 The server also have a logging system implemented with multiple level.
 The levels are set using the `-l` argument and are the following.
 - `ERROR`
-- `WARN` (default)
+- `WARNING` (default)
 - `INFO`
 - `DEBUG`
-- `DISABLED`
+- `DISABLE`
 
 ### GUI
 
