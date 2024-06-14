@@ -20,7 +20,7 @@ use crate::{
 };
 
 use async_trait::async_trait;
-use log::error;
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Bean)]
@@ -39,8 +39,10 @@ impl Empress {
         let mut cli = self.info.client.lock().await;
 
         for i in 1..5 {
+            println!("Creating Queen #{}", i);
             commands::move_up::move_up(&mut cli).await?;
             commands::fork::fork(&mut cli).await?;
+            debug!("Task for new queen will start...");
             if let Err(err) = start_queen_ai(self.info().clone(), Some(i)).await {
                 error!("{err}");
                 return Err(CommandError::RequestError);
@@ -63,12 +65,15 @@ impl AIHandler for Empress {
         {
             let mut client = self.info().client().lock().await;
             while let ResponseResult::Value(val) = unused_slots::unused_slots(&mut client).await? {
+                debug!("Blocked... Connect_nbr responds with [{}].", val);
                 if val == 0 {
                     break;
                 }
             }
         }
+        info!("Starting spawning of queens...");
         self.spawn_queens().await?;
+        warn!("Empress is now dying...");
         Err(CommandError::DeadReceived)
     }
 }
