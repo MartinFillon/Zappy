@@ -51,8 +51,17 @@ static struct options *create_opts(void)
 
 static void destroy_args(struct args *ag, struct options *opts)
 {
-    free_args(ag);
+    if (ag != NULL)
+        free_args(ag);
     vec_destroy_options(opts);
+}
+
+static int run_program(args_infos_t *args)
+{
+    signal(SIGINT, &sig);
+    if (loop_server(args) == ERROR)
+        return EPI_ERROR;
+    return SUCCESS;
 }
 
 int main(int ac, char **av)
@@ -63,15 +72,16 @@ int main(int ac, char **av)
 
     srand(time(NULL));
     set_log_level(WARNING);
-    ag = parse(av, ac, opts);
-    if (ag == NULL) {
-        logs(ERROR_LEVEL, "Error parsing arguments\n");
-        return EPI_ERROR;
+    if (!run_help(av, opts)) {
+        ag = parse(av, ac, opts);
+        if (ag == NULL) {
+            logs(ERROR_LEVEL, "Error parsing arguments\n");
+            return EPI_ERROR;
+        }
+        fill_infos(&args, ag);
+        if (run_program(&args) == EPI_ERROR)
+            return EPI_ERROR;
     }
-    fill_infos(&args, ag);
-    signal(SIGINT, &sig);
-    if (loop_server(&args) == ERROR)
-        return EPI_ERROR;
     destroy_args(ag, opts);
     logs(INFO, "Server stopped\n");
     return SUCCESS;

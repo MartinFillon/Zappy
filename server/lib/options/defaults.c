@@ -53,7 +53,7 @@ void set_defaults(struct options *opts, struct args *arguments)
     bool found = false;
     argument_t new = {0};
 
-    for (size_t i = 0; i < opts->size; i++, found = false) {
+    for (size_t i = 0; i < opts->size; i++) {
         search_opt(&opts->data[i], arguments, &found);
         if (!found && opts->data[i].has_default) {
             new.option = &opts->data[i];
@@ -64,5 +64,6 @@ void set_defaults(struct options *opts, struct args *arguments)
             vec_pushback_args(arguments, new);
         }
         new = (argument_t){0};
+        found = false;
     }
 }

@@ -42,6 +42,7 @@ typedef struct {
     bool has_default;
     union default_data default_value;
     bool required;
+    char *description;
 } option_t;
 
 typedef struct {

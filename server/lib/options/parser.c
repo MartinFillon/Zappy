@@ -103,10 +103,6 @@ struct args *parse(char **args, size_t count, struct options *opts)
     parser_t parser = {opts, args, count, 1};
     bool error = false;
 
-    if (run_help(args, opts)) {
-        free_args(lst);
-        return NULL;
-    }
     for (; parser.idx < parser.args_size; parser.idx++) {
         error |= parse_inner(&parser, lst);
     }

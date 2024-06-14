@@ -12,8 +12,13 @@
 static void help(char const *bin, struct options *opts)
 {
     dprintf(1, "Usage:\n\t%s [options]\n\nOptions:\n", bin);
-    for (size_t i = 0; i < opts->size; i++)
-        dprintf(1, "\t%s\n", opts->data[i].identifier);
+    for (size_t i = 0; i < opts->size; i++) {
+        dprintf(1, "\t%s", opts->data[i].identifier);
+        if (opts->data[i].description == NULL)
+            dprintf(1, "\n");
+        else
+            dprintf(1, ":\t%s\n", opts->data[i].description);
+    }
 }
 
 bool run_help(char **av, struct options *opts)
