@@ -109,6 +109,21 @@ The directory `doc/ai` is for everything about the ai.
 
 As the ai is in rust it is the only one not using a doxygen but a `cargo doc` format.
 
+## Server Displayers
+
+You can create your own displayer if you dont wanna use the given one.
+For this you need to link the `libcore.a` file to it and expose those 3 functions.
+
+```c
+extern bool server_runner(zappy_t *z, void *state);
+extern void *init(int level);
+extern void destroy_renderer(void *state);
+```
+
+They all are important, first `init`. It will initialize the state of your displayer. The argument is there for you to configure the logger for your displayer according to the main level.
+Then the `server_runner`. It is responsible to run every function. You can either use the `core` function or manually run any function in the `libcore.a` please keep in mind that you are responsible on what you are going to use in it.
+Lastly the `destroy_renderer` here to free destroy anything in the state.
+
 
 ## Our team
 | [<img src="https://avatars.githubusercontent.com/u/109749395?v=4" width=85><br><sub>Lou Onezime</sub>](https://github.com/louonezime) | [<img src="https://avatars.githubusercontent.com/u/114775771?v=4" width=85><br><sub>Martin Fillon</sub>](https://github.com/MartinFillon) | [<img src="https://avatars.githubusercontent.com/u/100275038?v=4" width=85><br><sub>Alexandre Vigoureux</sub>](https://github.com/Aluxray) | [<img src="https://avatars.githubusercontent.com/u/114816489?v=4" width=85><br><sub>Tiphaine Bertone</sub>](https://github.com/Kanda09) | [<img src="https://avatars.githubusercontent.com/u/105550975?v=4" width=85><br><sub>Manuel Tome</sub>](https://github.com/ManuelR-T)| [<img src="https://avatars.githubusercontent.com/u/114925763?v=4" width=85><br><sub>Rahul Chander</sub>](https://github.com/RahulCHANDER25)|
