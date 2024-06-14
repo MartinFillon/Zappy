@@ -42,6 +42,7 @@ SRC =   str/str.c\
 		options/converters/boolean.c\
 		options/converters/float.c\
 		options/converters/string_list.c\
+		options/help.c\
 
 NAME = ../libcore.a
 

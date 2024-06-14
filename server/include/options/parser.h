@@ -65,3 +65,12 @@ void set_defaults(struct options *opts, struct args *arguments);
  * @return bool true if all the required options are present, false otherwise
  */
 bool check_required(struct options *opts, struct args *arguments);
+
+/**
+ * @brief Print the help message if -h or --help is present in the arguments
+ * @param av The arguments
+ * @param opts The options to print the help message for
+ *
+ * @return bool true if the help message was printed, false otherwise
+ */
+bool run_help(char **av, struct options *opts);
