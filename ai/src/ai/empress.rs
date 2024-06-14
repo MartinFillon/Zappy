@@ -9,8 +9,8 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{AIHandler, Incantationers, AI},
-    commands::{self},
+    ai::{ai_create::start_queen_ai, AIHandler, Incantationers, AI},
+    commands,
     elevation::{Config, Inventory},
     move_towards_broadcast::backtrack_eject,
     tcp::{
@@ -20,7 +20,10 @@ use crate::{
 };
 
 use async_trait::async_trait;
+use log::error;
+use zappy_macros::Bean;
 
+#[derive(Bean)]
 pub struct Empress {
     pub info: AI,
     id: usize,
@@ -38,7 +41,10 @@ impl Empress {
         for i in 1..5 {
             commands::move_up::move_up(&mut cli).await?;
             commands::fork::fork(&mut cli).await?;
-            // Here you can create a queen after the fork with `i` as id.
+            if let Err(err) = start_queen_ai(self.info().clone(), Some(i)).await {
+                error!("{err}");
+                return Err(CommandError::RequestError);
+            }
             println!("Queen with id {i}");
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;

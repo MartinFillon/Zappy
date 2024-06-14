@@ -99,10 +99,10 @@ impl Queen {
         we assume that all the queens have the same direction
     */
     async fn move_queen_first_step(&mut self) -> Result<(), CommandError> {
+        self.set_can_move(false);
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
-        self.set_can_move(false);
         // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;

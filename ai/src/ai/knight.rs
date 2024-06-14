@@ -8,7 +8,7 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{ai_create, AIHandler, Incantationers, AI},
+    ai::{ai_create::start_fetus_ai, AIHandler, Incantationers, AI},
     commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
@@ -24,7 +24,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::info;
+use log::{error, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -71,7 +71,10 @@ impl AIHandler for Knight {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
                     if let ResponseResult::OK = handle_response(&mut client, res).await? {
-                        let _ = ai_create::start_fetus_ai(self.info().clone(), None).await;
+                        if let Err(err) = start_fetus_ai(self.info().clone(), None).await {
+                            error!("{err}");
+                            return Err(CommandError::RequestError);
+                        }
                     }
                 };
                 while self.check_food().await? < 10 {
