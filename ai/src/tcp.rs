@@ -147,7 +147,11 @@ impl TcpClient {
     }
 
     pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
-        self.messages.pop()
+        if self.messages.len() == 0 {
+            None
+        } else {
+            Some(self.messages.remove(0))
+        }
     }
 }
 
