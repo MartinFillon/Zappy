@@ -57,6 +57,11 @@ pub trait Incantationers {
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError>;
+
+    async fn handle_elevating(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError>;
 }
 
 #[async_trait]

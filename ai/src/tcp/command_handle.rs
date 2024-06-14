@@ -21,6 +21,7 @@ pub enum ResponseResult {
     OK,
     KO,
     Dead,
+    Elevating,
     Value(usize),
     Text(String),
     Tiles(Vec<Vec<String>>),
@@ -116,6 +117,7 @@ impl CommandHandler for TcpClient {
             "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
+            "Elevation underway" => Ok(ResponseResult::Elevating),
             _ => Err(CommandError::InvalidResponse),
         }
     }
@@ -287,6 +289,7 @@ impl Display for ResponseResult {
             ResponseResult::OK => write!(f, "OK"),
             ResponseResult::KO => write!(f, "KO"),
             ResponseResult::Dead => write!(f, "Dead"),
+            ResponseResult::Elevating => write!(f, "Elevating"),
             ResponseResult::Value(nb) => write!(f, "Value: {}", nb),
             ResponseResult::Text(text) => write!(f, "Text: {}", text),
             ResponseResult::Tiles(tiles) => {
