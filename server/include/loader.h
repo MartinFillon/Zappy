@@ -16,5 +16,17 @@ typedef struct {
     void *handle;
 } lib_t;
 
+/**
+ * @brief opens the displayers and loads it functions
+ *
+ * @param file the filename
+ * @return lib_t all the data loaded by dhl
+ */
 lib_t open_dhl(char const *file);
+
+/**
+ * @brief closes and unload the displayer
+ *
+ * @param l the lib to unload
+ */
 void close_dhl(lib_t *l);
