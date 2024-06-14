@@ -58,6 +58,8 @@ void set_log_fd(int fd)
 
 int set_log_level_from_str(char const *str)
 {
+    if (!str)
+        return set_log_level(ERROR_LEVEL);
     for (__auto_type i = 0; LEVELS[i].str; i++)
         if (strcmp(str, LEVELS[i].str) == 0)
             return set_log_level(LEVELS[i].level);
