@@ -14,7 +14,7 @@ use crate::{
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
-        command_handle::{self, CommandError, CommandHandler, DirectionMessage, ResponseResult},
+        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
@@ -138,7 +138,7 @@ impl Queen {
         Ok(())
     }
 
-    async fn check_move_elevation(&mut self) -> Result<(), command_handle::CommandError> {
+    async fn check_move_elevation(&mut self) -> Result<(), CommandError> {
         if !self.can_move() {
             return Ok(());
         }
@@ -150,7 +150,7 @@ impl Queen {
         }
     }
 
-    async fn incantate(&mut self) -> Result<(), command_handle::CommandError> {
+    async fn incantate(&mut self) -> Result<(), CommandError> {
         let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
@@ -167,7 +167,7 @@ impl Queen {
         Ok(())
     }
 
-    async fn check_enough_food(&mut self, min: usize) -> Result<(), command_handle::CommandError> {
+    async fn check_enough_food(&mut self, min: usize) -> Result<(), CommandError> {
         if *self.inv.food() >= min || *self.look.inv.food() == 0 {
             return Ok(());
         }
@@ -178,7 +178,7 @@ impl Queen {
         Ok(())
     }
 
-    async fn fork_servant(&mut self) -> Result<(), command_handle::CommandError> {
+    async fn fork_servant(&mut self) -> Result<(), CommandError> {
         let mut cli = self.info.client.lock().await;
 
         commands::fork::fork(&mut cli).await?;
@@ -307,7 +307,7 @@ impl AIHandler for Queen {
         Self::new(info)
     }
 
-    async fn update(&mut self) -> Result<(), command_handle::CommandError> {
+    async fn update(&mut self) -> Result<(), CommandError> {
         self.handle_message().await?;
         self.fork_servant().await?;
         loop {

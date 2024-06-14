@@ -54,7 +54,7 @@ impl AIHandler for Knight {
                     let mut client = self.info().client().lock().await;
                     let res = incantation::incantation(&mut client).await;
                     if let ResponseResult::Incantation(lvl) =
-                        handle_response(&mut client, res).await?
+                        knight_handle_response(&mut client, res).await?
                     {
                         level = lvl;
                     }
@@ -70,18 +70,15 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
-                    if let ResponseResult::OK = handle_response(&mut client, res).await? {
-                        if let Err(err) = start_fetus_ai(self.info().clone(), None).await {
-                            error!("{err}");
-                            return Err(CommandError::RequestError);
-                        }
+                    if let ResponseResult::OK = knight_handle_response(&mut client, res).await? {
+                        let _ = start_fetus_ai(self.info().clone(), None).await;
                     }
                 };
                 while self.check_food().await? < 10 {
                     self.handle_message().await?;
                     let mut client = self.info().client().lock().await;
                     let res = take_object::take_object(&mut client, "food").await;
-                    handle_response(&mut client, res).await?;
+                    knight_handle_response(&mut client, res).await?;
                 }
             }
         }
@@ -110,13 +107,10 @@ impl Incantationers for Knight {
         if let Ok(ResponseResult::Elevating) = res {
             res = Ok(incantation::handle_incantation(client).await?);
             if let Some(response) = client.get_response().await {
-                client.handle_response(response).await
-            } else {
-                res
+                return client.handle_response(response).await;
             }
-        } else {
-            res
         }
+        res
     }
 }
 
@@ -160,7 +154,7 @@ impl Knight {
     async fn check_food(&mut self) -> Result<usize, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = inventory::inventory(&mut client).await;
-        if let ResponseResult::Inventory(inv) = handle_response(&mut client, res).await? {
+        if let ResponseResult::Inventory(inv) = knight_handle_response(&mut client, res).await? {
             return Ok(inv[0].1 as usize);
         }
         Err(CommandError::InvalidResponse)
@@ -189,7 +183,7 @@ impl Knight {
                         if let Ok(id) = content.0.parse::<usize>() {
                             if id == *self.info().p_id() && content.1 == "mv" {
                                 let res = move_towards_broadcast(&mut client, dir).await;
-                                handle_response(&mut client, res).await?;
+                                knight_handle_response(&mut client, res).await?;
                             }
                         }
                     }
@@ -205,7 +199,7 @@ impl Knight {
         }
         let mut client = self.info().client().lock().await;
         let res = look_around::look_around(&mut client).await;
-        if let ResponseResult::Tiles(tiles) = handle_response(&mut client, res).await? {
+        if let ResponseResult::Tiles(tiles) = knight_handle_response(&mut client, res).await? {
             if !tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
                 return Ok(false);
             }
@@ -220,7 +214,7 @@ impl Display for Knight {
     }
 }
 
-async fn handle_response(
+async fn knight_handle_response(
     client: &mut TcpClient,
     res: Result<ResponseResult, CommandError>,
 ) -> Result<ResponseResult, CommandError> {
