@@ -15,9 +15,11 @@
 int loop_server(args_infos_t *args)
 {
     zappy_t z = {0};
-    lib_t l = open_dhl("server/dashboard.so");
+    char *file = str_cstr(args->displayer_path);
+    lib_t l = open_dhl(file);
     void *dt = NULL;
 
+    free(file);
     if (!l.loop || init_program(args, &z))
         return ERROR;
     dt = l.init(args->level);

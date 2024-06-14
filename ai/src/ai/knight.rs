@@ -9,8 +9,7 @@
 
 use crate::{
     ai::{ai_create, AIHandler, Incantationers, AI},
-    commands,
-    commands::{inventory, take_object},
+    commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{
@@ -49,17 +48,37 @@ impl AIHandler for Knight {
             if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
                 return Err(CommandError::DeadReceived);
             }
-            if self.check_food().await? < 8 {
+            if self.can_incantate().await? {
+                let mut level = self.info().level;
+                {
+                    let mut client = self.info().client().lock().await;
+                    let res = incantation::incantation(&mut client).await;
+                    if let ResponseResult::Incantation(lvl) =
+                        handle_response(&mut client, res).await?
+                    {
+                        level = lvl;
+                    }
+                }
+                self.info.set_level(level);
+                continue;
+            }
+            if self.check_food().await? < 6 {
                 info!(
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
                 );
-                let _ = ai_create::start_fetus_ai(self.info().clone(), None).await;
+                {
+                    let mut client = self.info().client().lock().await;
+                    let res = fork::fork(&mut client).await;
+                    if let ResponseResult::OK = handle_response(&mut client, res).await? {
+                        let _ = ai_create::start_fetus_ai(self.info().clone(), None).await;
+                    }
+                };
                 while self.check_food().await? < 10 {
                     self.handle_message().await?;
                     let mut client = self.info().client().lock().await;
                     let res = take_object::take_object(&mut client, "food").await;
-                    Knight::handle_eject(&mut client, res).await?;
+                    handle_response(&mut client, res).await?;
                 }
             }
         }
@@ -79,6 +98,22 @@ impl Incantationers for Knight {
             }
         }
         res
+    }
+
+    async fn handle_elevating(
+        client: &mut TcpClient,
+        mut res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        if let Ok(ResponseResult::Elevating) = res {
+            res = Ok(incantation::handle_incantation(client).await?);
+            if let Some(response) = client.get_response().await {
+                client.handle_response(response).await
+            } else {
+                res
+            }
+        } else {
+            res
+        }
     }
 }
 
@@ -106,7 +141,7 @@ impl Knight {
 
         println!("Knight #{} is killing himself.", id);
         loop {
-            let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
+            let command = drop_object::drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
                 info!("Knight #{} dropping food x1...", self.info.p_id);
                 total += 1;
@@ -122,7 +157,7 @@ impl Knight {
     async fn check_food(&mut self) -> Result<usize, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = inventory::inventory(&mut client).await;
-        if let ResponseResult::Inventory(inv) = Knight::handle_eject(&mut client, res).await? {
+        if let ResponseResult::Inventory(inv) = handle_response(&mut client, res).await? {
             return Ok(inv[0].1 as usize);
         }
         Err(CommandError::InvalidResponse)
@@ -151,7 +186,7 @@ impl Knight {
                         if let Ok(id) = content.0.parse::<usize>() {
                             if id == *self.info().p_id() && content.1 == "mv" {
                                 let res = move_towards_broadcast(&mut client, dir).await;
-                                Knight::handle_eject(&mut client, res).await?;
+                                handle_response(&mut client, res).await?;
                             }
                         }
                     }
@@ -160,10 +195,35 @@ impl Knight {
         }
         Ok(ResponseResult::OK)
     }
+
+    async fn can_incantate(&mut self) -> Result<bool, CommandError> {
+        if self.info().level != 1 || self.check_food().await? < 4 {
+            return Ok(false);
+        }
+        let mut client = self.info().client().lock().await;
+        let res = look_around::look_around(&mut client).await;
+        if let ResponseResult::Tiles(tiles) = handle_response(&mut client, res).await? {
+            if !tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
 }
 
 impl Display for Knight {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "Knight => {}", self.info)
+    }
+}
+
+async fn handle_response(
+    client: &mut TcpClient,
+    res: Result<ResponseResult, CommandError>,
+) -> Result<ResponseResult, CommandError> {
+    match res {
+        Ok(ResponseResult::Eject(_)) => Knight::handle_eject(client, res).await,
+        Ok(ResponseResult::Elevating) => Knight::handle_elevating(client, res).await,
+        _ => res,
     }
 }

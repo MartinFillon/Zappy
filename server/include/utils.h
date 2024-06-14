@@ -54,6 +54,21 @@ bool is_number(char const *str);
  */
 bool is_coord_equal(pos_t *this, pos_t *oth);
 
+/**
+ * @brief freeze an ai and assign him @param id as his incant id
+ *
+ * @param ai The ai to freeze
+ * @param id The id to set
+ */
+void freeze_ai(ai_t *ai, int id);
+
+/**
+ * @brief unfreeze an ai
+ *
+ * @param ai The ai to unfreeze
+ */
+void unfreeze_ai(ai_t *ai);
+
 /************************************************************************
  * Those are vectors comparison functions used for vector functions that
  * needs predicate as parameter

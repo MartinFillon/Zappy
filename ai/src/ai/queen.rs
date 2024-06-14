@@ -61,6 +61,13 @@ impl Incantationers for Queen {
         }
         res
     }
+
+    async fn handle_elevating(
+        _client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        res
+    }
 }
 
 #[async_trait]
@@ -95,6 +102,7 @@ impl Queen {
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
+        self.set_can_move(false);
         // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
@@ -112,14 +120,12 @@ impl Queen {
     async fn move_queen_second_step(&mut self) -> Result<(), CommandError> {
         match self.info.p_id {
             1 | 2 => {
-                // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
                 commands::move_up::move_up(&mut cli).await?;
                 commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
                     .await?;
             }
             3 | 4 => {
-                // Check que les queens en face peut
                 let mut cli = self.info.client.lock().await;
                 commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
                 commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
@@ -133,6 +139,9 @@ impl Queen {
     }
 
     async fn check_move_elevation(&mut self) -> Result<(), command_handle::CommandError> {
+        if !self.can_move() {
+            return Ok(());
+        }
         match self.info.level {
             // Move it somewhere else because we have to check for each queen.
             4 => self.move_queen_first_step().await,
@@ -142,12 +151,19 @@ impl Queen {
     }
 
     async fn incantate(&mut self) -> Result<(), command_handle::CommandError> {
+        let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
-            commands::broadcast::broadcast(&mut cli, "Incantation !").await?;
+            commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
+                .await?;
             let incant_res = commands::incantation::incantation(&mut cli).await;
-            Queen::handle_eject(&mut cli, incant_res).await?
+            if let ResponseResult::Incantation(lvl) =
+                Queen::handle_eject(&mut cli, incant_res).await?
+            {
+                level = lvl;
+            }
         };
+        self.info.set_level(level);
         Ok(())
     }
 
@@ -270,20 +286,15 @@ impl Queen {
     ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some((dir, msg)) = client.pop_message() {
-            info!(
-                "Knight [Queen {}]: handling message: {}",
-                self.info().cli_id,
-                msg
-            );
-            if !msg.contains(' ') || msg.len() < 2 {
-                continue;
-            }
-            if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
-                let content = msg.split_at(idex);
-                if let Ok(id) = content.0.parse::<usize>() {
-                    self.handle_message_content(&mut client, id, dir, content.1, can_move)
-                        .await?;
-                }
+            info!("Queen {}: handling message: {}", self.info().cli_id, msg);
+            let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                msg.split_at(idex)
+            } else {
+                ("0", msg.trim_end_matches('\n'))
+            };
+            if let Ok(id) = content.0.parse::<usize>() {
+                self.handle_message_content(&mut client, id, dir, content.1, can_move)
+                    .await?;
             }
         }
         Ok(ResponseResult::OK)
@@ -293,13 +304,16 @@ impl Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
-        // After this the queen must turn to the direction of message "Done"
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
+        self.handle_message().await?;
         self.fork_servant().await?;
         loop {
+            self.handle_message().await?;
+            self.check_move_elevation().await?;
+
             let look_res = {
                 let mut cli = self.info.client.lock().await;
                 let res = commands::look_around::look_around(&mut cli).await;

@@ -31,7 +31,19 @@ SRC =   str/str.c\
 		utils/vec_cmp.c\
 		utils/is_empty.c\
 		utils/is_number.c\
-		utils/is_coord_equals.c
+		utils/is_coord_equals.c\
+		options/parser.c\
+		options/getters.c\
+		options/defaults.c\
+		options/required.c\
+		options/converters/string.c\
+		options/converters/int.c\
+		options/converters/uint.c\
+		options/converters/boolean.c\
+		options/converters/float.c\
+		options/converters/string_list.c\
+		options/help.c\
+		utils/freeze_ai.c
 
 NAME = ../libcore.a
 
