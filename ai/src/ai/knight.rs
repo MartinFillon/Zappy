@@ -8,7 +8,7 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{ai_create::start_fetus_ai, start_ai, AIHandler, Incantationers, AI},
+    ai::{fetus::Fetus, start_ai, AIHandler, Incantationers, AI},
     commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
@@ -74,7 +74,7 @@ impl AIHandler for Knight {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
                     if let ResponseResult::OK = knight_handle_response(&mut client, res).await? {
-                        let _ = start_fetus_ai(self.info().clone(), None).await;
+                        let _ = Fetus::fork_dupe(self.info().clone(), None).await;
                     }
                 };
                 while self.check_food().await? < 10 {
@@ -88,19 +88,19 @@ impl AIHandler for Knight {
         Err(CommandError::DeadReceived)
     }
 
-    async fn fork_dupe(&mut self, address: String, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(address.clone(), self.info.team.clone()).await {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Knight` client connected successfully.");
                 let client = Arc::new(Mutex::new(client));
-                let (c_id, p_id) = (self.info.cli_id, set_id.unwrap_or(0));
-                let team = self.info.team.clone();
+                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
+                let team = info.team.clone();
 
                 let handle = task::spawn(async move {
                     match start_ai(
                         client.clone(),
                         team.to_string(),
-                        address,
+                        info.address,
                         (c_id, p_id),
                         false,
                     )

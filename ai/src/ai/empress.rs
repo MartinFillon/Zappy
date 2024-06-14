@@ -9,19 +9,21 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{ai_create::start_queen_ai, AIHandler, Incantationers, AI},
+    ai::{queen::Queen, start_ai, AIHandler, Incantationers, AI},
     commands::{self, unused_slots},
     elevation::{Config, Inventory},
     move_towards_broadcast::backtrack_eject,
     tcp::{
         command_handle::{self, CommandError, CommandHandler, ResponseResult},
-        TcpClient,
+        handle_tcp, TcpClient,
     },
 };
 
 use std::io::{self, Error, ErrorKind};
+use std::sync::Arc;
 
 use async_trait::async_trait;
+use tokio::{sync::Mutex, task};
 
 use log::{debug, error, info, warn};
 use zappy_macros::Bean;
@@ -48,7 +50,7 @@ impl Empress {
                 error!("Fork received a KO.");
             }
             debug!("Task for new queen will start...");
-            if let Err(err) = start_queen_ai(self.info().clone(), Some(i)).await {
+            if let Err(err) = Queen::fork_dupe(self.info.clone(), Some(i)).await {
                 error!("Queen fork error: {}", err);
                 // return Err(CommandError::RequestError);
             }
@@ -82,11 +84,50 @@ impl AIHandler for Empress {
         Err(CommandError::DeadReceived)
     }
 
-    async fn fork_dupe(&mut self, _address: String, _set_id: Option<usize>) -> io::Result<AI> {
-        error!("Trying to fork an empress, why though?");
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Empress` client connected successfully.");
+                let client = Arc::new(Mutex::new(client));
+                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
+                let team = info.team.clone();
+
+                let handle = task::spawn(async move {
+                    match start_ai(
+                        client.clone(),
+                        team.to_string(),
+                        info.address,
+                        (c_id, p_id),
+                        false,
+                    )
+                    .await
+                    {
+                        Ok(ai) => {
+                            let mut empress: Empress = Empress::init(ai.clone());
+                            if let Err(e) = empress.update().await {
+                                println!("Error: {}", e);
+                            }
+                            Ok(ai)
+                        }
+                        Err(e) => {
+                            error!("{}", e);
+                            Err(e)
+                        }
+                    }
+                });
+
+                match handle.await {
+                    Ok(ai) => return ai,
+                    Err(e) => error!("Task failed: {:?}", e),
+                }
+            }
+            Err(e) => {
+                return Err(Error::new(e.kind(), e));
+            }
+        };
         Err(Error::new(
             ErrorKind::ConnectionRefused,
-            "Empress role isn't made to fork.",
+            "Couldn't reach host.",
         ))
     }
 }

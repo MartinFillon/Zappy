@@ -178,19 +178,19 @@ impl AIHandler for Bot {
         }
     }
 
-    async fn fork_dupe(&mut self, address: String, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(address.clone(), self.info.team.clone()).await {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Bot` client connected successfully.");
                 let client = Arc::new(Mutex::new(client));
-                let (c_id, p_id) = (self.info.cli_id, set_id.unwrap_or(0));
-                let team = self.info.team.clone();
+                let team = info.team.clone();
+                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
 
                 let handle = task::spawn(async move {
                     match start_ai(
                         client.clone(),
                         team.to_string(),
-                        address,
+                        info.address,
                         (c_id, p_id),
                         false,
                     )

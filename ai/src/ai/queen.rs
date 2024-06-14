@@ -7,10 +7,7 @@
 
 use super::Listeners;
 use crate::{
-    ai::{
-        ai_create::{start_bot_ai, start_knight_ai},
-        start_ai, AIHandler, Incantationers, AI,
-    },
+    ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
     commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
@@ -184,7 +181,7 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
 
         commands::fork::fork(&mut cli).await?;
-        if let Err(err) = start_knight_ai(self.info.clone(), Some(self.info.p_id + 4)).await {
+        if let Err(err) = Knight::fork_dupe(self.info.clone(), Some(self.info.p_id + 4)).await {
             error!("{err}");
             return Err(CommandError::RequestError);
         }
@@ -194,7 +191,7 @@ impl Queen {
 
         for _ in 0..NB_INIT_BOTS {
             commands::fork::fork(&mut cli).await?;
-            if let Err(err) = start_bot_ai(self.info.clone(), Some(self.info.p_id)).await {
+            if let Err(err) = Bot::fork_dupe(self.info.clone(), Some(self.info.p_id)).await {
                 error!("{err}");
                 return Err(CommandError::RequestError);
             }
@@ -347,19 +344,19 @@ impl AIHandler for Queen {
         }
     }
 
-    async fn fork_dupe(&mut self, address: String, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(address.clone(), self.info.team.clone()).await {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Queen` client connected successfully.");
                 let client = Arc::new(Mutex::new(client));
-                let (c_id, p_id) = (self.info.cli_id, set_id.unwrap_or(0));
-                let team = self.info.team.clone();
+                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
+                let team = info.team.clone();
 
                 let handle = task::spawn(async move {
                     match start_ai(
                         client.clone(),
                         team.to_string(),
-                        address,
+                        info.address,
                         (c_id, p_id),
                         false,
                     )
