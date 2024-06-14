@@ -45,10 +45,10 @@ impl Empress {
 
         for i in 1..5 {
             println!("Creating Queen #{}", i);
-            commands::move_up::move_up(&mut cli).await?;
             while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
                 error!("Fork received a KO.");
             }
+            commands::move_up::move_up(&mut cli).await?;
             debug!("Task for new queen will start...");
             if let Err(err) = Queen::fork_dupe(self.info.clone(), Some(i)).await {
                 error!("Queen fork error: {}", err);
