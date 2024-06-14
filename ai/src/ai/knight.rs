@@ -46,7 +46,7 @@ impl AIHandler for Knight {
             self.handle_message().await?;
 
             if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
-                return Err(CommandError::DeadReceived);
+                break;
             }
             if self.can_incantate().await? {
                 let mut level = self.info().level;
@@ -82,6 +82,7 @@ impl AIHandler for Knight {
                 }
             }
         }
+        Err(CommandError::DeadReceived)
     }
 }
 

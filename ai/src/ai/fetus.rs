@@ -41,10 +41,10 @@ impl AIHandler for Fetus {
             if let Ok(ResponseResult::OK) = command {
                 info!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
                 total += 1;
-            } else if let Err(e) = command {
+            } else if command.is_err() {
                 info!("Fetus dropped x{} food", total);
                 println!("AI #{}: Fetus died.", self.info.cli_id);
-                return Err(e);
+                return Err(CommandError::DeadReceived);
             } else {
                 continue;
             }

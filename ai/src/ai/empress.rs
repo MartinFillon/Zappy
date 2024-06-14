@@ -10,7 +10,7 @@
 
 use crate::{
     ai::{ai_create::start_queen_ai, AIHandler, Incantationers, AI},
-    commands,
+    commands::{self, unused_slots},
     elevation::{Config, Inventory},
     move_towards_broadcast::backtrack_eject,
     tcp::{
@@ -60,10 +60,15 @@ impl AIHandler for Empress {
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
         println!("I AM THE EMPRESS BOW UPPON ME");
+        {
+            let mut client = self.info().client().lock().await;
+            while let ResponseResult::Value(val) = unused_slots::unused_slots(&mut client).await? {
+                if val == 0 {
+                    break;
+                }
+            }
+        }
         self.spawn_queens().await?;
-
-        let mut cli = self.info.client.lock().await;
-        commands::drop_object::drop_object(&mut cli, "food").await?;
-        Ok(())
+        Err(CommandError::DeadReceived)
     }
 }
