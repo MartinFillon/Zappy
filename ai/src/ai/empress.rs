@@ -19,7 +19,10 @@ use crate::{
     },
 };
 
+use std::io::{self, Error, ErrorKind};
+
 use async_trait::async_trait;
+
 use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
@@ -77,5 +80,13 @@ impl AIHandler for Empress {
         self.spawn_queens().await?;
         warn!("Empress is now dying...");
         Err(CommandError::DeadReceived)
+    }
+
+    async fn fork_dupe(&mut self, _address: String, _set_id: Option<usize>) -> io::Result<AI> {
+        error!("Trying to fork an empress, why though?");
+        Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Empress role isn't made to fork.",
+        ))
     }
 }

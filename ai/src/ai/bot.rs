@@ -8,10 +8,8 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use std::mem::swap;
-
 use crate::{
-    ai::{AIHandler, AI},
+    ai::{start_ai, AIHandler, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
@@ -25,13 +23,18 @@ use crate::{
         command_handle::{
             CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
         },
-        TcpClient,
+        handle_tcp, TcpClient,
     },
 };
 
-use async_trait::async_trait;
+use std::io::{self, Error, ErrorKind};
+use std::mem::swap;
+use std::sync::Arc;
 
-use log::{debug, info};
+use async_trait::async_trait;
+use tokio::{sync::Mutex, task};
+
+use log::{debug, error, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -173,6 +176,53 @@ impl AIHandler for Bot {
             }
             idex += 1;
         }
+    }
+
+    async fn fork_dupe(&mut self, address: String, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(address.clone(), self.info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Bot` client connected successfully.");
+                let client = Arc::new(Mutex::new(client));
+                let (c_id, p_id) = (self.info.cli_id, set_id.unwrap_or(0));
+                let team = self.info.team.clone();
+
+                let handle = task::spawn(async move {
+                    match start_ai(
+                        client.clone(),
+                        team.to_string(),
+                        address,
+                        (c_id, p_id),
+                        false,
+                    )
+                    .await
+                    {
+                        Ok(ai) => {
+                            let mut bot: Bot = Bot::init(ai.clone());
+                            if let Err(e) = bot.update().await {
+                                println!("Error: {}", e);
+                            }
+                            Ok(ai)
+                        }
+                        Err(e) => {
+                            error!("{}", e);
+                            Err(e)
+                        }
+                    }
+                });
+
+                match handle.await {
+                    Ok(ai) => return ai,
+                    Err(e) => error!("Task failed: {:?}", e),
+                }
+            }
+            Err(e) => {
+                return Err(Error::new(e.kind(), e));
+            }
+        };
+        Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ))
     }
 }
 

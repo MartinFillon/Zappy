@@ -5,29 +5,31 @@
 // queen
 //
 
+use super::Listeners;
 use crate::{
     ai::{
         ai_create::{start_bot_ai, start_knight_ai},
-        AIHandler, Incantationers, AI,
+        start_ai, AIHandler, Incantationers, AI,
     },
     commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
-        TcpClient,
+        handle_tcp, TcpClient,
     },
 };
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
+use std::io::{self, Error, ErrorKind};
+use std::sync::Arc;
 
 use async_trait::async_trait;
+use tokio::{sync::Mutex, task};
 
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
-
-use super::Listeners;
 
 const NB_INIT_BOTS: usize = 2;
 const QUEENS_IDS: [usize; 4] = [2, 1, 4, 3];
@@ -343,6 +345,53 @@ impl AIHandler for Queen {
                 }
             }
         }
+    }
+
+    async fn fork_dupe(&mut self, address: String, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(address.clone(), self.info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Queen` client connected successfully.");
+                let client = Arc::new(Mutex::new(client));
+                let (c_id, p_id) = (self.info.cli_id, set_id.unwrap_or(0));
+                let team = self.info.team.clone();
+
+                let handle = task::spawn(async move {
+                    match start_ai(
+                        client.clone(),
+                        team.to_string(),
+                        address,
+                        (c_id, p_id),
+                        false,
+                    )
+                    .await
+                    {
+                        Ok(ai) => {
+                            let mut queen: Queen = Queen::init(ai.clone());
+                            if let Err(e) = queen.update().await {
+                                println!("Error: {}", e);
+                            }
+                            Ok(ai)
+                        }
+                        Err(e) => {
+                            error!("{}", e);
+                            Err(e)
+                        }
+                    }
+                });
+
+                match handle.await {
+                    Ok(ai) => return ai,
+                    Err(e) => error!("Task failed: {:?}", e),
+                }
+            }
+            Err(e) => {
+                return Err(Error::new(e.kind(), e));
+            }
+        };
+        Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ))
     }
 }
 

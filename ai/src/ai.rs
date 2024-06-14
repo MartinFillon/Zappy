@@ -49,6 +49,13 @@ pub struct AI {
 pub trait AIHandler {
     fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
+    async fn fork_dupe(
+        &mut self,
+        address: String,
+        // team: String,
+        // from_ai: AI,
+        set_id: Option<usize>,
+    ) -> io::Result<AI>;
 }
 
 #[async_trait]
