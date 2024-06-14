@@ -31,7 +31,7 @@ use std::sync::{
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -246,8 +246,9 @@ pub async fn fork_launch(
                 .await
             });
 
-            if let Err(e) = handle.await {
-                println!("Task failed: {:?}", e);
+            match handle.await {
+                Ok(ai) => return ai,
+                Err(e) => error!("Task failed: {:?}", e),
             }
         }
         Err(e) => {

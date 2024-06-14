@@ -91,7 +91,6 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError> {
-        debug!("Checking if request receives dead...");
         let response: String = self.send_command(command).await?;
         if response == "dead\n" {
             warn!("Dead received.");

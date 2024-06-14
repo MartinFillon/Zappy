@@ -304,6 +304,7 @@ impl Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
+        println!("Queeen has arrived.");
         Self::new(info)
     }
 

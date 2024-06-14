@@ -41,13 +41,15 @@ impl Empress {
         for i in 1..5 {
             println!("Creating Queen #{}", i);
             commands::move_up::move_up(&mut cli).await?;
-            commands::fork::fork(&mut cli).await?;
+            while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
+                error!("Fork received a KO.");
+            }
             debug!("Task for new queen will start...");
             if let Err(err) = start_queen_ai(self.info().clone(), Some(i)).await {
-                error!("{err}");
-                return Err(CommandError::RequestError);
+                error!("Queen fork error: {}", err);
+                // return Err(CommandError::RequestError);
             }
-            println!("Queen with id {i}");
+            println!("Queen with id {i} created.");
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
