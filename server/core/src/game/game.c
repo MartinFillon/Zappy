@@ -25,8 +25,10 @@ game_t init_game(args_infos_t *ag)
     game.teams = vec_create_vector_team_t(10);
     game.ais = vec_create_vector_ai_t(10);
     game.frequency = ag->freq;
-    for (__auto_type i = 0; ag->names[i]; i++)
-        vec_pushback_vector_team_t(game.teams, create_team(ag, ag->names[i]));
+    for (size_t i = 0; i < ag->names->size; i++)
+        vec_pushback_vector_team_t(
+            game.teams, create_team(ag, str_cstr(ag->names->data[i]))
+        );
     logs(INFO, "Team created successfully\n");
     game.clock = clock_new(ag->freq);
     game.global = clock_new(ag->freq);

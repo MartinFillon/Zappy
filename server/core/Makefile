@@ -13,13 +13,6 @@ LDLIBS = -L.. -lmy -lm
 SRC = $(addsuffix .c, 				\
 				$(addprefix src/, 			\
 					core					\
-					$(addprefix cmd_line/, 	\
-						display_help 			\
-						handle_cmd_line 		\
-						handle_nb_flags			\
-						handle_name_flag		\
-						log_level				\
-					)\
 					$(addprefix game/, 		\
 						$(addprefix map/, 	\
 							initializer		\
@@ -29,6 +22,7 @@ SRC = $(addsuffix .c, 				\
 							get_tile		\
 							display_map 	\
 							send_info_tile 	\
+							verif_tile_requirement	\
 						)\
 						$(addprefix team/,	\
 							egg				\
@@ -93,7 +87,8 @@ SRC = $(addsuffix .c, 				\
 							connect_nbr 	\
 							fork 		\
 							eject 		\
-							incantation 	\
+							incantation_start 	\
+							incantation_end 	\
 						)\
 						destroy				\
 					)\

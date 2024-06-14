@@ -9,9 +9,9 @@
 #include <stdlib.h>
 
 typedef struct {
-    char *data;
     size_t size;
     size_t capacity;
+    char *data;
 } str_t;
 
 #define TYPE str_t *

@@ -10,7 +10,7 @@
 
 #include "core/types/team.h"
 
-team_t create_team(args_infos_t *args, char const *name)
+team_t create_team(args_infos_t *args, char *name)
 {
     team_t team = {0};
     egg_t *egg = NULL;
@@ -23,6 +23,7 @@ team_t create_team(args_infos_t *args, char const *name)
             continue;
         queue_pushback_queue_egg_t(team.eggs, egg);
     }
+    free(name);
     return team;
 }
 

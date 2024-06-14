@@ -86,3 +86,13 @@ void prepare_info_tile(io_t *io, map_t *map, size_t y, size_t x);
  * @return struct tile_s* the tile object
  */
 struct tile_s *get_tile(map_t *map, size_t x, size_t y);
+
+/**
+ * @brief Verify if the number of each content of @param con
+ *        respect the @param requirement
+ *
+ * @param con Content of the current tile
+ * @param requirement Current requirement needed for elevation
+ * @return true if it repect it else false
+ */
+bool verif_tile_requirement(size_t *con, const size_t *requirement);
