@@ -156,9 +156,9 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        info!("Handling bot [Queen {}]...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
             self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;

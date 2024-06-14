@@ -8,8 +8,8 @@
 #![allow(unused_imports)]
 
 use crate::{
-    ai::{AIHandler, Incantationers, AI},
-    commands::{fork, incantation, inventory, look_around, take_object},
+    ai::{ai_create, AIHandler, Incantationers, AI},
+    commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{
@@ -46,7 +46,7 @@ impl AIHandler for Knight {
             self.handle_message().await?;
 
             if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
-                break; // die
+                return Err(CommandError::DeadReceived);
             }
             if self.can_incantate().await? {
                 let mut level = self.info().level;
@@ -71,7 +71,7 @@ impl AIHandler for Knight {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
                     if let ResponseResult::OK = handle_response(&mut client, res).await? {
-                        // start fetus
+                        let _ = ai_create::start_fetus_ai(self.info().clone(), None).await;
                     }
                 };
                 while self.check_food().await? < 10 {
@@ -82,8 +82,6 @@ impl AIHandler for Knight {
                 }
             }
         }
-
-        Ok(())
     }
 }
 
@@ -134,6 +132,26 @@ impl Listeners for Knight {
 impl Knight {
     fn new(info: AI) -> Self {
         Self { info }
+    }
+
+    // if needed sinon jenleve
+    async fn die(&mut self, id: usize) {
+        let mut client_lock = self.info.client.lock().await;
+        let mut total = 0;
+
+        println!("Knight #{} is killing himself.", id);
+        loop {
+            let command = drop_object::drop_object(&mut client_lock, "food").await;
+            if let Ok(ResponseResult::OK) = command {
+                info!("Knight #{} dropping food x1...", self.info.p_id);
+                total += 1;
+            }
+            if command.is_err() {
+                info!("Fetus dropped x{} food", total);
+                info!("Knight #{} died.", self.info.p_id);
+                break;
+            }
+        }
     }
 
     async fn check_food(&mut self) -> Result<usize, CommandError> {

@@ -118,7 +118,11 @@ impl CommandHandler for TcpClient {
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             "Elevation underway" => Ok(ResponseResult::Elevating),
-            _ => Err(CommandError::InvalidResponse),
+            x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
+            _ => {
+                warn!("Invalid Response: ({}).", response.trim_end());
+                Err(CommandError::InvalidResponse)
+            }
         }
     }
 }
