@@ -59,49 +59,41 @@ impl AIHandler for Fetus {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(info.address.clone(), info.team.clone()).await {
+        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Fetus` client connected successfully.");
-                let client = Arc::new(Mutex::new(client));
-                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
-                let team = info.team.clone();
+                Arc::new(Mutex::new(client))
+            }
+            Err(e) => return Err(Error::new(e.kind(), e)),
+        };
 
-                let handle = task::spawn(async move {
-                    match start_ai(
-                        client.clone(),
-                        team.to_string(),
-                        info.address,
-                        (c_id, p_id),
-                        false,
-                    )
-                    .await
-                    {
-                        Ok(ai) => {
-                            let mut fetus: Fetus = Fetus::init(ai.clone());
-                            if let Err(e) = fetus.update().await {
-                                println!("Error: {}", e);
-                            }
-                            Ok(ai)
-                        }
-                        Err(e) => {
-                            error!("{}", e);
-                            Err(e)
-                        }
+        let c_id = info.cli_id;
+        let p_id = set_id.unwrap_or(0);
+        let team = info.team.clone();
+        let address = info.address.clone();
+
+        let handle = task::spawn(async move {
+            match start_ai(client, team, address, (c_id, p_id), false).await {
+                Ok(ai) => {
+                    let mut fetus = Fetus::init(ai.clone());
+                    if let Err(e) = fetus.update().await {
+                        println!("Error: {}", e);
                     }
-                });
-
-                match handle.await {
-                    Ok(ai) => return ai,
-                    Err(e) => error!("Task failed: {:?}", e),
+                    Ok(ai)
+                }
+                Err(e) => {
+                    error!("{}", e);
+                    Err(e)
                 }
             }
+        });
+
+        match handle.await {
+            Ok(ai) => ai,
             Err(e) => {
-                return Err(Error::new(e.kind(), e));
+                error!("Task failed: {:?}", e);
+                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        };
-        Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ))
+        }
     }
 }
