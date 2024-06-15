@@ -23,7 +23,9 @@ static void send_infos(
     struct client_list *clis
 )
 {
-    dprintf(fd, "%d\n%lu %lu\n", new->id, game->map->x, game->map->y);
+    dprintf(
+        fd, "%ld\n%lu %lu\n", new->team->eggs->size, game->map->x, game->map->y
+    );
     broadcast_to(
         GUI,
         clis,

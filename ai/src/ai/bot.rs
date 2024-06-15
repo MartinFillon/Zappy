@@ -8,15 +8,13 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use std::mem::swap;
-
 use crate::{
-    ai::{AIHandler, AI},
+    ai::{start_ai, AIHandler, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::move_up,
+        move_up::{self, move_up},
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
@@ -25,13 +23,18 @@ use crate::{
         command_handle::{
             CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
         },
-        TcpClient,
+        handle_tcp, TcpClient,
     },
 };
 
-use async_trait::async_trait;
+use std::io::{self, Error, ErrorKind};
+use std::mem::swap;
+use std::sync::Arc;
 
-use log::{debug, info};
+use async_trait::async_trait;
+use tokio::{sync::Mutex, task};
+
+use log::{debug, error, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -156,21 +159,70 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot [Queen {}]...", self.info().cli_id);
+        info!("Handling bot [Queen {}]...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
             self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
-                break;
+                idex = 0;
+                continue;
             }
-            if self.seek_objects().await? != ResponseResult::KO {
-                break;
+            if self.seek_objects().await? == ResponseResult::KO {
+                let mut client = self.info().client().lock().await;
+                move_up::move_up(&mut client).await?;
+                continue;
             }
             idex += 1;
         }
-        Ok(())
+    }
+
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Bot` client connected successfully.");
+                let client = Arc::new(Mutex::new(client));
+                let team = info.team.clone();
+                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
+
+                let handle = task::spawn(async move {
+                    match start_ai(
+                        client.clone(),
+                        team.to_string(),
+                        info.address,
+                        (c_id, p_id),
+                        false,
+                    )
+                    .await
+                    {
+                        Ok(ai) => {
+                            let mut bot: Bot = Bot::init(ai.clone());
+                            if let Err(e) = bot.update().await {
+                                println!("Error: {}", e);
+                            }
+                            Ok(ai)
+                        }
+                        Err(e) => {
+                            error!("{}", e);
+                            Err(e)
+                        }
+                    }
+                });
+
+                match handle.await {
+                    Ok(ai) => return ai,
+                    Err(e) => error!("Task failed: {:?}", e),
+                }
+            }
+            Err(e) => {
+                return Err(Error::new(e.kind(), e));
+            }
+        };
+        Err(Error::new(
+            ErrorKind::ConnectionRefused,
+            "Couldn't reach host.",
+        ))
     }
 }
 
@@ -260,7 +312,7 @@ impl Bot {
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
-        info!("Bot [Queen {}]: backtracking...", self.info().cli_id);
+        info!("Bot [Queen {}]: backtracking...", self.info().p_id);
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
@@ -270,19 +322,19 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, cli_id: &mut i32) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
         let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
                 "Bot [Queen {}]: handling message: {}",
-                self.info().cli_id,
+                self.info().p_id,
                 message.1
             );
             match message {
                 (DirectionMessage::Center, msg) => {
-                    if let Ok(id) = msg.parse::<i32>() {
-                        cli_id.clone_from(&id);
+                    if let Ok(id) = msg.parse::<usize>() {
+                        p_id.clone_from(&id);
                     }
                 }
                 (dir, msg) => {
@@ -291,8 +343,8 @@ impl Bot {
                     }
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
-                        if let Ok(id) = content.0.parse::<i32>() {
-                            if id == *self.info().cli_id() {
+                        if let Ok(id) = content.0.parse::<usize>() {
+                            if id == *self.info().p_id() {
                                 handle_queen_message(&mut client, (dir, content.1)).await?;
                             }
                         }
@@ -307,10 +359,10 @@ impl Bot {
 #[async_trait]
 impl Listeners for Bot {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut id = -1;
+        let mut id: usize = 0;
         self.analyse_messages(&mut id).await?;
-        if id != -1 {
-            self.info.set_cli_id(id);
+        if id != 0 {
+            self.info.set_p_id(id);
         }
         Ok(ResponseResult::OK)
     }
@@ -329,7 +381,7 @@ async fn handle_queen_message(
         "nm" => make_item_prioritised("mendiane"),
         "np" => make_item_prioritised("phiras"),
         "nt" => make_item_prioritised("thystame"),
-        _ => return Err(CommandError::InvalidResponse),
+        _ => {}
     }
     Ok(ResponseResult::OK)
 }

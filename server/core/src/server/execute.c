@@ -27,9 +27,6 @@ void execute_commands(zappy_t *z)
     for (size_t i = 0; i < z->clients->size; i++) {
         if (z->clients->data[i].commands->size == 0)
             continue;
-        logs(
-            DEBUG, "client com count: %d\n", z->clients->data[i].commands->size
-        );
         if (z->clients->data[i].type == UNSET ||
             z->clients->data[i].type == GUI) {
             run_router(
