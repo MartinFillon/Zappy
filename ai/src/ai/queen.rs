@@ -187,7 +187,7 @@ impl Queen {
         }
 
         commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
-        info!("I as the queen ({}), bestow my life uppon you\n", 0);
+        info!("I as the queen ({}), bestow my life uppon you", 0);
 
         for _ in 0..NB_INIT_BOTS {
             commands::fork::fork(&mut cli).await?;
@@ -303,7 +303,7 @@ impl Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
-        println!("Queeen has arrived.");
+        println!("Queen has arrived.");
         Self::new(info)
     }
 

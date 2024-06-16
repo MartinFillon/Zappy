@@ -6,7 +6,6 @@
 //
 
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
 use crate::{
     ai::{start_ai, AIHandler, AI},
@@ -14,15 +13,13 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::{self, move_up},
+        move_up::{self},
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
-        command_handle::{
-            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
-        },
+        command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
@@ -155,6 +152,7 @@ impl Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
+        println!("BOT HERE.");
         Self::new(info)
     }
 

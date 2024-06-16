@@ -78,6 +78,7 @@ impl TcpClient {
                 .await
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         } else {
+            error!("Failed to send request: Not connected to server.");
             Err(io::Error::new(
                 io::ErrorKind::NotConnected,
                 "Not connected to server.",
@@ -86,11 +87,10 @@ impl TcpClient {
     }
 
     pub async fn get_response(&mut self) -> Option<String> {
-        debug!("Getting response...");
         if let Some(receiver) = &mut self.response_receiver {
             receiver.recv().await
         } else {
-            debug!("No response received.");
+            debug!("No response received, response receiver not available.");
             None
         }
     }
@@ -112,6 +112,7 @@ impl TcpClient {
                             break;
                         }
                         Ok(n) => {
+                            debug!("Read {} bytes from the server.", n);
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
                                 error!("Failed to send response: {}", e);
@@ -131,6 +132,8 @@ impl TcpClient {
                                 error!("Failed to write to socket: {}", e);
                                 break;
                             }
+                            debug!("Successfully wrote request to socket:");
+                            debug!("ai-client> `{}\\n`", req.trim_end());
                         }
                         None => {
                             warn!("Request channel closed.");
@@ -148,6 +151,7 @@ impl TcpClient {
 
     pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
         if self.messages.is_empty() {
+            warn!("No message to pop.");
             None
         } else {
             Some(self.messages.remove(0))

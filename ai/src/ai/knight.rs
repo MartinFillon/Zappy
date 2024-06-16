@@ -5,16 +5,12 @@
 // knight
 //
 
-#![allow(unused_imports)]
-
 use crate::{
     ai::{fetus::Fetus, start_ai, AIHandler, Incantationers, AI},
     commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
-        command_handle::{
-            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
-        },
+        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
@@ -40,6 +36,7 @@ pub struct Knight {
 #[async_trait]
 impl AIHandler for Knight {
     fn init(info: AI) -> Self {
+        println!("Knight has been created.");
         Self::new(info)
     }
 
@@ -57,7 +54,7 @@ impl AIHandler for Knight {
                     let mut client = self.info().client().lock().await;
                     let res = incantation::incantation(&mut client).await;
                     if let ResponseResult::Incantation(lvl) =
-                        knight_handle_response(&mut client, res).await?
+                        Knight::knight_checkout_response(&mut client, res).await?
                     {
                         level = lvl;
                     }
@@ -73,7 +70,9 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
-                    if let ResponseResult::OK = knight_handle_response(&mut client, res).await? {
+                    if let ResponseResult::OK =
+                        Knight::knight_checkout_response(&mut client, res).await?
+                    {
                         let _ = Fetus::fork_dupe(self.info().clone(), None).await;
                     }
                 };
@@ -81,7 +80,7 @@ impl AIHandler for Knight {
                     self.handle_message().await?;
                     let mut client = self.info().client().lock().await;
                     let res = take_object::take_object(&mut client, "food").await;
-                    knight_handle_response(&mut client, res).await?;
+                    Knight::knight_checkout_response(&mut client, res).await?;
                 }
             }
         }
@@ -197,7 +196,9 @@ impl Knight {
     async fn check_food(&mut self) -> Result<usize, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = inventory::inventory(&mut client).await;
-        if let ResponseResult::Inventory(inv) = knight_handle_response(&mut client, res).await? {
+        if let ResponseResult::Inventory(inv) =
+            Knight::knight_checkout_response(&mut client, res).await?
+        {
             return Ok(inv[0].1 as usize);
         }
         Err(CommandError::InvalidResponse)
@@ -226,7 +227,7 @@ impl Knight {
                         if let Ok(id) = content.0.parse::<usize>() {
                             if id == *self.info().p_id() && content.1 == "mv" {
                                 let res = move_towards_broadcast(&mut client, dir).await;
-                                knight_handle_response(&mut client, res).await?;
+                                Knight::knight_checkout_response(&mut client, res).await?;
                             }
                         }
                     }
@@ -242,28 +243,30 @@ impl Knight {
         }
         let mut client = self.info().client().lock().await;
         let res = look_around::look_around(&mut client).await;
-        if let ResponseResult::Tiles(tiles) = knight_handle_response(&mut client, res).await? {
+        if let ResponseResult::Tiles(tiles) =
+            Knight::knight_checkout_response(&mut client, res).await?
+        {
             if !tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
                 return Ok(false);
             }
         }
         Ok(true)
     }
+
+    async fn knight_checkout_response(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        match res {
+            Ok(ResponseResult::Eject(_)) => Knight::handle_eject(client, res).await,
+            Ok(ResponseResult::Elevating) => Knight::handle_elevating(client, res).await,
+            _ => res,
+        }
+    }
 }
 
 impl Display for Knight {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "Knight => {}", self.info)
-    }
-}
-
-async fn knight_handle_response(
-    client: &mut TcpClient,
-    res: Result<ResponseResult, CommandError>,
-) -> Result<ResponseResult, CommandError> {
-    match res {
-        Ok(ResponseResult::Eject(_)) => Knight::handle_eject(client, res).await,
-        Ok(ResponseResult::Elevating) => Knight::handle_elevating(client, res).await,
-        _ => res,
     }
 }

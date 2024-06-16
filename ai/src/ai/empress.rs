@@ -6,16 +6,13 @@
 //
 
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
 use crate::{
-    ai::{queen::Queen, start_ai, AIHandler, Incantationers, AI},
+    ai::{queen::Queen, start_ai, AIHandler, AI},
     commands::{self, unused_slots},
-    elevation::{Config, Inventory},
-    move_towards_broadcast::backtrack_eject,
     tcp::{
-        command_handle::{self, CommandError, CommandHandler, ResponseResult},
-        handle_tcp, TcpClient,
+        command_handle::{self, CommandError, ResponseResult},
+        handle_tcp,
     },
 };
 
@@ -64,11 +61,11 @@ impl Empress {
 #[async_trait]
 impl AIHandler for Empress {
     fn init(info: AI) -> Self {
+        println!("I AM THE EMPRESS BOW UPPON ME");
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
-        println!("I AM THE EMPRESS BOW UPPON ME");
         {
             let mut client = self.info().client().lock().await;
             while let ResponseResult::Value(val) = unused_slots::unused_slots(&mut client).await? {

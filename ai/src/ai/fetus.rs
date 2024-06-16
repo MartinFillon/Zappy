@@ -36,6 +36,7 @@ impl Fetus {
 #[async_trait]
 impl AIHandler for Fetus {
     fn init(info: AI) -> Self {
+        println!("Fetus spawned.");
         Self::new(info)
     }
 
