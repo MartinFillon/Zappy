@@ -37,13 +37,13 @@ fn read_output(raw: String) -> Vec<Vec<String>> {
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Looking around...");
-    let response = client.check_dead("Look\n").await?;
 
+    let response = client.check_dead("Look\n").await?;
     Ok(ResponseResult::Tiles(read_output(response)))
 }
 
 #[cfg(test)]
-pub mod tests {
+pub mod tests_look {
     use super::read_output;
 
     #[test]
@@ -55,6 +55,13 @@ pub mod tests {
             vec![],
             vec!["food".to_string()],
         ];
+        assert_eq!(cmp, res);
+    }
+
+    #[test]
+    fn output_reading_empty() {
+        let res: Vec<Vec<String>> = read_output("[]\n".to_string());
+        let cmp: Vec<Vec<String>> = vec![[].to_vec()];
         assert_eq!(cmp, res);
     }
 }
