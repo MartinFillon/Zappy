@@ -44,6 +44,7 @@ pub struct Queen {
     look: LookInfo,
     requirement: Config,
     can_move: bool,
+    can_start: bool,
 }
 
 #[async_trait]
@@ -73,9 +74,13 @@ impl Incantationers for Queen {
 impl Listeners for Queen {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
         let mut can_move = false;
-        self.analyse_messages(&mut can_move).await?;
+        let mut can_start = false;
+        self.analyse_messages(&mut can_move, &mut can_start).await?;
         if can_move {
             self.set_can_move(true);
+        }
+        if can_start {
+            self.set_can_start(true);
         }
         Ok(ResponseResult::OK)
     }
@@ -90,6 +95,7 @@ impl Queen {
             look: Default::default(),
             requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
             can_move: false,
+            can_start: false,
         }
     }
 
@@ -271,6 +277,7 @@ impl Queen {
         dir: DirectionMessage,
         msg: &str,
         can_move: &mut bool,
+        can_start: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
         if msg.starts_with("lvl ") {
             if let Ok(lvl) = msg.split_at(3).1.parse::<i32>() {
@@ -283,7 +290,9 @@ impl Queen {
                 }
             }
         } else if msg == "Done" {
+            println!("Queen {} received \"Done\".", self.info.p_id);
             turn_towards_broadcast(client, dir).await?;
+            *can_start = true;
         }
         Ok(ResponseResult::OK)
     }
@@ -291,6 +300,7 @@ impl Queen {
     async fn analyse_messages(
         &mut self,
         can_move: &mut bool,
+        can_start: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some((dir, msg)) = client.pop_message() {
@@ -301,7 +311,7 @@ impl Queen {
                 ("0", msg.trim_end_matches('\n'))
             };
             if let Ok(id) = content.0.parse::<usize>() {
-                self.handle_message_content(&mut client, id, dir, content.1, can_move)
+                self.handle_message_content(&mut client, id, dir, content.1, can_move, can_start)
                     .await?;
             }
         }
@@ -317,7 +327,9 @@ impl AIHandler for Queen {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        self.handle_message().await?;
+        while !self.can_start {
+            self.handle_message().await?;
+        }
         self.fork_servant().await?;
         loop {
             self.handle_message().await?;

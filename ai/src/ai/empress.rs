@@ -11,7 +11,7 @@ use crate::{
     ai::{queen::Queen, start_ai, AIHandler, AI},
     commands::{self, unused_slots},
     tcp::{
-        command_handle::{self, CommandError, ResponseResult},
+        command_handle::{self, ResponseResult},
         handle_tcp,
     },
 };
@@ -40,12 +40,11 @@ impl Empress {
     async fn spawn_queens(&mut self) -> Result<(), command_handle::CommandError> {
         let mut cli = self.info.client.lock().await;
 
-        for i in 1..5 {
+        for i in 1..=4 {
             println!("Creating Queen #{}", i);
             while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
                 error!("Fork received a KO.");
             }
-            commands::move_up::move_up(&mut cli).await?;
 
             debug!("Task for new queen will start...");
             let info = self.info.clone();
@@ -56,7 +55,9 @@ impl Empress {
                     println!("Queen with id {i} created.");
                 }
             });
+            commands::move_up::move_up(&mut cli).await?;
         }
+        println!("Done creating queens, broadcasting \"Done\".");
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
     }
@@ -82,7 +83,8 @@ impl AIHandler for Empress {
         info!("Starting spawning of queens...");
         self.spawn_queens().await?;
         warn!("Empress is now dying...");
-        Err(CommandError::DeadReceived)
+        loop {}
+        //Err(CommandError::DeadReceived)
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
