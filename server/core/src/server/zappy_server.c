@@ -73,7 +73,7 @@ int select_server(zappy_t *z)
 
     if (retval == -1 && errno == EINTR)
         return SERV_END;
-    if (FD_ISSET(0, &z->server.read_fds)) {
+    if (FD_ISSET(STDIN_FILENO, &z->server.read_fds)) {
         if (getline(&line, &n, stdin) == -1)
             return SERV_END;
         line[strlen(line) - 1] = '\0';
@@ -118,9 +118,7 @@ void check_eating(struct client_list *clients)
 
 void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
 {
-    size_t size = clients->size;
-
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < clients->size; i++)
         if (clients->data[i].type == AI &&
             clients->data[i].ai->alive == false) {
             kill_ai(clients, ais, i);

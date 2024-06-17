@@ -5,6 +5,7 @@
 ** kill_client
 */
 
+#include <stdio.h>
 #include <unistd.h>
 
 #include "core/client.h"
@@ -15,7 +16,7 @@ static void erase_dead_ai(int id, struct vector_ai_t *ais)
     ai_t ai = {0};
 
     ai.id = id;
-    vec_erase_vector_ai_t(ais, ai, &cmp_ais);
+    vec_erase_vector_ai_t(ais, &ai, &cmp_ais);
 }
 
 void kill_ai(struct client_list *clients, struct vector_ai_t *ais, size_t i)
