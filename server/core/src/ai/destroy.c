@@ -8,7 +8,7 @@
 #include "core/types/ai.h"
 #include "utils.h"
 
-void destroy_ai(ai_t *ai)
+void destroy_ai(ai_t **ai)
 {
-    va_free(2, ai->food_clock, ai->clock);
+    va_free(2, (*ai)->food_clock, (*ai)->clock);
 }

@@ -72,7 +72,7 @@ static void init_gui(client_t *c, game_t *game, struct client_list *clients)
     for (__auto_type i = 0ul; i < game->teams->size; i++)
         send_eggs(c, &game->teams->data[i]);
     for (__auto_type i = 0ul; i < game->ais->size; i++)
-        send_ais(c, &game->ais->data[i]);
+        send_ais(c, game->ais->data[i]);
 }
 
 void unset_command(client_t *c, command_state_t *s)

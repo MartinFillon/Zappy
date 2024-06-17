@@ -47,7 +47,7 @@ void handle_display_ais(zappy_t *z, struct vector_str_t *args)
 
     (void)args;
     for (size_t i = 0; i < ais->size; i++) {
-        display_ai(&ais->data[i]);
+        display_ai(ais->data[i]);
     }
 }
 
@@ -57,6 +57,6 @@ void handle_ressources_ais(zappy_t *z, struct vector_str_t *args)
 
     (void)args;
     for (size_t i = 0; i < ais->size; i++) {
-        display_ai_ressources(&ais->data[i]);
+        display_ai_ressources(ais->data[i]);
     }
 }

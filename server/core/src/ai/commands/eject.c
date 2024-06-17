@@ -66,11 +66,11 @@ void handle_eject(client_t *cli, command_state_t *s)
     bool has_ejected = false;
 
     for (size_t i = 0; i < s->clients->size; i++) {
-        if (cli->ai->id != s->clients->data[i].ai->id &&
-            is_coord_equal(&cli->ai->pos, &s->clients->data[i].ai->pos)) {
-            eject_ai(cli, &s->clients->data[i], s);
+        if (cli->ai->id != s->clients->data[i]->ai->id &&
+            is_coord_equal(&cli->ai->pos, &s->clients->data[i]->ai->pos)) {
+            eject_ai(cli, s->clients->data[i], s);
             prepare_response(
-                &s->clients->data[i].io, "eject: %d\n", cli->ai->dir
+                &s->clients->data[i]->io, "eject: %d\n", cli->ai->dir
             );
             has_ejected = true;
         }

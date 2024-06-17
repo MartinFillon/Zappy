@@ -86,6 +86,6 @@ void unfreeze_ai(ai_t *ai);
  */
 bool cmp_int(int *a, int *b);
 
-bool cmp_ais(ai_t *a, ai_t *b);
+bool cmp_ais(ai_t **a, ai_t **b);
 
 bool cmp_cli(struct client_s *a, struct client_s *b);

@@ -17,8 +17,8 @@
 static void send_death(int n, struct client_list *clients)
 {
     for (size_t i = 0; i < clients->size; i++) {
-        if (clients->data[i].type == GUI) {
-            prepare_response_cat(&clients->data[i].io, "edi %d\n", n);
+        if (clients->data[i]->type == GUI) {
+            prepare_response_cat(&clients->data[i]->io, "edi %d\n", n);
         }
     }
 }

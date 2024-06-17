@@ -23,14 +23,14 @@
 
 static void handle_client_closing(zappy_t *z, int i)
 {
-    if (z->clients->data[i].type != AI) {
-        close_client(&z->clients->data[i], z->clients);
+    if (z->clients->data[i]->type != AI) {
+        close_client(z->clients->data[i], z->clients);
         vec_erase_at_client_list(z->clients, i);
     } else {
         logs(
             INFO,
             "Killing ai %d due to deconnection\n",
-            z->clients->data[i].ai->id
+            z->clients->data[i]->ai->id
         );
         kill_ai(z->clients, z->game.ais, i);
     }
@@ -38,18 +38,18 @@ static void handle_client_closing(zappy_t *z, int i)
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
-    if (FD_ISSET(z->clients->data[i].fd, &z->server.read_fds))
-        if (read_client(&z->clients->data[i]) == ERROR)
+    if (FD_ISSET(z->clients->data[i]->fd, &z->server.read_fds))
+        if (read_client(z->clients->data[i]) == ERROR)
             handle_client_closing(z, i);
-    if (FD_ISSET(z->clients->data[i].fd, &z->server.write_fds) &&
-        z->clients->data[i].io.is_ready) {
-        z->clients->data[i].io.is_ready = false;
-        if (z->clients->data[i].io.res.size != 0 &&
-            z->clients->data[i].io.res.buffer != NULL) {
+    if (FD_ISSET(z->clients->data[i]->fd, &z->server.write_fds) &&
+        z->clients->data[i]->io.is_ready) {
+        z->clients->data[i]->io.is_ready = false;
+        if (z->clients->data[i]->io.res.size != 0 &&
+            z->clients->data[i]->io.res.buffer != NULL) {
             send_client(
-                &z->clients->data[i], z->clients->data[i].io.res.buffer
+                z->clients->data[i], z->clients->data[i]->io.res.buffer
             );
-            free_buffer(&z->clients->data[i].io.res);
+            free_buffer(&z->clients->data[i]->io.res);
         }
     }
 }
@@ -92,9 +92,9 @@ void fill_fd_set(zappy_t *z)
     FD_SET(0, &z->server.read_fds);
     FD_SET(z->server.fd, &z->server.read_fds);
     for (size_t i = 0; i < z->clients->size; i++) {
-        FD_SET(z->clients->data[i].fd, &z->server.read_fds);
-        if (z->clients->data[i].io.is_ready) {
-            FD_SET(z->clients->data[i].fd, &z->server.write_fds);
+        FD_SET(z->clients->data[i]->fd, &z->server.read_fds);
+        if (z->clients->data[i]->io.is_ready) {
+            FD_SET(z->clients->data[i]->fd, &z->server.write_fds);
         }
     }
 }
@@ -102,8 +102,8 @@ void fill_fd_set(zappy_t *z)
 void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
-        if (z->clients->data[i].io.req.size > 0) {
-            handle_buffer(&z->clients->data[i], z);
+        if (z->clients->data[i]->io.req.size > 0) {
+            handle_buffer(z->clients->data[i], z);
         }
     }
     execute_commands(z);
@@ -112,15 +112,15 @@ void exec_clients(zappy_t *z)
 void check_eating(struct client_list *clients)
 {
     for (size_t i = 0; i < clients->size; i++)
-        if (clients->data[i].type == AI)
-            make_ai_eat(&clients->data[i], clients, i);
+        if (clients->data[i]->type == AI)
+            make_ai_eat(clients->data[i], clients, i);
 }
 
 void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
 {
     for (size_t i = 0; i < clients->size; i++)
-        if (clients->data[i].type == AI &&
-            clients->data[i].ai->alive == false) {
+        if (clients->data[i]->type == AI &&
+            clients->data[i]->ai->alive == false) {
             kill_ai(clients, ais, i);
         }
 }

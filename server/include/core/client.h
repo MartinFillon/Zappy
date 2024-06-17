@@ -14,7 +14,7 @@
 #include "core/types/client.h"
 #include "core/types/game.h"
 
-#define TYPE client_t
+#define TYPE client_t *
 #define NAME client_list
 #include "vector.h"
 
@@ -24,7 +24,7 @@
  * @param fd the file descriptor
  * @param address the address of the client
  */
-client_t init_client(int fd, char *address, uint32_t port);
+client_t *init_client(int fd, char *address, uint32_t port);
 
 /**
  * @brief Prepare the response of the client in his @param io parameter.
@@ -158,7 +158,7 @@ bool init_ai(
     team_t *team,
     struct client_list *restrict clients
 );
-void destroy_ai(ai_t *ai);
+void destroy_ai(ai_t **ai);
 /**
  * @brief Move the @param ai with respect with his direction
  * @param ai the ai to move

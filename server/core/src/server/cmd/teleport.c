@@ -13,8 +13,8 @@
 static bool get_pos(zappy_t *z, long id, pos_t *p)
 {
     for (size_t i = 0; i < z->game.ais->size; i++) {
-        if (z->game.ais->data[i].id == id) {
-            *p = z->game.ais->data[i].pos;
+        if (z->game.ais->data[i]->id == id) {
+            *p = z->game.ais->data[i]->pos;
             return true;
         }
     }
@@ -24,8 +24,8 @@ static bool get_pos(zappy_t *z, long id, pos_t *p)
 static bool set_pos(zappy_t *z, long id, pos_t *p)
 {
     for (size_t i = 0; i < z->game.ais->size; i++) {
-        if (z->game.ais->data[i].id == id) {
-            z->game.ais->data[i].pos = *p;
+        if (z->game.ais->data[i]->id == id) {
+            z->game.ais->data[i]->pos = *p;
             return true;
         }
     }
