@@ -310,6 +310,7 @@ impl Queen {
             } else {
                 ("0", msg.trim_end_matches('\n'))
             };
+            println!("Message received: {}", content.1);
             if let Ok(id) = content.0.parse::<usize>() {
                 self.handle_message_content(&mut client, id, dir, content.1, can_move, can_start)
                     .await?;
@@ -328,8 +329,16 @@ impl AIHandler for Queen {
 
     async fn update(&mut self) -> Result<(), CommandError> {
         while !self.can_start {
+            {
+                let mut client = self.info().client().lock().await;
+                println!("Queen {}: waiting for \"Done\"...", self.info.p_id);
+                if let ResponseResult::Message(msg) = client.get_broadcast().await? {
+                    client.push_message(msg);
+                }
+            }
             self.handle_message().await?;
         }
+        println!("Queen {}: received done successfully.", self.info.p_id);
         self.fork_servant().await?;
         loop {
             self.handle_message().await?;

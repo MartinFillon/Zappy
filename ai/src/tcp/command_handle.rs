@@ -69,6 +69,7 @@ pub trait CommandHandler {
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
     async fn check_response(&mut self) -> Result<String, CommandError>;
+    async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
 #[async_trait]
@@ -97,6 +98,16 @@ impl CommandHandler for TcpClient {
             return Err(CommandError::DeadReceived);
         }
         Ok(response)
+    }
+
+    async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
+        let res = self.check_response().await?;
+        print!("Received message: {res}");
+        if res.starts_with("message ") && res.ends_with('\n') {
+            handle_message_response(res, self.crypt())
+        } else {
+            self.handle_response(res).await
+        }
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
@@ -148,7 +159,8 @@ fn handle_message_response(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
-                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                    println!("Crypted: {final_msg} - Decrypted: {decrypted_message}");
+                    return Ok(ResponseResult::Message((dir_enum, decrypted_message)));
                 }
                 warn!("Failed to parse direction {}.", direction);
             }

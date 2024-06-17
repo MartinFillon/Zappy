@@ -151,7 +151,6 @@ impl TcpClient {
 
     pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
         if self.messages.is_empty() {
-            warn!("No message to pop.");
             None
         } else {
             Some(self.messages.remove(0))
