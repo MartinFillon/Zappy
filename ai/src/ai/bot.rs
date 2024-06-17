@@ -19,8 +19,10 @@ use crate::{
     },
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
-        command_handle::{CommandHandler, CommandError, DirectionEject, DirectionMessage, ResponseResult},
-        handle_tcp, TcpClient
+        command_handle::{
+            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
+        },
+        handle_tcp, TcpClient,
     },
 };
 
@@ -334,7 +336,11 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, p_id: &mut usize, can_start: &mut bool) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(
+        &mut self,
+        p_id: &mut usize,
+        can_start: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
         let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {

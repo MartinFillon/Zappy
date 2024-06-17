@@ -130,7 +130,9 @@ impl CommandHandler for TcpClient {
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             "Elevation underway" => Ok(ResponseResult::Elevating),
-            level if level.starts_with("Current level: ") => Ok(ResponseResult::Incantation(get_current_level(level)?)),
+            level if level.starts_with("Current level: ") => {
+                Ok(ResponseResult::Incantation(get_current_level(level)?))
+            }
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
                 warn!("Invalid Response: ({}).", response.trim_end());

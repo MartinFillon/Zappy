@@ -15,7 +15,10 @@ use crate::tcp::{
 use log::debug;
 
 pub fn get_current_level(level_str: &str) -> Result<usize, CommandError> {
-    level_str.split_once(": ").and_then(|(_, l)| l.parse::<usize>().ok()).ok_or(CommandError::InvalidResponse)
+    level_str
+        .split_once(": ")
+        .and_then(|(_, l)| l.parse::<usize>().ok())
+        .ok_or(CommandError::InvalidResponse)
 }
 
 pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {

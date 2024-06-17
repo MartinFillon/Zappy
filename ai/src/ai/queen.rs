@@ -162,10 +162,13 @@ impl Queen {
             println!("Ai Queen #{} launching incantation", self.info.p_id);
             let incant_res = commands::incantation::incantation(&mut cli).await;
             if let ResponseResult::Incantation(lvl) =
-            Queen::handle_eject(&mut cli, incant_res).await?
+                Queen::handle_eject(&mut cli, incant_res).await?
             {
                 level = lvl;
-                println!("Ai Queen #{} done incantating. Now level {}", self.info.p_id, level);
+                println!(
+                    "Ai Queen #{} done incantating. Now level {}",
+                    self.info.p_id, level
+                );
             }
             println!("Ai Queen #{} done incantating.", self.info.p_id);
         };
