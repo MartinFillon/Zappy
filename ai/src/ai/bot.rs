@@ -54,6 +54,15 @@ pub struct Bot {
     coord: (i32, i32),
 }
 
+fn get_item_index(item: &str, inv: &[(String, i32)]) -> Option<usize> {
+    for (i, elem) in inv.iter().enumerate() {
+        if elem.0.as_str() == item {
+            return Some(i);
+        }
+    }
+    None
+}
+
 fn make_item_prioritised(item: &str) {
     swap(
         &mut ITEM_PRIORITY
@@ -108,14 +117,14 @@ async fn seek_best_item_index(
     match inventory(client).await? {
         ResponseResult::Inventory(inv) => {
             let mut idex = 0;
-            for (i, tile) in tiles.iter().enumerate() {
+            for tile in tiles.iter() {
                 match get_best_item_in_tile(tile, &inv) {
                     Some(item) => {
                         if get_item_priority(item.as_str())
                             > get_item_priority(inv[idex].0.as_str())
                             && player_count_on_tile(tile) < COLONY_PLAYER_COUNT
                         {
-                            idex = i;
+                            idex = get_item_index(item.as_str(), &inv).unwrap_or(idex);
                             best_item.clone_from(&item);
                         }
                     }
@@ -130,9 +139,6 @@ async fn seek_best_item_index(
 
 fn done_dropping_items(inv: &[(String, i32)]) -> bool {
     for (item, count) in inv {
-        if item.as_str() == "food" && *count > 10 {
-            return false;
-        }
         if item.as_str() != "food" && *count > 0 {
             return false;
         }
@@ -157,13 +163,17 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Handling bot [Queen {}]...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
+            info!("Handling bot [Queen {}]...", self.info().p_id);
             self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
+                for _ in 0..3 {
+                    let mut client = self.info().client().lock().await;
+                    take_object(&mut client, "food").await?;
+                }
                 idex = 0;
                 continue;
             }
@@ -279,10 +289,8 @@ impl Bot {
                     if done_dropping_items(&inv) {
                         return Ok(ResponseResult::OK);
                     }
-                    for (item, count) in inv {
-                        if (item.as_str() == "food" && count > 10)
-                            || (item.as_str() != "food" && count > 0)
-                        {
+                    for (item, _) in inv {
+                        if item.as_str() != "food" {
                             match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),

@@ -62,7 +62,7 @@ impl AIHandler for Knight {
                 self.info.set_level(level);
                 continue;
             }
-            if self.check_food().await? < 6 {
+            if self.check_food().await? < 8 {
                 info!(
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
