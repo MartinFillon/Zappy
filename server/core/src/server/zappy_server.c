@@ -100,7 +100,7 @@ void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
         if (z->clients->data[i]->io.req->size > 0) {
-            handle_buffer(z->clients->data[i], z);
+            handle_buffer(z->clients->data[i]);
         }
     }
     execute_commands(z);
@@ -110,7 +110,7 @@ void check_eating(struct client_list *clients)
 {
     for (size_t i = 0; i < clients->size; i++)
         if (clients->data[i]->type == AI)
-            make_ai_eat(clients->data[i], clients, i);
+            make_ai_eat(clients->data[i], clients);
 }
 
 void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)

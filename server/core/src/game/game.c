@@ -6,7 +6,6 @@
 */
 
 #include "core/types/game.h"
-#include "core/client.h"
 #include "core/clock.h"
 #include "core/map.h"
 #include "logger.h"

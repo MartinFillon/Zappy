@@ -23,7 +23,7 @@ static void send_death(int n, struct client_list *clients)
     }
 }
 
-void make_ai_eat(client_t *cli, struct client_list *clients, int n)
+void make_ai_eat(client_t *cli, struct client_list *clients)
 {
     if (cli->ai->godmode || !cli->ai->alive ||
         !has_n_ticks_passed(cli->ai->food_clock, 126))
