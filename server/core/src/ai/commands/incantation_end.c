@@ -24,9 +24,9 @@ static void increment_all_levels(game_t *game, int id_incant)
     struct vector_ai_t *ais = game->ais;
 
     for (size_t i = 0; i < ais->size; i++) {
-        if (ais->data[i].incant.is_incant
-            && ais->data[i].incant.id_incant == id_incant) {
-            ais->data[i].level++;
+        if (ais->data[i]->incant.is_incant
+            && ais->data[i]->incant.id_incant == id_incant) {
+            ais->data[i]->level++;
         }
     }
 }
@@ -56,7 +56,7 @@ static size_t count_nb_ai_incant(
     size_t count = 0;
 
     for (size_t i = 0; i < ais->size; i++) {
-        oth = &ais->data[i];
+        oth = ais->data[i];
         for (size_t k = 0; k < tile->players->size; k++) {
             count += oth->id == tile->players->data[k] &&
                 oth->incant.is_incant &&
@@ -90,7 +90,7 @@ static void end_ais_elevation(
     client_t *oth = NULL;
 
     for (size_t i = 0; i < clis->size; i++) {
-        oth = &clis->data[i];
+        oth = clis->data[i];
         if (oth->type == GUI)
             continue;
         if (cli->ai->id != oth->ai->id &&

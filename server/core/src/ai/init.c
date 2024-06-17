@@ -14,6 +14,7 @@
 #include "core/types/client.h"
 #include "core/types/object.h"
 #include "core/types/team.h"
+#include "logger.h"
 #include "queue.h"
 
 static void send_infos(
@@ -61,19 +62,20 @@ bool init_ai(
     struct client_list *restrict clients
 )
 {
-    ai_t new = {0};
+    ai_t *new = calloc(1, sizeof(ai_t));
     egg_t *egg = NULL;
 
     if (team->eggs->size == 0)
         return true;
     egg = queue_pop_queue_egg_t(team->eggs);
-    new.clock = clock_new(game->frequency);
-    new.team = team;
-    new.food_clock = clock_new(game->frequency);
-    init_ai_info(&new, egg, game->map);
+    new->clock = clock_new(game->frequency);
+    new->team = team;
+    new->food_clock = clock_new(game->frequency);
+    init_ai_info(new, egg, game->map);
     free(egg);
     vec_pushback_vector_ai_t(game->ais, new);
-    client->ai = &game->ais->data[game->ais->size - 1];
-    send_infos(client->fd, game, &new, clients);
+    client->ai = new;
+    send_infos(client->fd, game, new, clients);
+    logs(WARNING, "Client %d AI %d is an AI\n", client->fd, client->ai->id);
     return false;
 }

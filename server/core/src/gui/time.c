@@ -32,6 +32,6 @@ void update_time(client_t *c, command_state_t *s)
     s->game->frequency = nfreq;
     prepare_response_cat(&c->io, "sst %d\n", nfreq);
     for (__auto_type i = 0ul; i < s->game->ais->size; i++) {
-        update_clock(&s->game->ais->data[i], nfreq);
+        update_clock(s->game->ais->data[i], nfreq);
     }
 }

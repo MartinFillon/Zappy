@@ -66,17 +66,17 @@ void handle_eject(client_t *cli, command_state_t *s)
     bool has_ejected = false;
 
     for (size_t i = 0; i < s->clients->size; i++) {
-        if (cli->ai->id != s->clients->data[i].ai->id &&
-            is_coord_equal(&cli->ai->pos, &s->clients->data[i].ai->pos)) {
-            eject_ai(cli, &s->clients->data[i], s);
-            prepare_response(
-                &s->clients->data[i].io, "eject: %d\n", cli->ai->dir
+        if (cli->ai->id != s->clients->data[i]->ai->id &&
+            is_coord_equal(&cli->ai->pos, &s->clients->data[i]->ai->pos)) {
+            eject_ai(cli, s->clients->data[i], s);
+            prepare_response_cat(
+                &s->clients->data[i]->io, "eject: %d\n", cli->ai->dir
             );
             has_ejected = true;
         }
     }
     destroy_common_eggs(s->game, &cli->ai->pos, s->clients, &has_ejected);
-    prepare_response(&cli->io, "%s\n", (has_ejected ? "ok" : "ko"));
+    prepare_response_cat(&cli->io, "%s\n", (has_ejected ? "ok" : "ko"));
     if (has_ejected)
         broadcast_to(GUI, s->clients, "pex %d\n", cli->ai->id);
 }

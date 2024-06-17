@@ -35,7 +35,7 @@ void player_position(client_t *c, command_state_t *com)
         return send_invalid_args(c);
     if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
-    return send_infos(c, &com->game->ais->data[nb], nb);
+    return send_infos(c, com->game->ais->data[nb], nb);
 }
 
 void player_level(client_t *c, command_state_t *com)
@@ -47,7 +47,7 @@ void player_level(client_t *c, command_state_t *com)
     if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
     return prepare_response_cat(
-        &c->io, "plv %ld %d", nb, com->game->ais->data[nb].level
+        &c->io, "plv %ld %d", nb, com->game->ais->data[nb]->level
     );
 }
 
@@ -67,5 +67,5 @@ void player_inventory(client_t *c, command_state_t *com)
         return send_invalid_args(c);
     if ((size_t)nb >= com->game->ais->size)
         return send_invalid_args(c);
-    return send_inventory(c, &com->game->ais->data[nb], nb);
+    return send_inventory(c, com->game->ais->data[nb], nb);
 }

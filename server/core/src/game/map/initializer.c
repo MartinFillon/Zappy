@@ -5,6 +5,7 @@
 ** initializer
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "core/map.h"
@@ -64,8 +65,10 @@ static void put_on_tile(map_t *map, enum object_e obj)
 static void fill_tiles(map_t *map, double min, enum object_e obj)
 {
     size_t c = count_obj(map, obj);
-    size_t to_add = (c < min) ? min - c : 0;
+    size_t to_add = 0;
 
+    min = min < 1.0 ? 1.0 : min;
+    to_add = (c < min) ? min - c : 0;
     for (; to_add > 0; to_add--)
         put_on_tile(map, obj);
 }
