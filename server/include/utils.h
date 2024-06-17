@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "core/types/ai.h"
+#include "core/types/client.h"
 #include "core/types/position.h"
 
 /**
@@ -83,6 +84,8 @@ void unfreeze_ai(ai_t *ai);
  * @param b second integer
  * @return true if equal else false
  */
-bool cmp_int(int a, int b);
+bool cmp_int(int *a, int *b);
 
-bool cmp_ais(ai_t a, ai_t b);
+bool cmp_ais(ai_t **a, ai_t **b);
+
+bool cmp_cli(struct client_s *a, struct client_s *b);

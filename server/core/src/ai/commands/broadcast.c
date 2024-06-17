@@ -113,15 +113,10 @@ static void prepare_info_client(
     dir = cli->ai->dir;
     if (!is_coord_equal(&sender->ai->pos, &cli->ai->pos)) {
         get_starting_pos(&pos, &cli->ai->pos, dir, g->map);
-        shortest_dir = get_shortest_distance_sound(
-            &sender->ai->pos, &pos, dir, g->map);
+        shortest_dir =
+            get_shortest_distance_sound(&sender->ai->pos, &pos, dir, g->map);
     }
-    prepare_response_cat(
-        &cli->io,
-        "message %d, %s\n",
-        shortest_dir,
-        msg
-    );
+    prepare_response_cat(&cli->io, "message %d, %s\n", shortest_dir, msg);
 }
 
 static void send_to_everyone(
@@ -132,18 +127,20 @@ static void send_to_everyone(
 )
 {
     for (size_t i = 0; i < clis->size; i++) {
-        if (clis->data[i].type == AI && valid_client(&clis->data[i], c)) {
-            prepare_info_client(msg, c, &clis->data[i], g);
+        if (clis->data[i]->type == AI && valid_client(clis->data[i], c)) {
+            prepare_info_client(msg, c, clis->data[i], g);
         }
     }
 }
 
 void handle_broadcast(client_t *cli, command_state_t *s)
 {
-    char *msg = str_cstr(s->args->data[1]);
+    str_t *join_args = join_n_start_strs(s->args, " ", 1);
+    char *msg = str_cstr(join_args);
 
     prepare_response_cat(&cli->io, "ok\n");
     send_to_everyone(msg, s->clients, cli, s->game);
     broadcast_to(GUI, s->clients, "pbc %d %s\n", cli->ai->id, msg);
     free(msg);
+    str_free(join_args);
 }

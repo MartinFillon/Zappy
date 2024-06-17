@@ -108,12 +108,12 @@ static inline bool FN_NAME(vec_erase_at, NAME)(struct NAME *vec, size_t idx)
 **/
 static inline bool FN_NAME(vec_erase, NAME)(
     struct NAME *vec,
-    TYPE elem,
-    bool (*cmp)(TYPE, TYPE)
+    TYPE *elem,
+    bool (*cmp)(TYPE *, TYPE *)
 )
 {
     for (size_t i = 0; i < vec->size; i++) {
-        if (cmp(vec->data[i], elem)) {
+        if (cmp(&vec->data[i], elem)) {
             return FN_NAME(vec_erase_at, NAME)(vec, i);
         }
     }

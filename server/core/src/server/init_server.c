@@ -17,7 +17,7 @@
 static int bind_server(int sock_fd, struct sockaddr_in *my_addr)
 {
     if (bind(sock_fd, (struct sockaddr *)my_addr, sizeof(*my_addr)) == -1) {
-        logs(ERROR, "Bind failed %s\n", strerror(errno));
+        logs(ERROR_LEVEL, "Bind failed %s\n", strerror(errno));
         return ERROR;
     }
     return SUCCESS;
@@ -26,7 +26,7 @@ static int bind_server(int sock_fd, struct sockaddr_in *my_addr)
 static int listen_to_port(int sock_fd, uint32_t port)
 {
     if (listen(sock_fd, port) == -1) {
-        logs(ERROR, "Listen failed %s\n", strerror(errno));
+        logs(ERROR_LEVEL, "Listen failed %s\n", strerror(errno));
         return ERROR;
     }
     return SUCCESS;
@@ -45,12 +45,13 @@ static int socket_init(void)
     int enable = 1;
 
     if (sock_fd == -1) {
-        logs(ERROR, "Socket creation failed %s\n", strerror(errno));
+        logs(ERROR_LEVEL, "Socket creation failed %s\n", strerror(errno));
         return ERROR;
     }
-    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) <
-        0) {
-        logs(ERROR, "setsockopt(SO_REUSEADDR) failed %s\n", strerror(errno));
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable,
+        sizeof(int)) < 0) {
+        logs(ERROR_LEVEL, "setsockopt(SO_REUSEADDR) failed %s\n",
+            strerror(errno));
         return ERROR;
     }
     return sock_fd;

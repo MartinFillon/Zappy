@@ -69,9 +69,13 @@ debug_submodules:
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)
 
 debug: CC = clang
-debug: CFLAGS += -g3 -fsanitize=address
-debug: LDFLAGS += -fsanitize=addres
+debug: CFLAGS += -g3
 debug: fclean debug_submodules all
+
+sanitize: CC = clang
+sanitize: CFLAGS += -g3 -fsanitize=address
+sanitize: LDLIBS += -fsanitize=address
+sanitize: fclean debug_submodules all
 
 re: fclean all
 

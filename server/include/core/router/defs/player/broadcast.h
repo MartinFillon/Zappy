@@ -11,7 +11,7 @@
 #include "core/router/route.h"
 
 static const route_t BROADCAST_ROUTE = {
-    .args = 1,
+    .args = -1,
     .command = "Broadcast",
     .f = &handle_broadcast,
     .mode = AI,

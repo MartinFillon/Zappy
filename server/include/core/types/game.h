@@ -12,7 +12,8 @@
 #include "core/types/map.h"
 
 #include "core/types/ai.h"
-#define TYPE ai_t
+#define TYPE ai_t *
+#define NAME vector_ai_t
 #include "vector.h"
 
 #include "core/types/team.h"

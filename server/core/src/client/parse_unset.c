@@ -32,7 +32,7 @@ static void put_in_team(
         return;
     }
     c->type = AI;
-    logs(INFO, "AI inited\n");
+    logs(INFO, "Client %d AI %d is ready\n", c->fd, c->ai->id);
 }
 
 static void send_eggs(client_t *c, team_t *team)
@@ -72,7 +72,7 @@ static void init_gui(client_t *c, game_t *game, struct client_list *clients)
     for (__auto_type i = 0ul; i < game->teams->size; i++)
         send_eggs(c, &game->teams->data[i]);
     for (__auto_type i = 0ul; i < game->ais->size; i++)
-        send_ais(c, &game->ais->data[i]);
+        send_ais(c, game->ais->data[i]);
 }
 
 void unset_command(client_t *c, command_state_t *s)
@@ -88,7 +88,7 @@ void unset_command(client_t *c, command_state_t *s)
         if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
             logs(
                 INFO,
-                "Client %d is a AI of team %s\n",
+                "Client %d is an AI of team %s\n",
                 c->fd,
                 s->game->teams->data[i].name
             );

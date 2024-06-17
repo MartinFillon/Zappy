@@ -59,3 +59,24 @@ char *str_cstr(str_t const *s);
 struct vector_str_t *str_split(str_t *s, char *delim);
 void str_free(str_t *s);
 bool str_toint(long *dest, str_t const *s);
+
+str_t *join_between_strs(
+    struct vector_str_t *array,
+    char const *sep,
+    size_t start,
+    size_t end
+);
+
+str_t *join_n_end_strs(
+    struct vector_str_t *array,
+    char const *separator,
+    size_t end
+);
+
+str_t *join_n_start_strs(
+    struct vector_str_t *array,
+    char const *sep,
+    size_t start
+);
+
+str_t *join_strs(struct vector_str_t *array, char const *sep);

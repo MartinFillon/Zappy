@@ -50,7 +50,7 @@ static void run_callback(
         .game = &zappy->game,
     };
 
-    if (route->args + 1 != line->size) {
+    if (route->args != -1 && (size_t)route->args + 1 != line->size) {
         return INVALID_ARGS_CALLBACKS[cli->type](cli);
     }
     route->f(cli, &state);
@@ -69,7 +69,6 @@ void run_router(
     static route_t unset = {NULL, 0, UNSET, &unset_command, 0};
     char *tmp = str_cstr(line);
 
-    logs(DEBUG, "running: %s\n", tmp);
     free(tmp);
     if (v->size == 0)
         return;
