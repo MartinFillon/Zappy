@@ -22,6 +22,6 @@ void handle_fork(client_t *cli, command_state_t *s)
     egg->pos.x = cli->ai->pos.x;
     egg->pos.y = cli->ai->pos.y;
     queue_pushback_queue_egg_t(cli->ai->team->eggs, egg);
-    prepare_response(&cli->io, "ok\n");
+    prepare_response_cat(&cli->io, "ok\n");
     broadcast_to(GUI, s->clients, "pfk %d\n", cli->ai->id);
 }

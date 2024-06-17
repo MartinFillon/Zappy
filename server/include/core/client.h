@@ -27,15 +27,6 @@
 client_t *init_client(int fd, char *address, uint32_t port);
 
 /**
- * @brief Prepare the response of the client in his @param io parameter.
- *
- * @param io Input/Output structure containing the response buffer/size
- * @param fmt the message to send
- * @param ... the arguments to replace in the message
- */
-void prepare_response(io_t *io, char *fmt, ...);
-
-/**
  * @brief Add the formatted string from @param fmt and @param ... in the
  *        io response buffer
  *

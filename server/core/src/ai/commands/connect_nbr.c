@@ -12,5 +12,5 @@
 void handle_connect_nbr(client_t *cli, command_state_t *s)
 {
     (void)s;
-    prepare_response(&cli->io, "%d\n", cli->ai->team->eggs->size);
+    prepare_response_cat(&cli->io, "%d\n", cli->ai->team->eggs->size);
 }

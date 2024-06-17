@@ -12,20 +12,6 @@
 
 #include "core/types/buffer.h"
 
-void prepare_response(io_t *io, char *fmt, ...)
-{
-    va_list args;
-    char *buff = NULL;
-
-    va_start(args, fmt);
-    vasprintf(&buff, fmt, args);
-    str_free(io->res);
-    io->res = str_snew(buff);
-    io->is_ready = true;
-    va_end(args);
-    free(buff);
-}
-
 void prepare_response_cat(io_t *io, char *fmt, ...)
 {
     va_list args;
