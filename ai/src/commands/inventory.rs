@@ -33,7 +33,7 @@ fn read_output(raw: String) -> Option<Vec<(String, i32)>> {
             acc
         },
     );
-    if inventory.is_empty() {
+    if inventory.len() < 7 {
         return None;
     }
 
@@ -61,13 +61,19 @@ pub mod tests_inventory {
 
     #[test]
     fn output_reading() {
-        let res: Vec<(String, i32)> =
-            read_output("[food 10,linemate 0,sibur 0,mendiane 0]\n".to_string()).unwrap();
+        let res: Vec<(String, i32)> = read_output(
+            "[food 9, linemate 0, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]\n"
+                .to_string(),
+        )
+        .unwrap();
         let cmp: Vec<(String, i32)> = vec![
-            ("food".to_string(), 10),
+            ("food".to_string(), 9),
             ("linemate".to_string(), 0),
+            ("deraumere".to_string(), 0),
             ("sibur".to_string(), 0),
             ("mendiane".to_string(), 0),
+            ("phiras".to_string(), 0),
+            ("thystame".to_string(), 0),
         ];
         assert_eq!(cmp, res);
     }

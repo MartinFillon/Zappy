@@ -35,7 +35,7 @@ fn read_output(raw: String) -> Option<Vec<Vec<String>>> {
             acc
         },
     );
-    if tiles.is_empty() {
+    if tiles.len() < 4 {
         return None;
     }
 
@@ -63,7 +63,7 @@ pub mod tests_look {
 
     #[test]
     fn output_reading() {
-        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string());
+        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string()).unwrap();
         let cmp: Vec<Vec<String>> = vec![
             vec!["player".to_string(), "food".to_string()],
             vec![],
@@ -75,8 +75,19 @@ pub mod tests_look {
 
     #[test]
     fn output_reading_empty() {
-        let res: Vec<Vec<String>> = read_output("[]\n".to_string());
-        let cmp: Vec<Vec<String>> = vec![[].to_vec()];
+        let res = read_output("[]\n".to_string());
+        assert_eq!(None, res);
+    }
+
+    #[test]
+    fn output_reading_message() {
+        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string()).unwrap();
+        let cmp: Vec<Vec<String>> = vec![
+            vec!["player".to_string(), "food".to_string()],
+            vec![],
+            vec![],
+            vec!["food".to_string()],
+        ];
         assert_eq!(cmp, res);
     }
 }
