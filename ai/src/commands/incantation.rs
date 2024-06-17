@@ -12,6 +12,8 @@ use crate::tcp::{
     TcpClient,
 };
 
+use log::debug;
+
 pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     let response = client
         .get_response()
@@ -31,6 +33,8 @@ pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult
 }
 
 pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    debug!("Incantation...");
+
     let checkpoint = client.check_dead("Incantation\n").await?;
     match checkpoint.trim_end() {
         "Elevation underway" => handle_incantation(client).await,

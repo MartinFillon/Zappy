@@ -19,6 +19,7 @@ pub async fn drop_object(
     obj: &str,
 ) -> Result<ResponseResult, CommandError> {
     debug!("Dropping object: ({})...", obj);
+
     let response = client.check_dead(&format!("Set {}\n", obj)).await?;
     client.handle_response(response).await
 }

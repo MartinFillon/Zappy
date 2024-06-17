@@ -103,6 +103,7 @@ impl CommandHandler for TcpClient {
         if response.starts_with("message ") && response.ends_with('\n') {
             if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
+                debug!("Message pushed to queue.");
             }
             let res = self.check_response().await?;
             return self.handle_response(res).await;

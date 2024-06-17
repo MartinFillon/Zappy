@@ -6,20 +6,17 @@
 //
 
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
 use crate::{
-    ai::{queen::Queen, start_ai, AIHandler, Incantationers, AI},
+    ai::{queen::Queen, start_ai, AIHandler, AI},
     commands::{self, unused_slots},
-    elevation::{Config, Inventory},
-    move_towards_broadcast::backtrack_eject,
     tcp::{
-        command_handle::{self, CommandError, CommandHandler, ResponseResult},
-        handle_tcp, TcpClient,
+        command_handle::{self, CommandError, ResponseResult},
+        handle_tcp,
     },
 };
 
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -49,12 +46,16 @@ impl Empress {
                 error!("Fork received a KO.");
             }
             commands::move_up::move_up(&mut cli).await?;
+
             debug!("Task for new queen will start...");
-            if let Err(err) = Queen::fork_dupe(self.info.clone(), Some(i)).await {
-                error!("Queen fork error: {}", err);
-                // return Err(CommandError::RequestError);
-            }
-            println!("Queen with id {i} created.");
+            let info = self.info.clone();
+            tokio::spawn(async move {
+                if let Err(err) = Queen::fork_dupe(info, Some(i)).await {
+                    error!("Queen fork error: {}", err);
+                } else {
+                    println!("Queen with id {i} created.");
+                }
+            });
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
@@ -64,11 +65,11 @@ impl Empress {
 #[async_trait]
 impl AIHandler for Empress {
     fn init(info: AI) -> Self {
+        println!("I AM THE EMPRESS BOW UPPON ME");
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), command_handle::CommandError> {
-        println!("I AM THE EMPRESS BOW UPPON ME");
         {
             let mut client = self.info().client().lock().await;
             while let ResponseResult::Value(val) = unused_slots::unused_slots(&mut client).await? {
@@ -84,50 +85,42 @@ impl AIHandler for Empress {
         Err(CommandError::DeadReceived)
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(info.address.clone(), info.team.clone()).await {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Empress` client connected successfully.");
-                let client = Arc::new(Mutex::new(client));
-                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
-                let team = info.team.clone();
+                Arc::new(Mutex::new(client))
+            }
+            Err(e) => return Err(Error::new(e.kind(), e)),
+        };
 
-                let handle = task::spawn(async move {
-                    match start_ai(
-                        client.clone(),
-                        team.to_string(),
-                        info.address,
-                        (c_id, p_id),
-                        false,
-                    )
-                    .await
-                    {
-                        Ok(ai) => {
-                            let mut empress: Empress = Empress::init(ai.clone());
-                            if let Err(e) = empress.update().await {
-                                println!("Error: {}", e);
-                            }
-                            Ok(ai)
-                        }
-                        Err(e) => {
-                            error!("{}", e);
-                            Err(e)
-                        }
+        let c_id = info.cli_id;
+        let p_id = set_id.unwrap_or(0);
+        let team = info.team.clone();
+        let address = info.address.clone();
+
+        let handle = task::spawn(async move {
+            match start_ai(client, team, address, (c_id, p_id), false).await {
+                Ok(ai) => {
+                    let mut empress = Empress::init(ai.clone());
+                    if let Err(e) = empress.update().await {
+                        println!("Error: {}", e);
                     }
-                });
-
-                match handle.await {
-                    Ok(ai) => return ai,
-                    Err(e) => error!("Task failed: {:?}", e),
+                    Ok(ai)
+                }
+                Err(e) => {
+                    error!("{}", e);
+                    Err(e)
                 }
             }
-            Err(e) => {
-                return Err(Error::new(e.kind(), e));
+        });
+
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
+                error!("Task failed: {:?}", e);
             }
-        };
-        Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ))
+        });
+
+        Ok(())
     }
 }

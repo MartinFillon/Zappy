@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+use log::{debug, warn};
 
 fn read_output(raw: String) -> Vec<(String, i32)> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
@@ -36,8 +36,10 @@ fn read_output(raw: String) -> Vec<(String, i32)> {
 
 pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Checking inventory...");
+
     let response = client.check_dead("Inventory\n").await?;
     if client.handle_response(response.clone()).await.is_err() {
+        warn!("Detected Err, parsing as inventory output...");
         return Ok(ResponseResult::Inventory(read_output(response)));
     }
     Err(CommandError::InvalidResponse)
@@ -57,6 +59,31 @@ pub mod tests {
             ("sibur".to_string(), 0),
             ("mendiane".to_string(), 0),
         ];
+        assert_eq!(cmp, res);
+    }
+}
+
+#[cfg(test)]
+pub mod tests_inventory {
+    use super::read_output;
+
+    #[test]
+    fn output_reading() {
+        let res: Vec<(String, i32)> =
+            read_output("[food 10,linemate 0,sibur 0,mendiane 0]\n".to_string());
+        let cmp: Vec<(String, i32)> = vec![
+            ("food".to_string(), 10),
+            ("linemate".to_string(), 0),
+            ("sibur".to_string(), 0),
+            ("mendiane".to_string(), 0),
+        ];
+        assert_eq!(cmp, res);
+    }
+
+    #[test]
+    fn output_reading_empty() {
+        let res: Vec<(String, i32)> = read_output("[]\n".to_string());
+        let cmp: Vec<(String, i32)> = vec![];
         assert_eq!(cmp, res);
     }
 }

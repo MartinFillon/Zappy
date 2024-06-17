@@ -6,7 +6,6 @@
 //
 
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
 use crate::{
     ai::{start_ai, AIHandler, AI},
@@ -14,20 +13,18 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::{self, move_up},
+        move_up::{self},
         take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
-        command_handle::{
-            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
-        },
+        command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
 
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::mem::swap;
 use std::sync::Arc;
 
@@ -84,7 +81,7 @@ fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> Option<Strin
         if obj.as_str() == "player" {
             continue;
         }
-        let in_inv = inv.iter().find(|(item, _)| item == obj).unwrap_or(&inv[0]);
+        let in_inv = inv.iter().find(|(item, _)| item == obj).unwrap_or(&inv[0]); // check for (index out of bounds: the len is 0 but the index is 0)
         if in_inv.0 != best
             && in_inv.1 < 3
             && get_item_priority(obj) > get_item_priority(best.as_str())
@@ -155,6 +152,7 @@ impl Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
+        println!("BOT HERE.");
         Self::new(info)
     }
 
@@ -178,51 +176,44 @@ impl AIHandler for Bot {
         }
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
-        match handle_tcp(info.address.clone(), info.team.clone()).await {
-            Ok(client) => {
-                debug!("New `Bot` client connected successfully.");
-                let client = Arc::new(Mutex::new(client));
-                let team = info.team.clone();
-                let (c_id, p_id) = (info.cli_id, set_id.unwrap_or(0));
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+        let client: Arc<Mutex<TcpClient>> =
+            match handle_tcp(info.address.clone(), info.team.clone()).await {
+                Ok(client) => {
+                    debug!("New `Bot` client connected successfully.");
+                    Arc::new(Mutex::new(client))
+                }
+                Err(e) => return Err(Error::new(e.kind(), e)),
+            };
 
-                let handle = task::spawn(async move {
-                    match start_ai(
-                        client.clone(),
-                        team.to_string(),
-                        info.address,
-                        (c_id, p_id),
-                        false,
-                    )
-                    .await
-                    {
-                        Ok(ai) => {
-                            let mut bot: Bot = Bot::init(ai.clone());
-                            if let Err(e) = bot.update().await {
-                                println!("Error: {}", e);
-                            }
-                            Ok(ai)
-                        }
-                        Err(e) => {
-                            error!("{}", e);
-                            Err(e)
-                        }
+        let c_id = info.cli_id;
+        let p_id = set_id.unwrap_or(0);
+        let team = info.team.clone();
+        let address = info.address.clone();
+
+        let handle = task::spawn(async move {
+            match start_ai(client, team, address, (c_id, p_id), false).await {
+                Ok(ai) => {
+                    let mut bot = Bot::init(ai.clone());
+                    if let Err(e) = bot.update().await {
+                        println!("Error: {}", e);
                     }
-                });
-
-                match handle.await {
-                    Ok(ai) => return ai,
-                    Err(e) => error!("Task failed: {:?}", e),
+                    Ok(ai)
+                }
+                Err(e) => {
+                    error!("{}", e);
+                    Err(e)
                 }
             }
-            Err(e) => {
-                return Err(Error::new(e.kind(), e));
+        });
+
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
+                error!("Task failed: {:?}", e);
             }
-        };
-        Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ))
+        });
+
+        Ok(())
     }
 }
 
