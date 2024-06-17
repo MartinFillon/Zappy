@@ -159,12 +159,15 @@ impl Queen {
             let mut cli = self.info.client.lock().await;
             commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
                 .await?;
+            println!("Ai Queen #{} launching incantation", self.info.p_id);
             let incant_res = commands::incantation::incantation(&mut cli).await;
             if let ResponseResult::Incantation(lvl) =
-                Queen::handle_eject(&mut cli, incant_res).await?
+            Queen::handle_eject(&mut cli, incant_res).await?
             {
                 level = lvl;
+                println!("Ai Queen #{} done incantating. Now level {}", self.info.p_id, level);
             }
+            println!("Ai Queen #{} done incantating.", self.info.p_id);
         };
         self.info.set_level(level);
         Ok(())
@@ -328,17 +331,17 @@ impl AIHandler for Queen {
             {
                 let mut client = self.info().client().lock().await;
                 println!("Queen {}: waiting for \"Done\"...", self.info.p_id);
-                if let ResponseResult::Message(msg) = client.get_broadcast().await? {
+                if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
                     client.push_message(msg);
                 }
             }
-            self.handle_message().await?;
+            let _ = self.handle_message().await;
         }
         println!("Queen {}: received done successfully.", self.info.p_id);
-        self.fork_servant().await?;
+        let _ = self.fork_servant().await;
         loop {
-            self.handle_message().await?;
-            self.check_move_elevation().await?;
+            let _ = self.handle_message().await;
+            let _ = self.check_move_elevation().await;
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -358,7 +361,7 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            self.check_enough_food(3).await?;
+            let _ = self.check_enough_food(3).await;
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);

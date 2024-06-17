@@ -7,6 +7,7 @@
 
 #![allow(dead_code)]
 
+use crate::commands::incantation::get_current_level;
 use crate::{crypt::Crypt, tcp::TcpClient};
 
 use std::fmt;
@@ -129,6 +130,7 @@ impl CommandHandler for TcpClient {
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             "Elevation underway" => Ok(ResponseResult::Elevating),
+            level if level.starts_with("Current level: ") => Ok(ResponseResult::Incantation(get_current_level(level)?)),
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
                 warn!("Invalid Response: ({}).", response.trim_end());
