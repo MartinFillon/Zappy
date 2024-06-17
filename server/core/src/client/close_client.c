@@ -6,13 +6,14 @@
 */
 
 #include <unistd.h>
+
 #include "core/client.h"
 #include "core/types/client.h"
-#include "queue.h"
 
 void free_buffer(struct buffer_s *buffer)
 {
-    free(buffer->buffer);
+    // if (buffer->buffer)
+    //     free(buffer->buffer);
     buffer->buffer = NULL;
     buffer->size = 0;
 }
@@ -25,10 +26,11 @@ void destroy_client(client_t *c)
     free_buffer(&c->io.res);
     c->ai = NULL;
     c->type = UNSET;
-    for (size_t i = 0; i < c->commands->size; i++)
-        str_free(c->commands->data[i]);
-    queue_destroy_queue_command_t(c->commands);
-    free(c->address);
+    // for (size_t i = 0; i < c->commands->size; i++)
+    //     str_free(c->commands->data[i]);
+    // queue_destroy_queue_command_t(c->commands);
+    c->commands = NULL;
+    // free(c->address);
     c->address = NULL;
 }
 

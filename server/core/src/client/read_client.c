@@ -22,7 +22,7 @@ int read_client(client_t *c)
         logs(INFO, "Client %d has disconnected\n", c->fd);
         return -1;
     }
-    logs(DEBUG, "Read %ld bytes from client %d\n", bytes_read, c->fd);
+    logs(DEBUG, "Client %d Read %ld bytes\n", c->fd, bytes_read);
     if (c->io.req.buffer == NULL) {
         c->io.req.buffer = strdup(buffer);
         c->io.req.size = strlen(c->io.req.buffer);
@@ -32,6 +32,6 @@ int read_client(client_t *c)
         strcat(c->io.req.buffer, buffer);
         c->io.req.size = strlen(c->io.req.buffer);
     }
-    logs(DEBUG, "Buffer: %s\n", c->io.req.buffer);
+    logs(DEBUG, "Client %d Buffer: %s\n", c->fd, c->io.req.buffer);
     return 0;
 }

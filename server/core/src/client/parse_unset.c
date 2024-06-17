@@ -32,7 +32,7 @@ static void put_in_team(
         return;
     }
     c->type = AI;
-    logs(INFO, "AI inited\n");
+    logs(INFO, "Client %d AI %d is ready\n", c->fd, c->ai->id);
 }
 
 static void send_eggs(client_t *c, team_t *team)
@@ -88,7 +88,7 @@ void unset_command(client_t *c, command_state_t *s)
         if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
             logs(
                 INFO,
-                "Client %d is a AI of team %s\n",
+                "Client %d is an AI of team %s\n",
                 c->fd,
                 s->game->teams->data[i].name
             );

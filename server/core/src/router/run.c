@@ -69,7 +69,6 @@ void run_router(
     static route_t unset = {NULL, 0, UNSET, &unset_command, 0};
     char *tmp = str_cstr(line);
 
-    logs(DEBUG, "running: %s\n", tmp);
     free(tmp);
     if (v->size == 0)
         return;

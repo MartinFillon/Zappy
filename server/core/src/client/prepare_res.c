@@ -46,14 +46,10 @@ void prepare_response(io_t *io, char *fmt, ...)
 void prepare_response_cat(io_t *io, char *fmt, ...)
 {
     va_list args;
-    char buff[BUFF_SIZE];
+    char *buff = NULL;
 
     va_start(args, fmt);
-    if (vsprintf(buff, fmt, args) == ERROR) {
-        logs(
-            ERROR_LEVEL, "Unable to fill the buffer to prepare client response"
-        );
-    }
+    vasprintf(&buff, fmt, args);
     va_end(args);
     if (io->res.buffer == NULL) {
         fill_io(io, buff);
@@ -64,6 +60,7 @@ void prepare_response_cat(io_t *io, char *fmt, ...)
         strcat(io->res.buffer, buff);
         io->is_ready = true;
     }
+    free(buff);
 }
 
 void prepare_response_cat_va(io_t *io, char *fmt, va_list args)

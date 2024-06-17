@@ -27,10 +27,10 @@ static int fill_client(
     prepare_response_cat(&c.io, "WELCOME\n");
     logs(
         INFO,
-        "New client %s:%d with fd %d\n",
+        "Client %d New client %s:%d\n",
+        fd,
         inet_ntoa(addr->sin_addr),
-        ntohs(addr->sin_port),
-        fd
+        ntohs(addr->sin_port)
     );
     vec_pushback_client_list(clients, c);
     return SUCCESS;
@@ -43,7 +43,7 @@ int accept_new_client(server_t *s, struct client_list *clients)
     int fd = accept(s->fd, (struct sockaddr *)&addr, &addr_size);
 
     if (fd == -1) {
-        logs(ERROR, "Accept failed\n");
+        logs(ERROR_LEVEL, "Accept failed\n");
         return ERROR;
     }
     return fill_client(clients, fd, &addr);

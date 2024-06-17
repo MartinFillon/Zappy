@@ -14,6 +14,7 @@
 #include "core/types/client.h"
 #include "core/types/object.h"
 #include "core/types/team.h"
+#include "logger.h"
 #include "queue.h"
 
 static void send_infos(
@@ -75,5 +76,11 @@ bool init_ai(
     vec_pushback_vector_ai_t(game->ais, new);
     client->ai = &game->ais->data[game->ais->size - 1];
     send_infos(client->fd, game, &new, clients);
+    logs(
+        WARNING,
+        "Client %d AI %d is an AI\n",
+        client->fd,
+        client->ai->id
+    );
     return false;
 }

@@ -13,6 +13,8 @@ static const option_t LOGGER_MODE = {
     .identifier = "-l",
     .type = STRING,
     .description = "Set logger mode (ERROR, WARNING, INFO, DEBUG, DISABLE)",
+    .has_default = true,
+    .default_value = {.string = "WARNING"},
 };
 
 static const option_t PORT = {

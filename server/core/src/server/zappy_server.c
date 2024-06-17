@@ -17,6 +17,7 @@
 #include "core/client.h"
 #include "core/server.h"
 #include "core/types/client.h"
+#include "logger.h"
 #include "macros.h"
 #include "zappy.h"
 
@@ -26,6 +27,11 @@ static void handle_client_closing(zappy_t *z, int i)
         close_client(&z->clients->data[i], z->clients);
         vec_erase_at_client_list(z->clients, i);
     } else {
+        logs(
+            INFO,
+            "Killing ai %d due to deconnection\n",
+            z->clients->data[i].ai->id
+        );
         kill_ai(z->clients, z->game.ais, i);
     }
 }

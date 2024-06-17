@@ -28,14 +28,21 @@ void make_ai_eat(client_t *cli, struct client_list *clients, int n)
     if (cli->ai->godmode || !cli->ai->alive ||
         !has_n_ticks_passed(cli->ai->food_clock, 126))
         return;
+    logs(
+        DEBUG,
+        "Client %d Ai %d has %d food\n",
+        cli->fd,
+        cli->ai->id,
+        cli->ai->inventory[FOOD]
+    );
     if (cli->ai->inventory[FOOD] == 0) {
-        logs(INFO, "Ai %d is dead\n", n);
+        logs(INFO, "Client %d Ai %d is dead\n", cli->fd, cli->ai->id);
         prepare_response_cat(&cli->io, "dead\n");
-        send_death(n, clients);
+        send_death(cli->ai->id, clients);
         cli->ai->alive = false;
         return;
     }
-    logs(INFO, "Cli %d is eating\n", n);
+    logs(INFO, "Client %d AI %d is eating\n", cli->fd, cli->ai->id);
     cli->ai->inventory[FOOD] -= 1;
     reset_clock(cli->ai->food_clock);
 }
