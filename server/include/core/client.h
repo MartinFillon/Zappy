@@ -111,13 +111,6 @@ int unset_entrypoint(
 );
 
 /**
- * @brief Free and reset a buffer at 0
- *
- * @param buffer the buffer to be reseted
- */
-void free_buffer(struct buffer_s *buffer);
-
-/**
  * @brief Close the client
  *
  * @param c the client structure

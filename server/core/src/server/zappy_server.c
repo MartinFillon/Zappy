@@ -38,20 +38,17 @@ static void handle_client_closing(zappy_t *z, int i)
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
-    if (FD_ISSET(z->clients->data[i]->fd, &z->server.read_fds))
-        if (read_client(z->clients->data[i]) == ERROR)
-            handle_client_closing(z, i);
     if (FD_ISSET(z->clients->data[i]->fd, &z->server.write_fds) &&
         z->clients->data[i]->io.is_ready) {
         z->clients->data[i]->io.is_ready = false;
-        if (z->clients->data[i]->io.res.size != 0 &&
-            z->clients->data[i]->io.res.buffer != NULL) {
-            send_client(
-                z->clients->data[i], z->clients->data[i]->io.res.buffer
-            );
-            free_buffer(&z->clients->data[i]->io.res);
+        if (z->clients->data[i]->io.res->size != 0) {
+            send_client(z->clients->data[i], z->clients->data[i]->io.res->data);
+            str_clear(z->clients->data[i]->io.res);
         }
     }
+    if (FD_ISSET(z->clients->data[i]->fd, &z->server.read_fds))
+        if (read_client(z->clients->data[i]) == ERROR)
+            handle_client_closing(z, i);
 }
 
 static void handle_client(zappy_t *z)
@@ -102,7 +99,7 @@ void fill_fd_set(zappy_t *z)
 void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
-        if (z->clients->data[i]->io.req.size > 0) {
+        if (z->clients->data[i]->io.req->size > 0) {
             handle_buffer(z->clients->data[i], z);
         }
     }

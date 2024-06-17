@@ -10,14 +10,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct buffer_s {
-    char *buffer;
-    size_t size;
-};
+#include "str.h"
 
 // Next step is putting a queue on request
 typedef struct io_s {
-    struct buffer_s req;
-    struct buffer_s res;
+    str_t *req;
+    str_t *res;
     bool is_ready;
 } io_t;
