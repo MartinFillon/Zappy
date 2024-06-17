@@ -160,18 +160,23 @@ async fn init_ai(
     info!("Initializing AI #{}...", c_id);
 
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
+    let ai_clone = ai.clone();
     match ai.cli_id {
         0 => {
-            let mut empress = empress::Empress::init(ai.clone());
-            if let Err(e) = empress.update().await {
-                println!("Error: {}", e);
-            }
+            tokio::spawn(async move {
+                let mut empress = empress::Empress::init(ai_clone);
+                if let Err(e) = empress.update().await {
+                    println!("Error: {}", e);
+                }
+            });
         }
         _ => {
-            let mut fetus = fetus::Fetus::init(ai.clone());
-            if let Err(e) = fetus.update().await {
-                println!("Error: {}", e);
-            }
+            tokio::spawn(async move {
+                let mut fetus = fetus::Fetus::init(ai_clone);
+                if let Err(e) = fetus.update().await {
+                    println!("Error: {}", e);
+                }
+            });
         }
     };
     Ok(ai)
