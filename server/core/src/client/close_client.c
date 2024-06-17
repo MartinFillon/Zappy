@@ -20,6 +20,8 @@ void destroy_client(client_t *c)
     str_free(c->io.req);
     for (size_t i = 0; c->commands && i < c->commands->size; i++)
         str_free(c->commands->data[i]);
+    if (c->type == AI)
+        destroy_ai(&c->ai);
     queue_destroy_queue_command_t(c->commands);
     va_free(2, c->address, c);
 }
