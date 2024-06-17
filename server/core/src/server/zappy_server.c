@@ -51,7 +51,6 @@ static void handle_cli_isset(zappy_t *z, int i)
             send_client(
                 z->clients->data[i], z->clients->data[i]->io.res->data
             );
-            free_buffer(z->clients->data[i]->io.res);
         }
     }
 }
