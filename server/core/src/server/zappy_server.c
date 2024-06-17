@@ -19,6 +19,7 @@
 #include "core/types/client.h"
 #include "logger.h"
 #include "macros.h"
+#include "str.h"
 #include "zappy.h"
 
 static void handle_client_closing(zappy_t *z, int i)
@@ -38,19 +39,20 @@ static void handle_client_closing(zappy_t *z, int i)
 
 static void handle_cli_isset(zappy_t *z, int i)
 {
-    if (FD_ISSET(z->clients->data[i]->fd, &z->server.read_fds))
-        if (read_client(z->clients->data[i]) == ERROR) {
+    client_t *self = z->clients->data[i];
+
+    if (FD_ISSET(self->fd, &z->server.read_fds))
+        if (read_client(self) == ERROR) {
             handle_client_closing(z, i);
             return;
         }
-    if (FD_ISSET(z->clients->data[i]->fd, &z->server.write_fds) &&
-        z->clients->data[i]->io.is_ready) {
-        z->clients->data[i]->io.is_ready = false;
-        if (z->clients->data[i]->io.res->size != 0 &&
-            z->clients->data[i]->io.res != NULL) {
-            send_client(
-                z->clients->data[i], z->clients->data[i]->io.res->data
-            );
+    if (FD_ISSET(self->fd, &z->server.write_fds) &&
+        self->io.is_ready) {
+        self->io.is_ready = false;
+        if (self->io.res->size != 0 &&
+            self->io.res != NULL) {
+            send_client(self, self->io.res->data);
+            str_clear(self->io.res);
         }
     }
 }
