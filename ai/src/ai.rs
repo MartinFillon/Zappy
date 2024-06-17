@@ -30,7 +30,7 @@ use std::sync::{
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, error, info, warn};
+use log::{debug, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -48,7 +48,7 @@ pub struct AI {
 pub trait AIHandler {
     fn init(info: AI) -> Self;
     async fn update(&mut self) -> Result<(), CommandError>;
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI>;
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>;
 }
 
 #[async_trait]
@@ -221,44 +221,6 @@ async fn start_ai(
             "Couldn't reach host.",
         ))
     }
-}
-
-pub async fn fork_launch(
-    address: String,
-    team: String,
-    from_ai: AI,
-    set_id: Option<usize>,
-) -> io::Result<AI> {
-    match tcp::handle_tcp(address.clone(), team.clone()).await {
-        Ok(client) => {
-            debug!("Client connected successfully.");
-            let client = Arc::new(Mutex::new(client));
-            let id = set_id.unwrap_or(0);
-
-            let handle = task::spawn(async move {
-                start_ai(
-                    client.clone(),
-                    team.to_string(),
-                    address,
-                    (from_ai.cli_id, id),
-                    false,
-                )
-                .await
-            });
-
-            match handle.await {
-                Ok(ai) => return ai,
-                Err(e) => error!("Task failed: {:?}", e),
-            }
-        }
-        Err(e) => {
-            return Err(Error::new(e.kind(), e));
-        }
-    };
-    Err(Error::new(
-        ErrorKind::ConnectionRefused,
-        "Couldn't reach host.",
-    ))
 }
 
 pub async fn launch(address: String, team: String) -> io::Result<()> {

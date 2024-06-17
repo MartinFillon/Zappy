@@ -17,7 +17,7 @@ use crate::{
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -73,7 +73,10 @@ impl AIHandler for Knight {
                     if let ResponseResult::OK =
                         Knight::knight_checkout_response(&mut client, res).await?
                     {
-                        let _ = Fetus::fork_dupe(self.info().clone(), None).await;
+                        let info = self.info.clone();
+                        tokio::spawn(async move {
+                            let _ = Fetus::fork_dupe(info, None).await;
+                        });
                     }
                 };
                 while self.check_food().await? < 10 {
@@ -87,7 +90,7 @@ impl AIHandler for Knight {
         Err(CommandError::DeadReceived)
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Knight` client connected successfully.");
@@ -117,13 +120,13 @@ impl AIHandler for Knight {
             }
         });
 
-        match handle.await {
-            Ok(ai) => ai,
-            Err(e) => {
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
                 error!("Task failed: {:?}", e);
-                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        }
+        });
+
+        Ok(())
     }
 }
 

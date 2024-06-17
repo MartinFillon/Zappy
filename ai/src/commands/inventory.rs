@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+use log::{debug, warn};
 
 fn read_output(raw: String) -> Vec<(String, i32)> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
@@ -39,6 +39,7 @@ pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, Command
 
     let response = client.check_dead("Inventory\n").await?;
     if client.handle_response(response.clone()).await.is_err() {
+        warn!("Detected Err, parsing as inventory output...");
         return Ok(ResponseResult::Inventory(read_output(response)));
     }
     Err(CommandError::InvalidResponse)

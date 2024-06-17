@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -59,7 +59,7 @@ impl AIHandler for Fetus {
         }
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Fetus` client connected successfully.");
@@ -89,12 +89,12 @@ impl AIHandler for Fetus {
             }
         });
 
-        match handle.await {
-            Ok(ai) => ai,
-            Err(e) => {
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
                 error!("Task failed: {:?}", e);
-                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        }
+        });
+
+        Ok(())
     }
 }

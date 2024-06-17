@@ -16,7 +16,7 @@ use crate::{
     },
 };
 
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -46,12 +46,16 @@ impl Empress {
                 error!("Fork received a KO.");
             }
             commands::move_up::move_up(&mut cli).await?;
+
             debug!("Task for new queen will start...");
-            if let Err(err) = Queen::fork_dupe(self.info.clone(), Some(i)).await {
-                error!("Queen fork error: {}", err);
-                // return Err(CommandError::RequestError);
-            }
-            println!("Queen with id {i} created.");
+            let info = self.info.clone();
+            tokio::spawn(async move {
+                if let Err(err) = Queen::fork_dupe(info, Some(i)).await {
+                    error!("Queen fork error: {}", err);
+                } else {
+                    println!("Queen with id {i} created.");
+                }
+            });
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
@@ -81,7 +85,7 @@ impl AIHandler for Empress {
         Err(CommandError::DeadReceived)
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Empress` client connected successfully.");
@@ -111,12 +115,12 @@ impl AIHandler for Empress {
             }
         });
 
-        match handle.await {
-            Ok(ai) => ai,
-            Err(e) => {
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
                 error!("Task failed: {:?}", e);
-                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        }
+        });
+
+        Ok(())
     }
 }

@@ -19,7 +19,7 @@ use crate::{
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -181,20 +181,29 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
 
         commands::fork::fork(&mut cli).await?;
-        if let Err(err) = Knight::fork_dupe(self.info.clone(), Some(self.info.p_id + 4)).await {
-            error!("{err}");
-            return Err(CommandError::RequestError);
-        }
+
+        let info = self.info.clone();
+        tokio::spawn(async move {
+            if let Err(err) = Knight::fork_dupe(info.clone(), Some(info.p_id + 4)).await {
+                error!("{err}");
+            } else {
+                println!("Knight with id {} created.", info.p_id + 4)
+            }
+        });
 
         commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
         info!("I as the queen ({}), bestow my life uppon you", 0);
 
         for _ in 0..NB_INIT_BOTS {
             commands::fork::fork(&mut cli).await?;
-            if let Err(err) = Bot::fork_dupe(self.info.clone(), Some(self.info.p_id)).await {
-                error!("{err}");
-                return Err(CommandError::RequestError);
-            }
+            let info = self.info.clone();
+            tokio::spawn(async move {
+                if let Err(err) = Bot::fork_dupe(info.clone(), Some(info.p_id)).await {
+                    error!("{err}");
+                } else {
+                    println!("Bot with id {} created.", info.p_id);
+                }
+            });
             commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
         }
 
@@ -344,7 +353,7 @@ impl AIHandler for Queen {
         }
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
                 debug!("New `Queen` client connected successfully.");
@@ -374,13 +383,13 @@ impl AIHandler for Queen {
             }
         });
 
-        match handle.await {
-            Ok(ai) => ai,
-            Err(e) => {
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
                 error!("Task failed: {:?}", e);
-                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        }
+        });
+
+        Ok(())
     }
 }
 

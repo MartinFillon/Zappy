@@ -24,7 +24,7 @@ use crate::{
     },
 };
 
-use std::io::{self, Error, ErrorKind};
+use std::io::{self, Error};
 use std::mem::swap;
 use std::sync::Arc;
 
@@ -81,7 +81,7 @@ fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> Option<Strin
         if obj.as_str() == "player" {
             continue;
         }
-        let in_inv = inv.iter().find(|(item, _)| item == obj).unwrap_or(&inv[0]);
+        let in_inv = inv.iter().find(|(item, _)| item == obj).unwrap_or(&inv[0]); // check for (index out of bounds: the len is 0 but the index is 0)
         if in_inv.0 != best
             && in_inv.1 < 3
             && get_item_priority(obj) > get_item_priority(best.as_str())
@@ -176,7 +176,7 @@ impl AIHandler for Bot {
         }
     }
 
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<AI> {
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client: Arc<Mutex<TcpClient>> =
             match handle_tcp(info.address.clone(), info.team.clone()).await {
                 Ok(client) => {
@@ -207,13 +207,13 @@ impl AIHandler for Bot {
             }
         });
 
-        match handle.await {
-            Ok(ai) => ai,
-            Err(e) => {
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
                 error!("Task failed: {:?}", e);
-                Err(Error::new(ErrorKind::Other, "Task failed"))
             }
-        }
+        });
+
+        Ok(())
     }
 }
 
