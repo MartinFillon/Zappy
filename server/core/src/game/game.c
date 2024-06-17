@@ -40,7 +40,6 @@ void destroy_game(game_t *game)
     destroy_map(game->map);
     vec_foreach_vector_team_t(game->teams, &destroy_team);
     vec_destroy_vector_team_t(game->teams);
-    vec_foreach_vector_ai_t(game->ais, &destroy_ai);
     vec_destroy_vector_ai_t(game->ais);
     free(game->clock);
     free(game->global);

@@ -42,15 +42,11 @@ static void handle_cli_isset(zappy_t *z, int i)
     client_t *self = z->clients->data[i];
 
     if (FD_ISSET(self->fd, &z->server.read_fds))
-        if (read_client(self) == ERROR) {
-            handle_client_closing(z, i);
-            return;
-        }
-    if (FD_ISSET(self->fd, &z->server.write_fds) &&
-        self->io.is_ready) {
+        if (read_client(self) == ERROR)
+            return handle_client_closing(z, i);
+    if (FD_ISSET(self->fd, &z->server.write_fds) && self->io.is_ready) {
         self->io.is_ready = false;
-        if (self->io.res->size != 0 &&
-            self->io.res != NULL) {
+        if (self->io.res->size != 0 && self->io.res != NULL) {
             send_client(self, self->io.res->data);
             str_clear(self->io.res);
         }
