@@ -11,7 +11,6 @@
 #include "core/types/client.h"
 #include "logger.h"
 #include "str.h"
-#include "zappy.h"
 
 static int one_line_case(client_t *c, struct vector_str_t *lines)
 {
@@ -21,7 +20,7 @@ static int one_line_case(client_t *c, struct vector_str_t *lines)
     return 0;
 }
 
-int handle_buffer(client_t *c, zappy_t *z)
+int handle_buffer(client_t *c)
 {
     struct vector_str_t *lines = str_split(c->io.req, "\n");
 

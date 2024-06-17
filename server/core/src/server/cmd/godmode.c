@@ -15,7 +15,7 @@ void godmode(zappy_t *z, struct vector_str_t *args)
 
     if (str_toint(&id, args->data[1]))
         return logs(ERROR_LEVEL, "Argument must be an id of a player\n");
-    for (size_t i = 0; i < z->clients->size; i++) {
+    for (size_t i = 0; i < z->game.ais->size; i++) {
         if (z->game.ais->data[i]->id == id &&
             z->game.ais->data[i]->godmode == false) {
             logs(INFO, "Ai with id [%d] entered godmode\n", id);
