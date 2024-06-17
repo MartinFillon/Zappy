@@ -10,5 +10,5 @@
 
 void destroy_ai(ai_t **ai)
 {
-    va_free(2, (*ai)->food_clock, (*ai)->clock);
+    va_free(4, (*ai)->food_clock, (*ai)->clock, (*ai)->inventory, (*ai));
 }

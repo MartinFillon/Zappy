@@ -70,8 +70,12 @@ debug_submodules:
 
 debug: CC = clang
 debug: CFLAGS += -g3
-#debug: LDFLAGS += -fsanitize=addres
 debug: fclean debug_submodules all
+
+sanitize: CC = clang
+sanitize: CFLAGS += -g3 -fsanitize=address
+sanitize: LDLIBS += -fsanitize=address
+sanitize: fclean debug_submodules all
 
 re: fclean all
 
