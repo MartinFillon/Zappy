@@ -45,7 +45,7 @@ impl AIHandler for Knight {
             info!("Handling knight [Queen {}]...", self.info().p_id);
             self.handle_message().await?;
 
-            if self.info().level == 6 && (self.info().p_id == 7 || self.info().p_id == 8) {
+            if self.info().level == 6 && (self.info().p_id == 3 || self.info().p_id == 4) {
                 break;
             }
             if self.can_incantate().await? {
@@ -176,7 +176,6 @@ impl Knight {
         Self { info }
     }
 
-    // if needed sinon jenleve
     async fn die(&mut self, id: usize) {
         let mut client_lock = self.info.client.lock().await;
         let mut total = 0;
@@ -185,12 +184,12 @@ impl Knight {
         loop {
             let command = drop_object::drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
-                info!("Knight #{} dropping food x1...", self.info.p_id);
+                info!("Knight #{} dropping food x1...", id);
                 total += 1;
             }
             if command.is_err() {
                 info!("Fetus dropped x{} food", total);
-                info!("Knight #{} died.", self.info.p_id);
+                info!("Knight #{} died.", id);
                 break;
             }
         }
@@ -218,7 +217,7 @@ impl Knight {
             match message {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<usize>() {
-                        p_id.clone_from(&(id + 4));
+                        p_id.clone_from(&id);
                     }
                 }
                 (dir, msg) => {
@@ -228,7 +227,7 @@ impl Knight {
                     if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<usize>() {
-                            if id == *self.info().p_id() && content.1 == "mv" {
+                            if id == self.info().p_id && content.1 == "mv" {
                                 let res = move_towards_broadcast(&mut client, dir).await;
                                 Knight::knight_checkout_response(&mut client, res).await?;
                             }
