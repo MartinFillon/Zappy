@@ -159,7 +159,6 @@ fn handle_message_response(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
-                    println!("Crypted: {final_msg} - Decrypted: {decrypted_message}");
                     return Ok(ResponseResult::Message((dir_enum, decrypted_message)));
                 }
                 warn!("Failed to parse direction {}.", direction);
