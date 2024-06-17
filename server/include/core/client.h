@@ -126,7 +126,7 @@ void kill_ai(struct client_list *clients, struct vector_ai_t *ais, size_t i);
  * @param clients All the clients connected in the server.
  * @param n the number of the client
  */
-void make_ai_eat(client_t *cli, struct client_list *clients, int n);
+void make_ai_eat(client_t *cli, struct client_list *clients);
 
 /**
  * @brief init the ai

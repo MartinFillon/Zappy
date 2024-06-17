@@ -42,15 +42,11 @@ static void handle_cli_isset(zappy_t *z, int i)
     client_t *self = z->clients->data[i];
 
     if (FD_ISSET(self->fd, &z->server.read_fds))
-        if (read_client(self) == ERROR) {
-            handle_client_closing(z, i);
-            return;
-        }
-    if (FD_ISSET(self->fd, &z->server.write_fds) &&
-        self->io.is_ready) {
+        if (read_client(self) == ERROR)
+            return handle_client_closing(z, i);
+    if (FD_ISSET(self->fd, &z->server.write_fds) && self->io.is_ready) {
         self->io.is_ready = false;
-        if (self->io.res->size != 0 &&
-            self->io.res != NULL) {
+        if (self->io.res->size != 0 && self->io.res != NULL) {
             send_client(self, self->io.res->data);
             str_clear(self->io.res);
         }
@@ -104,7 +100,7 @@ void exec_clients(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
         if (z->clients->data[i]->io.req->size > 0) {
-            handle_buffer(z->clients->data[i], z);
+            handle_buffer(z->clients->data[i]);
         }
     }
     execute_commands(z);
@@ -114,7 +110,7 @@ void check_eating(struct client_list *clients)
 {
     for (size_t i = 0; i < clients->size; i++)
         if (clients->data[i]->type == AI)
-            make_ai_eat(clients->data[i], clients, i);
+            make_ai_eat(clients->data[i], clients);
 }
 
 void kill_dead_ais(struct client_list *clients, struct vector_ai_t *ais)
