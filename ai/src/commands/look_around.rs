@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+use log::{debug, warn};
 
 fn read_output(raw: String) -> Vec<Vec<String>> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
@@ -39,7 +39,11 @@ pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, Comma
     debug!("Looking around...");
 
     let response = client.check_dead("Look\n").await?;
-    Ok(ResponseResult::Tiles(read_output(response)))
+    if client.handle_response(response.clone()).await.is_err() {
+        warn!("Detected Err, parsing as tile(s) output...");
+        return Ok(ResponseResult::Tiles(read_output(response)));
+    }
+    Err(CommandError::InvalidResponse)
 }
 
 #[cfg(test)]
