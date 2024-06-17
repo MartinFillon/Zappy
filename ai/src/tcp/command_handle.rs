@@ -102,7 +102,7 @@ impl CommandHandler for TcpClient {
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
         let res = self.check_response().await?;
-        print!("Received message: {res}");
+        debug!("Received message: {res}");
         if res.starts_with("message ") && res.ends_with('\n') {
             handle_message_response(res, self.crypt())
         } else {

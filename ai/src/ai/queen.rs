@@ -108,7 +108,6 @@ impl Queen {
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
-        // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
         let broad_res =
@@ -148,7 +147,6 @@ impl Queen {
             return Ok(());
         }
         match self.info.level {
-            // Move it somewhere else because we have to check for each queen.
             4 => self.move_queen_first_step().await,
             6 => self.move_queen_second_step().await,
             _ => Ok(()),
@@ -290,7 +288,6 @@ impl Queen {
                 }
             }
         } else if msg == "Done" {
-            println!("Queen {} received \"Done\".", self.info.p_id);
             turn_towards_broadcast(client, dir).await?;
             *can_start = true;
         }
@@ -310,7 +307,6 @@ impl Queen {
             } else {
                 ("0", msg.trim_end_matches('\n'))
             };
-            println!("Message received: {}", content.1);
             if let Ok(id) = content.0.parse::<usize>() {
                 self.handle_message_content(&mut client, id, dir, content.1, can_move, can_start)
                     .await?;
