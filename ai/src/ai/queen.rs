@@ -188,10 +188,10 @@ impl Queen {
 
         let info = self.info.clone();
         tokio::spawn(async move {
-            if let Err(err) = Knight::fork_dupe(info.clone(), Some(info.p_id + 4)).await {
+            if let Err(err) = Knight::fork_dupe(info.clone(), Some(info.p_id)).await {
                 error!("{err}");
             } else {
-                println!("Knight with id {} created.", info.p_id + 4)
+                println!("Knight with id {} created.", info.p_id)
             }
         });
 
