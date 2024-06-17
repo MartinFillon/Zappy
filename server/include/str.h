@@ -67,7 +67,11 @@ str_t *join_between_strs(
     size_t end
 );
 
-str_t *join_n_end_strs(struct vector_str_t *array, char const *sep, size_t end);
+str_t *join_n_end_strs(
+    struct vector_str_t *array,
+    char const *separator,
+    size_t end
+);
 
 str_t *join_n_start_strs(
     struct vector_str_t *array,
