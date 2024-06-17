@@ -13,6 +13,7 @@ SRC =   str/str.c\
 		str/split.c\
 		str/convert.c\
 		str/free.c\
+		str/join.c\
 		json/parser.c\
 		json/utils.c\
 		json/types/array.c\

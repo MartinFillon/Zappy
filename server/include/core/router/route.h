@@ -23,7 +23,7 @@ typedef struct {
     double time;
     enum client_type_e mode;
     callback_t f;
-    size_t args;
+    int args;
 } route_t;
 
 /**
