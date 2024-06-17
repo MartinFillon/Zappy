@@ -48,9 +48,10 @@ static int socket_init(void)
         logs(ERROR_LEVEL, "Socket creation failed %s\n", strerror(errno));
         return ERROR;
     }
-    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) <
-        0) {
-        logs(ERROR_LEVEL, "setsockopt(SO_REUSEADDR) failed %s\n", strerror(errno));
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable,
+        sizeof(int)) < 0) {
+        logs(ERROR_LEVEL, "setsockopt(SO_REUSEADDR) failed %s\n",
+            strerror(errno));
         return ERROR;
     }
     return sock_fd;

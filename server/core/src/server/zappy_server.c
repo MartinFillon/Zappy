@@ -42,7 +42,8 @@ static void handle_cli_isset(zappy_t *z, int i)
         z->clients->data[i]->io.is_ready) {
         z->clients->data[i]->io.is_ready = false;
         if (z->clients->data[i]->io.res->size != 0) {
-            send_client(z->clients->data[i], z->clients->data[i]->io.res->data);
+            send_client(z->clients->data[i],
+                z->clients->data[i]->io.res->data);
             str_clear(z->clients->data[i]->io.res);
         }
     }
