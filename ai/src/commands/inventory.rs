@@ -14,7 +14,11 @@ use crate::tcp::{
 
 use log::{debug, warn};
 
-fn read_output(raw: String) -> Vec<(String, i32)> {
+fn read_output(raw: String) -> Option<Vec<(String, i32)>> {
+    if !raw.starts_with('[') || !raw.ends_with("]\n") {
+        warn!("Attempted to read invalid string as inventory.");
+        return None;
+    }
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     let inventory: Vec<(String, i32)> = tmp.split(',').fold(
         Vec::<(String, i32)>::new(),
@@ -29,9 +33,12 @@ fn read_output(raw: String) -> Vec<(String, i32)> {
             acc
         },
     );
+    if inventory.is_empty() {
+        return None;
+    }
 
     debug!("Inventory: {:?}", inventory);
-    inventory
+    Some(inventory)
 }
 
 pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
@@ -40,27 +47,12 @@ pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, Command
     let response = client.check_dead("Inventory\n").await?;
     if client.handle_response(response.clone()).await.is_err() {
         warn!("Detected Err, parsing as inventory output...");
-        return Ok(ResponseResult::Inventory(read_output(response)));
+        return match read_output(response) {
+            Some(output) => Ok(ResponseResult::Inventory(output)),
+            None => Err(CommandError::InvalidResponse),
+        };
     }
     Err(CommandError::InvalidResponse)
-}
-
-#[cfg(test)]
-pub mod tests {
-    use super::read_output;
-
-    #[test]
-    fn output_reading() {
-        let res: Vec<(String, i32)> =
-            read_output("[food 10,linemate 0,sibur 0,mendiane 0]\n".to_string());
-        let cmp: Vec<(String, i32)> = vec![
-            ("food".to_string(), 10),
-            ("linemate".to_string(), 0),
-            ("sibur".to_string(), 0),
-            ("mendiane".to_string(), 0),
-        ];
-        assert_eq!(cmp, res);
-    }
 }
 
 #[cfg(test)]
@@ -70,7 +62,7 @@ pub mod tests_inventory {
     #[test]
     fn output_reading() {
         let res: Vec<(String, i32)> =
-            read_output("[food 10,linemate 0,sibur 0,mendiane 0]\n".to_string());
+            read_output("[food 10,linemate 0,sibur 0,mendiane 0]\n".to_string()).unwrap();
         let cmp: Vec<(String, i32)> = vec![
             ("food".to_string(), 10),
             ("linemate".to_string(), 0),
@@ -82,8 +74,13 @@ pub mod tests_inventory {
 
     #[test]
     fn output_reading_empty() {
-        let res: Vec<(String, i32)> = read_output("[]\n".to_string());
-        let cmp: Vec<(String, i32)> = vec![];
-        assert_eq!(cmp, res);
+        let res = read_output("[]\n".to_string());
+        assert_eq!(None, res);
+    }
+
+    #[test]
+    fn output_reading_message() {
+        let res = read_output("message 8, yoooitsme\n".to_string());
+        assert_eq!(None, res);
     }
 }

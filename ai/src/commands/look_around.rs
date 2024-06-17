@@ -14,7 +14,11 @@ use crate::tcp::{
 
 use log::{debug, warn};
 
-fn read_output(raw: String) -> Vec<Vec<String>> {
+fn read_output(raw: String) -> Option<Vec<Vec<String>>> {
+    if !raw.starts_with('[') || !raw.ends_with("]\n") {
+        warn!("Attempted to read invalid string as tiles.");
+        return None;
+    }
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     let tiles = tmp.split(',').fold(
         Vec::<Vec<String>>::new(),
@@ -31,8 +35,12 @@ fn read_output(raw: String) -> Vec<Vec<String>> {
             acc
         },
     );
+    if tiles.is_empty() {
+        return None;
+    }
+
     debug!("Tiles: {:?}", tiles);
-    tiles
+    Some(tiles)
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
@@ -41,7 +49,10 @@ pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, Comma
     let response = client.check_dead("Look\n").await?;
     if client.handle_response(response.clone()).await.is_err() {
         warn!("Detected Err, parsing as tile(s) output...");
-        return Ok(ResponseResult::Tiles(read_output(response)));
+        return match read_output(response) {
+            Some(output) => Ok(ResponseResult::Tiles(output)),
+            None => Err(CommandError::InvalidResponse),
+        };
     }
     Err(CommandError::InvalidResponse)
 }
