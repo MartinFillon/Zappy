@@ -12,9 +12,13 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+use log::{debug, warn};
 
-pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
+pub fn read_look_output(raw: String) -> Option<Vec<Vec<String>>> {
+    if !raw.starts_with('[') || !raw.ends_with("]\n") {
+        warn!("Attempted to read invalid string as tiles.");
+        return None;
+    }
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     let tiles = tmp.split(',').fold(
         Vec::<Vec<String>>::new(),
@@ -31,8 +35,12 @@ pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
             acc
         },
     );
+    if tiles.len() < 4 {
+        return None;
+    }
+
     debug!("Tiles: {:?}", tiles);
-    tiles
+    Some(tiles)
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
@@ -48,7 +56,7 @@ pub mod tests_look {
 
     #[test]
     fn output_reading() {
-        let res: Vec<Vec<String>> = read_look_output("[player food,,,food]\n".to_string());
+        let res: Vec<Vec<String>> = read_look_output("[player food,,,food]\n".to_string()).unwrap();
         let cmp: Vec<Vec<String>> = vec![
             vec!["player".to_string(), "food".to_string()],
             vec![],
@@ -60,8 +68,19 @@ pub mod tests_look {
 
     #[test]
     fn output_reading_empty() {
-        let res: Vec<Vec<String>> = read_look_output("[]\n".to_string());
-        let cmp: Vec<Vec<String>> = vec![[].to_vec()];
+        let res = read_look_output("[]\n".to_string());
+        assert_eq!(None, res);
+    }
+
+    #[test]
+    fn output_reading_message() {
+        let res: Vec<Vec<String>> = read_look_output("[player food,,,food]\n".to_string()).unwrap();
+        let cmp: Vec<Vec<String>> = vec![
+            vec!["player".to_string(), "food".to_string()],
+            vec![],
+            vec![],
+            vec!["food".to_string()],
+        ];
         assert_eq!(cmp, res);
     }
 }

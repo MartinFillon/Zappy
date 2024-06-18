@@ -49,6 +49,16 @@ static ITEM_PRIORITY: [(&str, usize); 7] = [
 pub struct Bot {
     info: AI,
     coord: (i32, i32),
+    can_start: bool,
+}
+
+fn get_item_index(item: &str, inv: &[(String, i32)]) -> Option<usize> {
+    for (i, elem) in inv.iter().enumerate() {
+        if elem.0.as_str() == item {
+            return Some(i);
+        }
+    }
+    None
 }
 
 fn make_item_prioritised(item: &str) {
@@ -105,6 +115,7 @@ async fn seek_best_item_index(
     match inventory(client).await? {
         ResponseResult::Inventory(inv) => {
             let mut idex = 0;
+            let mut tile_idex = 0;
             for (i, tile) in tiles.iter().enumerate() {
                 match get_best_item_in_tile(tile, &inv) {
                     Some(item) => {
@@ -112,14 +123,15 @@ async fn seek_best_item_index(
                             > get_item_priority(inv[idex].0.as_str())
                             && player_count_on_tile(tile) < COLONY_PLAYER_COUNT
                         {
-                            idex = i;
+                            idex = get_item_index(item.as_str(), &inv).unwrap_or(idex);
+                            tile_idex = i;
                             best_item.clone_from(&item);
                         }
                     }
                     None => continue,
                 }
             }
-            Ok(idex)
+            Ok(tile_idex)
         }
         _ => Err(CommandError::RequestError),
     }
@@ -139,6 +151,7 @@ impl Bot {
         Self {
             info,
             coord: (0, 0),
+            can_start: false,
         }
     }
 }
@@ -165,7 +178,7 @@ impl AIHandler for Bot {
                 idex = 0;
                 continue;
             }
-            if self.seek_objects().await? == ResponseResult::KO {
+            if let Ok(ResponseResult::KO) = self.seek_objects().await {
                 let _ = self.move_to_tile(idex % 3 + 1).await;
                 continue;
             }
@@ -309,7 +322,11 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(
+        &mut self,
+        p_id: &mut usize,
+        can_start: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
         let res = Ok(ResponseResult::OK);
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
@@ -322,6 +339,7 @@ impl Bot {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<usize>() {
                         p_id.clone_from(&id);
+                        *can_start = true;
                     }
                 }
                 (dir, msg) => {
@@ -347,9 +365,13 @@ impl Bot {
 impl Listeners for Bot {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
         let mut id: usize = 0;
-        self.analyse_messages(&mut id).await?;
+        let mut can_start = false;
+        self.analyse_messages(&mut id, &mut can_start).await?;
         if id != 0 {
             self.info.set_p_id(id);
+        }
+        if can_start {
+            self.set_can_start(true);
         }
         Ok(ResponseResult::OK)
     }

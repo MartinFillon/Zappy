@@ -31,6 +31,7 @@ use super::Listeners;
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
     info: AI,
+    can_start: bool,
 }
 
 #[async_trait]
@@ -41,6 +42,15 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        while !self.can_start {
+            {
+                let mut client = self.info().client().lock().await;
+                if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
+                    client.push_message(msg);
+                }
+            }
+            let _ = self.handle_message().await;
+        }
         loop {
             info!("Handling knight [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
@@ -165,9 +175,13 @@ impl Incantationers for Knight {
 impl Listeners for Knight {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
         let mut id: usize = 0;
-        self.analyse_messages(&mut id).await?;
+        let mut can_start = false;
+        self.analyse_messages(&mut id, &mut can_start).await?;
         if id != 0 {
             self.info.set_p_id(id);
+        }
+        if can_start {
+            self.set_can_start(true);
         }
         Ok(ResponseResult::OK)
     }
@@ -175,7 +189,10 @@ impl Listeners for Knight {
 
 impl Knight {
     fn new(info: AI) -> Self {
-        Self { info }
+        Self {
+            info,
+            can_start: false,
+        }
     }
 
     async fn die(&mut self, id: usize) {
@@ -211,7 +228,11 @@ impl Knight {
         0
     }
 
-    async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(
+        &mut self,
+        p_id: &mut usize,
+        can_start: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
@@ -223,6 +244,7 @@ impl Knight {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<usize>() {
                         p_id.clone_from(&id);
+                        *can_start = true;
                     }
                 }
                 (dir, msg) => {

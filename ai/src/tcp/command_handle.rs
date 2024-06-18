@@ -139,9 +139,17 @@ impl CommandHandler for TcpClient {
                 Ok(ResponseResult::Incantation(get_current_level(x)?))
             }
             x if x.starts_with("[food ") => {
-                Ok(ResponseResult::Inventory(read_inventory_output(response)))
+                match read_inventory_output(response) {
+                    Some(inv) => Ok(ResponseResult::Inventory(inv)),
+                    None => Err(CommandError::InvalidResponse),
+                }
             }
-            x if x.starts_with("[player") => Ok(ResponseResult::Tiles(read_look_output(response))),
+            x if x.starts_with("[player") => {
+                match read_look_output(response) {
+                    Some(tiles) => Ok(ResponseResult::Tiles(tiles)),
+                    None => Err(CommandError::InvalidResponse),
+                }
+            },
             x if !x.is_empty() && x.as_bytes()[0].is_ascii_digit() => match x.parse::<usize>() {
                 Ok(nb) => Ok(ResponseResult::Value(nb)),
                 Err(_) => Err(CommandError::InvalidResponse),
@@ -176,7 +184,7 @@ fn handle_message_response(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
-                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                    return Ok(ResponseResult::Message((dir_enum, decrypted_message)));
                 }
                 warn!("Failed to parse direction {}.", direction);
             }

@@ -44,6 +44,7 @@ pub struct Queen {
     look: LookInfo,
     requirement: Config,
     can_move: bool,
+    can_start: bool,
 }
 
 #[async_trait]
@@ -73,9 +74,13 @@ impl Incantationers for Queen {
 impl Listeners for Queen {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
         let mut can_move = false;
-        self.analyse_messages(&mut can_move).await?;
+        let mut can_start = false;
+        self.analyse_messages(&mut can_move, &mut can_start).await?;
         if can_move {
             self.set_can_move(true);
+        }
+        if can_start {
+            self.set_can_start(true);
         }
         Ok(ResponseResult::OK)
     }
@@ -90,6 +95,7 @@ impl Queen {
             look: Default::default(),
             requirement: zappy_json::create_from_file::<Config>("config.json").unwrap(),
             can_move: false,
+            can_start: false,
         }
     }
 
@@ -102,7 +108,6 @@ impl Queen {
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
-        // Check au niveau de broadcast correctement, check que la queen en face peut.
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
         let broad_res =
@@ -142,7 +147,6 @@ impl Queen {
             return Ok(());
         }
         match self.info.level {
-            // Move it somewhere else because we have to check for each queen.
             4 => self.move_queen_first_step().await,
             6 => self.move_queen_second_step().await,
             _ => Ok(()),
@@ -155,12 +159,18 @@ impl Queen {
             let mut cli = self.info.client.lock().await;
             commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
                 .await?;
+            println!("Ai Queen #{} launching incantation", self.info.p_id);
             let incant_res = commands::incantation::incantation(&mut cli).await;
             if let ResponseResult::Incantation(lvl) =
                 Queen::handle_eject(&mut cli, incant_res).await?
             {
                 level = lvl;
+                println!(
+                    "Ai Queen #{} done incantating. Now level {}",
+                    self.info.p_id, level
+                );
             }
+            println!("Ai Queen #{} done incantating.", self.info.p_id);
         };
         self.info.set_level(level);
         Ok(())
@@ -271,6 +281,7 @@ impl Queen {
         dir: DirectionMessage,
         msg: &str,
         can_move: &mut bool,
+        can_start: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
         if msg.starts_with("lvl ") {
             if let Ok(lvl) = msg.split_at(3).1.parse::<i32>() {
@@ -284,6 +295,7 @@ impl Queen {
             }
         } else if msg == "Done" {
             turn_towards_broadcast(client, dir).await?;
+            *can_start = true;
         }
         Ok(ResponseResult::OK)
     }
@@ -291,6 +303,7 @@ impl Queen {
     async fn analyse_messages(
         &mut self,
         can_move: &mut bool,
+        can_start: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some((dir, msg)) = client.pop_message() {
@@ -301,7 +314,7 @@ impl Queen {
                 ("0", msg.trim_end_matches('\n'))
             };
             if let Ok(id) = content.0.parse::<usize>() {
-                self.handle_message_content(&mut client, id, dir, content.1, can_move)
+                self.handle_message_content(&mut client, id, dir, content.1, can_move, can_start)
                     .await?;
             }
         }

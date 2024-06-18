@@ -14,7 +14,7 @@ use crate::crypt::Crypt;
 use std::io::{Error, ErrorKind};
 
 use command_handle::DirectionMessage;
-use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{self, AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::TcpStream;
 use tokio::select;
@@ -59,7 +59,7 @@ impl TcpClient {
         self.request_sender = Some(request_sender);
         self.response_receiver = Some(response_receiver);
 
-        let connection_handle = tokio::spawn(Self::handle_connection(
+        let connection_handle = tokio::spawn(Self::handle_connection_line(
             reader,
             write_half,
             request_receiver,
@@ -92,6 +92,65 @@ impl TcpClient {
         } else {
             debug!("No response received, response receiver not available.");
             None
+        }
+    }
+
+    async fn process_resp(response: String, response_sender: &Sender<String>) -> bool {
+        if let Err(e) = response_sender.send(response).await {
+            error!("Failed to send response: {}", e);
+            return false;
+        }
+        true
+    }
+
+    async fn handle_connection_line(
+        mut reader: BufReader<OwnedReadHalf>,
+        mut write_half: OwnedWriteHalf,
+        mut request_receiver: Receiver<String>,
+        response_sender: Sender<String>,
+    ) {
+        loop {
+            let mut buffer = String::new();
+
+            select! {
+                result = reader.read_line(&mut buffer) => {
+                    match result {
+                        Ok(0) => {
+                            warn!("Connection closed by the server.");
+                            break;
+                        }
+                        Ok(n) => {
+                            debug!("Read {} bytes from the server.", n);
+                            let response = buffer.trim().to_string();
+                            debug!("Received: '{}\\n'", response.trim_end());
+                            if !Self::process_resp(response, &response_sender).await {
+                                break;
+                            }
+                        }
+                        Err(e) => {
+                            error!("Failed to read from socket: {}", e);
+                            break;
+                        }
+                    }
+                }
+                request = request_receiver.recv() => {
+                    match request {
+                        Some(req) => {
+                            if let Err(e) = write_half.write_all(req.as_bytes()).await {
+                                error!("Failed to write to socket: {}", e);
+                                break;
+                            }
+                            debug!("Successfully wrote request to socket:");
+                            debug!("ai-client> `{}\\n`", req.trim_end());
+                        }
+                        None => {
+                            warn!("Request channel closed.");
+                            break;
+                        }
+                    }
+                }
+            }
+            buffer.clear();
         }
     }
 
@@ -151,7 +210,6 @@ impl TcpClient {
 
     pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
         if self.messages.is_empty() {
-            warn!("No message to pop.");
             None
         } else {
             Some(self.messages.remove(0))
@@ -172,4 +230,29 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> 
         ));
     }
     Ok(client)
+}
+
+// run the server on port 4242
+#[cfg(test)]
+mod tests {
+    use super::handle_tcp;
+    use tokio::runtime::Runtime;
+
+    #[test]
+    fn test_tcp_client() {
+        let mut rt = Runtime::new().unwrap();
+
+        rt.block_on(async {
+            let address = "127.0.0.1:4242".to_string();
+            let team = "Team1".to_string();
+
+            let mut client = handle_tcp(address.clone(), team.clone()).await.unwrap();
+
+            let request = "Team1\n".to_string();
+            client.send_request(request.clone()).await.unwrap();
+
+            let response = client.get_response().await.unwrap();
+            assert!(response.ends_with("\n"));
+        });
+    }
 }
