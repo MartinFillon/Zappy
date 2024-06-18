@@ -13,10 +13,13 @@ pub mod fetus;
 pub mod knight;
 pub mod queen;
 
-use crate::tcp::{
-    self,
-    command_handle::{CommandError, ResponseResult},
-    TcpClient,
+use crate::{
+    commands::broadcast,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        TcpClient,
+    },
 };
 
 use std::fmt;
@@ -28,6 +31,10 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
+use empress::Empress;
+use fetus::Fetus;
+use knight::Knight;
+use queen::Queen;
 use tokio::{sync::Mutex, task};
 
 use log::{debug, info, warn};
@@ -44,11 +51,61 @@ pub struct AI {
     level: usize,
 }
 
+#[derive(Debug, Clone)]
+enum Roles {
+    Empress,
+    Fetus,
+    Knight,
+    Queen,
+}
+
+impl TryFrom<String> for Roles {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.as_str() {
+            "Empress" => Ok(Self::Empress),
+            "Fetus" => Ok(Self::Fetus),
+            "Knight" => Ok(Self::Knight),
+            "Queen" => Ok(Self::Queen),
+            _ => Err(String::from(format!("Unknown role: {}", value))),
+        }
+    }
+}
+
+impl ToString for Roles {
+    fn to_string(&self) -> String {
+        match *self {
+            Self::Empress => String::from("Empress"),
+            Self::Fetus => String::from("Fetus"),
+            Self::Knight => String::from("Knight"),
+            Self::Queen => String::from("Queen"),
+        }
+    }
+}
+
+async fn send_role(client: &mut TcpClient, role: Roles) -> Result<ResponseResult, CommandError> {
+    broadcast::broadcast(client, role.to_string().as_str()).await
+}
+
+fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, String> {
+    Ok(match Roles::try_from(role)? {
+        Roles::Empress => Box::new(Empress::init(info.clone())),
+        Roles::Fetus => Box::new(Fetus::init(info.clone())),
+        Roles::Knight => Box::new(Knight::init(info.clone())),
+        Roles::Queen => Box::new(Queen::init(info.clone())),
+    })
+}
+
 #[async_trait]
 pub trait AIHandler {
-    fn init(info: AI) -> Self;
+    fn init(info: AI) -> Self
+    where
+        Self: Sized;
     async fn update(&mut self) -> Result<(), CommandError>;
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>;
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>
+    where
+        Self: Sized;
 }
 
 #[async_trait]

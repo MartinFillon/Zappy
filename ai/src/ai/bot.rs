@@ -13,7 +13,8 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        take_object::{self, take_object},
+        move_up::{self},
+        take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -129,6 +130,9 @@ async fn seek_best_item_index(
 
 fn done_dropping_items(inv: &[(String, i32)]) -> bool {
     for (item, count) in inv {
+        if item.as_str() == "food" && *count > 10 {
+            return false;
+        }
         if item.as_str() != "food" && *count > 0 {
             return false;
         }
@@ -153,22 +157,19 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        info!("Handling bot [Queen {}]...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
-            let _ = self.handle_message().await;
+            self.handle_message().await?;
             if idex >= MAX_MOVEMENTS {
-                let _ = self.backtrack().await;
-                let _ = self.drop_items().await;
-                for _ in 0..2 {
-                    let mut client = self.info().client().lock().await;
-                    let _ = take_object::take_object(&mut client, "food").await;
-                }
+                self.backtrack().await?;
+                self.drop_items().await?;
                 idex = 0;
                 continue;
             }
             if self.seek_objects().await? == ResponseResult::KO {
-                let _ = self.move_to_tile(idex % 3 + 1).await;
+                let mut client = self.info().client().lock().await;
+                move_up::move_up(&mut client).await?;
                 continue;
             }
             idex += 1;
@@ -279,7 +280,9 @@ impl Bot {
                         return Ok(ResponseResult::OK);
                     }
                     for (item, count) in inv {
-                        if item.as_str() != "food" && count > 0 {
+                        if (item.as_str() == "food" && count > 10)
+                            || (item.as_str() != "food" && count > 0)
+                        {
                             match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),
