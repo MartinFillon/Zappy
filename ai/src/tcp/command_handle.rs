@@ -90,9 +90,16 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_response(&mut self) -> String {
+        info!("Checking response.");
         match self.get_response().await {
-            Some(res) => res,
-            None => String::from(""),
+            Some(res) => {
+                println!("res: [{res}]");
+                res
+            }
+            None => {
+                warn!("No response received.");
+                String::from("")
+            }
         }
     }
 
@@ -106,7 +113,9 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
+        println!("broadcasting");
         let res = self.check_response().await;
+        println!("res: {}", res);
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?

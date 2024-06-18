@@ -334,12 +334,9 @@ impl AIHandler for Queen {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        {
-            let mut client = self.info().client().lock().await;
-            let _ = client.get_broadcast().await;
-        }
         let _ = self.handle_message().await;
         self.fork_servants().await?;
+
         loop {
             let _ = self.handle_message().await;
             let _ = self.check_move_elevation().await;

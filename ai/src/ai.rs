@@ -30,7 +30,7 @@ use std::sync::{
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -164,16 +164,16 @@ async fn init_ai(
         0..=3 => {
             let mut queen = queen::Queen::init(ai.clone());
             if let Err(e) = queen.update().await {
-                println!("Error: {}", e);
+                error!("Error: {}", e);
             }
         }
         _ => {
             let mut bot = bot::Bot::init(ai.clone());
             if let Err(e) = bot.update().await {
-                println!("Error: {}", e);
+                error!("Error: {}", e);
             }
         }
-    };
+    }
     Ok(ai)
 }
 

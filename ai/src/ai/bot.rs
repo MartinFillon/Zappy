@@ -19,7 +19,7 @@ use crate::{
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
         command_handle::{
-            CommandError, CommandHandler, DirectionEject, DirectionMessage, ResponseResult,
+            CommandError, DirectionEject, DirectionMessage, ResponseResult,
         },
         handle_tcp, TcpClient,
     },
