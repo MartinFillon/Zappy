@@ -13,7 +13,7 @@
 void str_scadd(str_t *this, char const *s)
 {
     unsigned long long len = strlen(s);
-    logs(ERROR_LEVEL, "%p\n", this);
+
     if ((unsigned long long)this->size + len > SIZE_MAX) {
         return str_clear(this);
     }
