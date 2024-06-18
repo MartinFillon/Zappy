@@ -7,6 +7,9 @@
 
 #![allow(dead_code)]
 
+use crate::commands::incantation::get_current_level;
+use crate::commands::inventory::read_inventory_output;
+use crate::commands::look_around::read_look_output;
 use crate::{crypt::Crypt, tcp::TcpClient};
 
 use std::fmt;
@@ -118,6 +121,17 @@ impl CommandHandler for TcpClient {
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
             "Elevation underway" => Ok(ResponseResult::Elevating),
+            x if x.starts_with("Current level: ") => {
+                Ok(ResponseResult::Incantation(get_current_level(x)?))
+            }
+            x if x.starts_with("[food ") => {
+                Ok(ResponseResult::Inventory(read_inventory_output(response)))
+            }
+            x if x.starts_with("[player") => Ok(ResponseResult::Tiles(read_look_output(response))),
+            x if !x.is_empty() && x.as_bytes()[0].is_ascii_digit() => match x.parse::<usize>() {
+                Ok(nb) => Ok(ResponseResult::Value(nb)),
+                Err(_) => Err(CommandError::InvalidResponse),
+            },
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
                 warn!("Invalid Response: ({}).", response.trim_end());
