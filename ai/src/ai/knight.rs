@@ -187,7 +187,10 @@ impl Listeners for Knight {
 
 impl Knight {
     fn new(info: AI) -> Self {
-        Self { info, can_start: false }
+        Self {
+            info,
+            can_start: false,
+        }
     }
 
     async fn die(&mut self, id: usize) {
@@ -220,7 +223,11 @@ impl Knight {
         Err(CommandError::InvalidResponse)
     }
 
-    async fn analyse_messages(&mut self, p_id: &mut usize, can_start: &mut bool) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(
+        &mut self,
+        p_id: &mut usize,
+        can_start: &mut bool,
+    ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(

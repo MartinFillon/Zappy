@@ -11,7 +11,7 @@ use crate::{
     ai::{queen::Queen, start_ai, AIHandler, AI},
     commands::{self, unused_slots},
     tcp::{
-        command_handle::{self, CommandError, ResponseResult},
+        command_handle::{self, ResponseResult},
         handle_tcp,
     },
 };
