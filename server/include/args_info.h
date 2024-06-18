@@ -22,7 +22,7 @@ typedef struct args_infos_s {
 
     int clients_nb;
 
-    int freq; // Default 100
+    double freq; // Default 100
     int level;
 
     str_t *displayer_path;

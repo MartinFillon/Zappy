@@ -43,9 +43,9 @@ static const option_t HEIGHT = {
 
 static const option_t FREQUENCY = {
     .identifier = "-f",
-    .type = UINT,
+    .type = FLOAT,
     .has_default = true,
-    .default_value = {.unsigned_number = 100},
+    .default_value = {.flt = 100},
     .description = "Set the frequency of the game",
 };
 

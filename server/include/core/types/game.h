@@ -25,7 +25,7 @@ typedef struct {
     struct vector_ai_t *ais;
     map_t *map;
     struct vector_team_t *teams;
-    long frequency;
+    double frequency;
 
     zclock_t *clock;
     zclock_t *global;
