@@ -49,13 +49,15 @@ impl AIHandler for Fetus {
                 Ok(ResponseResult::OK) => {
                     info!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
                     total += 1;
-                },
+                }
                 Err(CommandError::DeadReceived) => {
                     info!("Fetus dropped x{} food", total);
                     println!("AI #{}: Fetus died.", self.info.cli_id);
                     return Err(CommandError::DeadReceived);
-                },
-                _ => {continue;}
+                }
+                _ => {
+                    continue;
+                }
             }
         }
     }

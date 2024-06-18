@@ -8,17 +8,19 @@
 #![allow(dead_code)]
 
 use crate::{
-    ai::{start_ai, AIHandler, AI}, commands::{
+    ai::{start_ai, AIHandler, AI},
+    commands::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up,
         take_object::{self, take_object},
         turn::{turn, DirectionTurn},
-    }, move_to_tile, move_towards_broadcast::move_towards_broadcast, tcp::{
+    },
+    move_towards_broadcast::move_towards_broadcast,
+    tcp::{
         command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
-    }
+    },
 };
 
 use std::io::{self, Error};
@@ -277,8 +279,7 @@ impl Bot {
                         return Ok(ResponseResult::OK);
                     }
                     for (item, count) in inv {
-                        if item.as_str() != "food" && count > 0
-                        {
+                        if item.as_str() != "food" && count > 0 {
                             match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),

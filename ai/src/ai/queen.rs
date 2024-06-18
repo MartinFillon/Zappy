@@ -192,7 +192,10 @@ impl Queen {
         });
 
         commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
-        info!("I as the queen ({}), bestow my life uppon you", self.info.p_id);
+        info!(
+            "I as the queen ({}), bestow my life uppon you",
+            self.info.p_id
+        );
 
         for _ in 0..NB_INIT_BOTS {
             commands::fork::fork(&mut cli).await?;
@@ -204,7 +207,8 @@ impl Queen {
                     println!("Bot with id {} created.", info.p_id);
                 }
             });
-            commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
+            commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str())
+                .await?;
         }
 
         info!("Miserable peasants... SERVE ME.\n");

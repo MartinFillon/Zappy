@@ -107,7 +107,9 @@ impl CommandHandler for TcpClient {
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
         let res = self.check_response().await?;
         if res.starts_with("message ") {
-            if let ResponseResult::Message(msg) = handle_message_response(res.clone(), self.crypt())? {
+            if let ResponseResult::Message(msg) =
+                handle_message_response(res.clone(), self.crypt())?
+            {
                 self.push_message(msg.clone());
                 debug!("Message pushed to queue.");
                 return Ok(ResponseResult::Message(msg));
