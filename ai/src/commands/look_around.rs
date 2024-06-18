@@ -12,7 +12,7 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::{warn, debug};
+use log::{debug, warn};
 
 fn read_output(raw: String) -> Option<Vec<Vec<String>>> {
     if !raw.starts_with('[') || !raw.ends_with("]\n") {
