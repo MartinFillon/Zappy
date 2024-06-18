@@ -137,8 +137,7 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
     }
     if (cli->ai->incant.last_verif) {
         consume_tile_incantation(
-            cli->ai->level - 1, s->game->map, cli->ai->pos.y, cli->ai->pos.x
-        );
+            cli->ai->level - 1, s->game->map, cli->ai->pos.y, cli->ai->pos.x);
         increment_all_levels(s->game, cli->ai->id);
         sprintf(msg, "Current level: %ld\n", cli->ai->level);
     } else {
