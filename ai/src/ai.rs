@@ -193,9 +193,9 @@ async fn start_ai(
         let mut client_lock = client.lock().await;
         client_lock.get_response().await
     } {
+        println!("[{}] server> {}", c_id, response);
         match response.trim_end() {
             "ko" => {
-                print!("server> {}", response);
                 debug!("[{}] Server doesn't handle any more connection.", c_id);
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,

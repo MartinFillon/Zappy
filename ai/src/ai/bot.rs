@@ -54,6 +54,77 @@ pub struct Bot {
     can_start: bool,
 }
 
+#[async_trait]
+impl AIHandler for Bot {
+    fn init(info: AI) -> Self {
+        println!("BOT HERE.");
+        Self::new(info)
+    }
+
+    async fn update(&mut self) -> Result<(), CommandError> {
+        info!("Bot [Queen {}] is now being handled...", self.info().p_id);
+        let mut idex: usize = 0;
+        loop {
+            let _ = self.handle_message().await;
+            if idex >= MAX_MOVEMENTS {
+                let _ = self.backtrack().await;
+                let _ = self.drop_items().await;
+                for _ in 0..2 {
+                    let mut client = self.info().client().lock().await;
+                    let _ = take_object::take_object(&mut client, "food").await;
+                }
+                idex = 0;
+                continue;
+            }
+            if self.seek_objects().await? == ResponseResult::KO {
+                let _ = self.move_to_tile(idex % 3 + 1).await;
+                continue;
+            }
+            idex += 1;
+        }
+    }
+
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+        let client: Arc<Mutex<TcpClient>> =
+            match handle_tcp(info.address.clone(), info.team.clone()).await {
+                Ok(client) => {
+                    info!("New `Bot` client connected successfully.");
+                    Arc::new(Mutex::new(client))
+                }
+                Err(e) => return Err(Error::new(e.kind(), e)),
+            };
+
+        let c_id = info.cli_id;
+        let p_id = set_id.unwrap_or(0);
+        let team = info.team.clone();
+        let address = info.address.clone();
+
+        let handle = task::spawn(async move {
+            match start_ai(client, team, address, (c_id, p_id), false).await {
+                Ok(ai) => {
+                    let mut bot = Bot::init(ai.clone());
+                    if let Err(e) = bot.update().await {
+                        println!("Error: {}", e);
+                    }
+                    Ok(ai)
+                }
+                Err(e) => {
+                    error!("{}", e);
+                    Err(e)
+                }
+            }
+        });
+
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
+                error!("Task failed: {:?}", e);
+            }
+        });
+
+        Ok(())
+    }
+}
+
 fn get_item_index(item: &str, inv: &[(String, i32)]) -> Option<usize> {
     for (i, elem) in inv.iter().enumerate() {
         if elem.0.as_str() == item {
@@ -155,77 +226,6 @@ impl Bot {
             coord: (0, 0),
             can_start: false,
         }
-    }
-}
-
-#[async_trait]
-impl AIHandler for Bot {
-    fn init(info: AI) -> Self {
-        println!("BOT HERE.");
-        Self::new(info)
-    }
-
-    async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Bot [Queen {}] is now being handled...", self.info().p_id);
-        let mut idex: usize = 0;
-        loop {
-            let _ = self.handle_message().await;
-            if idex >= MAX_MOVEMENTS {
-                let _ = self.backtrack().await;
-                let _ = self.drop_items().await;
-                for _ in 0..2 {
-                    let mut client = self.info().client().lock().await;
-                    let _ = take_object::take_object(&mut client, "food").await;
-                }
-                idex = 0;
-                continue;
-            }
-            if self.seek_objects().await? == ResponseResult::KO {
-                let _ = self.move_to_tile(idex % 3 + 1).await;
-                continue;
-            }
-            idex += 1;
-        }
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client: Arc<Mutex<TcpClient>> =
-            match handle_tcp(info.address.clone(), info.team.clone()).await {
-                Ok(client) => {
-                    info!("New `Bot` client connected successfully.");
-                    Arc::new(Mutex::new(client))
-                }
-                Err(e) => return Err(Error::new(e.kind(), e)),
-            };
-
-        let c_id = info.cli_id;
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        let handle = task::spawn(async move {
-            match start_ai(client, team, address, (c_id, p_id), false).await {
-                Ok(ai) => {
-                    let mut bot = Bot::init(ai.clone());
-                    if let Err(e) = bot.update().await {
-                        println!("Error: {}", e);
-                    }
-                    Ok(ai)
-                }
-                Err(e) => {
-                    error!("{}", e);
-                    Err(e)
-                }
-            }
-        });
-
-        tokio::spawn(async move {
-            if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
-            }
-        });
-
-        Ok(())
     }
 }
 

@@ -140,7 +140,6 @@ impl TcpClient {
                                 error!("Failed to write to socket: {}", e);
                                 break;
                             }
-                            debug!("Successfully wrote request to socket:");
                             debug!("ai-client> `{}\\n`", req.trim_end());
                         }
                         None => {
@@ -221,7 +220,7 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> 
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {
-        print!("server> {}", response);
+        println!("server> {}", response);
     } else {
         return Err(Error::new(
             ErrorKind::ConnectionRefused,

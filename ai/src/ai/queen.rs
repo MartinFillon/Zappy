@@ -8,7 +8,7 @@
 use super::Listeners;
 use crate::{
     ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
-    commands::{self, turn::DirectionTurn},
+    commands::{self, turn::DirectionTurn, unused_slots},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
@@ -18,14 +18,17 @@ use crate::{
 };
 
 use core::fmt;
-use std::fmt::{Display, Formatter};
 use std::io::{self, Error};
 use std::sync::Arc;
+use std::{
+    fmt::{Display, Formatter},
+    os::unix::process,
+};
 
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 const NB_INIT_BOTS: usize = 2;
@@ -45,6 +48,102 @@ pub struct Queen {
     requirement: Config,
     can_move: bool,
     can_start: bool,
+}
+
+#[async_trait]
+impl AIHandler for Queen {
+    fn init(info: AI) -> Self {
+        println!("Queen has arrived.");
+        Self::new(info)
+    }
+
+    async fn update(&mut self) -> Result<(), CommandError> {
+        {
+            let mut client = self.info().client().lock().await;
+            let info = self.info().clone();
+            info!(
+                "[{}] Blocking, checking requirements of all queens...",
+                info.p_id
+            );
+            Queen::spawn_queen(info.clone(), info.p_id, &mut client).await?;
+            info!("[{}] Unblocked.", info.p_id);
+        }
+
+        let _ = self.handle_message().await;
+        self.fork_servants().await?;
+
+        loop {
+            let _ = self.handle_message().await;
+            let _ = self.check_move_elevation().await;
+
+            let look_res = {
+                let mut cli = self.info.client.lock().await;
+                let res = commands::look_around::look_around(&mut cli).await;
+                Queen::handle_eject(&mut cli, res).await
+            };
+            if let Ok(ResponseResult::Tiles(vec)) = look_res {
+                self.convert_to_look_info(vec[0].clone());
+            }
+
+            let inventory_res = {
+                let mut cli = self.info.client.lock().await;
+                let res = commands::inventory::inventory(&mut cli).await;
+                Queen::handle_eject(&mut cli, res).await
+            };
+            if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
+                self.convert_to_inv(vec);
+            }
+
+            let _ = self.check_enough_food(5).await;
+
+            if self.check_requirement() {
+                println!("Ai Queen #{} is incantating", self.info.p_id);
+                if let Err(e) = self.incantate().await {
+                    warn!("Error from incantation: {}", e);
+                    println!("Error with Queen #{} incantating.", self.info.p_id);
+                }
+            }
+        }
+    }
+
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
+            Ok(client) => {
+                info!("New `Queen` client connected successfully.");
+                Arc::new(Mutex::new(client))
+            }
+            Err(e) => return Err(Error::new(e.kind(), e)),
+        };
+
+        let c_id = info.cli_id;
+        let p_id = set_id.unwrap_or(0);
+        let team = info.team.clone();
+        let address = info.address.clone();
+
+        let handle = task::spawn(async move {
+            match start_ai(client, team, address, (c_id, p_id), false).await {
+                Ok(ai) => {
+                    let mut queen = Queen::init(ai.clone());
+                    if let Err(e) = queen.update().await {
+                        println!("Error: {}", e);
+                    }
+                    Ok(ai)
+                }
+                Err(e) => {
+                    error!("{}", e);
+                    Err(e)
+                }
+            }
+        });
+
+        tokio::spawn(async move {
+            if let Err(e) = handle.await {
+                error!("Task failed: {:?}", e);
+            }
+        });
+
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -97,6 +196,38 @@ impl Queen {
             can_move: false,
             can_start: false,
         }
+    }
+
+    async fn spawn_queen(
+        info: AI,
+        process_id: usize,
+        client: &mut TcpClient,
+    ) -> Result<(), CommandError> {
+        while let Ok(ResponseResult::Value(unused_slot)) =
+            commands::unused_slots::unused_slots(client).await
+        {
+            if unused_slot == 0 && process_id < 3 {
+                debug!("[{}] Unused slot checked: {}", process_id, unused_slot);
+                debug!(
+                    "[{}] Number of queens created: {}",
+                    process_id,
+                    process_id + 1
+                );
+                commands::fork::fork(client).await?;
+                let info_clone = info.clone();
+                tokio::spawn(async move {
+                    if let Err(err) = Self::fork_dupe(info_clone, Some(process_id + 1)).await {
+                        error!("Queen fork error: {}", err);
+                    } else {
+                        println!("Queen with id {} created.", process_id + 1);
+                    }
+                });
+            }
+            if process_id == 3 {
+                break;
+            }
+        }
+        Ok(())
     }
 
     /**
@@ -322,91 +453,6 @@ impl Queen {
             }
         }
         Ok(ResponseResult::OK)
-    }
-}
-
-#[async_trait]
-impl AIHandler for Queen {
-    fn init(info: AI) -> Self {
-        println!("Queen has arrived.");
-        Self::new(info)
-    }
-
-    async fn update(&mut self) -> Result<(), CommandError> {
-        let _ = self.handle_message().await;
-        self.fork_servants().await?;
-
-        loop {
-            let _ = self.handle_message().await;
-            let _ = self.check_move_elevation().await;
-
-            let look_res = {
-                let mut cli = self.info.client.lock().await;
-                let res = commands::look_around::look_around(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
-            };
-            if let Ok(ResponseResult::Tiles(vec)) = look_res {
-                self.convert_to_look_info(vec[0].clone());
-            }
-
-            let inventory_res = {
-                let mut cli = self.info.client.lock().await;
-                let res = commands::inventory::inventory(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
-            };
-            if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
-                self.convert_to_inv(vec);
-            }
-
-            let _ = self.check_enough_food(5).await;
-
-            if self.check_requirement() {
-                println!("Ai Queen #{} is incantating", self.info.p_id);
-                if let Err(e) = self.incantate().await {
-                    warn!("Error from incantation: {}", e);
-                    println!("Error with Queen #{} incantating.", self.info.p_id);
-                }
-            }
-        }
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
-            Ok(client) => {
-                info!("New `Queen` client connected successfully.");
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-        let c_id = info.cli_id;
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        let handle = task::spawn(async move {
-            match start_ai(client, team, address, (c_id, p_id), false).await {
-                Ok(ai) => {
-                    let mut queen = Queen::init(ai.clone());
-                    if let Err(e) = queen.update().await {
-                        println!("Error: {}", e);
-                    }
-                    Ok(ai)
-                }
-                Err(e) => {
-                    error!("{}", e);
-                    Err(e)
-                }
-            }
-        });
-
-        tokio::spawn(async move {
-            if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
-            }
-        });
-
-        Ok(())
     }
 }
 
