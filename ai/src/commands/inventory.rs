@@ -29,12 +29,9 @@ pub fn read_inventory_output(raw: String) -> Vec<(String, i32)> {
             acc
         },
     );
-    if inventory.len() < 7 {
-        return None;
-    }
 
     debug!("Inventory: {:?}", inventory);
-    Some(inventory)
+    inventory
 }
 
 pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {

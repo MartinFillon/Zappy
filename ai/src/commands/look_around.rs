@@ -33,7 +33,7 @@ pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
     );
 
     debug!("Tiles: {:?}", tiles);
-    Some(tiles)
+    tiles
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
