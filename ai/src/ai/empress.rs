@@ -82,8 +82,7 @@ impl AIHandler for Empress {
         info!("Starting spawning of queens...");
         self.spawn_queens().await?;
         warn!("Empress is now dying...");
-        loop {}
-        // Err(CommandError::DeadReceived)
+        Err(CommandError::DeadReceived)
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
