@@ -17,7 +17,7 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{debug, info, warn};
+use log::{debug, warn};
 
 #[derive(PartialEq, Debug)]
 pub enum ResponseResult {
@@ -90,10 +90,9 @@ impl CommandHandler for TcpClient {
     }
 
     async fn check_response(&mut self) -> String {
-        info!("Checking response.");
         match self.get_response().await {
             Some(res) => {
-                println!("res: [{res}]");
+                debug!("Response checked gives: ({})", res);
                 res
             }
             None => {
@@ -113,9 +112,7 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
-        println!("broadcasting");
         let res = self.check_response().await;
-        println!("res: {}", res);
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
@@ -171,7 +168,6 @@ fn handle_message_response(
     response: String,
     crypt: &Crypt,
 ) -> Result<ResponseResult, CommandError> {
-    debug!("Handling message response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() >= 3 && parts[0] == "message" {
@@ -184,7 +180,7 @@ fn handle_message_response(
                         Some(data) => data,
                         None => return Ok(ResponseResult::OK),
                     };
-                    info!(
+                    debug!(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
@@ -200,14 +196,13 @@ fn handle_message_response(
 }
 
 fn handle_eject_response(response: String) -> Result<ResponseResult, CommandError> {
-    debug!("Handling eject response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() == 2 && parts[0] == "eject:" {
         match parts[1].trim_start().parse::<usize>() {
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionEject::from_usize(direction) {
-                    info!(
+                    debug!(
                         "Receiving ejection from direction {} (aka {}).",
                         dir_enum, direction
                     );

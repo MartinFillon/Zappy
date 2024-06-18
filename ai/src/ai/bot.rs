@@ -18,9 +18,7 @@ use crate::{
     },
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
-        command_handle::{
-            CommandError, DirectionEject, DirectionMessage, ResponseResult,
-        },
+        command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
@@ -168,9 +166,9 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        info!("Bot [Queen {}] is now being handled...", self.info().p_id);
         let mut idex: usize = 0;
         loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
             if idex >= MAX_MOVEMENTS {
                 let _ = self.backtrack().await;
@@ -194,7 +192,7 @@ impl AIHandler for Bot {
         let client: Arc<Mutex<TcpClient>> =
             match handle_tcp(info.address.clone(), info.team.clone()).await {
                 Ok(client) => {
-                    debug!("New `Bot` client connected successfully.");
+                    info!("New `Bot` client connected successfully.");
                     Arc::new(Mutex::new(client))
                 }
                 Err(e) => return Err(Error::new(e.kind(), e)),
@@ -234,8 +232,6 @@ impl AIHandler for Bot {
 impl Bot {
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
-        debug!("Updating movement of offset: ({}, {})...", d.0, d.1);
-
         let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
 
         debug!(

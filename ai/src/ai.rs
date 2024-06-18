@@ -137,15 +137,15 @@ async fn checkout_ai_info(
     parse_response(response, client.clone())
         .await
         .map(|(client_number, x, y)| {
-            info!("Client number detected as [{}].", client_number);
-            info!("Map size: ({}, {}).", x, y);
+            info!("x[{}] unused slot(s)/ egg(s).", client_number);
+            info!("Map size: {}x{}.", x, y);
             let ai = AI::new(team, address, c_id, p_id, client.clone(), (x, y), 1);
             println!("New! >> {}", ai);
-            info!("AI #{} is initialized.", ai.cli_id);
+            debug!("[{}] AI is initialized.", ai.cli_id);
             ai
         })
-        .map_err(|e| {
-            debug!("Failed to parse response: {}", e);
+        .map_err(|e: Error| {
+            warn!("Failed to parse response: {}", e);
             e
         })
 }
@@ -184,7 +184,7 @@ async fn start_ai(
     (c_id, p_id): (usize, usize),
     start: bool,
 ) -> io::Result<AI> {
-    println!("Starting AI process n{}...", c_id);
+    println!("[{}] Starting AI process...", c_id);
     {
         let client_lock = client.lock().await;
         client_lock.send_request(team.clone() + "\n").await?;
@@ -196,14 +196,14 @@ async fn start_ai(
         match response.trim_end() {
             "ko" => {
                 print!("server> {}", response);
-                debug!("Server doesn't handle any more connection.");
+                debug!("[{}] Server doesn't handle any more connection.", c_id);
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
                 ))
             }
             _ => {
-                info!("Connection to team successful.");
+                info!("[{}] Connection to team successful.", c_id);
                 let ai = match start {
                     true => init_ai(client.clone(), &response, team, address, (c_id, p_id)).await?,
                     false => {
@@ -215,7 +215,7 @@ async fn start_ai(
             }
         }
     } else {
-        debug!("Host not reachable.");
+        debug!("[{}] Host not reachable.", c_id);
         Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",

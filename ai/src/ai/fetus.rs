@@ -20,7 +20,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, error, info};
+use log::{error, info};
 
 #[derive(Debug, Clone)]
 pub struct Fetus {
@@ -47,12 +47,11 @@ impl AIHandler for Fetus {
         loop {
             match commands::drop_object::drop_object(&mut client_lock, "food").await {
                 Ok(ResponseResult::OK) => {
-                    info!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
                     total += 1;
                 }
                 Err(CommandError::DeadReceived) | Ok(ResponseResult::KO) => {
                     info!("Fetus dropped x{} food", total);
-                    println!("AI #{}: Fetus died.", self.info.cli_id);
+                    println!("[{}] AI : Fetus died.", self.info.cli_id);
                     return Err(CommandError::DeadReceived);
                 }
                 _ => {
@@ -65,7 +64,7 @@ impl AIHandler for Fetus {
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
-                debug!("New `Fetus` client connected successfully.");
+                info!("New `Fetus` client connected successfully.");
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),

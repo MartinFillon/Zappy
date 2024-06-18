@@ -90,7 +90,7 @@ impl TcpClient {
         if let Some(receiver) = &mut self.response_receiver {
             receiver.recv().await
         } else {
-            debug!("No response received, response receiver not available.");
+            warn!("No response received, response receiver not available.");
             None
         }
     }

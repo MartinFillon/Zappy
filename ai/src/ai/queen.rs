@@ -25,7 +25,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use zappy_macros::Bean;
 
 const NB_INIT_BOTS: usize = 2;
@@ -220,7 +220,6 @@ impl Queen {
             commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str())
                 .await?;
         }
-
         info!("Miserable peasants... SERVE ME.\n");
 
         Ok(())
@@ -374,7 +373,7 @@ impl AIHandler for Queen {
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
-                debug!("New `Queen` client connected successfully.");
+                info!("New `Queen` client connected successfully.");
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),

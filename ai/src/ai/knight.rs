@@ -23,7 +23,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, error, info};
+use log::{error, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -42,6 +42,7 @@ impl AIHandler for Knight {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        info!("Knight [Queen {}] is being handled...", self.info().p_id);
         while !self.can_start {
             {
                 let mut client = self.info().client().lock().await;
@@ -52,7 +53,6 @@ impl AIHandler for Knight {
             let _ = self.handle_message().await;
         }
         loop {
-            info!("Handling knight [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
 
             if self.info().level == 6 && (self.info().p_id == 3 || self.info().p_id == 4) {
@@ -105,7 +105,7 @@ impl AIHandler for Knight {
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
             Ok(client) => {
-                debug!("New `Knight` client connected successfully.");
+                info!("New `Knight` client connected successfully.");
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),
@@ -199,16 +199,14 @@ impl Knight {
         let mut client_lock = self.info.client.lock().await;
         let mut total = 0;
 
-        println!("Knight #{} is killing himself.", id);
         loop {
             let command = drop_object::drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
-                info!("Knight #{} dropping food x1...", id);
                 total += 1;
             }
             if command.is_err() {
-                info!("Fetus dropped x{} food", total);
-                info!("Knight #{} died.", id);
+                info!("Knight dropped x{} food", total);
+                info!("[{}] AI : Knight has killed himself.", id);
                 break;
             }
         }
