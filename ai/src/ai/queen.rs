@@ -191,7 +191,7 @@ impl Queen {
             }
         });
 
-        commands::broadcast::broadcast(&mut cli, format!("{} Knight", self.info.p_id).as_str()).await?;
+        commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         info!("I as the queen ({}), bestow my life uppon you", self.info.p_id);
 
         for _ in 0..NB_INIT_BOTS {
@@ -204,7 +204,7 @@ impl Queen {
                     println!("Bot with id {} created.", info.p_id);
                 }
             });
-            commands::broadcast::broadcast(&mut cli, format!("{} Bot", self.info.p_id).as_str()).await?;
+            commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         }
 
         info!("Miserable peasants... SERVE ME.\n");
@@ -317,10 +317,15 @@ impl AIHandler for Queen {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        {
+            let mut client = self.info().client().lock().await;
+            let _ = client.get_broadcast().await;
+        }
+        let _ = self.handle_message().await;
         self.fork_servants().await?;
         loop {
-            self.handle_message().await?;
-            self.check_move_elevation().await?;
+            let _ = self.handle_message().await;
+            let _ = self.check_move_elevation().await;
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -340,7 +345,7 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            self.check_enough_food(3).await?;
+            let _ = self.check_enough_food(5).await;
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);

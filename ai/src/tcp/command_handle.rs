@@ -7,7 +7,7 @@
 
 #![allow(dead_code)]
 
-use crate::commands::incantation::get_current_level;
+use crate::commands::incantation::{get_current_level, handle_incantation};
 use crate::commands::inventory::read_inventory_output;
 use crate::commands::look_around::read_look_output;
 use crate::{crypt::Crypt, tcp::TcpClient};
@@ -19,7 +19,7 @@ use async_trait::async_trait;
 
 use log::{debug, info, warn};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ResponseResult {
     OK,
     KO,
@@ -58,6 +58,7 @@ pub enum DirectionEject {
     West,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum CommandError {
     RequestError,
     NoResponseReceived,
@@ -72,6 +73,7 @@ pub trait CommandHandler {
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
     async fn check_response(&mut self) -> Result<String, CommandError>;
+    async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
 #[async_trait]
@@ -102,8 +104,20 @@ impl CommandHandler for TcpClient {
         Ok(response)
     }
 
+    async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
+        let res = self.check_response().await?;
+        if res.starts_with("message ") {
+            if let ResponseResult::Message(msg) = handle_message_response(res.clone(), self.crypt())? {
+                self.push_message(msg.clone());
+                debug!("Message pushed to queue.");
+                return Ok(ResponseResult::Message(msg));
+            }
+        }
+        self.handle_response(res).await
+    }
+
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
-        if response.starts_with("message ") && response.ends_with('\n') {
+        if response.starts_with("message ") {
             if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
                 debug!("Message pushed to queue.");
@@ -112,7 +126,7 @@ impl CommandHandler for TcpClient {
             return self.handle_response(res).await;
         }
 
-        if response.starts_with("eject: ") && response.ends_with('\n') {
+        if response.starts_with("eject: ") {
             return handle_eject_response(response);
         }
 
@@ -120,7 +134,7 @@ impl CommandHandler for TcpClient {
             "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
-            "Elevation underway" => Ok(ResponseResult::Elevating),
+            "Elevation underway" => handle_incantation(self).await,
             x if x.starts_with("Current level: ") => {
                 Ok(ResponseResult::Incantation(get_current_level(x)?))
             }
