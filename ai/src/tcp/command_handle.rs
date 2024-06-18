@@ -112,10 +112,6 @@ impl CommandHandler for TcpClient {
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
-        let count = response.chars().filter(|&c| c == '\n').count();
-        if count == 0 {
-            warn!("Multiple responses detected.");
-        }
         if response.starts_with("message ") && response.ends_with('\n') {
             if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
