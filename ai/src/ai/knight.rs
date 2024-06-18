@@ -43,26 +43,29 @@ impl AIHandler for Knight {
     async fn update(&mut self) -> Result<(), CommandError> {
         loop {
             info!("Handling knight [Queen {}]...", self.info().p_id);
-            self.handle_message().await?;
+            let _ = self.handle_message().await;
 
             if self.info().level == 6 && (self.info().p_id == 3 || self.info().p_id == 4) {
                 break;
             }
-            if self.can_incantate().await? {
+            if self.can_incantate().await {
                 let mut level = self.info().level;
                 {
                     let mut client = self.info().client().lock().await;
+                    println!("Knight {} incantating...", self.info.p_id);
                     let res = incantation::incantation(&mut client).await;
-                    if let ResponseResult::Incantation(lvl) =
-                        Knight::knight_checkout_response(&mut client, res).await?
+                    println!("Knight {} incantation result: {:?}", self.info.p_id, res);
+                    if let Ok(ResponseResult::Incantation(lvl)) =
+                        Knight::knight_checkout_response(&mut client, res).await
                     {
                         level = lvl;
+                        println!("Knight {} done. Now level {}", self.info.p_id, level);
                     }
                 }
                 self.info.set_level(level);
                 continue;
             }
-            if self.check_food().await? < 6 {
+            if self.check_food().await < 9 {
                 info!(
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
@@ -70,8 +73,8 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
-                    if let ResponseResult::OK =
-                        Knight::knight_checkout_response(&mut client, res).await?
+                    if let Ok(ResponseResult::OK) =
+                        Knight::knight_checkout_response(&mut client, res).await
                     {
                         let info = self.info.clone();
                         tokio::spawn(async move {
@@ -79,11 +82,10 @@ impl AIHandler for Knight {
                         });
                     }
                 };
-                while self.check_food().await? < 10 {
-                    self.handle_message().await?;
+                while self.check_food().await < 10 {
                     let mut client = self.info().client().lock().await;
                     let res = take_object::take_object(&mut client, "food").await;
-                    Knight::knight_checkout_response(&mut client, res).await?;
+                    let _ = Knight::knight_checkout_response(&mut client, res).await;
                 }
             }
         }
@@ -195,15 +197,18 @@ impl Knight {
         }
     }
 
-    async fn check_food(&mut self) -> Result<usize, CommandError> {
+    async fn check_food(&mut self) -> usize {
         let mut client = self.info().client().lock().await;
         let res = inventory::inventory(&mut client).await;
-        if let ResponseResult::Inventory(inv) =
-            Knight::knight_checkout_response(&mut client, res).await?
+        if let Ok(ResponseResult::Inventory(inv)) =
+            Knight::knight_checkout_response(&mut client, res).await
         {
-            return Ok(inv[0].1 as usize);
+            if inv.is_empty() {
+                return 0;
+            }
+            return inv[0].1 as usize;
         }
-        Err(CommandError::InvalidResponse)
+        0
     }
 
     async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
@@ -239,20 +244,20 @@ impl Knight {
         Ok(ResponseResult::OK)
     }
 
-    async fn can_incantate(&mut self) -> Result<bool, CommandError> {
-        if self.info().level != 1 || self.check_food().await? < 4 {
-            return Ok(false);
+    async fn can_incantate(&mut self) -> bool {
+        if self.info().level != 1 || self.check_food().await < 4 {
+            return false;
         }
         let mut client = self.info().client().lock().await;
         let res = look_around::look_around(&mut client).await;
-        if let ResponseResult::Tiles(tiles) =
-            Knight::knight_checkout_response(&mut client, res).await?
+        if let Ok(ResponseResult::Tiles(tiles)) =
+            Knight::knight_checkout_response(&mut client, res).await
         {
-            if !tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
-                return Ok(false);
+            if tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
+                return true;
             }
         }
-        Ok(true)
+        false
     }
 
     async fn knight_checkout_response(
