@@ -12,7 +12,8 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true), m_inMenu(true), m_menu(screenWidth, screenHeight)
+      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true), m_openWindow(MENU),
+      m_menu(screenWidth, screenHeight, m_openWindow)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -24,6 +25,7 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
     InitWindow(width, height, "Zappy");
     SetTargetFPS(60);
     SetWindowMinSize(800, 450);
+    SetExitKey(KEY_DELETE);
     resize();
 
     m_cam.position = (Vector3){ 30.0f, 30.0f, 30.0f };
@@ -88,12 +90,12 @@ void Display::displayGame()
 
 void Display::run()
 {
-    while (!WindowShouldClose() && networkHandler.isRunning()) {
+    while (m_openWindow != QUIT && !WindowShouldClose() && networkHandler.isRunning()) {
         handleServerMessage();
 
         handleEvent();
         BeginDrawing();
-        if (m_inMenu)
+        if (m_openWindow == MENU)
             displayMenu();
         else
             displayGame();

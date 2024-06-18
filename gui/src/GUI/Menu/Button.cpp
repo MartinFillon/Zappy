@@ -9,11 +9,11 @@
 
 namespace GUI {
 
-Button::Button(const std::string &name):
-    m_name(name), m_funct([](void){}), m_state(DEFAULT)
+Button::Button(const std::string &name, std::function<void(OpenWindow&)> funct):
+    m_name(name), m_funct(funct), m_state(DEFAULT)
 {}
 
-void Button::checkButtonAction(Rectangle &rec)
+void Button::checkButtonAction(Rectangle &rec, OpenWindow &openWindow)
 {
     if (Raylib::checkCollisionMouseRec(rec)) {
         if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT))
@@ -21,7 +21,7 @@ void Button::checkButtonAction(Rectangle &rec)
         else
             m_state = HOVER;
         if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            m_funct();
+            m_funct(openWindow);
     } else {
         m_state = DEFAULT;
     }

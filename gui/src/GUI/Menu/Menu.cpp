@@ -10,11 +10,12 @@
 
 namespace GUI {
 
-Menu::Menu(int &screenWidth, int &screenHeight): m_width(screenWidth), m_height(screenHeight), m_inPauseMenu(false)
+Menu::Menu(int &screenWidth, int &screenHeight, OpenWindow &openWindow):
+    m_width(screenWidth), m_height(screenHeight), m_inPauseMenu(false), m_openWindow(openWindow)
 {
-    m_button.push_back(Button("start"));
-    m_button.push_back(Button("settings"));
-    m_button.push_back(Button("quit"));
+    m_button.push_back(Button("start", [](OpenWindow &openWindow){openWindow = GAME;}));
+    m_button.push_back(Button("settings", [](OpenWindow &openWindow){openWindow = SETTINGS;}));
+    m_button.push_back(Button("quit", [](OpenWindow &openWindow){openWindow = QUIT;}));
 }
 
 void Menu::display()
@@ -28,7 +29,7 @@ void Menu::display()
             continue;
         Button &but = m_button.at(i);
         rec.y += m_height / 8.0f;
-        but.checkButtonAction(rec);
+        but.checkButtonAction(rec, m_openWindow);
         but.draw(rec, fontSize / 2.0f);
     }
 }

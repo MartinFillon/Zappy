@@ -13,11 +13,18 @@
 
 namespace GUI {
 
+enum OpenWindow {
+  MENU,
+  SETTINGS,
+  GAME,
+  QUIT
+};
+
 class Button {
   public:
-    Button(const std::string &name);
+    Button(const std::string &name, std::function<void(OpenWindow&)> funct);
 
-    void checkButtonAction(Rectangle &rec);
+    void checkButtonAction(Rectangle &rec, OpenWindow &openWindow);
     void draw(Rectangle &rec, int fontSize);
 
   private:
@@ -28,7 +35,7 @@ class Button {
     };
 
     std::string m_name;
-    std::function<void()> m_funct;
+    std::function<void(OpenWindow&)> m_funct;
     ButtonState m_state;
 };
 

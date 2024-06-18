@@ -80,7 +80,8 @@ class Display {
     bool m_isCameraFree;
     bool m_showCursor;
 
-    bool m_inMenu;
+    OpenWindow m_openWindow;
+
     Menu m_menu;
 };
 

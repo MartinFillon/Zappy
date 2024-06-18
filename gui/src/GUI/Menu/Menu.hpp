@@ -13,7 +13,7 @@ namespace GUI {
 
 class Menu {
   public:
-    Menu(int &screenWidth, int &screenHeight);
+    Menu(int &screenWidth, int &screenHeight, OpenWindow &openWindow);
     void display();
 
   private:
@@ -21,6 +21,8 @@ class Menu {
     int &m_width;
     int &m_height;
     bool m_inPauseMenu;
-};
+
+    OpenWindow &m_openWindow;
+    };
 
 } // namespace GUI
