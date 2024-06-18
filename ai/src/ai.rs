@@ -162,18 +162,18 @@ async fn init_ai(
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
     match ai.cli_id {
         0..=3 => {
-                let mut queen = queen::Queen::init(ai.clone());
-                if let Err(e) = queen.update().await {
-                    println!("Error: {}", e);
-                }
+            let mut queen = queen::Queen::init(ai.clone());
+            if let Err(e) = queen.update().await {
+                println!("Error: {}", e);
             }
-            _ => {
-                let mut bot = bot::Bot::init(ai.clone());
-                if let Err(e) = bot.update().await {
-                    println!("Error: {}", e);
-                }
+        }
+        _ => {
+            let mut bot = bot::Bot::init(ai.clone());
+            if let Err(e) = bot.update().await {
+                println!("Error: {}", e);
             }
-        };
+        }
+    };
     Ok(ai)
 }
 

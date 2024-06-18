@@ -137,7 +137,7 @@ async fn seek_best_item_index(
             }
             Ok(tile_idex)
         }
-        _ => Err(CommandError::RequestError),
+        _ => Err(CommandError::InvalidResponse),
     }
 }
 

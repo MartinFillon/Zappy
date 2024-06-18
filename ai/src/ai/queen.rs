@@ -55,7 +55,7 @@ impl Incantationers for Queen {
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                let response = client.check_response().await?;
+                let response = client.check_response().await;
                 client.handle_response(response).await?;
             }
         }

@@ -104,7 +104,7 @@ impl Bot {
                 self.update_coord_movement(coords);
                 self.move_ai_to_coords(coords).await
             }
-            None => Err(CommandError::RequestError),
+            None => Ok(ResponseResult::KO),
         }
     }
 }

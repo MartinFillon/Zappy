@@ -22,17 +22,17 @@ pub fn get_current_level(level_str: &str) -> Result<usize, CommandError> {
 }
 
 pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    let response = client
-        .get_response()
-        .await
-        .ok_or(CommandError::NoResponseReceived)?;
-    match response.trim_end() {
-        "dead" => Err(CommandError::DeadReceived),
-        level if level.starts_with("Current level: ") => {
-            let level_str = get_current_level(level)?;
-            Ok(ResponseResult::Incantation(level_str))
-        }
-        _ => client.handle_response(response).await,
+    let response = client.get_response().await;
+    match response {
+        Some(res) => match res.trim_end() {
+            "dead" => Err(CommandError::DeadReceived),
+            level if level.starts_with("Current level: ") => match get_current_level(level) {
+                Ok(level_str) => Ok(ResponseResult::Incantation(level_str)),
+                _ => Ok(ResponseResult::KO),
+            },
+            _ => client.handle_response(res).await,
+        },
+        _ => Ok(ResponseResult::KO),
     }
 }
 
