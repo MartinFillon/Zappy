@@ -101,20 +101,21 @@ impl Display for AI {
     }
 }
 
-async fn parse_response(response: &str) -> Result<(i32, i32, i32), io::Error> {
-    let mut lines = response.split('\n');
+async fn parse_response(
+    response: &str,
+    client: Arc<Mutex<TcpClient>>,
+) -> Result<(i32, i32, i32), io::Error> {
+    let mut cli = client.lock().await;
 
-    let client_number = lines
-        .next()
-        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid response."))?
+    let client_number = response
         .parse::<i32>()
         .map_err(|_| Error::new(ErrorKind::InvalidData, "Invalid client number."))?;
 
-    let line = lines
-        .next()
+    let response = cli
+        .get_response()
+        .await
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid response."))?;
-
-    let mut words = line.split_whitespace();
+    let mut words = response.split_whitespace();
     let x = words
         .next()
         .and_then(|word| word.parse::<i32>().ok())
@@ -134,7 +135,7 @@ async fn checkout_ai_info(
     address: String,
     (c_id, p_id): (usize, usize),
 ) -> io::Result<AI> {
-    parse_response(response)
+    parse_response(response, client.clone())
         .await
         .map(|(client_number, x, y)| {
             info!("Client number detected as [{}].", client_number);
