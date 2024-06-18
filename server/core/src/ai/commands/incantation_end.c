@@ -16,6 +16,7 @@
 #include "core/map.h"
 #include "core/types/object.h"
 #include "core/types/position.h"
+#include "logger.h"
 #include "macros.h"
 #include "utils.h"
 
@@ -73,12 +74,17 @@ static bool verif_end_specification(ai_t *ai, game_t *game)
     size_t nb_player = count_nb_ai_incant(
         game, &game->map->arena[pos->y][pos->x], ai);
 
-    if (nb_player < incant_req[idx].nb_player)
+    if (nb_player < incant_req[idx].nb_player) {
+        logs(DEBUG, "Not enough player for end_incantation.\n");
         return false;
-    return verif_tile_requirement(
+    }
+    if (!verif_tile_requirement(
         game->map->arena[pos->y][pos->x].content,
-        incant_req[idx].ressource
-    );
+        incant_req[idx].ressource)) {
+        logs(DEBUG, "Tiles requirements are not fullfilled in end.\n");
+        return false;
+    }
+    return true;
 }
 
 static void end_ais_elevation(
@@ -126,6 +132,7 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
         verif_end_specification(cli->ai, s->game);
     if (first == false) {
         unfreeze_ai(cli->ai);
+        logs(DEBUG, "Start incantation failed, so end too.\n");
         return prepare_response_cat(&cli->io, "ko\n");
     }
     if (cli->ai->incant.last_verif) {
