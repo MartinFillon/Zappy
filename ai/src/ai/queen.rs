@@ -8,7 +8,7 @@
 use super::Listeners;
 use crate::{
     ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
-    commands::{self, turn::DirectionTurn},
+    commands::{self, fork::fork, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
@@ -330,6 +330,18 @@ impl AIHandler for Queen {
         loop {
             let _ = self.handle_message().await;
             let _ = self.check_move_elevation().await;
+            {
+                let mut client = self.info().client().lock().await;
+                let res = fork(&mut client).await;
+                if let Ok(ResponseResult::OK) =
+                    Queen::handle_eject(&mut client, res).await
+                {
+                    let info = self.info.clone();
+                    tokio::spawn(async move {
+                        let _ = Bot::fork_dupe(info, None).await;
+                    });
+                }
+            };
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;

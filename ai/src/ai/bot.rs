@@ -74,25 +74,21 @@ fn get_item_priority(item: &str) -> usize {
         .1
 }
 
-fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> Option<String> {
-    let mut best = String::new();
+fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> (usize, String) {
+    let mut best: usize = 0;
     for obj in tile {
         if obj.as_str() == "player" {
             continue;
         }
-        let in_inv = inv.iter().find(|(item, _)| item == obj).unwrap_or(&inv[0]); // check for (index out of bounds: the len is 0 but the index is 0)
-        if in_inv.0 != best
-            && in_inv.1 < 3
-            && get_item_priority(obj) > get_item_priority(best.as_str())
+        let in_inv = inv.iter().position(|(item, _)| item == obj).unwrap_or(0); // check for (index out of bounds: the len is 0 but the index is 0)
+        if inv[in_inv].0 != inv[best].0
+            && inv[in_inv].1 < 3
+            && get_item_priority(obj) > get_item_priority(inv[best].0.as_str())
         {
-            best.clone_from(obj);
+            best = in_inv;
         }
     }
-    if best.is_empty() {
-        None
-    } else {
-        Some(best)
-    }
+    (best, inv[best].0.clone())
 }
 
 fn player_count_on_tile(tile: &[String]) -> usize {
@@ -107,18 +103,14 @@ async fn seek_best_item_index(
     match inventory(client).await? {
         ResponseResult::Inventory(inv) => {
             let mut idex = 0;
-            for (i, tile) in tiles.iter().enumerate() {
-                match get_best_item_in_tile(tile, &inv) {
-                    Some(item) => {
-                        if get_item_priority(item.as_str())
-                            > get_item_priority(inv[idex].0.as_str())
-                            && player_count_on_tile(tile) < COLONY_PLAYER_COUNT
-                        {
-                            idex = i;
-                            best_item.clone_from(&item);
-                        }
-                    }
-                    None => continue,
+            for tile in tiles {
+                let (pos, item) = get_best_item_in_tile(&tile, &inv);
+                if get_item_priority(item.as_str())
+                    > get_item_priority(inv[idex].0.as_str())
+                    && player_count_on_tile(&tile) < COLONY_PLAYER_COUNT
+                {
+                    idex = pos;
+                    best_item.clone_from(&item);
                 }
             }
             Ok(idex)
@@ -158,6 +150,7 @@ impl AIHandler for Bot {
             info!("Handling bot [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
             if idex >= MAX_MOVEMENTS {
+                println!("Bot {} backtracking...", self.info.p_id);
                 let _ = self.backtrack().await;
                 let _ = self.drop_items().await;
                 for _ in 0..2 {
@@ -167,10 +160,17 @@ impl AIHandler for Bot {
                 idex = 0;
                 continue;
             }
-            if self.seek_objects().await? == ResponseResult::KO {
-                let _ = self.move_to_tile(idex % 3 + 1).await;
-                continue;
+            //if self.seek_objects().await? == ResponseResult::KO {
+            let _ = self.move_to_tile(idex % 3 + 1).await;
+            {
+                let mut client = self.info().client().lock().await;
+                if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
+                    if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT && tiles[0].last().unwrap() != "player" {
+                        let _ = take_object(&mut client, tiles[0].last().unwrap().as_str()).await;
+                    }
+                }
             }
+            //}
             idex += 1;
         }
     }
@@ -261,7 +261,7 @@ impl Bot {
                 if best_item.is_empty() {
                     Ok(ResponseResult::KO)
                 } else {
-                    self.move_to_tile(tile).await?;
+                    let _ = self.move_to_tile(tile).await;
                     let mut client = self.info().client().lock().await;
                     take_object(&mut client, &best_item).await
                 }
@@ -273,39 +273,30 @@ impl Bot {
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         loop {
             let mut client = self.info().client().lock().await;
-            match inventory(&mut client).await? {
-                ResponseResult::Inventory(inv) => {
-                    if done_dropping_items(&inv) {
-                        return Ok(ResponseResult::OK);
-                    }
-                    for (item, count) in inv {
-                        if item.as_str() != "food" && count > 0 {
-                            match drop_object(&mut client, item.as_str()).await? {
-                                ResponseResult::OK => {}
-                                res => return Ok(res),
-                            }
-                        }
+            if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
+                for (item, count) in inv {
+                    while item.as_str() != "food" && count > 0 {
+                        let _ = drop_object(&mut client, item.as_str()).await;
                     }
                 }
-                res => return Ok(res),
             }
         }
     }
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
-        turn(&mut client, DirectionTurn::Right).await?;
-        turn(&mut client, DirectionTurn::Right).await?;
+        let _ = turn(&mut client, DirectionTurn::Right).await;
+        let _ = turn(&mut client, DirectionTurn::Right).await;
         Ok(ResponseResult::OK)
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         info!("Bot [Queen {}]: backtracking...", self.info().p_id);
-        self.turn_around().await?;
+        let _ = self.turn_around().await;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;
         }
-        self.move_ai_to_coords(*self.coord()).await?;
+        let _ = self.move_ai_to_coords(*self.coord()).await;
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }
