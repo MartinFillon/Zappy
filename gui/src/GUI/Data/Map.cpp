@@ -244,21 +244,10 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
+void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool isCameraFree) const
 {
     float tileSize = 1.0f;
 
-    if (Raylib::isKeyPressed('R'))
-        cam.target = (Vector3){0.0f, 0.0f, 0.0f};
-    if (Raylib::isKeyPressed('F'))
-        isCameraFree = !isCameraFree;
-    if (Raylib::isKeyPressed('C')) {
-        if (showCursor)
-            Raylib::disableCursor();
-        else
-            Raylib::enableCursor();
-        showCursor = !showCursor;
-    }
     if (isCameraFree)
         Raylib::updateCamera(cam, CAMERA_FREE);
 

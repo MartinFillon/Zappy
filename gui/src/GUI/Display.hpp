@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "../Network/Handler.hpp"
+#include "Menu/Menu.hpp"
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
 #include "TimeUnitInput.hpp"
@@ -56,6 +57,8 @@ class Display {
     std::vector<std::string> team;
 
   private:
+    void displayMenu();
+    void displayGame();
     void handleEvent();
     void handleServerMessage();
     void resize();
@@ -66,6 +69,7 @@ class Display {
     Data::Map map;
     bool endGame;
     std::vector<std::string> endGameMessage;
+    int screenWidth, screenHeight;
     int offsetX, offsetY, newWidth, newHeight;
     MessageBox messageBox;
     InfoBox infoBox;
@@ -75,6 +79,9 @@ class Display {
     bool m_is3D;
     bool m_isCameraFree;
     bool m_showCursor;
+
+    bool m_inMenu;
+    Menu m_menu;
 };
 
 } // namespace GUI

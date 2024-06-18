@@ -157,6 +157,11 @@ bool isMouseButtonDown(int button)
     return IsMouseButtonDown(button);
 }
 
+bool isMouseButtonReleased(int button)
+{
+    return IsMouseButtonReleased(button);
+}
+
 void disableCursor()
 {
     DisableCursor();

@@ -48,6 +48,7 @@ namespace Raylib {
     int getKeyPressed();
     float getMouseWheelMove();
     bool isMouseButtonDown(int button);
+    bool isMouseButtonReleased(int button);
 
 // Window
     void disableCursor();

@@ -11,8 +11,8 @@ namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
-      endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true)
+      endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
+      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true), m_inMenu(true), m_menu(screenWidth, screenHeight)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -46,6 +46,16 @@ void Display::handleEvent()
     }
     if (IsKeyPressed('P'))
         m_is3D = !m_is3D;
+    if (m_is3D) {
+        if (Raylib::isKeyPressed('R'))
+            m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+        if (Raylib::isKeyPressed('F'))
+            m_isCameraFree = !m_isCameraFree;
+        if (Raylib::isKeyPressed('C')) {
+            (m_showCursor)? Raylib::disableCursor() : Raylib::enableCursor();
+            m_showCursor = !m_showCursor;
+        };
+    }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         if (m_is3D)
             map.checkCollision3D(infoBox, m_cam);
@@ -56,6 +66,26 @@ void Display::handleEvent()
     timeUnitInput.handleEvent();
 }
 
+void Display::displayMenu()
+{
+    ClearBackground(WHITE);
+    m_menu.display();
+}
+
+void Display::displayGame()
+{
+    ClearBackground(BLACK);
+    if (m_is3D) {
+        map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree);
+    } else {
+        DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
+        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+    }
+    infoBox.display(offsetX, offsetY, 400, 300);
+    messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
+    timeUnitInput.display(offsetX + 10, offsetY + 340, 200, 30);
+}
+
 void Display::run()
 {
     while (!WindowShouldClose() && networkHandler.isRunning()) {
@@ -63,16 +93,10 @@ void Display::run()
 
         handleEvent();
         BeginDrawing();
-        ClearBackground(BLACK);
-        if (m_is3D) {
-            map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree, m_showCursor);
-        } else {
-            DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-            map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
-        }
-        infoBox.display(offsetX, offsetY, 400, 300);
-        messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
-        timeUnitInput.display(offsetX + 10, offsetY + 340, 200, 30);
+        if (m_inMenu)
+            displayMenu();
+        else
+            displayGame();
         EndDrawing();
     }
 }

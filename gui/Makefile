@@ -27,6 +27,10 @@ SRC = $(BASE_SRC) 							\
 					Map						\
 					Player					\
 				)							\
+				$(addprefix Menu/,			\
+					Button					\
+					Menu					\
+				)							\
 				$(addprefix ModelManager/,	\
 					Model3D					\
 				)							\
