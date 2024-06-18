@@ -187,7 +187,7 @@ impl Queen {
         Ok(())
     }
 
-    async fn fork_servant(&mut self) -> Result<(), CommandError> {
+    async fn fork_servants(&mut self) -> Result<(), CommandError> {
         let mut cli = self.info.client.lock().await;
 
         commands::fork::fork(&mut cli).await?;
@@ -201,8 +201,11 @@ impl Queen {
             }
         });
 
-        commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
-        info!("I as the queen ({}), bestow my life uppon you", 0);
+        commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
+        info!(
+            "I as the queen ({}), bestow my life uppon you",
+            self.info.p_id
+        );
 
         for _ in 0..NB_INIT_BOTS {
             commands::fork::fork(&mut cli).await?;
@@ -214,7 +217,8 @@ impl Queen {
                     println!("Bot with id {} created.", info.p_id);
                 }
             });
-            commands::broadcast::broadcast(&mut cli, self.info.p_id.to_string().as_str()).await?;
+            commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str())
+                .await?;
         }
 
         info!("Miserable peasants... SERVE ME.\n");
@@ -330,18 +334,12 @@ impl AIHandler for Queen {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        while !self.can_start {
-            {
-                let mut client = self.info().client().lock().await;
-                println!("Queen {}: waiting for \"Done\"...", self.info.p_id);
-                if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
-                    client.push_message(msg);
-                }
-            }
-            let _ = self.handle_message().await;
+        {
+            let mut client = self.info().client().lock().await;
+            let _ = client.get_broadcast().await;
         }
-        println!("Queen {}: received done successfully.", self.info.p_id);
-        let _ = self.fork_servant().await;
+        let _ = self.handle_message().await;
+        self.fork_servants().await?;
         loop {
             let _ = self.handle_message().await;
             let _ = self.check_move_elevation().await;
@@ -364,7 +362,7 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            let _ = self.check_enough_food(3).await;
+            let _ = self.check_enough_food(5).await;
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);

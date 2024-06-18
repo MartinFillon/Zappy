@@ -18,8 +18,5 @@ pub async fn unused_slots(client: &mut TcpClient) -> Result<ResponseResult, Comm
     debug!("Checking unused slots...");
 
     let response = client.check_dead("Connect_nbr\n").await?;
-    match response.trim_end().parse::<usize>() {
-        Ok(nb) => Ok(ResponseResult::Value(nb)),
-        Err(_) => client.handle_response(response).await,
-    }
+    client.handle_response(response).await
 }

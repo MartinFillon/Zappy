@@ -12,13 +12,9 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::{debug, warn};
+use log::debug;
 
-fn read_output(raw: String) -> Option<Vec<Vec<String>>> {
-    if !raw.starts_with('[') || !raw.ends_with("]\n") {
-        warn!("Attempted to read invalid string as tiles.");
-        return None;
-    }
+pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     let tiles = tmp.split(',').fold(
         Vec::<Vec<String>>::new(),
@@ -35,9 +31,6 @@ fn read_output(raw: String) -> Option<Vec<Vec<String>>> {
             acc
         },
     );
-    if tiles.len() < 4 {
-        return None;
-    }
 
     debug!("Tiles: {:?}", tiles);
     Some(tiles)
@@ -47,23 +40,16 @@ pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, Comma
     debug!("Looking around...");
 
     let response = client.check_dead("Look\n").await?;
-    if client.handle_response(response.clone()).await.is_err() {
-        warn!("Detected Err, parsing as tile(s) output...");
-        return match read_output(response) {
-            Some(output) => Ok(ResponseResult::Tiles(output)),
-            None => Err(CommandError::InvalidResponse),
-        };
-    }
-    Err(CommandError::InvalidResponse)
+    client.handle_response(response).await
 }
 
 #[cfg(test)]
 pub mod tests_look {
-    use super::read_output;
+    use super::read_look_output;
 
     #[test]
     fn output_reading() {
-        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string()).unwrap();
+        let res: Vec<Vec<String>> = read_look_output("[player food,,,food]\n".to_string());
         let cmp: Vec<Vec<String>> = vec![
             vec!["player".to_string(), "food".to_string()],
             vec![],
@@ -75,19 +61,8 @@ pub mod tests_look {
 
     #[test]
     fn output_reading_empty() {
-        let res = read_output("[]\n".to_string());
-        assert_eq!(None, res);
-    }
-
-    #[test]
-    fn output_reading_message() {
-        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string()).unwrap();
-        let cmp: Vec<Vec<String>> = vec![
-            vec!["player".to_string(), "food".to_string()],
-            vec![],
-            vec![],
-            vec!["food".to_string()],
-        ];
+        let res: Vec<Vec<String>> = read_look_output("[]\n".to_string());
+        let cmp: Vec<Vec<String>> = vec![[].to_vec()];
         assert_eq!(cmp, res);
     }
 }

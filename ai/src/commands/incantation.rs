@@ -28,7 +28,7 @@ pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult
         .ok_or(CommandError::NoResponseReceived)?;
     match response.trim_end() {
         "dead" => Err(CommandError::DeadReceived),
-        level if level.starts_with("Current level:") => {
+        level if level.starts_with("Current level: ") => {
             let level_str = get_current_level(level)?;
             Ok(ResponseResult::Incantation(level_str))
         }

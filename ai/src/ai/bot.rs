@@ -13,8 +13,7 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::{self},
-        take_object::take_object,
+        take_object::{self, take_object},
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -169,15 +168,6 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        while !self.can_start {
-            {
-                let mut client = self.info().client().lock().await;
-                if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
-                    client.push_message(msg);
-                }
-            }
-            let _ = self.handle_message().await;
-        }
         let mut idex: usize = 0;
         loop {
             info!("Handling bot [Queen {}]...", self.info().p_id);
@@ -187,14 +177,13 @@ impl AIHandler for Bot {
                 let _ = self.drop_items().await;
                 for _ in 0..2 {
                     let mut client = self.info().client().lock().await;
-                    let _ = take_object(&mut client, "food").await;
+                    let _ = take_object::take_object(&mut client, "food").await;
                 }
                 idex = 0;
                 continue;
             }
-            if let Ok(ResponseResult::KO) = self.seek_objects().await {
-                let mut client = self.info().client().lock().await;
-                let _ = move_up::move_up(&mut client).await;
+            if self.seek_objects().await? == ResponseResult::KO {
+                let _ = self.move_to_tile(idex % 3 + 1).await;
                 continue;
             }
             idex += 1;
@@ -304,8 +293,8 @@ impl Bot {
                     if done_dropping_items(&inv) {
                         return Ok(ResponseResult::OK);
                     }
-                    for (item, _) in inv {
-                        if item.as_str() != "food" {
+                    for (item, count) in inv {
+                        if item.as_str() != "food" && count > 0 {
                             match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),

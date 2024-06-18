@@ -106,7 +106,6 @@ async fn parse_response(
     client: Arc<Mutex<TcpClient>>,
 ) -> Result<(i32, i32, i32), io::Error> {
     let mut cli = client.lock().await;
-
     let client_number = response
         .parse::<i32>()
         .map_err(|_| Error::new(ErrorKind::InvalidData, "Invalid client number."))?;
@@ -115,6 +114,7 @@ async fn parse_response(
         .get_response()
         .await
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid response."))?;
+
     let mut words = response.split_whitespace();
     let x = words
         .next()
@@ -124,7 +124,6 @@ async fn parse_response(
         .next()
         .and_then(|word| word.parse::<i32>().ok())
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid y coordinate."))?;
-
     Ok((client_number, x, y))
 }
 

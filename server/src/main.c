@@ -33,7 +33,7 @@ static void fill_infos(args_infos_t *infos, struct args *const ag)
     infos->port = get_arg(ag, "-p").unsigned_number;
     infos->width = get_arg(ag, "-x").unsigned_number;
     infos->height = get_arg(ag, "-y").unsigned_number;
-    infos->freq = get_arg(ag, "-f").unsigned_number;
+    infos->freq = get_arg(ag, "-f").flt;
     infos->names = get_arg(ag, "-n").string_list;
     infos->level = set_log_level_from_str(log_level ? log_level->data : NULL);
     infos->displayer_path = get_arg(ag, "-d").string;
