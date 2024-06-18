@@ -132,8 +132,7 @@ impl TcpClient {
                                 error!("Failed to write to socket: {}", e);
                                 break;
                             }
-                            debug!("Successfully wrote request to socket:");
-                            debug!("ai-client> `{}\\n`", req.trim_end());
+                            debug!("Successfully wrote request to socket: `{}\\n`", req.trim_end());
                         }
                         None => {
                             warn!("Request channel closed.");

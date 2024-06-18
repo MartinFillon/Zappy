@@ -228,19 +228,39 @@ async fn start_ai(
     }
 }
 
-pub async fn launch(address: String, team: String) -> io::Result<()> {
-    let mut handles = vec![];
-    let team = Arc::new(team);
-    let address = Arc::new(address);
-    let connection_id = Arc::new(AtomicUsize::new(0));
-    let stop_flag = Arc::new(AtomicBool::new(false));
+async fn handle_client(
+    client: Arc<Mutex<TcpClient>>,
+    team: Arc<String>,
+    address: Arc<String>,
+    id: usize,
+    stop_flag: Arc<AtomicBool>,
+) -> io::Result<()> {
+    let result = start_ai(client, team.to_string(), address.to_string(), (id, 0), true).await;
 
+    match result {
+        Ok(_) => {
+            println!("Connection {} handled successfully", id);
+            Ok(())
+        }
+        Err(e) => {
+            println!("Connection {} failed: {}", id, e);
+            stop_flag.store(true, Ordering::SeqCst);
+            Err(e)
+        }
+    }
+}
+
+async fn launch_connections(
+    address: Arc<String>,
+    team: Arc<String>,
+    connection_id: Arc<AtomicUsize>,
+    stop_flag: Arc<AtomicBool>,
+) {
     loop {
         if stop_flag.load(Ordering::SeqCst) {
             println!("Stop flag is set, breaking the loop.");
             break;
         }
-        let team = Arc::clone(&team);
 
         match tcp::handle_tcp(address.to_string(), team.to_string()).await {
             Ok(client) => {
@@ -248,30 +268,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
                 let stop_flag = Arc::clone(&stop_flag);
-
-                let handle = task::spawn(async move {
-                    let result = start_ai(
-                        client.clone(),
-                        team.to_string(),
-                        address.to_string(),
-                        (id, 0),
-                        true,
-                    )
-                    .await;
-
-                    match result {
-                        Ok(_) => {
-                            println!("Connection {} handled successfully", id);
-                            Ok(())
-                        }
-                        Err(e) => {
-                            println!("Connection {} failed: {}", id, e);
-                            stop_flag.store(true, Ordering::SeqCst);
-                            Err(e)
-                        }
-                    }
-                });
-                handles.push(handle);
+                tokio::spawn(handle_client(client, team.clone(), address, id, stop_flag));
             }
             Err(e) => {
                 println!("Failed to handle TCP: {}", e);
@@ -279,20 +276,93 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             }
         }
     }
+}
 
-    if handles.is_empty() {
-        warn!("Connection refused, handles is empty.");
-        return Err(Error::new(
-            ErrorKind::ConnectionRefused,
-            "Couldn't reach host.",
-        ));
-    }
+pub async fn launch(address: String, team: String) -> io::Result<()> {
+    let team = Arc::new(team);
+    let address = Arc::new(address);
+    let connection_id = Arc::new(AtomicUsize::new(0));
+    let stop_flag = Arc::new(AtomicBool::new(false));
 
-    for handle in handles {
-        if let Err(e) = handle.await {
-            println!("Task failed: {:?}", e);
-        }
+    let launch_task = tokio::spawn(launch_connections(
+        Arc::clone(&address),
+        Arc::clone(&team),
+        Arc::clone(&connection_id),
+        Arc::clone(&stop_flag),
+    ));
+
+    if let Err(e) = launch_task.await {
+        println!("Launch task failed: {:?}", e);
     }
 
     Ok(())
 }
+
+// pub async fn launch(address: String, team: String) -> io::Result<()> {
+//     let mut handles = vec![];
+//     let team = Arc::new(team);
+//     let address = Arc::new(address);
+//     let connection_id = Arc::new(AtomicUsize::new(0));
+//     let stop_flag = Arc::new(AtomicBool::new(false));
+
+//     loop {
+//         if stop_flag.load(Ordering::SeqCst) {
+//             println!("Stop flag is set, breaking the loop.");
+//             break;
+//         }
+//         let team = Arc::clone(&team);
+
+//         match tcp::handle_tcp(address.to_string(), team.to_string()).await {
+//             Ok(client) => {
+//                 let address = Arc::clone(&address);
+//                 let client = Arc::new(Mutex::new(client));
+//                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
+//                 let stop_flag = Arc::clone(&stop_flag);
+
+//                 let handle = task::spawn(async move {
+//                     let result = start_ai(
+//                         client.clone(),
+//                         team.to_string(),
+//                         address.to_string(),
+//                         (id, 0),
+//                         true,
+//                     )
+//                     .await;
+
+//                     match result {
+//                         Ok(_) => {
+//                             println!("Connection {} handled successfully", id);
+//                             Ok(())
+//                         }
+//                         Err(e) => {
+//                             println!("Connection {} failed: {}", id, e);
+//                             stop_flag.store(true, Ordering::SeqCst);
+//                             Err(e)
+//                         }
+//                     }
+//                 });
+//                 handles.push(handle);
+//             }
+//             Err(e) => {
+//                 println!("Failed to handle TCP: {}", e);
+//                 break;
+//             }
+//         }
+//     }
+
+//     if handles.is_empty() {
+//         warn!("Connection refused, handles is empty.");
+//         return Err(Error::new(
+//             ErrorKind::ConnectionRefused,
+//             "Couldn't reach host.",
+//         ));
+//     }
+
+//     for handle in handles {
+//         if let Err(e) = handle.await {
+//             println!("Task failed: {:?}", e);
+//         }
+//     }
+
+//     Ok(())
+// }
