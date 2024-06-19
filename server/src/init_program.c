@@ -5,11 +5,22 @@
 ** init_program
 */
 
-#include "core/client.h"
+#include <signal.h>
+
 #include "logger.h"
 #include "macros.h"
 #include "core/router/router.h"
 #include "args_info.h"
+
+static void init_mask(zappy_t *z)
+{
+    sigset_t sig;
+
+    sigemptyset(&z->server.sig);
+    sigemptyset(&sig);
+    sigaddset(&sig, SIGPIPE);
+    sigprocmask(SIG_BLOCK, &sig, NULL);
+}
 
 int init_program(args_infos_t *args, zappy_t *z)
 {
@@ -20,6 +31,7 @@ int init_program(args_infos_t *args, zappy_t *z)
     z->server.router = init_router();
     if (z->server.router == NULL)
         return ERROR;
+    init_mask(z);
     logs(INFO, "Server up and running on port %d\n", args->port);
     logs(INFO, "Initailizing game\n");
     z->game = init_game(args);
