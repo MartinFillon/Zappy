@@ -311,6 +311,21 @@ impl Queen {
         }
         Ok(ResponseResult::OK)
     }
+
+    async fn create_bot(&mut self) -> Result<ResponseResult, CommandError> {
+        let mut client = self.info().client().lock().await;
+        let res = fork(&mut client).await;
+        if let Ok(ResponseResult::OK) =
+            Queen::handle_eject(&mut client, res).await
+        {
+            let info = self.info.clone();
+            let _ = tokio::spawn(async move {
+                let _ = Bot::fork_dupe(info, None).await;
+            });
+            let _ = commands::broadcast::broadcast(&mut client, format!("{}", self.info.p_id).as_str()).await;
+        }
+        Ok(ResponseResult::OK)
+    }
 }
 
 #[async_trait]
@@ -326,22 +341,10 @@ impl AIHandler for Queen {
             let _ = client.get_broadcast().await;
         }
         let _ = self.handle_message().await;
-        self.fork_servants().await?;
+        let _ = self.fork_servants().await;
         loop {
             let _ = self.handle_message().await;
             let _ = self.check_move_elevation().await;
-            {
-                let mut client = self.info().client().lock().await;
-                let res = fork(&mut client).await;
-                if let Ok(ResponseResult::OK) =
-                    Queen::handle_eject(&mut client, res).await
-                {
-                    let info = self.info.clone();
-                    tokio::spawn(async move {
-                        let _ = Bot::fork_dupe(info, None).await;
-                    });
-                }
-            };
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -361,7 +364,9 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            let _ = self.check_enough_food(5).await;
+            let _ = self.check_enough_food(10).await;
+
+            let _ = self.create_bot().await;
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);

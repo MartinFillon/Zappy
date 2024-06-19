@@ -65,7 +65,7 @@ impl AIHandler for Knight {
                 self.info.set_level(level);
                 continue;
             }
-            if self.check_food().await < 9 {
+            //if self.check_food().await < 10 {
                 info!(
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
@@ -82,12 +82,12 @@ impl AIHandler for Knight {
                         });
                     }
                 };
-                while self.check_food().await < 10 {
+                while self.check_food().await < 8 {
                     let mut client = self.info().client().lock().await;
                     let res = take_object::take_object(&mut client, "food").await;
                     let _ = Knight::knight_checkout_response(&mut client, res).await;
                 }
-            }
+            //}
         }
         Err(CommandError::DeadReceived)
     }

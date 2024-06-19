@@ -28,6 +28,7 @@ use std::mem::swap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use rand::Rng;
 use tokio::{sync::Mutex, task};
 
 use log::{debug, error, info};
@@ -145,23 +146,22 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        let mut idex: usize = 0;
         loop {
             info!("Handling bot [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
-            if idex >= MAX_MOVEMENTS {
+            if self.time_to_backtrack().await {
                 println!("Bot {} backtracking...", self.info.p_id);
                 let _ = self.backtrack().await;
                 let _ = self.drop_items().await;
-                for _ in 0..2 {
-                    let mut client = self.info().client().lock().await;
-                    let _ = take_object::take_object(&mut client, "food").await;
-                }
-                idex = 0;
+                // for _ in 0..2 {
+                //     let mut client = self.info().client().lock().await;
+                //     let _ = take_object::take_object(&mut client, "food").await;
+                // }
                 continue;
             }
             //if self.seek_objects().await? == ResponseResult::KO {
-            let _ = self.move_to_tile(idex % 3 + 1).await;
+            let random: usize = rand::thread_rng().gen_range(1..=3);
+            let _ = self.move_to_tile(random).await;
             {
                 let mut client = self.info().client().lock().await;
                 if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
@@ -171,7 +171,6 @@ impl AIHandler for Bot {
                 }
             }
             //}
-            idex += 1;
         }
     }
 
@@ -217,6 +216,16 @@ impl AIHandler for Bot {
 }
 
 impl Bot {
+    async fn time_to_backtrack(&mut self) -> bool {
+        let mut client = self.info().client().lock().await;
+        if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
+            if !inv.is_empty() && inv[0].0 == "food" && inv[0].1 < 5 {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         debug!("Updating movement of offset: ({}, {})...", d.0, d.1);
@@ -271,16 +280,15 @@ impl Bot {
     }
 
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
-        loop {
-            let mut client = self.info().client().lock().await;
-            if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
-                for (item, count) in inv {
-                    while item.as_str() != "food" && count > 0 {
-                        let _ = drop_object(&mut client, item.as_str()).await;
-                    }
+        let mut client = self.info().client().lock().await;
+        if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
+            for (item, count) in inv {
+                while item.as_str() != "food" && count > 0 {
+                    let _ = drop_object(&mut client, item.as_str()).await;
                 }
             }
         }
+        Ok(ResponseResult::OK)
     }
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
