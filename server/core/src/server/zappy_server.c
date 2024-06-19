@@ -6,11 +6,13 @@
 */
 
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
 #include <bits/types/struct_timeval.h>
 
@@ -41,6 +43,8 @@ static void handle_cli_isset(zappy_t *z, int i)
 {
     client_t *self = z->clients->data[i];
 
+    if (FD_ISSET(self->fd, &z->server.except_fds))
+        return handle_client_closing(z, i);
     if (FD_ISSET(self->fd, &z->server.read_fds))
         if (read_client(self) == ERROR)
             return handle_client_closing(z, i);
@@ -62,14 +66,16 @@ static void handle_client(zappy_t *z)
 
 int select_server(zappy_t *z)
 {
-    struct timeval t = {0, 1};
-    int retval =
-        select(MAXFD, &z->server.read_fds, &z->server.write_fds, NULL, &t);
+    struct timespec t = {0, 1};
+    int retval = pselect(MAXFD, &z->server.read_fds,
+        &z->server.write_fds, &z->server.except_fds, &t, &z->server.sig);
     char *line = NULL;
     size_t n = 0;
 
-    if (retval == -1 && errno == EINTR)
+    if (retval == -1 && errno == EINTR) {
+        logs(DEBUG, "Select error: %s\n", strerror(errno));
         return SERV_END;
+    }
     if (FD_ISSET(STDIN_FILENO, &z->server.read_fds)) {
         if (getline(&line, &n, stdin) == -1)
             return SERV_END;
@@ -86,10 +92,12 @@ void fill_fd_set(zappy_t *z)
 {
     FD_ZERO(&z->server.read_fds);
     FD_ZERO(&z->server.write_fds);
+    FD_ZERO(&z->server.except_fds);
     FD_SET(0, &z->server.read_fds);
     FD_SET(z->server.fd, &z->server.read_fds);
     for (size_t i = 0; i < z->clients->size; i++) {
         FD_SET(z->clients->data[i]->fd, &z->server.read_fds);
+        FD_SET(z->clients->data[i]->fd, &z->server.except_fds);
         if (z->clients->data[i]->io.is_ready) {
             FD_SET(z->clients->data[i]->fd, &z->server.write_fds);
         }
