@@ -42,15 +42,19 @@ static void increment_all_levels(
 static void consume_tile_incantation(
     size_t lvl_idx,
     map_t *map,
-    size_t y,
-    size_t x
+    pos_t *pos,
+    struct client_list *cls
 )
 {
-    struct tile_s *tile = &map->arena[y][x];
+    struct tile_s *tile = &map->arena[pos->y][pos->x];
     const size_t *tile_req = incant_req[lvl_idx].ressource;
 
-    for (size_t i = LINEMATE; i < OBJ_COUNT; i++)
+    broadcast_to(GUI, cls, "bct %d %d", pos->x, pos->y);
+    for (size_t i = LINEMATE; i < OBJ_COUNT; i++) {
         tile->content[i] -= tile_req[i];
+        broadcast_to(GUI, cls, " %ld", tile->content[i]);
+    }
+    broadcast_to(GUI, cls, "\n");
 }
 
 static size_t count_nb_ai_incant(game_t *g, struct tile_s *tile, ai_t *ai)
@@ -139,7 +143,7 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
     }
     if (cli->ai->incant.last_verif) {
         consume_tile_incantation(
-            cli->ai->level - 1, s->game->map, cli->ai->pos.y, cli->ai->pos.x
+            cli->ai->level - 1, s->game->map, &cli->ai->pos, s->clients
         );
         increment_all_levels(s->game, cli->ai->id, s->clients);
         sprintf(msg, "Current level: %ld\n", cli->ai->level);
