@@ -8,7 +8,7 @@
 use super::Listeners;
 use crate::{
     ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
-    commands::{self, fork::fork, turn::DirectionTurn},
+    commands::{self, fork::fork, incantation::handle_incantation, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
@@ -62,10 +62,14 @@ impl Incantationers for Queen {
     }
 
     async fn handle_elevating(
-        _client: &mut TcpClient,
+        client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError> {
-        res
+        if let Ok(ResponseResult::Elevating) = res {
+            handle_incantation(client).await
+        } else {
+            res
+        }
     }
 }
 
@@ -153,26 +157,39 @@ impl Queen {
         let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
-            commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
-                .await?;
+            let _ = commands::broadcast::broadcast(
+                &mut cli,
+                format!("{} inc", self.info().p_id).as_str(),
+            )
+            .await;
             let incant_res = commands::incantation::incantation(&mut cli).await;
-            if let ResponseResult::Incantation(lvl) =
-                Queen::handle_eject(&mut cli, incant_res).await?
-            {
-                level = lvl;
+            info!(
+                "Queen #{} incantation result: {:?}",
+                self.info.p_id, incant_res
+            );
+            match Queen::handle_eject(&mut cli, incant_res).await {
+                Ok(ResponseResult::Incantation(lvl)) => {
+                    level = lvl;
+                    println!("Queen {} done. Now level {}", self.info.p_id, level);
+                }
+                Ok(ResponseResult::Elevating) => {
+                    let _ = Queen::handle_elevating(&mut cli, Ok(ResponseResult::Elevating)).await;
+                }
+                _ => (),
             }
-        };
+        }
         self.info.set_level(level);
         Ok(())
     }
 
     async fn check_enough_food(&mut self, min: usize) -> Result<(), CommandError> {
-        if *self.inv.food() >= min || *self.look.inv.food() == 0 {
-            return Ok(());
-        }
-        let mut cli = self.info.client.lock().await;
-        if let Ok(ResponseResult::OK) = commands::take_object::take_object(&mut cli, "food").await {
-            self.inv.set_food(self.inv.food() + 1);
+        while *self.inv.food() < min {
+            let mut cli = self.info.client.lock().await;
+            if let Ok(ResponseResult::OK) =
+                commands::take_object::take_object(&mut cli, "food").await
+            {
+                self.inv.set_food(self.inv.food() + 1);
+            }
         }
         Ok(())
     }
@@ -296,7 +313,7 @@ impl Queen {
         &mut self,
         can_move: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
-        let mut client = self.info().client().lock().await;
+        let mut client = self.info.client.lock().await;
         while let Some((dir, msg)) = client.pop_message() {
             info!("Queen {}: handling message: {}", self.info().cli_id, msg);
             let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
@@ -315,14 +332,14 @@ impl Queen {
     async fn create_bot(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = fork(&mut client).await;
-        if let Ok(ResponseResult::OK) =
-            Queen::handle_eject(&mut client, res).await
-        {
+        if let Ok(ResponseResult::OK) = Queen::handle_eject(&mut client, res).await {
             let info = self.info.clone();
             let _ = tokio::spawn(async move {
                 let _ = Bot::fork_dupe(info, None).await;
             });
-            let _ = commands::broadcast::broadcast(&mut client, format!("{}", self.info.p_id).as_str()).await;
+            let _ =
+                commands::broadcast::broadcast(&mut client, format!("{}", self.info.p_id).as_str())
+                    .await;
         }
         Ok(ResponseResult::OK)
     }
@@ -338,13 +355,23 @@ impl AIHandler for Queen {
     async fn update(&mut self) -> Result<(), CommandError> {
         {
             let mut client = self.info().client().lock().await;
-            let _ = client.get_broadcast().await;
+            if let Err(CommandError::DeadReceived) = client.get_broadcast().await {
+                return Err(CommandError::DeadReceived);
+            }
         }
-        let _ = self.handle_message().await;
-        let _ = self.fork_servants().await;
+        if let Err(CommandError::DeadReceived) = self.handle_message().await {
+            return Err(CommandError::DeadReceived);
+        }
+        if let Err(CommandError::DeadReceived) = self.fork_servants().await {
+            return Err(CommandError::DeadReceived);
+        }
         loop {
-            let _ = self.handle_message().await;
-            let _ = self.check_move_elevation().await;
+            if let Err(CommandError::DeadReceived) = self.handle_message().await {
+                break;
+            }
+            if let Err(CommandError::DeadReceived) = self.check_move_elevation().await {
+                break;
+            }
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -364,18 +391,26 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            let _ = self.check_enough_food(10).await;
+            if let Err(CommandError::DeadReceived) = self.check_enough_food(40).await {
+                break;
+            }
 
-            let _ = self.create_bot().await;
+            if let Err(CommandError::DeadReceived) = self.create_bot().await {
+                break;
+            }
 
             if self.check_requirement() {
                 println!("Ai Queen #{} is incantating", self.info.p_id);
                 if let Err(e) = self.incantate().await {
                     warn!("Error from incantation: {}", e);
                     println!("Error with Queen #{} incantating.", self.info.p_id);
+                    if e == CommandError::DeadReceived {
+                        break;
+                    }
                 }
             }
         }
+        Err(CommandError::DeadReceived)
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {

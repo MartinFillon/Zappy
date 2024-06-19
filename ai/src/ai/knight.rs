@@ -66,27 +66,8 @@ impl AIHandler for Knight {
                 continue;
             }
             //if self.check_food().await < 10 {
-                info!(
-                    "Knight [Queen {}]: not enough food, producing more...",
-                    self.info().p_id
-                );
-                {
-                    let mut client = self.info().client().lock().await;
-                    let res = fork::fork(&mut client).await;
-                    if let Ok(ResponseResult::OK) =
-                        Knight::knight_checkout_response(&mut client, res).await
-                    {
-                        let info = self.info.clone();
-                        tokio::spawn(async move {
-                            let _ = Fetus::fork_dupe(info, None).await;
-                        });
-                    }
-                };
-                while self.check_food().await < 8 {
-                    let mut client = self.info().client().lock().await;
-                    let res = take_object::take_object(&mut client, "food").await;
-                    let _ = Knight::knight_checkout_response(&mut client, res).await;
-                }
+            let mut client = self.info().client().lock().await;
+            let _ = self.check_enough_food(&mut client, 10).await;
             //}
         }
         Err(CommandError::DeadReceived)
@@ -211,6 +192,37 @@ impl Knight {
         0
     }
 
+    async fn check_enough_food(
+        &self,
+        client: &mut TcpClient,
+        min: usize,
+    ) -> Result<(), CommandError> {
+        if let Ok(ResponseResult::Inventory(mut inv)) = inventory::inventory(client).await {
+            if !inv.is_empty() && inv[0].0 == "food" && inv[0].1 <= min as i32 {
+                info!(
+                    "Knight [Queen {}]: not enough food, producing more...",
+                    self.info().p_id
+                );
+                let res = fork::fork(client).await;
+                if let Ok(ResponseResult::OK) = Knight::knight_checkout_response(client, res).await
+                {
+                    let info = self.info.clone();
+                    tokio::spawn(async move {
+                        let _ = Fetus::fork_dupe(info, None).await;
+                    });
+                }
+                while inv[0].1 < min as i32 {
+                    let mut res = take_object::take_object(client, "food").await;
+                    res = Knight::handle_eject(client, res).await;
+                    if res == Ok(ResponseResult::OK) {
+                        inv[0].1 += 1;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
@@ -219,6 +231,7 @@ impl Knight {
                 self.info().p_id,
                 message.1
             );
+            let _ = self.check_enough_food(&mut client, 10).await;
             match message {
                 (DirectionMessage::Center, msg) => {
                     if let Ok(id) = msg.parse::<usize>() {
@@ -245,7 +258,7 @@ impl Knight {
     }
 
     async fn can_incantate(&mut self) -> bool {
-        if self.info().level != 1 || self.check_food().await < 4 {
+        if self.info().level != 1 || self.check_food().await < 8 {
             return false;
         }
         let mut client = self.info().client().lock().await;

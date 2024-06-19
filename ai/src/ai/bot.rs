@@ -37,7 +37,7 @@ use zappy_macros::Bean;
 use super::Listeners;
 
 pub const COLONY_PLAYER_COUNT: usize = 2;
-const MAX_MOVEMENTS: usize = 5;
+const MAX_MOVEMENTS: usize = 10;
 static ITEM_PRIORITY: [(&str, usize); 7] = [
     ("food", 6),
     ("linemate", 1),
@@ -52,6 +52,7 @@ static ITEM_PRIORITY: [(&str, usize); 7] = [
 pub struct Bot {
     info: AI,
     coord: (i32, i32),
+    backtrack_infos: Vec<(i32, i32)>,
 }
 
 fn make_item_prioritised(item: &str) {
@@ -106,8 +107,7 @@ async fn seek_best_item_index(
             let mut idex = 0;
             for tile in tiles {
                 let (pos, item) = get_best_item_in_tile(&tile, &inv);
-                if get_item_priority(item.as_str())
-                    > get_item_priority(inv[idex].0.as_str())
+                if get_item_priority(item.as_str()) > get_item_priority(inv[idex].0.as_str())
                     && player_count_on_tile(&tile) < COLONY_PLAYER_COUNT
                 {
                     idex = pos;
@@ -134,6 +134,7 @@ impl Bot {
         Self {
             info,
             coord: (0, 0),
+            backtrack_infos: Vec::new(),
         }
     }
 }
@@ -146,17 +147,18 @@ impl AIHandler for Bot {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
+        let mut idex: usize = 0;
         loop {
             info!("Handling bot [Queen {}]...", self.info().p_id);
             let _ = self.handle_message().await;
-            if self.time_to_backtrack().await {
-                println!("Bot {} backtracking...", self.info.p_id);
+            if idex > MAX_MOVEMENTS {
                 let _ = self.backtrack().await;
                 let _ = self.drop_items().await;
-                // for _ in 0..2 {
-                //     let mut client = self.info().client().lock().await;
-                //     let _ = take_object::take_object(&mut client, "food").await;
-                // }
+                for _ in 0..5 {
+                    let mut client = self.info().client().lock().await;
+                    let _ = take_object::take_object(&mut client, "food").await;
+                }
+                idex = 0;
                 continue;
             }
             //if self.seek_objects().await? == ResponseResult::KO {
@@ -165,12 +167,15 @@ impl AIHandler for Bot {
             {
                 let mut client = self.info().client().lock().await;
                 if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
-                    if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT && tiles[0].last().unwrap() != "player" {
+                    if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
+                        && tiles[0].last().unwrap() != "player"
+                    {
                         let _ = take_object(&mut client, tiles[0].last().unwrap().as_str()).await;
                     }
                 }
             }
             //}
+            idex += 1;
         }
     }
 
@@ -216,16 +221,6 @@ impl AIHandler for Bot {
 }
 
 impl Bot {
-    async fn time_to_backtrack(&mut self) -> bool {
-        let mut client = self.info().client().lock().await;
-        if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
-            if !inv.is_empty() && inv[0].0 == "food" && inv[0].1 < 5 {
-                return true;
-            }
-        }
-        false
-    }
-
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         debug!("Updating movement of offset: ({}, {})...", d.0, d.1);
@@ -243,6 +238,7 @@ impl Bot {
 
         debug!("To: ({}, {})", wrapped_x, wrapped_y);
         self.set_coord((wrapped_x, wrapped_y));
+        self.backtrack_infos.push(d);
     }
 
     fn update_eject_coord(&mut self, direction: DirectionEject) {
@@ -282,11 +278,13 @@ impl Bot {
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
-            for (item, count) in inv {
+            for (item, mut count) in inv {
                 while item.as_str() != "food" && count > 0 {
                     let _ = drop_object(&mut client, item.as_str()).await;
+                    count -= 1;
                 }
             }
+            println!("Bot {} done dropping items.", self.info.p_id);
         }
         Ok(ResponseResult::OK)
     }
@@ -301,10 +299,10 @@ impl Bot {
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         info!("Bot [Queen {}]: backtracking...", self.info().p_id);
         let _ = self.turn_around().await;
-        if self.coord().1.is_negative() {
-            self.coord.1 = -self.coord().1;
+        while !self.backtrack_infos.is_empty() {
+            let coords = self.backtrack_infos.pop().unwrap_or((0, 0));
+            let _ = self.move_ai_to_coords(coords).await;
         }
-        let _ = self.move_ai_to_coords(*self.coord()).await;
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
     }

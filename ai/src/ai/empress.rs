@@ -40,7 +40,7 @@ impl Empress {
     async fn spawn_queens(&mut self) -> Result<(), command_handle::CommandError> {
         let mut cli = self.info.client.lock().await;
 
-        for i in 1..5 {
+        for i in 1..=4 {
             println!("Creating Queen #{}", i);
             while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
                 error!("Fork received a KO.");

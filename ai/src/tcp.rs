@@ -216,6 +216,10 @@ impl TcpClient {
             Some(self.messages.remove(0))
         }
     }
+
+    pub fn clear_messages(&mut self) {
+        self.messages.clear()
+    }
 }
 
 pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> {
