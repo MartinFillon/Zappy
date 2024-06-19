@@ -57,12 +57,16 @@ pub struct Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
-        println!("BOT HERE.");
+        println!("[{}] BOT HERE.", info.cli_id);
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Bot [Queen {}] is now being handled...", self.info().p_id);
+        info!(
+            "[{}] Bot [Queen {}] is now being handled...",
+            self.info().cli_id,
+            self.info().p_id
+        );
         let mut idex: usize = 0;
         loop {
             let _ = self.handle_message().await;
@@ -85,16 +89,16 @@ impl AIHandler for Bot {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+        let c_id = info.cli_id + 1;
         let client: Arc<Mutex<TcpClient>> =
-            match handle_tcp(info.address.clone(), info.team.clone()).await {
+            match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
                 Ok(client) => {
-                    info!("New `Bot` client connected successfully.");
+                    info!("[{}] New `Bot` client connected successfully.", info.cli_id);
                     Arc::new(Mutex::new(client))
                 }
                 Err(e) => return Err(Error::new(e.kind(), e)),
             };
 
-        let c_id = info.cli_id;
         let p_id = set_id.unwrap_or(0);
         let team = info.team.clone();
         let address = info.address.clone();
@@ -104,12 +108,12 @@ impl AIHandler for Bot {
                 Ok(ai) => {
                     let mut bot = Bot::init(ai.clone());
                     if let Err(e) = bot.update().await {
-                        println!("Error: {}", e);
+                        println!("{} Error: {}", c_id, e);
                     }
                     Ok(ai)
                 }
                 Err(e) => {
-                    error!("{}", e);
+                    error!("{} {}", c_id, e);
                     Err(e)
                 }
             }
@@ -117,7 +121,7 @@ impl AIHandler for Bot {
 
         tokio::spawn(async move {
             if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
+                error!("[{}] Task failed: {:?}", c_id, e);
             }
         });
 
@@ -311,7 +315,11 @@ impl Bot {
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
-        info!("Bot [Queen {}]: backtracking...", self.info().p_id);
+        info!(
+            "[{}] Bot [Queen {}]: backtracking...",
+            self.info().cli_id,
+            self.info().p_id
+        );
         self.turn_around().await?;
         if self.coord().1.is_negative() {
             self.coord.1 = -self.coord().1;

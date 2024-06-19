@@ -50,7 +50,7 @@ pub struct Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
-        println!("Queen has arrived.");
+        println!("[{}] Queen has arrived.", info.cli_id);
         Self::new(info)
     }
 
@@ -62,7 +62,15 @@ impl AIHandler for Queen {
                 "[{}] Blocking, checking requirements of all queens...",
                 info.cli_id
             );
-            Queen::spawn_queen(info.clone(), info.cli_id, info.slots, &mut client).await?;
+            if info.slots == 0 && info.cli_id < 3 {
+                debug!("[{}] Unused slot checked: {}", info.cli_id, info.slots);
+                debug!(
+                    "[{}] Number of queens created: {}",
+                    info.cli_id,
+                    info.cli_id + 1
+                );
+                Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
+            }
             info!("[{}] Unblocked.", info.cli_id);
         }
 
@@ -94,25 +102,34 @@ impl AIHandler for Queen {
             let _ = self.check_enough_food(5).await;
 
             if self.check_requirement() {
-                println!("Ai Queen #{} is incantating", self.info.p_id);
+                println!(
+                    "[{}] Ai Queen #{} is incantating",
+                    self.info.cli_id, self.info.p_id
+                );
                 if let Err(e) = self.incantate().await {
-                    warn!("Error from incantation: {}", e);
-                    println!("Error with Queen #{} incantating.", self.info.p_id);
+                    warn!("[{}] Error from incantation: {}", self.info.cli_id, e);
+                    println!(
+                        "[{}] Error with Queen #{} incantating.",
+                        self.info.cli_id, self.info.p_id
+                    );
                 }
             }
         }
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
+        let c_id = info.cli_id + 1;
+        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
-                info!("New `Queen` client connected successfully.");
+                info!(
+                    "[{}] New `Queen` client connected successfully.",
+                    info.cli_id
+                );
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),
         };
 
-        let c_id = info.cli_id;
         let p_id = set_id.unwrap_or(0);
         let team = info.team.clone();
         let address = info.address.clone();
@@ -122,12 +139,12 @@ impl AIHandler for Queen {
                 Ok(ai) => {
                     let mut queen = Queen::init(ai.clone());
                     if let Err(e) = queen.update().await {
-                        println!("Error: {}", e);
+                        println!("[{}] Error: {}", c_id, e);
                     }
                     Ok(ai)
                 }
                 Err(e) => {
-                    error!("{}", e);
+                    error!("[{}] {}", c_id, e);
                     Err(e)
                 }
             }
@@ -135,7 +152,7 @@ impl AIHandler for Queen {
 
         tokio::spawn(async move {
             if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
+                error!("[{}] Task failed: {:?}", c_id, e);
             }
         });
 
@@ -195,25 +212,16 @@ impl Queen {
         }
     }
 
-    async fn spawn_queen(
-        info: AI,
-        id: usize,
-        unused_slot: i32,
-        client: &mut TcpClient,
-    ) -> Result<(), CommandError> {
-        if unused_slot == 0 && id < 3 {
-            debug!("[{}] Unused slot checked: {}", id, unused_slot);
-            debug!("[{}] Number of queens created: {}", id, id + 1);
-            commands::fork::fork(client).await?;
-            let info_clone = info.clone();
-            tokio::spawn(async move {
-                if let Err(err) = Self::fork_dupe(info_clone, Some(id + 1)).await {
-                    error!("Queen fork error: {}", err);
-                } else {
-                    println!("Queen with id {} created.", id + 1);
-                }
-            });
-        }
+    async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
+        commands::fork::fork(client).await?;
+        let info_clone = info.clone();
+        tokio::spawn(async move {
+            if let Err(err) = Self::fork_dupe(info_clone.clone(), Some(id + 1)).await {
+                error!("[{}] Queen fork error: {}", info_clone.cli_id, err);
+            } else {
+                println!("[{}] Queen with id {} created.", info_clone.cli_id, id + 1);
+            }
+        });
         Ok(())
     }
 
@@ -277,7 +285,10 @@ impl Queen {
             let mut cli = self.info.client.lock().await;
             commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
                 .await?;
-            println!("Ai Queen #{} launching incantation", self.info.p_id);
+            println!(
+                "[{}] Ai Queen #{} launching incantation",
+                self.info.cli_id, self.info.p_id
+            );
             let incant_res = commands::incantation::incantation(&mut cli).await;
             if let ResponseResult::Incantation(lvl) =
                 Queen::handle_eject(&mut cli, incant_res).await?
@@ -288,7 +299,10 @@ impl Queen {
                     self.info.p_id, level
                 );
             }
-            println!("Ai Queen #{} done incantating.", self.info.p_id);
+            println!(
+                "[{}] Ai Queen #{} done incantating.",
+                self.info.cli_id, self.info.p_id
+            );
         };
         self.info.set_level(level);
         Ok(())
@@ -313,16 +327,16 @@ impl Queen {
         let info = self.info.clone();
         tokio::spawn(async move {
             if let Err(err) = Knight::fork_dupe(info.clone(), Some(info.p_id)).await {
-                error!("{err}");
+                error!("{} {}", info.cli_id, err);
             } else {
-                println!("Knight with id {} created.", info.p_id)
+                println!("{} Knight with id {} created.", info.cli_id, info.p_id)
             }
         });
 
         commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         info!(
-            "I as the queen ({}), bestow my life uppon you",
-            self.info.p_id
+            "[{}] I as the queen ({}), bestow my life uppon you",
+            self.info.cli_id, self.info.p_id
         );
 
         for _ in 0..NB_INIT_BOTS {
@@ -330,15 +344,15 @@ impl Queen {
             let info = self.info.clone();
             tokio::spawn(async move {
                 if let Err(err) = Bot::fork_dupe(info.clone(), Some(info.p_id)).await {
-                    error!("{err}");
+                    error!("[{}] {}", info.cli_id, err);
                 } else {
-                    println!("Bot with id {} created.", info.p_id);
+                    println!("[{}] Bot with id {} created.", info.cli_id, info.p_id);
                 }
             });
             commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str())
                 .await?;
         }
-        info!("Miserable peasants... SERVE ME.\n");
+        info!("[{}] Miserable peasants... SERVE ME.\n", self.info.cli_id);
 
         Ok(())
     }
@@ -428,7 +442,12 @@ impl Queen {
     ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some((dir, msg)) = client.pop_message() {
-            info!("Queen {}: handling message: {}", self.info().cli_id, msg);
+            info!(
+                "[{}] Queen {}: handling message: {}",
+                self.info().cli_id,
+                self.info().p_id,
+                msg
+            );
             let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                 msg.split_at(idex)
             } else {

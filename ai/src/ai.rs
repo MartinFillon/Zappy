@@ -139,8 +139,8 @@ async fn checkout_ai_info(
     parse_response(response, client.clone())
         .await
         .map(|(client_number, x, y)| {
-            info!("x{} unused slot(s)/ egg(s).", client_number);
-            info!("Map size: {}x{}.", x, y);
+            info!("[{}] x{} unused slot(s)/ egg(s).", c_id, client_number);
+            info!("[{}] Map size: {}x{}.", c_id, x, y);
             let ai = AI::new(
                 team,
                 address,
@@ -150,12 +150,12 @@ async fn checkout_ai_info(
                 1,
                 client_number,
             );
-            println!("New! >> {}", ai);
+            println!("[{}] New! >> {}", c_id, ai);
             debug!("[{}] AI is initialized.", ai.cli_id);
             ai
         })
         .map_err(|e: Error| {
-            warn!("Failed to parse response: {}", e);
+            warn!("[{}] Failed to parse response: {}", c_id, e);
             e
         })
 }
@@ -167,20 +167,20 @@ async fn init_ai(
     address: String,
     (c_id, p_id): (usize, usize),
 ) -> io::Result<AI> {
-    info!("Initializing AI #{}...", c_id);
+    info!("[{}] Initializing AI...", c_id);
 
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
     match ai.cli_id {
         0..=3 => {
             let mut queen = queen::Queen::init(ai.clone());
             if let Err(e) = queen.update().await {
-                error!("Error: {}", e);
+                error!("[{}] Error: {}", queen.info().cli_id, e);
             }
         }
         _ => {
             let mut bot = bot::Bot::init(ai.clone());
             if let Err(e) = bot.update().await {
-                error!("Error: {}", e);
+                error!("[{}] Error: {}", bot.info().cli_id, e);
             }
         }
     }
@@ -233,76 +233,6 @@ async fn start_ai(
     }
 }
 
-async fn handle_client(
-    client: Arc<Mutex<TcpClient>>,
-    team: Arc<String>,
-    address: Arc<String>,
-    id: usize,
-    stop_flag: Arc<AtomicBool>,
-) -> io::Result<()> {
-    let result = start_ai(client, team.to_string(), address.to_string(), (id, 0), true).await;
-
-    match result {
-        Ok(_) => {
-            println!("Connection {} handled successfully", id);
-            Ok(())
-        }
-        Err(e) => {
-            println!("Connection {} failed: {}", id, e);
-            stop_flag.store(true, Ordering::SeqCst);
-            Err(e)
-        }
-    }
-}
-
-async fn launch_connections(
-    address: Arc<String>,
-    team: Arc<String>,
-    connection_id: Arc<AtomicUsize>,
-    stop_flag: Arc<AtomicBool>,
-) {
-    loop {
-        if stop_flag.load(Ordering::SeqCst) {
-            println!("Stop flag is set, breaking the loop.");
-            break;
-        }
-
-        match tcp::handle_tcp(address.to_string(), team.to_string()).await {
-            Ok(client) => {
-                let address = Arc::clone(&address);
-                let client = Arc::new(Mutex::new(client));
-                let id = connection_id.fetch_add(1, Ordering::SeqCst);
-                let stop_flag = Arc::clone(&stop_flag);
-                tokio::spawn(handle_client(client, team.clone(), address, id, stop_flag));
-            }
-            Err(e) => {
-                println!("Failed to handle TCP: {}", e);
-                break;
-            }
-        }
-    }
-}
-
-// pub async fn launch(address: String, team: String) -> io::Result<()> {
-//     let team = Arc::new(team);
-//     let address = Arc::new(address);
-//     let connection_id = Arc::new(AtomicUsize::new(0));
-//     let stop_flag = Arc::new(AtomicBool::new(false));
-
-//     let launch_task = tokio::spawn(launch_connections(
-//         Arc::clone(&address),
-//         Arc::clone(&team),
-//         Arc::clone(&connection_id),
-//         Arc::clone(&stop_flag),
-//     ));
-
-//     if let Err(e) = launch_task.await {
-//         println!("Launch task failed: {:?}", e);
-//     }
-
-//     Ok(())
-// }
-
 pub async fn launch(address: String, team: String) -> io::Result<()> {
     let mut handles = vec![];
     let team = Arc::new(team);
@@ -312,12 +242,17 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     loop {
         if stop_flag.load(Ordering::SeqCst) {
-            println!("Stop flag is set, breaking the loop.");
+            println!(
+                "[AT {:?}] Stop flag is set, breaking the loop.",
+                connection_id
+            );
             break;
         }
         let team = Arc::clone(&team);
+        let curr_id: usize = 0;
+        connection_id.store(curr_id, Ordering::SeqCst);
 
-        match tcp::handle_tcp(address.to_string(), team.to_string()).await {
+        match tcp::handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {
                 let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
@@ -336,11 +271,11 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
                     match result {
                         Ok(_) => {
-                            println!("Connection {} handled successfully", id);
+                            println!("[{}] Connection handled successfully", id);
                             Ok(())
                         }
                         Err(e) => {
-                            println!("Connection {} failed: {}", id, e);
+                            println!("[{}] Connection failed: {}", id, e);
                             stop_flag.store(true, Ordering::SeqCst);
                             Err(e)
                         }
@@ -349,7 +284,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 handles.push(handle);
             }
             Err(e) => {
-                println!("Failed to handle TCP: {}", e);
+                println!("[{}] Failed to handle TCP: {}", curr_id, e);
                 break;
             }
         }
@@ -363,9 +298,11 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         ));
     }
 
+    let mut id: usize = 0;
     for handle in handles {
+        id += 1;
         if let Err(e) = handle.await {
-            println!("Task failed: {:?}", e);
+            println!("[{}] Task failed: {:?}", id, e);
         }
     }
 

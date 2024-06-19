@@ -87,7 +87,8 @@ impl AIHandler for Empress {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
+        let c_id = info.cli_id + 1;
+        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
                 debug!("New `Empress` client connected successfully.");
                 Arc::new(Mutex::new(client))
@@ -95,7 +96,6 @@ impl AIHandler for Empress {
             Err(e) => return Err(Error::new(e.kind(), e)),
         };
 
-        let c_id = info.cli_id;
         let p_id = set_id.unwrap_or(0);
         let team = info.team.clone();
         let address = info.address.clone();

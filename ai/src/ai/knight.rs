@@ -37,12 +37,16 @@ pub struct Knight {
 #[async_trait]
 impl AIHandler for Knight {
     fn init(info: AI) -> Self {
-        println!("Knight has been created.");
+        println!("[{}] Knight has been created.", info.cli_id);
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        info!("Knight [Queen {}] is being handled...", self.info().p_id);
+        info!(
+            "[{}] Knight [Queen {}] is being handled...",
+            self.info().cli_id,
+            self.info().p_id
+        );
         while !self.can_start {
             {
                 let mut client = self.info().client().lock().await;
@@ -62,14 +66,23 @@ impl AIHandler for Knight {
                 let mut level = self.info().level;
                 {
                     let mut client = self.info().client().lock().await;
-                    println!("Knight {} incantating...", self.info.p_id);
+                    println!(
+                        "[{}] Knight {} incantating...",
+                        self.info.cli_id, self.info.p_id
+                    );
                     let res = incantation::incantation(&mut client).await;
-                    println!("Knight {} incantation result: {:?}", self.info.p_id, res);
+                    println!(
+                        "[{}] Knight {} incantation result: {:?}",
+                        self.info.cli_id, self.info.p_id, res
+                    );
                     if let Ok(ResponseResult::Incantation(lvl)) =
                         Knight::knight_checkout_response(&mut client, res).await
                     {
                         level = lvl;
-                        println!("Knight {} done. Now level {}", self.info.p_id, level);
+                        println!(
+                            "[{}] Knight {} done. Now level {}",
+                            self.info.cli_id, self.info.p_id, level
+                        );
                     }
                 }
                 self.info.set_level(level);
@@ -103,15 +116,18 @@ impl AIHandler for Knight {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
+        let c_id = info.cli_id + 1;
+        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
-                info!("New `Knight` client connected successfully.");
+                info!(
+                    "[{}] New `Knight` client connected successfully.",
+                    info.cli_id
+                );
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),
         };
 
-        let c_id = info.cli_id;
         let p_id = set_id.unwrap_or(0);
         let team = info.team.clone();
         let address = info.address.clone();
@@ -121,12 +137,12 @@ impl AIHandler for Knight {
                 Ok(ai) => {
                     let mut knight = Knight::init(ai.clone());
                     if let Err(e) = knight.update().await {
-                        println!("Error: {}", e);
+                        println!("[{}] Error: {}", c_id, e);
                     }
                     Ok(ai)
                 }
                 Err(e) => {
-                    error!("{}", e);
+                    error!("[{}] {}", c_id, e);
                     Err(e)
                 }
             }
@@ -134,7 +150,7 @@ impl AIHandler for Knight {
 
         tokio::spawn(async move {
             if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
+                error!("[{}] Task failed: {:?}", c_id, e);
             }
         });
 
@@ -205,7 +221,7 @@ impl Knight {
                 total += 1;
             }
             if command.is_err() {
-                info!("Knight dropped x{} food", total);
+                info!("[{}] Knight dropped x{} food", self.info.cli_id, total);
                 info!("[{}] AI : Knight has killed himself.", id);
                 break;
             }

@@ -36,7 +36,7 @@ impl Fetus {
 #[async_trait]
 impl AIHandler for Fetus {
     fn init(info: AI) -> Self {
-        println!("Fetus spawned.");
+        println!("[{}] Fetus spawned.", info.cli_id);
         Self::new(info)
     }
 
@@ -50,7 +50,7 @@ impl AIHandler for Fetus {
                     total += 1;
                 }
                 Err(CommandError::DeadReceived) | Ok(ResponseResult::KO) => {
-                    info!("Fetus dropped x{} food", total);
+                    info!("[{}] Fetus dropped x{} food", self.info.cli_id, total);
                     println!("[{}] AI : Fetus died.", self.info.cli_id);
                     return Err(CommandError::DeadReceived);
                 }
@@ -62,15 +62,18 @@ impl AIHandler for Fetus {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client = match handle_tcp(info.address.clone(), info.team.clone()).await {
+        let c_id = info.cli_id + 1;
+        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
-                info!("New `Fetus` client connected successfully.");
+                info!(
+                    "[{}] New `Fetus` client connected successfully.",
+                    info.cli_id
+                );
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),
         };
 
-        let c_id = info.cli_id;
         let p_id = set_id.unwrap_or(0);
         let team = info.team.clone();
         let address = info.address.clone();
@@ -80,12 +83,12 @@ impl AIHandler for Fetus {
                 Ok(ai) => {
                     let mut fetus = Fetus::init(ai.clone());
                     if let Err(e) = fetus.update().await {
-                        println!("Error: {}", e);
+                        println!("[{}] Error: {}", c_id, e);
                     }
                     Ok(ai)
                 }
                 Err(e) => {
-                    error!("{}", e);
+                    error!("[{}] {}", c_id, e);
                     Err(e)
                 }
             }
@@ -93,7 +96,7 @@ impl AIHandler for Fetus {
 
         tokio::spawn(async move {
             if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
+                error!("[{}] Task failed: {:?}", c_id, e);
             }
         });
 
