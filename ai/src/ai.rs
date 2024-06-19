@@ -248,18 +248,20 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
             );
             break;
         }
+
         let team = Arc::clone(&team);
-        let curr_id: usize = 0;
-        connection_id.store(curr_id, Ordering::SeqCst);
+        let address = Arc::clone(&address);
+        let connection_id = Arc::clone(&connection_id);
+        let stop_flag = Arc::clone(&stop_flag);
+
+        let curr_id = connection_id.load(Ordering::SeqCst);
+        println!("Attempting connection with ID: {}", curr_id);
 
         match tcp::handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {
-                let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
-                let stop_flag = Arc::clone(&stop_flag);
 
-                error!("{} -- {}", curr_id, id);
                 let handle = task::spawn(async move {
                     let result = start_ai(
                         client.clone(),
@@ -299,15 +301,10 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         ));
     }
 
-    let mut id: usize = 0;
-    for handle in handles {
-        error!("--- ~{}", id);
-
+    for (id, handle) in handles.into_iter().enumerate() {
         if let Err(e) = handle.await {
             println!("[{}] Task failed: {:?}", id, e);
         }
-        error!("--- {}~", id);
-        id += 1;
     }
 
     Ok(())

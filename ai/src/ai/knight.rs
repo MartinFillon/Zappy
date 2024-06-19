@@ -21,7 +21,7 @@ use std::io::{self, Error};
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tokio::{sync::Mutex, task};
+use tokio::sync::Mutex;
 
 use log::{error, info};
 use zappy_macros::Bean;
