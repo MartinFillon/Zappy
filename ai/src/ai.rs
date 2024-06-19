@@ -259,6 +259,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
                 let stop_flag = Arc::clone(&stop_flag);
 
+                error!("{} -- {}", curr_id, id);
                 let handle = task::spawn(async move {
                     let result = start_ai(
                         client.clone(),
@@ -300,10 +301,13 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     let mut id: usize = 0;
     for handle in handles {
-        id += 1;
+        error!("--- ~{}", id);
+
         if let Err(e) = handle.await {
             println!("[{}] Task failed: {:?}", id, e);
         }
+        error!("--- {}~", id);
+        id += 1;
     }
 
     Ok(())

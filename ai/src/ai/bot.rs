@@ -103,29 +103,19 @@ impl AIHandler for Bot {
         let team = info.team.clone();
         let address = info.address.clone();
 
-        let handle = task::spawn(async move {
-            match start_ai(client, team, address, (c_id, p_id), false).await {
-                Ok(ai) => {
-                    let mut bot = Bot::init(ai.clone());
-                    if let Err(e) = bot.update().await {
-                        println!("{} Error: {}", c_id, e);
-                    }
-                    Ok(ai)
+        match start_ai(client, team, address, (c_id, p_id), false).await {
+            Ok(ai) => {
+                let mut bot = Bot::init(ai.clone());
+                if let Err(e) = bot.update().await {
+                    println!("{} Error: {}", c_id, e);
                 }
-                Err(e) => {
-                    error!("{} {}", c_id, e);
-                    Err(e)
-                }
+                Ok(())
             }
-        });
-
-        tokio::spawn(async move {
-            if let Err(e) = handle.await {
-                error!("[{}] Task failed: {:?}", c_id, e);
+            Err(e) => {
+                error!("{} {}", c_id, e);
+                Err(e)
             }
-        });
-
-        Ok(())
+        }
     }
 }
 

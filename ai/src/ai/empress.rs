@@ -100,28 +100,18 @@ impl AIHandler for Empress {
         let team = info.team.clone();
         let address = info.address.clone();
 
-        let handle = task::spawn(async move {
-            match start_ai(client, team, address, (c_id, p_id), false).await {
-                Ok(ai) => {
-                    let mut empress = Empress::init(ai.clone());
-                    if let Err(e) = empress.update().await {
-                        println!("Error: {}", e);
-                    }
-                    Ok(ai)
+        match start_ai(client, team, address, (c_id, p_id), false).await {
+            Ok(ai) => {
+                let mut empress = Empress::init(ai.clone());
+                if let Err(e) = empress.update().await {
+                    println!("Error: {}", e);
                 }
-                Err(e) => {
-                    error!("{}", e);
-                    Err(e)
-                }
+                Ok(())
             }
-        });
-
-        tokio::spawn(async move {
-            if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
+            Err(e) => {
+                error!("{}", e);
+                Err(e)
             }
-        });
-
-        Ok(())
+        }
     }
 }
