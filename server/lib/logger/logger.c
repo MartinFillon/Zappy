@@ -45,17 +45,15 @@ static void print_time(time_t *t, struct logger_s const *logger)
     dprintf(logger->fd, "[%s", buf);
 }
 
-void logs(enum log_level level, char *fmt, ...)
+void valogs(enum log_level level, char *fmt, va_list l)
 {
     struct logger_s const *logger = get_logger();
-    va_list l;
     time_t t;
 
     time(&t);
     if (logger->level == DISABLE)
         return;
     if (logger->level >= level && level >= ERROR_LEVEL && level <= DEBUG) {
-        va_start(l, fmt);
         print_time(&t, logger);
         dprintf(
             logger->fd,
@@ -65,8 +63,16 @@ void logs(enum log_level level, char *fmt, ...)
             logger->tty ? "\033[0m" : ""
         );
         vdprintf(logger->fd, fmt, l);
-        va_end(l);
     }
+}
+
+void logs(enum log_level level, char *fmt, ...)
+{
+    va_list l;
+
+    va_start(l, fmt);
+    valogs(level, fmt, l);
+    va_end(l);
 }
 
 int set_log_level(enum log_level level)
