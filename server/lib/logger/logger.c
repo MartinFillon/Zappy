@@ -9,7 +9,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <strings.h>
+#include <time.h>
 #include <unistd.h>
+#include <bits/types/struct_timeval.h>
 
 #include "internal.h"
 #include "logger.h"
@@ -33,18 +35,31 @@ static struct logger_s const *get_logger(void)
     return get_mut_logger();
 }
 
+// yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+//  ISO8601
+static void print_time(time_t *t, struct logger_s const *logger)
+{
+    char buf[sizeof "2011-10-08T07:07:09Z"];
+
+    strftime(buf, sizeof buf, "%FT%TZ", gmtime(t));
+    dprintf(logger->fd, "[%s", buf);
+}
+
 void logs(enum log_level level, char *fmt, ...)
 {
     struct logger_s const *logger = get_logger();
     va_list l;
+    time_t t;
 
+    time(&t);
     if (logger->level == DISABLE)
         return;
     if (logger->level >= level && level >= ERROR_LEVEL && level <= DEBUG) {
         va_start(l, fmt);
+        print_time(&t, logger);
         dprintf(
             logger->fd,
-            "%s[%s]%s: ",
+            " %s%s%s]: ",
             logger->tty ? logger->colors[level] : "",
             logger->names[level],
             logger->tty ? "\033[0m" : ""

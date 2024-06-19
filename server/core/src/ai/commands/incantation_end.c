@@ -147,9 +147,8 @@ void handle_end_incantation(client_t *cli, command_state_t *s)
         );
         increment_all_levels(s->game, cli->ai->id, s->clients);
         sprintf(msg, "Current level: %ld\n", cli->ai->level);
-    } else {
+    } else
         sprintf(msg, "ko\n");
-    }
     end_ais_elevation(s->clients, cli, msg);
     send_incantation_end(cli, s->clients, 1);
 }
