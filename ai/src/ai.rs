@@ -42,6 +42,7 @@ pub struct AI {
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
+    slots: i32,
 }
 
 #[async_trait]
@@ -73,11 +74,11 @@ impl AI {
     fn new(
         team: String,
         address: String,
-        cli_id: usize,
-        p_id: usize,
+        (cli_id, p_id): (usize, usize),
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
+        slots: i32,
     ) -> Self {
         Self {
             team,
@@ -87,6 +88,7 @@ impl AI {
             client,
             map,
             level,
+            slots,
         }
     }
 }
@@ -95,8 +97,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI #{} = [team: {}, player ID: {}, map: ({}, {}), level: {}]",
-            self.cli_id, self.team, self.p_id, self.map.0, self.map.1, self.level
+            "AI #{} = [team: {}, player ID: {}, map: ({}, {}), level: {}, leftover slots: {}]",
+            self.cli_id, self.team, self.p_id, self.map.0, self.map.1, self.level, self.slots
         )
     }
 }
@@ -105,7 +107,7 @@ async fn parse_response(
     response: &str,
     client: Arc<Mutex<TcpClient>>,
 ) -> Result<(i32, i32, i32), io::Error> {
-    let mut cli = client.lock().await;
+    let mut cli: tokio::sync::MutexGuard<TcpClient> = client.lock().await;
     let client_number = response
         .parse::<i32>()
         .map_err(|_| Error::new(ErrorKind::InvalidData, "Invalid client number."))?;
@@ -137,9 +139,17 @@ async fn checkout_ai_info(
     parse_response(response, client.clone())
         .await
         .map(|(client_number, x, y)| {
-            info!("x[{}] unused slot(s)/ egg(s).", client_number);
+            info!("x{} unused slot(s)/ egg(s).", client_number);
             info!("Map size: {}x{}.", x, y);
-            let ai = AI::new(team, address, c_id, p_id, client.clone(), (x, y), 1);
+            let ai = AI::new(
+                team,
+                address,
+                (c_id, p_id),
+                client.clone(),
+                (x, y),
+                1,
+                client_number,
+            );
             println!("New! >> {}", ai);
             debug!("[{}] AI is initialized.", ai.cli_id);
             ai

@@ -8,7 +8,7 @@
 use super::Listeners;
 use crate::{
     ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
-    commands::{self, turn::DirectionTurn, unused_slots},
+    commands::{self, turn::DirectionTurn},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
@@ -18,12 +18,9 @@ use crate::{
 };
 
 use core::fmt;
+use std::fmt::{Display, Formatter};
 use std::io::{self, Error};
 use std::sync::Arc;
-use std::{
-    fmt::{Display, Formatter},
-    os::unix::process,
-};
 
 use async_trait::async_trait;
 use tokio::{sync::Mutex, task};
@@ -63,10 +60,10 @@ impl AIHandler for Queen {
             let info = self.info().clone();
             info!(
                 "[{}] Blocking, checking requirements of all queens...",
-                info.p_id
+                info.cli_id
             );
-            Queen::spawn_queen(info.clone(), info.p_id, &mut client).await?;
-            info!("[{}] Unblocked.", info.p_id);
+            Queen::spawn_queen(info.clone(), info.cli_id, info.slots, &mut client).await?;
+            info!("[{}] Unblocked.", info.cli_id);
         }
 
         let _ = self.handle_message().await;
@@ -200,32 +197,22 @@ impl Queen {
 
     async fn spawn_queen(
         info: AI,
-        process_id: usize,
+        id: usize,
+        unused_slot: i32,
         client: &mut TcpClient,
     ) -> Result<(), CommandError> {
-        while let Ok(ResponseResult::Value(unused_slot)) =
-            commands::unused_slots::unused_slots(client).await
-        {
-            if unused_slot == 0 && process_id < 3 {
-                debug!("[{}] Unused slot checked: {}", process_id, unused_slot);
-                debug!(
-                    "[{}] Number of queens created: {}",
-                    process_id,
-                    process_id + 1
-                );
-                commands::fork::fork(client).await?;
-                let info_clone = info.clone();
-                tokio::spawn(async move {
-                    if let Err(err) = Self::fork_dupe(info_clone, Some(process_id + 1)).await {
-                        error!("Queen fork error: {}", err);
-                    } else {
-                        println!("Queen with id {} created.", process_id + 1);
-                    }
-                });
-            }
-            if process_id == 3 {
-                break;
-            }
+        if unused_slot == 0 && id < 3 {
+            debug!("[{}] Unused slot checked: {}", id, unused_slot);
+            debug!("[{}] Number of queens created: {}", id, id + 1);
+            commands::fork::fork(client).await?;
+            let info_clone = info.clone();
+            tokio::spawn(async move {
+                if let Err(err) = Self::fork_dupe(info_clone, Some(id + 1)).await {
+                    error!("Queen fork error: {}", err);
+                } else {
+                    println!("Queen with id {} created.", id + 1);
+                }
+            });
         }
         Ok(())
     }
