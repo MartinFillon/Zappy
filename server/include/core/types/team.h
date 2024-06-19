@@ -26,6 +26,6 @@ typedef struct {
 } team_t;
 
 team_t create_team(args_infos_t *args, char *name);
-egg_t *create_egg(int width, int height);
+egg_t *create_egg(int x, int y);
 void destroy_team(team_t *team);
 void destroy_egg(egg_t *egg);

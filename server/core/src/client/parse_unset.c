@@ -86,12 +86,6 @@ void unset_command(client_t *c, command_state_t *s)
         return logs(WARNING, "No teams set\n");
     for (size_t i = 0; i < s->game->teams->size; i++)
         if (!strcmp(s->args->data[0]->data, s->game->teams->data[i].name)) {
-            logs(
-                INFO,
-                "Client %d is an AI of team %s\n",
-                c->fd,
-                s->game->teams->data[i].name
-            );
             return put_in_team(c, s->game, i, s->clients);
         }
     send_invalid_args(c);
