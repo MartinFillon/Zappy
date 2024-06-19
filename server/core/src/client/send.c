@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+
 #include "core/types/client.h"
 #include "logger.h"
 
