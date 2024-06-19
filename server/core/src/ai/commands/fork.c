@@ -34,15 +34,13 @@ static void send_and_log(client_t *cli, egg_t *egg, struct client_list *s)
 
 void handle_fork(client_t *cli, command_state_t *s)
 {
-    egg_t *egg = create_egg(s->game->map->x, s->game->map->y);
+    egg_t *egg = create_egg(cli->ai->pos.x, cli->ai->pos.y);
 
     if (!egg) {
         logs(ERROR_LEVEL, "Allocation error on fork handling");
         return;
     }
     logs(DEBUG, "Client %d AI %d is forking\n", cli->fd, cli->ai->id);
-    egg->pos.x = cli->ai->pos.x;
-    egg->pos.y = cli->ai->pos.y;
     queue_pushback_queue_egg_t(cli->ai->team->eggs, egg);
     return send_and_log(cli, egg, s->clients);
 }
