@@ -18,7 +18,7 @@ use crate::{
     tcp::{
         self,
         command_handle::{CommandError, ResponseResult},
-        TcpClient,
+        handle_tcp, TcpClient,
     },
 };
 
@@ -37,7 +37,7 @@ use knight::Knight;
 use queen::Queen;
 use tokio::{sync::Mutex, task};
 
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -97,8 +97,49 @@ fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, St
     })
 }
 
+pub async fn new_fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+    let client: Arc<Mutex<TcpClient>> =
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Bot` client connected successfully.");
+                Arc::new(Mutex::new(client))
+            }
+            Err(e) => return Err(Error::new(e.kind(), e)),
+        };
+
+    let c_id = info.cli_id;
+    let p_id = set_id.unwrap_or(0);
+    let team = info.team.clone();
+    let address = info.address.clone();
+
+    let handle = task::spawn(async move {
+        match start_ai(client, team, address, (c_id, p_id), false).await {
+            Ok(ai) => {
+                let mut rle = init_from_broadcast(&info, String::from("Bot"))
+                    .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
+                if let Err(e) = rle.update().await {
+                    println!("Error: {}", e);
+                }
+                Ok(ai)
+            }
+            Err(e) => {
+                error!("{}", e);
+                Err(e)
+            }
+        }
+    });
+
+    tokio::spawn(async move {
+        if let Err(e) = handle.await {
+            error!("Task failed: {:?}", e);
+        }
+    });
+
+    Ok(())
+}
+
 #[async_trait]
-pub trait AIHandler {
+pub trait AIHandler: Send {
     fn init(info: AI) -> Self
     where
         Self: Sized;
