@@ -41,11 +41,16 @@ static bool verif_start_specification(ai_t *ai, game_t *game)
     size_t nb_player =
         count_nb_ai_available(game, &game->map->arena[pos->y][pos->x]);
 
-    if (nb_player < incant_req[idx].nb_player)
+    if (nb_player < incant_req[idx].nb_player) {
+        logs(DEBUG, "Not enough player for start_incantation.\n");
         return false;
-    return verif_tile_requirement(
-        game->map->arena[pos->y][pos->x].content, incant_req[idx].ressource
-    );
+    }
+    if (!verif_tile_requirement(game->map->arena[pos->y][pos->x].content,
+        incant_req[idx].ressource)) {
+        logs(DEBUG, "Tiles requirements are not fullfilled in start.\n");
+        return false;
+    }
+    return true;
 }
 
 static void start_ais_elevation(struct client_list *clis, client_t *cli)
