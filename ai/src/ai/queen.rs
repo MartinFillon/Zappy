@@ -8,7 +8,10 @@
 use super::Listeners;
 use crate::{
     ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
-    commands::{self, turn::DirectionTurn},
+    commands::{
+        broadcast, fork, incantation, inventory, look_around, move_up, take_object, turn,
+        turn::DirectionTurn,
+    },
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
@@ -62,14 +65,15 @@ impl AIHandler for Queen {
                 "[{}] Blocking, checking requirements of all queens...",
                 info.cli_id
             );
+            debug!("[{}] Unused slot checked: {}", info.cli_id, info.slots);
+            debug!(
+                "[{}] Number of queens created: {}",
+                info.cli_id,
+                info.cli_id + 1
+            );
             if info.slots == 0 && info.cli_id < 3 {
-                debug!("[{}] Unused slot checked: {}", info.cli_id, info.slots);
-                debug!(
-                    "[{}] Number of queens created: {}",
-                    info.cli_id,
-                    info.cli_id + 1
-                );
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
+                info!("[{}] Spawned queen.", info.cli_id);
             }
             info!("[{}] Unblocked.", info.cli_id);
         }
@@ -83,7 +87,7 @@ impl AIHandler for Queen {
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
-                let res = commands::look_around::look_around(&mut cli).await;
+                let res = look_around::look_around(&mut cli).await;
                 Queen::handle_eject(&mut cli, res).await
             };
             if let Ok(ResponseResult::Tiles(vec)) = look_res {
@@ -92,7 +96,7 @@ impl AIHandler for Queen {
 
             let inventory_res = {
                 let mut cli = self.info.client.lock().await;
-                let res = commands::inventory::inventory(&mut cli).await;
+                let res = inventory::inventory(&mut cli).await;
                 Queen::handle_eject(&mut cli, res).await
             };
             if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
@@ -203,8 +207,10 @@ impl Queen {
     }
 
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
-        commands::fork::fork(client).await?;
         let info_clone = info.clone();
+
+        move_up::move_up(client).await?;
+        fork::fork(client).await?;
         tokio::spawn(async move {
             if let Err(err) = Self::fork_dupe(info_clone.clone(), Some(id + 1)).await {
                 error!("[{}] Queen fork error: {}", info_clone.cli_id, err);
@@ -225,10 +231,9 @@ impl Queen {
             return Ok(());
         }
         let mut cli = self.info.client.lock().await;
-        commands::move_up::move_up(&mut cli).await?;
+        move_up::move_up(&mut cli).await?;
         let broad_res =
-            commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
-                .await?;
+            broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
         Queen::handle_eject(&mut cli, Ok(broad_res)).await?;
         Ok(())
     }
@@ -241,17 +246,15 @@ impl Queen {
         match self.info.p_id {
             1 | 2 => {
                 let mut cli = self.info.client.lock().await;
-                commands::move_up::move_up(&mut cli).await?;
-                commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
-                    .await?;
+                move_up::move_up(&mut cli).await?;
+                broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
             }
             3 | 4 => {
                 let mut cli = self.info.client.lock().await;
-                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
-                commands::turn::turn(&mut cli, DirectionTurn::Left).await?;
-                commands::move_up::move_up(&mut cli).await?;
-                commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
-                    .await?;
+                turn::turn(&mut cli, DirectionTurn::Left).await?;
+                turn::turn(&mut cli, DirectionTurn::Left).await?;
+                move_up::move_up(&mut cli).await?;
+                broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str()).await?;
             }
             _ => (),
         }
@@ -273,13 +276,12 @@ impl Queen {
         let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
-            commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
-                .await?;
+            broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str()).await?;
             println!(
                 "[{}] Ai Queen #{} launching incantation",
                 self.info.cli_id, self.info.p_id
             );
-            let incant_res = commands::incantation::incantation(&mut cli).await;
+            let incant_res = incantation::incantation(&mut cli).await;
             if let ResponseResult::Incantation(lvl) =
                 Queen::handle_eject(&mut cli, incant_res).await?
             {
@@ -303,7 +305,7 @@ impl Queen {
             return Ok(());
         }
         let mut cli = self.info.client.lock().await;
-        if let Ok(ResponseResult::OK) = commands::take_object::take_object(&mut cli, "food").await {
+        if let Ok(ResponseResult::OK) = take_object::take_object(&mut cli, "food").await {
             self.inv.set_food(self.inv.food() + 1);
         }
         Ok(())
@@ -312,7 +314,7 @@ impl Queen {
     async fn fork_servants(&mut self) -> Result<(), CommandError> {
         let mut cli = self.info.client.lock().await;
 
-        commands::fork::fork(&mut cli).await?;
+        fork::fork(&mut cli).await?;
 
         let info = self.info.clone();
         tokio::spawn(async move {
@@ -323,14 +325,14 @@ impl Queen {
             }
         });
 
-        commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
+        broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         info!(
             "[{}] I as the queen ({}), bestow my life uppon you",
             self.info.cli_id, self.info.p_id
         );
 
         for _ in 0..NB_INIT_BOTS {
-            commands::fork::fork(&mut cli).await?;
+            fork::fork(&mut cli).await?;
             let info = self.info.clone();
             tokio::spawn(async move {
                 if let Err(err) = Bot::fork_dupe(info.clone(), Some(info.p_id)).await {
@@ -339,8 +341,7 @@ impl Queen {
                     println!("[{}] Bot with id {} created.", info.cli_id, info.p_id);
                 }
             });
-            commands::broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str())
-                .await?;
+            broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         }
         info!("[{}] Miserable peasants... SERVE ME.\n", self.info.cli_id);
 

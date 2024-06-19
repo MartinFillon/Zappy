@@ -9,7 +9,7 @@
 
 use crate::{
     ai::{queen::Queen, start_ai, AIHandler, AI},
-    commands::{self, unused_slots},
+    commands::{broadcast, fork, move_up, unused_slots},
     tcp::{
         command_handle::{self, CommandError, ResponseResult},
         handle_tcp,
@@ -42,7 +42,7 @@ impl Empress {
 
         for i in 1..=4 {
             println!("Creating Queen #{}", i);
-            while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
+            while let Ok(ResponseResult::KO) = fork::fork(&mut cli).await {
                 error!("Fork received a KO.");
             }
 
@@ -55,10 +55,10 @@ impl Empress {
                     println!("Queen with id {i} created.");
                 }
             });
-            commands::move_up::move_up(&mut cli).await?;
+            move_up::move_up(&mut cli).await?;
         }
         println!("Done creating queens, broadcasting \"Done\".");
-        commands::broadcast::broadcast(&mut cli, "Done").await?;
+        broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())
     }
 }

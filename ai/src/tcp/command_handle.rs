@@ -7,10 +7,15 @@
 
 #![allow(dead_code)]
 
-use crate::commands::incantation::{get_current_level, handle_incantation};
-use crate::commands::inventory::read_inventory_output;
-use crate::commands::look_around::read_look_output;
-use crate::{crypt::Crypt, tcp::TcpClient};
+use crate::{
+    commands::{
+        incantation::{get_current_level, handle_incantation},
+        inventory::read_inventory_output,
+        look_around::read_look_output,
+    },
+    crypt::Crypt,
+    tcp::TcpClient,
+};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};

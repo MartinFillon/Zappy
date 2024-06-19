@@ -255,7 +255,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         let stop_flag = Arc::clone(&stop_flag);
 
         let curr_id = connection_id.load(Ordering::SeqCst);
-        println!("Attempting connection with ID: {}", curr_id);
+        println!("[{}] Attempting connection.", curr_id);
 
         match tcp::handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {

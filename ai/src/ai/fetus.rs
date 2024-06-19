@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{start_ai, AIHandler, AI},
-    commands,
+    commands::drop_object,
     tcp::{
         command_handle::{CommandError, ResponseResult},
         handle_tcp,
@@ -45,7 +45,7 @@ impl AIHandler for Fetus {
         let mut total = 0;
 
         loop {
-            match commands::drop_object::drop_object(&mut client_lock, "food").await {
+            match drop_object::drop_object(&mut client_lock, "food").await {
                 Ok(ResponseResult::OK) => {
                     total += 1;
                 }
