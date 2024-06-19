@@ -55,6 +55,13 @@ static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
     );
 }
 
+static bool no_more_space(client_t *c, team_t *team, ai_t *ai)
+{
+    free(ai);
+    logs(DEBUG, "No more eggs to place %d in team %s\n", c->fd, team->name);
+    return true;
+}
+
 bool init_ai(
     game_t *game,
     client_t *restrict client,
@@ -66,7 +73,7 @@ bool init_ai(
     egg_t *egg = NULL;
 
     if (team->eggs->size == 0)
-        return true;
+        return no_more_space(client, team, new);
     egg = queue_pop_queue_egg_t(team->eggs);
     new->clock = clock_new(game->frequency);
     new->team = team;
