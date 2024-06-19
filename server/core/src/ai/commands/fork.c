@@ -19,6 +19,7 @@ void handle_fork(client_t *cli, command_state_t *s)
         logs(ERROR_LEVEL, "Allocation error on fork handling");
         return;
     }
+    logs(DEBUG, "Client %d AI %d is forking\n", cli->fd, cli->ai->id);
     egg->pos.x = cli->ai->pos.x;
     egg->pos.y = cli->ai->pos.y;
     queue_pushback_queue_egg_t(cli->ai->team->eggs, egg);
@@ -32,5 +33,11 @@ void handle_fork(client_t *cli, command_state_t *s)
         cli->ai->id,
         egg->pos.x,
         egg->pos.y
+    );
+    logs(
+        INFO,
+        "Team %s has a new egg [%d]\n",
+        cli->ai->team->name,
+        cli->ai->team->eggs->size
     );
 }

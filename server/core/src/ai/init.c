@@ -65,8 +65,16 @@ bool init_ai(
     ai_t *new = calloc(1, sizeof(ai_t));
     egg_t *egg = NULL;
 
-    if (team->eggs->size == 0)
+    if (team->eggs->size == 0) {
+        free(new);
+        logs(
+            DEBUG,
+            "No more eggs to place %d in team %s\n",
+            client->fd,
+            team->name
+        );
         return true;
+    }
     egg = queue_pop_queue_egg_t(team->eggs);
     new->clock = clock_new(game->frequency);
     new->team = team;
