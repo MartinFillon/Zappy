@@ -13,7 +13,8 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        take_object::{self, take_object},
+        move_up::{self},
+        take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -206,6 +207,9 @@ async fn seek_best_item_index(
 
 fn done_dropping_items(inv: &[(String, i32)]) -> bool {
     for (item, count) in inv {
+        if item.as_str() == "food" && *count > 10 {
+            return false;
+        }
         if item.as_str() != "food" && *count > 0 {
             return false;
         }
@@ -284,7 +288,9 @@ impl Bot {
                         return Ok(ResponseResult::OK);
                     }
                     for (item, count) in inv {
-                        if item.as_str() != "food" && count > 0 {
+                        if (item.as_str() == "food" && count > 10)
+                            || (item.as_str() != "food" && count > 0)
+                        {
                             match drop_object(&mut client, item.as_str()).await? {
                                 ResponseResult::OK => {}
                                 res => return Ok(res),

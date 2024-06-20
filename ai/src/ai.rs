@@ -13,9 +13,13 @@ pub mod knight;
 pub mod npc;
 pub mod queen;
 
-use crate::tcp::{
-    command_handle::{CommandError, DirectionMessage, ResponseResult},
-    handle_tcp, TcpClient,
+use crate::{
+    commands::broadcast,
+    tcp::{
+        self,
+        command_handle::{CommandError, ResponseResult},
+        handle_tcp, TcpClient,
+    },
 };
 
 use std::fmt::{self, Display, Formatter};
@@ -26,6 +30,10 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
+use empress::Empress;
+use fetus::Fetus;
+use knight::Knight;
+use queen::Queen;
 use tokio::{sync::Mutex, task};
 
 use log::{debug, error, info, warn};
@@ -43,11 +51,102 @@ pub struct AI {
     slots: i32,
 }
 
+#[derive(Debug, Clone)]
+enum Roles {
+    Empress,
+    Fetus,
+    Knight,
+    Queen,
+}
+
+impl TryFrom<String> for Roles {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.as_str() {
+            "Empress" => Ok(Self::Empress),
+            "Fetus" => Ok(Self::Fetus),
+            "Knight" => Ok(Self::Knight),
+            "Queen" => Ok(Self::Queen),
+            _ => Err(format!("Unknown role: {}", value)),
+        }
+    }
+}
+
+impl Display for Roles {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match *self {
+            Self::Empress => write!(f, "Empress"),
+            Self::Fetus => write!(f, "Fetus"),
+            Self::Knight => write!(f, "Knight"),
+            Self::Queen => write!(f, "Queen"),
+        }
+    }
+}
+
+async fn send_role(client: &mut TcpClient, role: Roles) -> Result<ResponseResult, CommandError> {
+    broadcast::broadcast(client, role.to_string().as_str()).await
+}
+
+fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, String> {
+    Ok(match Roles::try_from(role)? {
+        Roles::Empress => Box::new(Empress::init(info.clone())),
+        Roles::Fetus => Box::new(Fetus::init(info.clone())),
+        Roles::Knight => Box::new(Knight::init(info.clone())),
+        Roles::Queen => Box::new(Queen::init(info.clone())),
+    })
+}
+
+pub async fn new_fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
+    let client: Arc<Mutex<TcpClient>> =
+        match handle_tcp(info.address.clone(), info.team.clone()).await {
+            Ok(client) => {
+                debug!("New `Bot` client connected successfully.");
+                Arc::new(Mutex::new(client))
+            }
+            Err(e) => return Err(Error::new(e.kind(), e)),
+        };
+
+    let c_id = info.cli_id;
+    let p_id = set_id.unwrap_or(0);
+    let team = info.team.clone();
+    let address = info.address.clone();
+
+    let handle = task::spawn(async move {
+        match start_ai(client, team, address, (c_id, p_id), false).await {
+            Ok(ai) => {
+                let mut rle = init_from_broadcast(&info, String::from("Bot"))
+                    .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
+                if let Err(e) = rle.update().await {
+                    println!("Error: {}", e);
+                }
+                Ok(ai)
+            }
+            Err(e) => {
+                error!("{}", e);
+                Err(e)
+            }
+        }
+    });
+
+    tokio::spawn(async move {
+        if let Err(e) = handle.await {
+            error!("Task failed: {:?}", e);
+        }
+    });
+
+    Ok(())
+}
+
 #[async_trait]
-pub trait AIHandler {
-    fn init(info: AI) -> Self;
+pub trait AIHandler: Send {
+    fn init(info: AI) -> Self
+    where
+        Self: Sized;
     async fn update(&mut self) -> Result<(), CommandError>;
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>;
+    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>
+    where
+        Self: Sized;
 }
 
 #[async_trait]
