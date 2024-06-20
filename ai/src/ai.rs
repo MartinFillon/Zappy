@@ -107,21 +107,22 @@ impl AI {
                 ("0", msg.trim_end_matches('\n'))
             };
             if let Ok(c_id) = content.0.parse::<usize>() {
-                self.handle_message_content(c_id, content.1).await?;
+                return self.handle_assign_msg(c_id, content.1).await;
             }
         }
         None
     }
 
-    async fn handle_message_content(
+    async fn handle_assign_msg(
         &self,
         c_id: usize,
         msg: &str,
     ) -> Option<(usize, String, usize)> {
         if msg.starts_with("assign ") {
             let mut lines = msg.split_whitespace();
+            lines.next();
 
-            let role = lines.next()?;
+            let role: &str = lines.next()?;
             let p_id = lines.next().and_then(|word| word.parse::<usize>().ok())?;
 
             info!(
