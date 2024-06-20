@@ -23,11 +23,9 @@ static void *load_function(char const *name, void *handle)
     return f;
 }
 
-static lib_t error_case(char const *file)
+static lib_t error_case(void)
 {
-    if (strcmp(file, "server/base.so") == 0)
-        return (lib_t){NULL, NULL, NULL, NULL};
-    return open_dhl("server/base.so");
+    return (lib_t){NULL, NULL, NULL, NULL};
 }
 
 lib_t open_dhl(char const *file)
@@ -37,7 +35,7 @@ lib_t open_dhl(char const *file)
     l.handle = dlopen(file, RTLD_LAZY);
     if (!l.handle) {
         logs(ERROR_LEVEL, "Error loading lib %s: %s\n", file, dlerror());
-        return error_case(file);
+        return error_case();
     }
     dlerror();
     l.loop =
@@ -46,7 +44,7 @@ lib_t open_dhl(char const *file)
     l.destroy = (void (*)(void *))load_function("destroy_renderer", l.handle);
     if (l.loop == NULL || l.init == NULL || l.destroy == NULL) {
         close_dhl(&l);
-        return error_case(file);
+        return error_case();
     }
     return l;
 }
