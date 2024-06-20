@@ -253,7 +253,7 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     float tileSize = 1.0f;
 
     if (Raylib::isKeyPressed('R'))
-        cam.target = (Vector3){0.0f, 0.0f, 0.0f};
+        cam.target = (Vector3){5.0f, 1.0f, 5.0f};
     if (Raylib::isKeyPressed('F'))
         isCameraFree = !isCameraFree;
     if (Raylib::isKeyPressed('C')) {
@@ -265,19 +265,15 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     }
     if (isCameraFree)
         Raylib::updateCamera(cam, CAMERA_FREE);
+    else {
+        Raylib::updateCamera(cam, CAMERA_PERSPECTIVE);
+        cam.target = (Vector3){5.0f, 1.0f, 5.0f};
+    }
 
     Raylib::clearBackground(RAYWHITE);
     Raylib::beginMode3D(cam);
-    Raylib::drawGrid(100, 1.0f);
-
     if (qm.getSize() == 0) {
         qm.init();
-    }
-
-    for (const auto &player : m_players) {
-        float playerX = player->getPos().x() * tileSize + tileSize / 2;
-        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 150});
     }
 
     for (auto tile : m_map) {
@@ -300,7 +296,15 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
             continue;
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 255});
+    }
+
+    for (const auto &player : m_players) {
+         if (!player || !player->isHatched())
+            continue;
+        float playerX = player->getPos().x() * tileSize + tileSize / 2;
+        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
+        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 255});
     }
 
     if (info.isPrint() && info.getItem() != nullptr) {
