@@ -8,7 +8,7 @@
 #![allow(dead_code)]
 
 use crate::{
-    ai::{start_ai, AIHandler, AI},
+    ai::{AIHandler, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
@@ -19,18 +19,15 @@ use crate::{
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
         command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
-        handle_tcp, TcpClient,
+        TcpClient,
     },
 };
 
-use std::io::{self, Error};
 use std::mem::swap;
-use std::sync::Arc;
 
 use async_trait::async_trait;
-use tokio::sync::Mutex;
 
-use log::{debug, error, info};
+use log::{debug, info};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -85,36 +82,6 @@ impl AIHandler for Bot {
                 continue;
             }
             idex += 1;
-        }
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id;
-        let client: Arc<Mutex<TcpClient>> =
-            match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
-                Ok(client) => {
-                    info!("[{}] New `Bot` client connected successfully.", info.cli_id);
-                    Arc::new(Mutex::new(client))
-                }
-                Err(e) => return Err(Error::new(e.kind(), e)),
-            };
-
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut bot = Bot::init(ai.clone());
-                if let Err(e) = bot.update().await {
-                    println!("{} Error: {}", c_id, e);
-                }
-                Ok(())
-            }
-            Err(e) => {
-                error!("{} {}", c_id, e);
-                Err(e)
-            }
         }
     }
 }

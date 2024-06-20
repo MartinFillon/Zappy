@@ -6,22 +6,19 @@
 //
 
 use crate::{
-    ai::{fetus::Fetus, start_ai, AIHandler, Incantationers, AI},
-    commands::{drop_object, fork, incantation, inventory, look_around, take_object},
+    ai::{fork_ai, AIHandler, Incantationers, AI},
+    commands::{broadcast, drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
-        handle_tcp, TcpClient,
+        TcpClient,
     },
 };
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
-use std::io::{self, Error};
-use std::sync::Arc;
 
 use async_trait::async_trait;
-use tokio::sync::Mutex;
 
 use log::{error, info};
 use zappy_macros::Bean;
@@ -96,20 +93,23 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
-                    // fork_ai(string)
-                    /*
-                       connect client (handle_tcp and checkout ai info)
-                       wait for response of broadcast that says .starts_with "assign"
-                       when received, assign by pattern match to the init/ update of whichever role
-                    */
                     if let Ok(ResponseResult::OK) =
                         Knight::knight_checkout_response(&mut client, res).await
                     {
                         let info = self.info.clone();
                         tokio::spawn(async move {
-                            let _ = Fetus::fork_dupe(info, None).await;
+                            if let Err(err) = fork_ai(info.clone()).await {
+                                error!("[{}] AI fork error: {}", info.cli_id, err);
+                            } else {
+                                println!("[{}] AI successfully forked.", info.cli_id);
+                            }
                         });
                     }
+                    broadcast::broadcast(
+                        &mut client,
+                        format!("{} assign Fetus 0", self.info().cli_id).as_str(),
+                    )
+                    .await?;
                 };
                 while self.check_food().await < 10 {
                     let mut client = self.info().client().lock().await;
@@ -119,38 +119,6 @@ impl AIHandler for Knight {
             }
         }
         Err(CommandError::DeadReceived)
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id;
-        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
-            Ok(client) => {
-                info!(
-                    "[{}] New `Knight` client connected successfully.",
-                    info.cli_id
-                );
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut knight = Knight::init(ai.clone());
-                if let Err(e) = knight.update().await {
-                    println!("[{}] Error: {}", c_id, e);
-                }
-                Ok(())
-            }
-            Err(e) => {
-                error!("[{}] {}", c_id, e);
-                Err(e)
-            }
-        }
     }
 }
 

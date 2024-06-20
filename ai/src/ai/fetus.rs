@@ -6,21 +6,14 @@
 //
 
 use crate::{
-    ai::{start_ai, AIHandler, AI},
+    ai::{AIHandler, AI},
     commands::drop_object,
-    tcp::{
-        command_handle::{CommandError, ResponseResult},
-        handle_tcp,
-    },
+    tcp::command_handle::{CommandError, ResponseResult},
 };
 
-use std::io::{self, Error};
-use std::sync::Arc;
-
 use async_trait::async_trait;
-use tokio::sync::Mutex;
 
-use log::{error, info};
+use log::info;
 
 #[derive(Debug, Clone)]
 pub struct Fetus {
@@ -57,38 +50,6 @@ impl AIHandler for Fetus {
                 _ => {
                     continue;
                 }
-            }
-        }
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id;
-        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
-            Ok(client) => {
-                info!(
-                    "[{}] New `Fetus` client connected successfully.",
-                    info.cli_id
-                );
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut fetus = Fetus::init(ai.clone());
-                if let Err(e) = fetus.update().await {
-                    println!("[{}] Error: {}", c_id, e);
-                }
-                Ok(())
-            }
-            Err(e) => {
-                error!("[{}] {}", c_id, e);
-                Err(e)
             }
         }
     }

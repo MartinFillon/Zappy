@@ -7,26 +7,23 @@
 
 use super::Listeners;
 use crate::{
-    ai::{bot::Bot, knight::Knight, start_ai, AIHandler, Incantationers, AI},
+    ai::{fork_ai, AIHandler, Incantationers, AI},
     commands::{
-        broadcast, fork, incantation, inventory, look_around, move_up, take_object, turn,
-        turn::DirectionTurn,
+        broadcast, fork, incantation, inventory, look_around, move_up, take_object,
+        turn::{self, DirectionTurn},
     },
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, turn_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
-        handle_tcp, TcpClient,
+        TcpClient,
     },
 };
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
-use std::io::{self, Error};
-use std::sync::Arc;
 
 use async_trait::async_trait;
-use tokio::sync::Mutex;
 
 use log::{debug, error, info, warn};
 use zappy_macros::Bean;
@@ -120,38 +117,6 @@ impl AIHandler for Queen {
             }
         }
     }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id + 1;
-        let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
-            Ok(client) => {
-                info!(
-                    "[{}] New `Queen` client connected successfully.",
-                    info.cli_id
-                );
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut queen = Queen::init(ai.clone());
-                if let Err(e) = queen.update().await {
-                    println!("[{}] Error: {}", c_id, e);
-                }
-                Ok(())
-            }
-            Err(e) => {
-                error!("[{}] {}", c_id, e);
-                Err(e)
-            }
-        }
-    }
 }
 
 #[async_trait]
@@ -216,12 +181,17 @@ impl Queen {
         move_up::move_up(client).await?;
         fork::fork(client).await?;
         tokio::spawn(async move {
-            if let Err(err) = Self::fork_dupe(info_clone.clone(), Some(id + 1)).await {
-                error!("[{}] Queen fork error: {}", info_clone.cli_id, err);
+            if let Err(err) = fork_ai(info_clone).await {
+                error!("[{}] AI executing task fork error: {}", info.cli_id, err);
             } else {
-                println!("[{}] Queen with id {} created.", info_clone.cli_id, id + 1);
+                println!("[{}] AI successfully forked task.", info.cli_id);
             }
         });
+        broadcast::broadcast(
+            client,
+            format!("{} assign Queen {}", info.cli_id, id + 1).as_str(),
+        )
+        .await?;
         Ok(())
     }
 
@@ -318,16 +288,20 @@ impl Queen {
         let mut cli = self.info.client.lock().await;
 
         fork::fork(&mut cli).await?;
-
         let info = self.info.clone();
         tokio::spawn(async move {
-            if let Err(err) = Knight::fork_dupe(info.clone(), Some(info.p_id)).await {
-                error!("{} {}", info.cli_id, err);
+            if let Err(err) = fork_ai(info.clone()).await {
+                error!("[{}] AI fork error: {}", info.cli_id, err);
             } else {
-                println!("{} Knight with id {} created.", info.cli_id, info.p_id)
+                println!("[{}] AI successfully forked.", info.cli_id);
             }
         });
-
+        broadcast::broadcast(
+            &mut cli,
+            format!("{} assign Knight {}", self.info().cli_id, self.info().p_id).as_str(),
+        )
+        .await?;
+        // to check with this now
         broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         info!(
             "[{}] I as the queen ({}), bestow my life uppon you",
@@ -338,12 +312,18 @@ impl Queen {
             fork::fork(&mut cli).await?;
             let info = self.info.clone();
             tokio::spawn(async move {
-                if let Err(err) = Bot::fork_dupe(info.clone(), Some(info.p_id)).await {
-                    error!("[{}] {}", info.cli_id, err);
+                if let Err(err) = fork_ai(info.clone()).await {
+                    error!("[{}] AI fork error: {}", info.cli_id, err);
                 } else {
-                    println!("[{}] Bot with id {} created.", info.cli_id, info.p_id);
+                    println!("[{}] AI successfully forked.", info.cli_id);
                 }
             });
+            broadcast::broadcast(
+                &mut cli,
+                format!("{} assign Bot {}", self.info().cli_id, self.info().p_id).as_str(),
+            )
+            .await?;
+            // to check with this now
             broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         }
         info!("[{}] Miserable peasants... SERVE ME.\n", self.info.cli_id);

@@ -14,6 +14,7 @@ pub mod npc;
 pub mod queen;
 
 use crate::{
+    ai::npc::NPC,
     commands::broadcast,
     tcp::{
         command_handle::{CommandError, DirectionMessage, ResponseResult},
@@ -121,6 +122,10 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                     "[{}] No role assignment detected, turning to NPC...",
                     info.cli_id
                 );
+                let mut npc = NPC::init(ai.clone());
+                if let Err(e) = npc.update().await {
+                    println!("[{}] Error: {}", npc.info().cli_id, e);
+                }
                 Ok(())
             }
         }
@@ -137,9 +142,6 @@ pub trait AIHandler: Send {
     where
         Self: Sized;
     async fn update(&mut self) -> Result<(), CommandError>;
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>
-    where
-        Self: Sized;
 }
 
 #[async_trait]
