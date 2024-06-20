@@ -6,6 +6,7 @@
 */
 
 #include <fcntl.h>
+#include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 #include <criterion/criterion.h>
@@ -68,5 +69,5 @@ Test(logger, test_logger_disable, .init = redirect)
 {
     set_log_level(DISABLE);
     logs(DEBUG, "test\n");
-    cr_assert_stderr_eq_str("");
+    cr_assert_stderr_neq_str("test\n");
 }

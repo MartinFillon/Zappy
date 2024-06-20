@@ -479,7 +479,7 @@ Test(options, help_no_help)
     vec_pushback_options(opts, opt);
     vec_pushback_options(opts, opt2);
 
-    cr_assert_eq(run_help((char *[]){"./server", "other"}, opts), false);
+    cr_assert_eq(run_help((char *[]){"./server", "other", NULL}, opts), false);
 }
 
 Test(options, get_string)
