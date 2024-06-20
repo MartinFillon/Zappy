@@ -23,6 +23,10 @@ typedef struct zappy_s {
  * @return game_t the initialized game structure
  */
 game_t init_game(args_infos_t *args);
+
+/**
+ * @brief Destroy and free the game structure @param game and all its elements
+*/
 void destroy_game(game_t *game);
 
 /**
@@ -33,6 +37,17 @@ void destroy_game(game_t *game);
  * @return int 0 if success, 84 if error
  */
 int init_program(args_infos_t *args, zappy_t *z);
+
 void handle_server_cmd(char const *cmd, zappy_t *serv);
+
+/**
+ * @brief Destroy and free the whole zappy program:
+ *        * the game
+ *        * the server
+ *        * the clients
+ *
+ * @param z The zappy structure with the whole program info
+*/
 void destroy_program(zappy_t *z);
+
 bool check_end(struct client_list *list);

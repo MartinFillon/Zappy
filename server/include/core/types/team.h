@@ -32,7 +32,7 @@ typedef struct {
  *        for eggs creation.
  * @param name Name of the team to create.
  * @return The team created.
-*/
+ */
 team_t create_team(args_infos_t *args, char *name);
 
 /**
@@ -41,19 +41,19 @@ team_t create_team(args_infos_t *args, char *name);
  * @param x X-axis coordinate.
  * @param y Y-axis coordinate.
  * @return The egg created.
-*/
+ */
 egg_t *create_egg(int x, int y);
 
 /**
  * @brief Destroy a team specified in @param team.
  *
  * @param team The team to destroy.
-*/
+ */
 void destroy_team(team_t *team);
 
 /**
  * @brief Destroy an egg specified in @param egg.
  *
  * @param egg The egg to destroy.
-*/
+ */
 void destroy_egg(egg_t *egg);
