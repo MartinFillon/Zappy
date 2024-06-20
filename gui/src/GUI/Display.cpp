@@ -46,14 +46,17 @@ void Display::handleEvent()
     if (IsWindowResized()) {
         resize();
     }
-    if (IsKeyPressed('P'))
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        m_openWindow = (m_openWindow == MENU)? QUIT : MENU;
+    }
+    if (IsKeyPressed(KEY_P))
         m_is3D = !m_is3D;
     if (m_is3D) {
-        if (Raylib::isKeyPressed('R'))
+        if (Raylib::isKeyPressed(KEY_R))
             m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
-        if (Raylib::isKeyPressed('F'))
+        if (Raylib::isKeyPressed(KEY_F))
             m_isCameraFree = !m_isCameraFree;
-        if (Raylib::isKeyPressed('C')) {
+        if (Raylib::isKeyPressed(KEY_C)) {
             (m_showCursor)? Raylib::disableCursor() : Raylib::enableCursor();
             m_showCursor = !m_showCursor;
         };
@@ -72,6 +75,11 @@ void Display::displayMenu()
 {
     ClearBackground(WHITE);
     m_menu.display();
+}
+
+void Display::displaySettings()
+{
+    ClearBackground(BLUE);
 }
 
 void Display::displayGame()
@@ -95,10 +103,20 @@ void Display::run()
 
         handleEvent();
         BeginDrawing();
-        if (m_openWindow == MENU)
+        switch (m_openWindow)
+        {
+        case MENU:
             displayMenu();
-        else
+            break;
+        case SETTINGS:
+            displaySettings();
+            break;
+        case GAME:
             displayGame();
+            break;
+        default:
+            break;
+        }
         EndDrawing();
     }
 }
@@ -113,8 +131,8 @@ void Display::handleServerMessage()
 
 void Display::resize()
 {
-    int screenWidth = GetScreenWidth();
-    int screenHeight = GetScreenHeight();
+    screenWidth = GetScreenWidth();
+    screenHeight = GetScreenHeight();
 
     newWidth = screenWidth;
     newHeight = screenWidth * 9 / 16;

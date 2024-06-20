@@ -6,6 +6,8 @@
 */
 
 #include "Raylib.hpp"
+#include <iostream>
+
 
 namespace Raylib
 {
@@ -60,6 +62,32 @@ RayCollision getRayCollisionCube(Ray ray, Vector3 pStart, float size)
 Ray GetMouseRay(Camera3D cam)
 {
     return GetMouseRay(GetMousePosition(), cam);
+}
+
+void draw(Rectangle &rec, Color color)
+{
+    DrawRectangle(rec.x, rec.y, rec.width, rec.height, color);
+}
+
+void draw(Circle &cir, Color color)
+{
+    DrawCircle(cir.centerX, cir.centerY, cir.radius, color);
+}
+
+Vector2 getMeasureTextEx(std::string &str, int fontSize)
+{
+    return MeasureTextEx(GetFontDefault(), str.c_str(), fontSize, 1);
+}
+
+void drawTextInForm(std::string &str, Rectangle &rec, int fontSize, Color color) {
+    Vector2 vec = getMeasureTextEx(str, fontSize);
+    std::cout << "Size x: " << vec.x << " or " << MeasureText(str.c_str(), fontSize) << std::endl;
+    std::cout << "Size y: " << vec.y << std::endl;
+    drawText(str,
+        rec.x + (rec.width - vec.x) / 2,
+        rec.y + (rec.height - vec.y) / 2,
+        fontSize,
+        color);
 }
 
 void drawRectangle(float x, float y, float width, float height, Color color)

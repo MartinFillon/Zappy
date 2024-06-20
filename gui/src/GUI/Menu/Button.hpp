@@ -8,35 +8,51 @@
 #pragma once
 
 #include "../Raylib.hpp"
-#include "../Data/Pos.hpp"
+#include "AButton.hpp"
 #include <functional>
 
 namespace GUI {
 
-enum OpenWindow {
-  MENU,
-  SETTINGS,
-  GAME,
-  QUIT
-};
-
-class Button {
+template <typename F, typename T>
+class Button : public AButton<F, T>
+{
   public:
-    Button(const std::string &name, std::function<void(OpenWindow&)> funct);
+    Button(const std::string &name, std::function<void(T&)> funct):
+      AButton<F, T>(name, funct) {}
 
-    void checkButtonAction(Rectangle &rec, OpenWindow &openWindow);
-    void draw(Rectangle &rec, int fontSize);
+    void checkButtonAction(F &rec, T &openWindow) override {
+        if (Raylib::checkCollisionMouseRec(rec)) {
+            if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT))
+                this->m_state = PRESSED;
+            else
+                this->m_state = HOVER;
+            if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT))
+                this->m_funct(openWindow);
+        } else {
+            this->m_state = DEFAULT;
+        }
+    }
 
-  private:
-    enum ButtonState {
-      DEFAULT,
-      HOVER,
-      PRESSED
-    };
+    void draw(F &forme, int fontSize) override {
+        Color colorRec = WHITE;
+        Color colorText = BLACK;
 
-    std::string m_name;
-    std::function<void(OpenWindow&)> m_funct;
-    ButtonState m_state;
+        switch (this->m_state)
+        {
+        case HOVER:
+            colorRec = GRAY;
+            colorText = WHITE;
+            break;
+        case PRESSED:
+            colorRec = GREEN;
+            colorText = WHITE;
+            break;
+        default:
+            break;
+        }
+        Raylib::draw(forme, colorRec);
+        Raylib::drawTextInForm(this->m_name, forme, fontSize, colorText);
+    }
 };
 
 } // namespace GUI

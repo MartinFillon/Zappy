@@ -28,7 +28,6 @@ SRC = $(BASE_SRC) 							\
 					Player					\
 				)							\
 				$(addprefix Menu/,			\
-					Button					\
 					Menu					\
 				)							\
 				$(addprefix ModelManager/,	\

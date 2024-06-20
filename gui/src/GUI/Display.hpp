@@ -58,6 +58,7 @@ class Display {
 
   private:
     void displayMenu();
+    void displaySettings();
     void displayGame();
     void handleEvent();
     void handleServerMessage();

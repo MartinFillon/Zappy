@@ -11,6 +11,11 @@
 #include <string>
 
 namespace Raylib {
+    struct Circle {
+        int centerX;
+        int centerY;
+        float radius;
+    };
 
 // Check Collision
     bool checkCollisionMouseCircle(float x, float y, float radius);
@@ -26,7 +31,13 @@ namespace Raylib {
     RayCollision getRayCollisionCube(Ray ray, Vector3 pStart, float size);
     Ray GetMouseRay(Camera3D cam);
 
+// Get
+    Vector2 getMeasureTextEx(std::string &str, int fontSize);
+
 // Draw
+    void draw(Rectangle &rec, Color color);
+    void draw(Circle &circle, Color color);
+    void drawTextInForm(std::string &str, Rectangle &rec, int fontSize, Color color);
     void drawRectangle(float x, float y, float width, float height, Color color);
     void drawSquare(float x, float y, float size, Color color);
     void drawRectangleLines(float x, float y, float width, float height, Color color);

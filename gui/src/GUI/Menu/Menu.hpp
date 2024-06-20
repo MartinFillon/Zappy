@@ -17,7 +17,7 @@ class Menu {
     void display();
 
   private:
-    std::vector<Button> m_button;
+    std::vector<Button<Rectangle, OpenWindow>> m_button;
     int &m_width;
     int &m_height;
     bool m_inPauseMenu;
