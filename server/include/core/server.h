@@ -22,7 +22,9 @@ typedef struct server_s {
     int fd;
     fd_set read_fds;
     fd_set write_fds;
+    fd_set except_fds;
     router_t *router;
+    sigset_t sig;
 } server_t;
 
 /**

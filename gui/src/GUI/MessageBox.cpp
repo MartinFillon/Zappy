@@ -24,7 +24,11 @@ void MessageBox::addMessage(const std::string &message, int user)
     if (user == SERVER) {
         userStr = "Server";
     } else {
-        userStr = m_team[user];
+        if (user > static_cast<int>(m_team.size())) {
+            userStr = "User #" + std::to_string(user);
+        } else {
+            userStr = "Unknown";
+        }
     }
 
     std::string timeStr = formatTime(now);
@@ -36,6 +40,10 @@ void MessageBox::addMessage(const std::string &message, int user)
     m_totalLines = 0;
     for (const auto &msg : m_formattedMessages) {
         m_totalLines += wrapText(msg.lines[0], m_lineHeight).size();
+    }
+
+    if (m_formattedMessages.size() > 100) {
+        m_formattedMessages.erase(m_formattedMessages.begin());
     }
 }
 
@@ -71,8 +79,13 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
         }
     }
 
-    if (!currentLine.empty()) {
-        lines.push_back(currentLine);
+    while (!currentLine.empty()) {
+        std::string splitLine = currentLine.substr(0, width);
+        if (splitLine.size() > static_cast<size_t>(width)) {
+            splitLine = splitLine.substr(0, width);
+        }
+        lines.push_back(splitLine);
+        currentLine = currentLine.substr(splitLine.size());
     }
 
     return lines;
@@ -80,12 +93,16 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
 
 bool MessageBox::isMouseOver() const
 {
-    return Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height));
+    return Raylib::checkCollisionMouseRec(
+        static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)
+    );
 }
 
 bool MessageBox::isMouseOver(int x, int y, int width, int height) const
 {
-    return Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height));
+    return Raylib::checkCollisionMouseRec(
+        static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)
+    );
 }
 
 void MessageBox::scroll(int amount)
@@ -106,9 +123,11 @@ void MessageBox::handleInput()
     if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) && isMouseOver(x + width - 20, y, 20, height)) {
         int maxOffset = std::max(0, m_totalLines - m_maxLines);
         float clickPosition = Raylib::getMousePosition().y - y;
-        float scrollbarHeight = static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
+        float scrollbarHeight =
+            static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
         float scrollbarCenter = scrollbarHeight / 2.0f;
-        m_scrollOffset = std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
+        m_scrollOffset =
+            std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
     }
 }
 
@@ -125,7 +144,7 @@ void MessageBox::display(int x, int y, int width, int height)
 
     std::vector<std::vector<std::string>> wrappedMessages;
     for (const FormattedMessage &msg : m_formattedMessages) {
-        wrappedMessages.push_back(wrapText(msg.lines[0], width - 20, m_lineHeight));
+        wrappedMessages.push_back(wrapText(msg.lines[0], width - 40, m_lineHeight));
         m_totalLines += wrappedMessages.back().size();
     }
 

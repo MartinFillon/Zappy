@@ -20,11 +20,6 @@
 #include "args_info.h"
 #include "options_def.h"
 
-static void sig(int signum)
-{
-    (void)signum;
-}
-
 static void fill_infos(args_infos_t *infos, struct args *const ag)
 {
     str_t *log_level = get_arg(ag, "-l").string;
@@ -56,9 +51,16 @@ static void destroy_args(struct args *ag, struct options *opts)
     vec_destroy_options(opts);
 }
 
+static void sigint(int sig)
+{
+    (void)sig;
+    logs(DEBUG, "SIGINT received\n");
+}
+
 static int run_program(args_infos_t *args)
 {
-    signal(SIGINT, &sig);
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGINT, &sigint);
     if (loop_server(args) == ERROR)
         return EPI_ERROR;
     return SUCCESS;

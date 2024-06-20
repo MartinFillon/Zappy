@@ -68,18 +68,18 @@ impl TryFrom<String> for Roles {
             "Fetus" => Ok(Self::Fetus),
             "Knight" => Ok(Self::Knight),
             "Queen" => Ok(Self::Queen),
-            _ => Err(String::from(format!("Unknown role: {}", value))),
+            _ => Err(format!("Unknown role: {}", value)),
         }
     }
 }
 
-impl ToString for Roles {
-    fn to_string(&self) -> String {
+impl Display for Roles {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Empress => String::from("Empress"),
-            Self::Fetus => String::from("Fetus"),
-            Self::Knight => String::from("Knight"),
-            Self::Queen => String::from("Queen"),
+            Self::Empress => write!(f, "Empress"),
+            Self::Fetus => write!(f, "Fetus"),
+            Self::Knight => write!(f, "Knight"),
+            Self::Queen => write!(f, "Queen"),
         }
     }
 }

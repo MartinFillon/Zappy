@@ -9,7 +9,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-syn = {}
-quote = {}
-proc-macro2 = {}
+syn = { version = "*" }
+quote = { version = "*" }
+proc-macro2 = { version = "*" }
 zappy-json = { path = "../json" }

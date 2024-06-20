@@ -5,7 +5,6 @@
 ** read_client
 */
 
-#include <string.h>
 #include <unistd.h>
 
 #include "core/types/client.h"
