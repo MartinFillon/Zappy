@@ -45,7 +45,6 @@ impl Empress {
             while let Ok(ResponseResult::KO) = commands::fork::fork(&mut cli).await {
                 error!("Fork received a KO.");
             }
-            commands::move_up::move_up(&mut cli).await?;
 
             debug!("Task for new queen will start...");
             let info = self.info.clone();
@@ -56,6 +55,7 @@ impl Empress {
                     println!("Queen with id {i} created.");
                 }
             });
+            commands::move_up::move_up(&mut cli).await?;
         }
         commands::broadcast::broadcast(&mut cli, "Done").await?;
         Ok(())

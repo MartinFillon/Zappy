@@ -330,7 +330,7 @@ impl Bot {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<usize>() {
                             if id == *self.info().p_id() {
-                                handle_queen_message(&mut client, (dir, content.1)).await?;
+                                handle_queen_message(&mut client, (dir, content.1.trim_start())).await?;
                             }
                         }
                     }

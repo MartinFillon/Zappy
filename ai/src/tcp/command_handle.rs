@@ -119,6 +119,7 @@ impl CommandHandler for TcpClient {
     }
 
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError> {
+        println!("Response for p_id {} => {response}", self.p_id);
         if response.starts_with("message ") {
             if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
@@ -136,8 +137,12 @@ impl CommandHandler for TcpClient {
             "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
-            "Elevation underway" => handle_incantation(self).await,
-            x if x.starts_with("Current level: ") => {
+            "Elevation underway" => {
+                println!("ELEVATING...");
+                Ok(ResponseResult::Elevating)
+            }
+            x if x.starts_with("Current level:") => {
+                println!("LEVEL = {x}");
                 Ok(ResponseResult::Incantation(get_current_level(x)?))
             }
             x if x.starts_with("[food ") => {
@@ -178,7 +183,7 @@ fn handle_message_response(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
-                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                    return Ok(ResponseResult::Message((dir_enum, decrypted_message)));
                 }
                 warn!("Failed to parse direction {}.", direction);
             }

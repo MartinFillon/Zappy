@@ -86,6 +86,17 @@ impl Listeners for Queen {
 }
 
 impl Queen {
+    async fn queen_checkout_response(
+        client: &mut TcpClient,
+        res: Result<ResponseResult, CommandError>,
+    ) -> Result<ResponseResult, CommandError> {
+        match res {
+            Ok(ResponseResult::Eject(_)) => Queen::handle_eject(client, res).await,
+            Ok(ResponseResult::Elevating) => Queen::handle_elevating(client, res).await,
+            _ => res,
+        }
+    }
+
     /// Creates a new [`Queen`].
     fn new(info: AI) -> Self {
         Self {
@@ -106,13 +117,13 @@ impl Queen {
         if self.info.p_id == 2 | 4 {
             return Ok(());
         }
-        // Check au niveau de broadcast correctement, check que la queen en face peut.
+        println!("Queen {} moved!", self.info.p_id);
         let mut cli = self.info.client.lock().await;
         commands::move_up::move_up(&mut cli).await?;
         let broad_res =
             commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
                 .await?;
-        Queen::handle_eject(&mut cli, Ok(broad_res)).await?;
+        Queen::queen_checkout_response(&mut cli, Ok(broad_res)).await?;
         Ok(())
     }
 
@@ -157,25 +168,27 @@ impl Queen {
         let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
-            let _ = commands::broadcast::broadcast(
+            println!("Queen {} calling Broadcast...", self.info.p_id);
+            let res = commands::broadcast::broadcast(
                 &mut cli,
                 format!("{} inc", self.info().p_id).as_str(),
             )
             .await;
+            println!("Queen {} Broadcast returned: {:?}", self.info.p_id, res);
+            println!("Queen {} calling Incantation...", self.info.p_id);
             let incant_res = commands::incantation::incantation(&mut cli).await;
-            info!(
-                "Queen #{} incantation result: {:?}",
+            println!(
+                "Queen {} Incantation result: {:?}",
                 self.info.p_id, incant_res
             );
-            match Queen::handle_eject(&mut cli, incant_res).await {
-                Ok(ResponseResult::Incantation(lvl)) => {
-                    level = lvl;
-                    println!("Queen {} done. Now level {}", self.info.p_id, level);
-                }
-                Ok(ResponseResult::Elevating) => {
-                    let _ = Queen::handle_elevating(&mut cli, Ok(ResponseResult::Elevating)).await;
-                }
-                _ => (),
+            if let Ok(ResponseResult::Incantation(lvl)) =
+                Queen::queen_checkout_response(&mut cli, incant_res).await
+            {
+                level = lvl;
+                println!("Queen {} done. Now level {}", self.info.p_id, level);
+            }
+            if level == 4 || level == 6 {
+                let _ = commands::broadcast::broadcast(&mut cli, format!("{} lvl {}", self.info().p_id, level).as_str()).await;
             }
         }
         self.info.set_level(level);
@@ -185,6 +198,7 @@ impl Queen {
     async fn check_enough_food(&mut self, min: usize) -> Result<(), CommandError> {
         while *self.inv.food() < min {
             let mut cli = self.info.client.lock().await;
+            println!("Queen {} called Take.", self.info.p_id);
             if let Ok(ResponseResult::OK) =
                 commands::take_object::take_object(&mut cli, "food").await
             {
@@ -294,13 +308,14 @@ impl Queen {
         can_move: &mut bool,
     ) -> Result<ResponseResult, CommandError> {
         if msg.starts_with("lvl ") {
-            if let Ok(lvl) = msg.split_at(3).1.parse::<i32>() {
+            if let Ok(lvl) = msg.split_at(3).1.trim_start().parse::<i32>() {
                 if (lvl == 4 && id == QUEENS_IDS[self.info().p_id - 1])
                     || (lvl == 6
                         && ((id == 1 | 2 && self.info().cli_id == 3 | 4)
                             || (id == 3 | 4 && self.info().cli_id == 1 | 2)))
                 {
-                    *can_move = true;
+                    *can_move = false;
+                    //println!("Queen {} can now move towards Queen {}!", self.info.p_id, id);
                 }
             }
         } else if msg == "Done" {
@@ -315,14 +330,14 @@ impl Queen {
     ) -> Result<ResponseResult, CommandError> {
         let mut client = self.info.client.lock().await;
         while let Some((dir, msg)) = client.pop_message() {
-            info!("Queen {}: handling message: {}", self.info().cli_id, msg);
+            info!("Queen {}: handling message: {}", self.info().p_id, msg);
             let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                 msg.split_at(idex)
             } else {
                 ("0", msg.trim_end_matches('\n'))
             };
             if let Ok(id) = content.0.parse::<usize>() {
-                self.handle_message_content(&mut client, id, dir, content.1, can_move)
+                self.handle_message_content(&mut client, id, dir, content.1.trim_start(), can_move)
                     .await?;
             }
         }
@@ -332,7 +347,7 @@ impl Queen {
     async fn create_bot(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = fork(&mut client).await;
-        if let Ok(ResponseResult::OK) = Queen::handle_eject(&mut client, res).await {
+        if let Ok(ResponseResult::OK) = Queen::queen_checkout_response(&mut client, res).await {
             let info = self.info.clone();
             let _ = tokio::spawn(async move {
                 let _ = Bot::fork_dupe(info, None).await;
@@ -365,6 +380,10 @@ impl AIHandler for Queen {
         if let Err(CommandError::DeadReceived) = self.fork_servants().await {
             return Err(CommandError::DeadReceived);
         }
+        {
+            let mut client = self.info.client.lock().await;
+            client.p_id = self.info.p_id + 100;
+        }
         loop {
             if let Err(CommandError::DeadReceived) = self.handle_message().await {
                 break;
@@ -375,8 +394,10 @@ impl AIHandler for Queen {
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
+                println!("Queen {} calling Look...", self.info.p_id);
                 let res = commands::look_around::look_around(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
+                println!("Queen {} Look returned: {:?}", self.info.p_id, res);
+                Queen::queen_checkout_response(&mut cli, res).await
             };
             if let Ok(ResponseResult::Tiles(vec)) = look_res {
                 self.convert_to_look_info(vec[0].clone());
@@ -384,8 +405,10 @@ impl AIHandler for Queen {
 
             let inventory_res = {
                 let mut cli = self.info.client.lock().await;
+                println!("Queen {} calling Inventory...", self.info.p_id);
                 let res = commands::inventory::inventory(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
+                println!("Queen {} Inventory returned: {:?}", self.info.p_id, res);
+                Queen::queen_checkout_response(&mut cli, res).await
             };
             if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
                 self.convert_to_inv(vec);
@@ -404,7 +427,7 @@ impl AIHandler for Queen {
                 if let Err(e) = self.incantate().await {
                     warn!("Error from incantation: {}", e);
                     println!("Error with Queen #{} incantating.", self.info.p_id);
-                    if e == CommandError::DeadReceived {
+                    if e == CommandError::DeadReceived || e == CommandError::RequestError {
                         break;
                     }
                 }

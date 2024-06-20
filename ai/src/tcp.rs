@@ -33,6 +33,7 @@ pub struct TcpClient {
     connection_handle: Option<JoinHandle<()>>,
     messages: Vec<(DirectionMessage, String)>,
     crypt: Crypt,
+    pub p_id: usize,
 }
 
 impl TcpClient {
@@ -44,6 +45,7 @@ impl TcpClient {
             connection_handle: None,
             messages: Vec::new(),
             crypt: Crypt::new(team),
+            p_id: 0,
         }
     }
 
