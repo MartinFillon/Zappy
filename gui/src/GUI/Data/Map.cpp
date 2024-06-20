@@ -276,10 +276,12 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         qm.init();
     }
 
-    for (auto tile : m_map) {
+    for (auto tile : m_map)
+    {
         float tileX = tile->getPos().x() * tileSize + tileSize / 2;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
-        Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
+        qm.DrawGrass({tileX, 0.5, tileZ});
+        //Raylib::drawCube({tileX, 0, tileZ}, tileSize, {143, 169, 80, 255});
         Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
         Inventory inv = tile->getInventory();
         for (size_t i = 0; i < inv.inv.size(); i++) {
