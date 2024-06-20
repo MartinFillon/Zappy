@@ -16,8 +16,7 @@ pub mod queen;
 use crate::{
     commands::broadcast,
     tcp::{
-        self,
-        command_handle::{CommandError, ResponseResult},
+        command_handle::{CommandError, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
@@ -30,7 +29,6 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
-use empress::Empress;
 use fetus::Fetus;
 use knight::Knight;
 use queen::Queen;
@@ -53,7 +51,6 @@ pub struct AI {
 
 #[derive(Debug, Clone)]
 enum Roles {
-    Empress,
     Fetus,
     Knight,
     Queen,
@@ -64,7 +61,6 @@ impl TryFrom<String> for Roles {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
-            "Empress" => Ok(Self::Empress),
             "Fetus" => Ok(Self::Fetus),
             "Knight" => Ok(Self::Knight),
             "Queen" => Ok(Self::Queen),
@@ -76,7 +72,6 @@ impl TryFrom<String> for Roles {
 impl Display for Roles {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Empress => write!(f, "Empress"),
             Self::Fetus => write!(f, "Fetus"),
             Self::Knight => write!(f, "Knight"),
             Self::Queen => write!(f, "Queen"),
@@ -90,52 +85,50 @@ async fn send_role(client: &mut TcpClient, role: Roles) -> Result<ResponseResult
 
 fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, String> {
     Ok(match Roles::try_from(role)? {
-        Roles::Empress => Box::new(Empress::init(info.clone())),
         Roles::Fetus => Box::new(Fetus::init(info.clone())),
         Roles::Knight => Box::new(Knight::init(info.clone())),
         Roles::Queen => Box::new(Queen::init(info.clone())),
     })
 }
 
-pub async fn new_fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-    let client: Arc<Mutex<TcpClient>> =
-        match handle_tcp(info.address.clone(), info.team.clone()).await {
-            Ok(client) => {
-                debug!("New `Bot` client connected successfully.");
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-    let c_id = info.cli_id;
-    let p_id = set_id.unwrap_or(0);
+pub async fn fork_ai(info: AI) -> io::Result<()> {
+    let client = match handle_tcp(info.address.clone(), info.team.clone(), info.cli_id).await {
+        Ok(client) => {
+            info!(
+                "[{}] New client connected successfully for FORK.",
+                info.cli_id
+            );
+            Arc::new(Mutex::new(client))
+        }
+        Err(e) => return Err(Error::new(e.kind(), e)),
+    };
     let team = info.team.clone();
     let address = info.address.clone();
 
-    let handle = task::spawn(async move {
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut rle = init_from_broadcast(&info, String::from("Bot"))
+    match start_ai(client, team, address, (info.cli_id, 0), false).await {
+        Ok(mut ai) => {
+            if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
+                ai.set_p_id(p_id);
+                ai.set_cli_id(c_id);
+                let mut rle = init_from_broadcast(&ai, role)
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
                 if let Err(e) = rle.update().await {
                     println!("Error: {}", e);
                 }
-                Ok(ai)
-            }
-            Err(e) => {
-                error!("{}", e);
-                Err(e)
+                Ok(())
+            } else {
+                warn!(
+                    "[{}] No role assignment detected, turning to NPC...",
+                    info.cli_id
+                );
+                Ok(())
             }
         }
-    });
-
-    tokio::spawn(async move {
-        if let Err(e) = handle.await {
-            error!("Task failed: {:?}", e);
+        Err(e) => {
+            error!("[{}] {}", info.cli_id, e);
+            Err(e)
         }
-    });
-
-    Ok(())
+    }
 }
 
 #[async_trait]
@@ -446,43 +439,3 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     Ok(())
 }
-
-// pub async fn fork_ai(info: AI) -> io::Result<()> {
-//     let c_id = info.cli_id;
-//     let client = match tcp::handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
-//         Ok(client) => {
-//             info!(
-//                 "[{}] New client connected successfully for FORK.",
-//                 info.cli_id
-//             );
-//             Arc::new(Mutex::new(client))
-//         }
-//         Err(e) => return Err(Error::new(e.kind(), e)),
-//     };
-
-//     let team = info.team.clone();
-//     let address = info.address.clone();
-
-//     match start_ai(client, team, address, (c_id, 0), false).await {
-//         Ok(ai) => {
-//             if let Some((c_id, role, p_id)) = ai.wait_assignment().await {
-//                 if role == "Bot" {
-//                     let mut bot = Bot::init(ai.clone());
-//                     if let Err(e) = bot.update().await {
-//                         println!("[{}] Error: {}", c_id, e);
-//                     }
-//                     Ok(()) just try and incorporate match from any str to its role type
-//                 } else {
-//                     Err(Error::new(ErrorKind::NotFound, "Unknown role broadcasted."))
-//                 }
-//             } else {
-//                 warn!("[{}] No role assignment detected, turning to NPC...", c_id); // might just leave like this and no need to assign NPC role
-//                 Ok(())
-//             }
-//         }
-//         Err(e) => {
-//             error!("[{}] {}", c_id, e);
-//             Err(e)
-//         }
-//     }
-// }

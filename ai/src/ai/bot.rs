@@ -13,8 +13,7 @@ use crate::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        move_up::{self},
-        take_object::take_object,
+        take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -272,7 +271,7 @@ impl Bot {
                 } else {
                     self.move_to_tile(tile).await?;
                     let mut client = self.info().client().lock().await;
-                    take_object(&mut client, &best_item).await
+                    take_object::take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),
