@@ -18,6 +18,7 @@ $(NAME):
 
 clean:
 	cargo clean
+	rm -rf cargo-test* json/cargo-test* macros/cargo-test* ../server/tests/server-tester/cargo-test*
 
 fclean: clean
 	rm -f $(NAME)

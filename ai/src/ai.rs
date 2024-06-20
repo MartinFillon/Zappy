@@ -12,6 +12,7 @@ pub mod empress;
 pub mod fetus;
 pub mod knight;
 pub mod queen;
+pub mod npc;
 
 use crate::tcp::{
     self,
