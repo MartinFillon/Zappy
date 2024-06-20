@@ -53,10 +53,10 @@ pub async fn turn_towards_broadcast(
         turn::turn(client, DirectionTurn::Right).await?;
     }
     if x < 0 {
-        move_left(client).await?;
+        turn::turn(client, DirectionTurn::Left).await?;
     }
     if x > 0 {
-        move_right(client).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
     }
     Ok(ResponseResult::OK)
 }
@@ -69,7 +69,18 @@ pub async fn move_towards_broadcast(
     if dir == DirectionMessage::Center {
         return Ok(ResponseResult::OK);
     }
-    turn_towards_broadcast(client, dir).await?;
+    let (mut x, y) = get_msg_coordinates(&dir);
+    if y < 0 {
+        x = -x;
+        turn::turn(client, DirectionTurn::Right).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
+    }
+    if x < 0 {
+        move_left(client).await?;
+    }
+    if x > 0 {
+        move_right(client).await?;
+    }
     move_up::move_up(client).await
 }
 
