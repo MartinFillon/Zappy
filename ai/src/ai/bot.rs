@@ -89,7 +89,7 @@ impl AIHandler for Bot {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id + 1;
+        let c_id = info.cli_id;
         let client: Arc<Mutex<TcpClient>> =
             match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
                 Ok(client) => {

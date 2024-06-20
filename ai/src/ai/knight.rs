@@ -96,6 +96,12 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     let res = fork::fork(&mut client).await;
+                    // fork_ai(string)
+                    /*
+                       connect client (handle_tcp and checkout ai info)
+                       wait for response of broadcast that says .starts_with "assign"
+                       when received, assign by pattern match to the init/ update of whichever role
+                    */
                     if let Ok(ResponseResult::OK) =
                         Knight::knight_checkout_response(&mut client, res).await
                     {
@@ -116,7 +122,7 @@ impl AIHandler for Knight {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id + 1;
+        let c_id = info.cli_id;
         let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
                 info!(

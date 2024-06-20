@@ -206,6 +206,7 @@ impl Queen {
         }
     }
 
+    ///
     /// Spawns a new [`Queen`] from `id` to `id + 1`.
     ///
     /// * `id` - the id that is spawning the `Queen`, furthermore, this will give the new queen the `cli_id` and `p_id` of `id + 1`

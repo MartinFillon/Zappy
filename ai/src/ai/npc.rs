@@ -39,8 +39,9 @@ impl AIHandler for NPC {
 
     async fn update(&mut self) -> Result<(), CommandError> {
         let mut client = self.info.client().lock().await;
-        while let Some(response) = client.get_response().await{
+        while let Some(response) = client.get_response().await {
             if response.trim_end() == "dead" {
+                println!("[{}] AI : NPC died.", self.info.cli_id);
                 break;
             }
         }
@@ -48,7 +49,7 @@ impl AIHandler for NPC {
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let c_id = info.cli_id + 1;
+        let c_id = info.cli_id;
         let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
                 info!("[{}] New `NPC` client connected successfully.", info.cli_id);

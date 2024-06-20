@@ -14,13 +14,11 @@ pub mod npc;
 pub mod queen;
 
 use crate::tcp::{
-    self,
-    command_handle::{CommandError, ResponseResult},
-    TcpClient,
+    command_handle::{CommandError, DirectionMessage, ResponseResult},
+    handle_tcp, TcpClient,
 };
 
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -90,6 +88,49 @@ impl AI {
             level,
             slots,
         }
+    }
+
+    async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
+        let mut client = self.client().lock().await;
+        while let Some((dir, msg)) = client.pop_message() {
+            info!(
+                "[{}] AI {}: handling message: {}",
+                self.cli_id, self.p_id, msg
+            );
+            if dir != DirectionMessage::Center {
+                warn!("[{}] Ignoring message, out of bound.", self.cli_id);
+                return None;
+            }
+            let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                msg.split_at(idex)
+            } else {
+                ("0", msg.trim_end_matches('\n'))
+            };
+            if let Ok(c_id) = content.0.parse::<usize>() {
+                self.handle_message_content(c_id, content.1).await?;
+            }
+        }
+        None
+    }
+
+    async fn handle_message_content(
+        &self,
+        c_id: usize,
+        msg: &str,
+    ) -> Option<(usize, String, usize)> {
+        if msg.starts_with("assign ") {
+            let mut lines = msg.split_whitespace();
+
+            let role = lines.next()?;
+            let p_id = lines.next().and_then(|word| word.parse::<usize>().ok())?;
+
+            info!(
+                "[{}] AI is being assigned {} with id {}...",
+                self.cli_id, role, p_id
+            );
+            return Some((c_id, role.to_string(), p_id));
+        }
+        None
     }
 }
 
@@ -257,7 +298,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         let curr_id = connection_id.load(Ordering::SeqCst);
         println!("[{}] Attempting connection...", curr_id);
 
-        match tcp::handle_tcp(address.to_string(), team.to_string(), curr_id).await {
+        match handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
@@ -309,3 +350,43 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     Ok(())
 }
+
+// pub async fn fork_ai(info: AI) -> io::Result<()> {
+//     let c_id = info.cli_id;
+//     let client = match tcp::handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
+//         Ok(client) => {
+//             info!(
+//                 "[{}] New client connected successfully for FORK.",
+//                 info.cli_id
+//             );
+//             Arc::new(Mutex::new(client))
+//         }
+//         Err(e) => return Err(Error::new(e.kind(), e)),
+//     };
+
+//     let team = info.team.clone();
+//     let address = info.address.clone();
+
+//     match start_ai(client, team, address, (c_id, 0), false).await {
+//         Ok(ai) => {
+//             if let Some((c_id, role, p_id)) = ai.wait_assignment().await {
+//                 if role == "Bot" {
+//                     let mut bot = Bot::init(ai.clone());
+//                     if let Err(e) = bot.update().await {
+//                         println!("[{}] Error: {}", c_id, e);
+//                     }
+//                     Ok(()) just try and incorporate match from any str to its role type
+//                 } else {
+//                     Err(Error::new(ErrorKind::NotFound, "Unknown role broadcasted."))
+//                 }
+//             } else {
+//                 warn!("[{}] No role assignment detected, turning to NPC...", c_id); // might just leave like this and no need to assign NPC role
+//                 Ok(())
+//             }
+//         }
+//         Err(e) => {
+//             error!("[{}] {}", c_id, e);
+//             Err(e)
+//         }
+//     }
+// }
