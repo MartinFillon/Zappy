@@ -108,16 +108,46 @@ OBJ = $(SRC:.c=.o)
 
 NAME = ../libcore.a
 
+TEST_SRC =  ../../tests/server/core.spec.c\
+			../../tests/server/fake_server.c\
+
+TEST_NAME = unit_tests
+
+TEST_OBJ = $(TEST_SRC:.c=.o)
+
+SRC_GCDA = $(SRC:.c=.gcda)
+SRC_GCNOS = $(SRC:.c=.gcno)
+TEST_GCDA = $(TEST_SRC:.c=.gcda)
+TEST_GCNOS = $(TEST_SRC:.c=.gcno)
+
 all: $(NAME)
 
 $(NAME): $(OBJ)
 	ar cq -o $(NAME) $(OBJ)
 
+lib-test:
+	$(MAKE) -C ../lib
+
+$(TEST_NAME): CFLAGS += --coverage -DTEST
+$(TEST_NAME): LDFLAGS += -lcriterion -lgcov -lm -L../ -lcore
+$(TEST_NAME): CPPFLAGS += -iquote .
+$(TEST_NAME): fclean lib-test $(OBJ) $(TEST_OBJ)
+	$(CC) -o $(TEST_NAME) $(TEST_OBJ) $(OBJ) $(LDFLAGS)
+
+tests_run: $(TEST_NAME)
+	./$(TEST_NAME)
+
 clean:
-	rm -f $(OBJ)
+	$(RM) $(OBJ)
+	$(RM) $(TEST_OBJ)
+	$(RM) $(SRC_GCDA)
+	$(RM) $(SRC_GCNOS)
+	$(RM) $(TEST_GCDA)
+	$(RM) $(TEST_GCNOS)
 
 fclean: clean
-	rm -f $(NAME)
+	$(RM) $(NAME)
+	$(RM) $(TEST_NAME)
 
 debug: CC = clang
 debug: CFLAGS += -g3
