@@ -22,7 +22,6 @@ SRC =   str/str.c\
 		json/types/number.c\
 		json/types/object.c\
 		json/dump.c\
-		json/checker.c\
 		json/file.c\
 		json/free.c\
 		logger/logger.c\
@@ -47,7 +46,8 @@ SRC =   str/str.c\
 		utils/freeze_ai.c
 
 TEST_SRC = ../tests/lib/logger.spec.c\
-			../tests/lib/str.spec.c
+			../tests/lib/str.spec.c\
+			../tests/lib/json.spec.c\
 
 TEST_OBJ = $(TEST_SRC:.c=.o)
 
