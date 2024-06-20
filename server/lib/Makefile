@@ -46,7 +46,13 @@ SRC =   str/str.c\
 		options/help.c\
 		utils/freeze_ai.c
 
+TEST_SRC = ../tests/lib/logger.spec.c
+
+TEST_OBJ = $(TEST_SRC:.c=.o)
+
 NAME = ../libcore.a
+
+TEST_NAME = unit_tests
 
 OBJ = $(SRC:.c=.o)
 
@@ -60,13 +66,28 @@ $(NAME): $(OBJ)
 
 clean:
 	rm -f $(OBJ)
+	rm -f $(TEST_OBJ)
+	rm -f *.gcno
+	rm -f *.gcda
+	rm -f ../tests/lib/*.gcno
+	rm -f ../tests/lib/*.gcda
 
 fclean: clean
 	rm -f $(NAME)
+	rm -f $(TEST_NAME)
 
 debug: CC = clang
 debug: CFLAGS += -g3
 debug: all
+
+$(TEST_NAME): CFLAGS += --coverage -DTEST
+$(TEST_NAME): LDFLAGS += -lcriterion -lgcov
+$(TEST_NAME): CPPFLAGS += -iquote .
+$(TEST_NAME): fclean $(OBJ) $(TEST_OBJ)
+	$(CC) -o $(TEST_NAME) $(TEST_OBJ) $(OBJ) $(LDFLAGS)
+
+tests_run: $(TEST_NAME)
+	./$(TEST_NAME)
 
 re: fclean all
 

@@ -16,7 +16,11 @@
 #include "internal.h"
 #include "logger.h"
 
-static struct logger_s *get_mut_logger(void)
+#ifndef TEST
+static
+#endif
+    struct logger_s *
+    get_mut_logger(void)
 {
     static struct logger_s logger = {
         ERROR_LEVEL,
@@ -41,7 +45,7 @@ static void print_time(time_t *t, struct logger_s const *logger)
 {
     char buf[sizeof "2011-10-08T07:07:09Z"];
 
-    strftime(buf, sizeof buf, "%FT%TZ", gmtime(t));
+    strftime(buf, sizeof(buf), "%FT%TZ", gmtime(t));
     dprintf(logger->fd, "[%s", buf);
 }
 
