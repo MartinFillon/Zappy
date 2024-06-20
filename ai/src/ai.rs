@@ -14,7 +14,6 @@ pub mod npc;
 pub mod queen;
 
 use crate::{
-    ai::npc::NPC,
     commands::broadcast,
     tcp::{
         command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
@@ -30,6 +29,7 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
+use bot::Bot;
 use fetus::Fetus;
 use knight::Knight;
 use queen::Queen;
@@ -53,6 +53,7 @@ pub struct AI {
 #[derive(Debug, Clone)]
 enum Roles {
     Fetus,
+    Bot,
     Knight,
     Queen,
 }
@@ -63,6 +64,7 @@ impl TryFrom<String> for Roles {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
             "Fetus" => Ok(Self::Fetus),
+            "Bot" => Ok(Self::Bot),
             "Knight" => Ok(Self::Knight),
             "Queen" => Ok(Self::Queen),
             _ => Err(format!("Unknown role: {}", value)),
@@ -74,6 +76,7 @@ impl Display for Roles {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
             Self::Fetus => write!(f, "Fetus"),
+            Self::Bot => write!(f, "Bot"),
             Self::Knight => write!(f, "Knight"),
             Self::Queen => write!(f, "Queen"),
         }
@@ -87,6 +90,7 @@ async fn send_role(client: &mut TcpClient, role: Roles) -> Result<ResponseResult
 fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, String> {
     Ok(match Roles::try_from(role)? {
         Roles::Fetus => Box::new(Fetus::init(info.clone())),
+        Roles::Bot => Box::new(Bot::init(info.clone())),
         Roles::Knight => Box::new(Knight::init(info.clone())),
         Roles::Queen => Box::new(Queen::init(info.clone())),
     })
@@ -101,7 +105,10 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
             );
             Arc::new(Mutex::new(client))
         }
-        Err(e) => return Err(Error::new(e.kind(), e)),
+        Err(e) => {
+            error!("[{}] New client error from: {}", info.cli_id, e);
+            return Err(Error::new(e.kind(), e));
+        }
     };
     let team = info.team.clone();
     let address = info.address.clone();
@@ -118,26 +125,18 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                 let mut rle = init_from_broadcast(&ai, role)
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
                 if let Err(e) = rle.update().await {
-                    println!("Error: {}", e);
+                    println!("[{}] Error: {}", info.cli_id, e);
                 }
-                Ok(())
-            } else {
-                warn!(
-                    "[{}] No role assignment detected, turning to NPC...",
-                    info.cli_id
-                );
-                let mut npc = NPC::init(ai.clone());
-                if let Err(e) = npc.update().await {
-                    println!("[{}] Error: {}", npc.info().cli_id, e);
-                }
-                Ok(())
+                return Ok(());
             }
+            warn!(
+                "[{}] No role assignment detected, turning to NPC...",
+                info.cli_id
+            );
         }
-        Err(e) => {
-            error!("[{}] {}", info.cli_id, e);
-            Err(e)
-        }
+        Err(e) => error!("[{}] {}", info.cli_id, e),
     }
+    Ok(())
 }
 
 #[async_trait]
