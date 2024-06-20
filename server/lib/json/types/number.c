@@ -20,7 +20,7 @@ int parse_json_number(json_parser_t *p)
     if (get(p) == '-')
         c = next(p);
     c = get(p);
-    while ((isdigit(c) || c == '.') && c != -1) {
+    while ((isdigit(c) || c == '.')) {
         found_dot += (c == '.');
         c = next(p);
     }

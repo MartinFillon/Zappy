@@ -9,7 +9,7 @@
 
 void my_free_box(char **arr)
 {
-    for (size_t i = 0; arr[i] != NULL; i++)
+    for (size_t i = 0; arr && arr[i] != NULL; i++)
         free(arr[i]);
     if (arr)
         free(arr);

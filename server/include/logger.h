@@ -22,3 +22,7 @@ int set_log_level(enum log_level level);
 int set_log_level_from_str(char const *str);
 void set_log_fd(int fd);
 void valogs(enum log_level level, char *fmt, va_list l);
+
+#ifdef TEST
+struct logger_s *get_mut_logger(void);
+#endif
