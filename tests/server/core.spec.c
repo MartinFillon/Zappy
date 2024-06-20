@@ -10,6 +10,7 @@
 #include "core/clock.h"
 #include "core/gui/defs.h"
 #include "core/router/route.h"
+#include "core/router/router.h"
 #include "core/types/client.h"
 #include "core/types/clock.h"
 #include "logger.h"
@@ -379,4 +380,118 @@ Test(core, current_tick)
     wait_n_ticks(clock, 3);
 
     cr_assert_eq(current_tick(clock), 3);
+}
+
+Test(core, invalid_command_unset)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_client();
+
+    run_router(z.server.router, cli, &z, str_snew("invalid"));
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+}
+
+Test(core, invalid_command_gui)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("invalid\n"));
+    cr_assert_str_eq(cli->io.res->data, "suc\n");
+}
+
+Test(core, invalid_command_ai)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("invalid\n"));
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, new_ai_with_multiple_guis)
+{
+    zappy_t z;
+    client_t *clis[3] = {0};
+
+    init_server(&z);
+    for (int i = 0; i < 3; i++)
+        clis[i] = new_fake_gui_client(z.clients);
+    client_t *ai =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    cr_assert_not_null(ai);
+    for (int i = 0; i < 3; i++)
+        cr_assert_str_eq(clis[i]->io.res->data, "ebo 0\npnw 0 5 1 2 1 Team1\n");
+}
+
+Test(core, run_gui_command_through_router)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("msz"));
+    cr_assert_str_eq(cli->io.res->data, "msz 10 10\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, run_ai_command_through_router)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("Forward"));
+    cr_assert_str_eq(cli->io.res->data, "ok\n");
+    cr_assert_eq(cli->ai->cycles_to_wait, 7);
+    destroy_router(z.server.router);
+}
+
+Test(core, gui_router_too_much_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("msz 1 2"));
+    cr_assert_str_eq(cli->io.res->data, "sbp\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, ai_router_too_much_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew("Forward 1"));
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, run_router_empty_str)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+
+    run_router(z.server.router, cli, &z, str_snew(""));
+    cr_assert_str_eq(cli->io.res->data, "");
+    destroy_router(z.server.router);
 }
