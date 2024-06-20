@@ -21,9 +21,9 @@ static void send_infos(client_t *c, ai_t *ai, size_t nb)
         nb,
         ai->pos.x,
         ai->pos.y,
-        ai->dir,
+        ai->dir + 1,
         ai->level,
-        ai->team
+        ai->team->name
     );
 }
 

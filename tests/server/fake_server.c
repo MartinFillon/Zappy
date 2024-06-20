@@ -66,7 +66,7 @@ client_t *new_fake_ai_client(
 
     cr_assert_not_null(client);
     client->type = AI;
-    cr_assert(init_ai(test_game, client, test_team, lst));
+    cr_assert_eq(init_ai(test_game, client, test_team, lst), false);
     return client;
 }
 
