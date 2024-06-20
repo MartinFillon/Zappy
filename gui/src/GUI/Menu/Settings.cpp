@@ -51,13 +51,16 @@ void Settings::switchShowCursor()
 void Settings::display()
 {
     float fontSize = m_height / 8.0f;
-    Raylib::Square rec = {m_width * 0.3f, m_height / 4.0f, fontSize};
+    Raylib::Square rec = {m_width * 0.3f, m_height / 4.0f, m_height / 25.0f};
+    std::string name = "SETTINGS";
+    int sizeText = Raylib::getMeasureTextEx(name, fontSize).x;
 
+    Raylib::drawText(name, (m_width - sizeText) / 2, m_height / 8.0f, fontSize, PURPLE);
     for (size_t i = 0; i < m_button.size(); i++) {
         CheckBox &but = m_button.at(i);
         rec.y += rec.size + 20.0f;
         but.checkButtonAction(rec);
-        but.draw(rec, fontSize / 2.0f);
+        but.draw(rec, fontSize / 4.0f);
     }
 }
 

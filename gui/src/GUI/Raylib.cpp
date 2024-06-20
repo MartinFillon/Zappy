@@ -86,13 +86,14 @@ void draw(Circle &cir, Color color)
 
 Vector2 getMeasureTextEx(const std::string &str, int fontSize)
 {
-    return MeasureTextEx(GetFontDefault(), str.c_str(), fontSize, 1);
+    Vector2 vec = MeasureTextEx(GetFontDefault(), str.c_str(), fontSize, 1);
+    vec.x = MeasureText(str.c_str(), fontSize);
+    return vec;
 }
 
 void drawTextInForm(const std::string &str, const Rectangle &rec, int fontSize, Color color) {
     Vector2 vec = getMeasureTextEx(str, fontSize);
-    std::cout << "Size x: " << vec.x << " or " << MeasureText(str.c_str(), fontSize) << std::endl;
-    std::cout << "Size y: " << vec.y << std::endl;
+    vec.x = MeasureText(str.c_str(), fontSize);
     drawText(str,
         rec.x + (rec.width - vec.x) / 2,
         rec.y + (rec.height - vec.y) / 2,

@@ -52,7 +52,7 @@ class CheckBox : public AButton<Raylib::Square, bool>
         Raylib::drawSquareLines(sqr, colorRec);
         if (m_val)
             Raylib::drawSquare(lightRec, colorRec);
-        Raylib::drawText(this->m_name, sqr.x + sqr.size + 20, sqr.y, fontSize, colorText);
+        Raylib::drawText(this->m_name, sqr.x + sqr.size + 20.0f, sqr.y + sqr.size / 4.0f, fontSize, colorText);
     }
 };
 
