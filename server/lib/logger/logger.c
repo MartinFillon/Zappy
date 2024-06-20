@@ -19,8 +19,7 @@
 #ifndef TEST
 static
 #endif
-    struct logger_s *
-    get_mut_logger(void)
+struct logger_s *get_mut_logger(void)
 {
     static struct logger_s logger = {
         ERROR_LEVEL,
