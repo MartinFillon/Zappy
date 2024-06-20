@@ -22,26 +22,33 @@ pub fn get_current_level(level_str: &str) -> Result<usize, CommandError> {
 }
 
 pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    let response = client
-        .get_response()
-        .await
-        .ok_or(CommandError::NoResponseReceived)?;
-    match response.trim_end() {
-        "dead" => Err(CommandError::DeadReceived),
-        level if level.starts_with("Current level: ") => {
-            let level_str = get_current_level(level)?;
-            Ok(ResponseResult::Incantation(level_str))
+    loop {
+        let response = client
+            .get_response()
+            .await
+            .ok_or(CommandError::NoResponseReceived)?;
+        let res = client.handle_response(response).await?;
+        if let ResponseResult::Incantation(_) = res {
+            return Ok(res);
         }
-        _ => client.handle_response(response).await,
+        if res == ResponseResult::KO {
+            return Ok(res);
+        }
     }
 }
 
 pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Incantation...");
 
-    let checkpoint = client.check_dead("Incantation\n").await?;
-    match checkpoint.trim_end() {
-        "Elevation underway" => handle_incantation(client).await,
-        _ => client.handle_response(checkpoint).await,
+    let mut response = client.check_dead("Incantation\n").await?;
+    loop {
+        let res = client.handle_response(response).await?;
+        if res == ResponseResult::Elevating {
+            return handle_incantation(client).await;
+        }
+        if res == ResponseResult::KO {
+            return Ok(res);
+        }
+        response = client.check_response().await?;
     }
 }

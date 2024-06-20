@@ -39,8 +39,14 @@ pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Looking around...");
 
-    let response = client.check_dead("Look\n").await?;
-    client.handle_response(response).await
+    let mut response = client.check_dead("Look\n").await?;
+    loop {
+        let res = client.handle_response(response).await?;
+        if let ResponseResult::Tiles(_) = res {
+            return Ok(res);
+        }
+        response = client.check_response().await?;
+    }
 }
 
 #[cfg(test)]
