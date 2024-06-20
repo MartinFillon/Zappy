@@ -26,7 +26,8 @@ DISPLAYERS = base
 
 SUBMODULES = lib core $(DISPLAYERS)
 
-TEST_SRC = ../tests/server/loader.spec.c
+TEST_SRC =  ../tests/server/loader.spec.c\
+			../tests/server/program.spec.c
 
 TEST_OBJ = $(TEST_SRC:.c=.o)
 NO_MAIN_OBJ = $(BASE_SRC:.c=.o)
@@ -69,7 +70,7 @@ fclean: clean docs-clean
 	$(MAKE) -C dashboard fclean
 
 $(TEST_NAME): LDLIBS += -lcriterion -lgcov
-$(TEST_NAME): CFLAGS += --coverage
+$(TEST_NAME): CFLAGS += --coverage -DTEST
 $(TEST_NAME): clean submodules $(NO_MAIN_OBJ) $(TEST_OBJ)
 	$(CC) $(NO_MAIN_OBJ) $(TEST_OBJ) $(LDLIBS) -o $(TEST_NAME)
 
