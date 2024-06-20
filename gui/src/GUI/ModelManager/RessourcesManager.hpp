@@ -93,7 +93,7 @@ class RessourcesManager {
             ((static_cast<int>(x) % 3) ? -1 : 1) * ((static_cast<int>(z + x) % 6 >= 3) ? 1 : -1);
         z = (z + offsetZ) * tileSize;
         x = (x + offsetX) * tileSize;
-        y += 0.05 * size;
+        y += 0.05 * size * ((type == 0) ? 0 : 1);
         if (type == 0) {
             scale *= 5;
             tileSize /= 2;

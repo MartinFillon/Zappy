@@ -461,9 +461,15 @@ void ServerMessageHandler::handleEndGame(const std::string &message)
 void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 {
     display.addMessage(message);
-    if (message.find("eni ") == 0)
-        // use handleEggLaid but with -1 as player number
-        handleEggLaid(message.substr(4));
+    if (message.find("eni ") == 0) {
+        int eggNumber, x, y;
+        std::istringstream iss(message.substr(4));
+
+        if (!(iss >> eggNumber >> x >> y)) {
+            return handleCommandParameter(message);
+        }
+        display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(Pos<int, 2>{x, y}, eggNumber));
+    }
 
     if (debug)
         std::cout << "Message from server: " << message << std::endl;
