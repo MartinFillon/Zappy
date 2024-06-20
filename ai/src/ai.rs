@@ -17,7 +17,7 @@ use crate::{
     ai::npc::NPC,
     commands::broadcast,
     tcp::{
-        command_handle::{CommandError, DirectionMessage, ResponseResult},
+        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
@@ -110,7 +110,11 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
         Ok(mut ai) => {
             if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
                 ai.set_p_id(p_id);
-                ai.set_cli_id(c_id);
+                ai.set_cli_id(c_id + 1);
+                info!(
+                    "[{}] Handling assignment of role {} with id {}",
+                    info.cli_id, role, p_id
+                );
                 let mut rle = init_from_broadcast(&ai, role)
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
                 if let Err(e) = rle.update().await {
@@ -186,6 +190,9 @@ impl AI {
 
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
+        if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
+            client.push_message(msg);
+        }
         while let Some((dir, msg)) = client.pop_message() {
             info!(
                 "[{}] AI {}: handling message: {}",
@@ -208,7 +215,7 @@ impl AI {
     }
 
     async fn handle_assign_msg(&self, c_id: usize, msg: &str) -> Option<(usize, String, usize)> {
-        if msg.starts_with("assign ") {
+        if msg.starts_with(" assign ") {
             let mut lines = msg.split_whitespace();
             lines.next();
 

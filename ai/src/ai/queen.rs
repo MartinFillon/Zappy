@@ -302,7 +302,7 @@ impl Queen {
         )
         .await?;
         // to check with this now
-        broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
+        // broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         info!(
             "[{}] I as the queen ({}), bestow my life uppon you",
             self.info.cli_id, self.info.p_id
@@ -324,7 +324,7 @@ impl Queen {
             )
             .await?;
             // to check with this now
-            broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
+            // broadcast::broadcast(&mut cli, format!("{}", self.info.p_id).as_str()).await?;
         }
         info!("[{}] Miserable peasants... SERVE ME.\n", self.info.cli_id);
 
