@@ -46,6 +46,9 @@ pub async fn turn_towards_broadcast(
     client: &mut TcpClient,
     dir: DirectionMessage,
 ) -> Result<ResponseResult, CommandError> {
+    if dir == DirectionMessage::Center {
+        return Ok(ResponseResult::OK);
+    }
     let (mut x, y) = get_msg_coordinates(&dir);
     if y < 0 {
         x = -x;
