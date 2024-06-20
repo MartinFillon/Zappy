@@ -20,4 +20,4 @@ server/doc
 gui/doc
 *.so
 unit_tests
-!tests/server/base.so
+!tests/server/*.so

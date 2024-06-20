@@ -75,9 +75,10 @@ $(TEST_NAME): clean submodules $(NO_MAIN_OBJ) $(TEST_OBJ)
 
 tests_run: fclean
 	$(MAKE) -C lib unit_tests
-	# $(MAKE) $(TEST_NAME)
+	$(MAKE) $(TEST_NAME)
 	$(MAKE) -C lib tests_run
-	# ./$(TEST_NAME)
+	./$(TEST_NAME)
+	gcovr --exclude ../tests/
 
 debug_submodules:
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)
