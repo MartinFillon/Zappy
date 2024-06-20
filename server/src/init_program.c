@@ -7,9 +7,9 @@
 
 #include <signal.h>
 
+#include "core/router/router.h"
 #include "logger.h"
 #include "macros.h"
-#include "core/router/router.h"
 #include "args_info.h"
 
 static void init_mask(zappy_t *z)
