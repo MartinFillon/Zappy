@@ -78,6 +78,7 @@ tests_run: fclean
 	$(MAKE) -C lib unit_tests
 	$(MAKE) $(TEST_NAME)
 	$(MAKE) -C lib tests_run
+	$(MAKE) -C core tests_run
 	./$(TEST_NAME)
 	gcovr --exclude ../tests/
 
