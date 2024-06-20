@@ -50,7 +50,7 @@ pub struct Queen {
 #[async_trait]
 impl AIHandler for Queen {
     fn init(info: AI) -> Self {
-        println!("[{}] Queen has arrived.", info.cli_id);
+        println!("[{}] Queen has arrived. (default)", info.cli_id);
         Self::new(info)
     }
 
@@ -72,8 +72,13 @@ impl AIHandler for Queen {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
                 info!("[{}] Spawned queen.", info.cli_id);
             }
+            if info.slots > 0 && info.cli_id > 3 {
+                info!("[{}] Identified as bot.", info.cli_id);
+                Queen::connect_leftovers(info.clone()).await?;
+            }
             info!("[{}] Unblocked.", info.cli_id);
         }
+        println!("[{}] Queen is officially crowned.", self.info.cli_id);
 
         let _ = self.handle_message().await;
         self.fork_servants().await?;
@@ -181,6 +186,7 @@ impl Queen {
         move_up::move_up(client).await?;
         fork::fork(client).await?;
         inventory::inventory(client).await?;
+        inventory::inventory(client).await?;
         tokio::spawn(async move {
             if let Err(err) = fork_ai(info_clone).await {
                 error!("[{}] AI executing task fork error: {}", info.cli_id, err);
@@ -193,6 +199,24 @@ impl Queen {
             format!("{} assign Queen {}", info.cli_id, id + 1).as_str(),
         )
         .await?;
+        Ok(())
+    }
+
+    ///
+    /// Connects a new [`Bot`] client from `id`.
+    ///
+    /// * `id` - the id that is spawning the `Bot`, furthermore, this will give the new bot the preceeding `cli_id` and `p_id` of `0`
+    async fn connect_leftovers(info: AI) -> Result<(), CommandError> {
+        let mut client = info.client().lock().await;
+        while let Some(response) = client.get_response().await {
+            if response.trim_end() == "dead" {
+                println!(
+                    "[{}] AI : NPC at connection died from natural causes.",
+                    info.cli_id
+                );
+                return Err(CommandError::DeadReceived);
+            }
+        }
         Ok(())
     }
 

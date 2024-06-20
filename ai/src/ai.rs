@@ -115,7 +115,7 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
 
     match start_ai(client, team, address, (info.cli_id, 0), false).await {
         Ok(mut ai) => {
-            debug!("[{}] AI is checked in", ai.cli_id);
+            debug!("[{}] AI is checked in for assignation...", ai.cli_id);
             if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
                 ai.set_p_id(p_id);
                 ai.set_cli_id(c_id + 1);
@@ -131,12 +131,37 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                 return Ok(());
             }
             warn!(
-                "[{}] No role assignment detected, turning to NPC...",
+                "[{}] No role assignment detected, turning to idle...",
                 info.cli_id
             );
         }
         Err(e) => error!("[{}] {}", info.cli_id, e),
     }
+    Ok(())
+}
+
+pub async fn connect_ai(mut ai: AI) -> io::Result<()> {
+    debug!("[{}] AI is being checked in...", ai.cli_id);
+    if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
+        ai.set_p_id(p_id);
+        ai.set_cli_id(c_id + 1);
+        info!(
+            "[{}] Handling assignment of role {} with connection id {}",
+            ai.cli_id,
+            role,
+            c_id + 1
+        );
+        let mut rle = init_from_broadcast(&ai, role)
+            .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
+        if let Err(e) = rle.update().await {
+            println!("[{}] Error: {}", ai.cli_id, e);
+        }
+        return Ok(());
+    }
+    warn!(
+        "[{}] No role assignment detected, turning to idle...",
+        ai.cli_id
+    );
     Ok(())
 }
 
@@ -309,19 +334,9 @@ async fn init_ai(
     info!("[{}] Initializing AI...", c_id);
 
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
-    match ai.cli_id {
-        0..=3 => {
-            let mut queen = queen::Queen::init(ai.clone());
-            if let Err(e) = queen.update().await {
-                error!("[{}] Error: {}", queen.info().cli_id, e);
-            }
-        }
-        _ => {
-            let mut bot = bot::Bot::init(ai.clone());
-            if let Err(e) = bot.update().await {
-                error!("[{}] Error: {}", bot.info().cli_id, e);
-            }
-        }
+    let mut queen = queen::Queen::init(ai.clone());
+    if let Err(e) = queen.update().await {
+        error!("[{}] Error: {}", queen.info().cli_id, e);
     }
     Ok(ai)
 }
