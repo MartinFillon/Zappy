@@ -61,7 +61,9 @@ void ServerMessageHandler::handleMapSize(const std::string &message)
     int width, height;
     std::istringstream iss(message);
 
-    iss >> width >> height;
+    if (!(iss >> width >> height)) {
+        return handleCommandParameter(message);
+    }
     display.getMap().resize(width, height);
     if (debug)
         std::cout << "Map size: " << width << "x" << height << std::endl;
@@ -72,7 +74,9 @@ void ServerMessageHandler::handleTileContent(const std::string &message)
     int x, y, q0, q1, q2, q3, q4, q5, q6;
     std::istringstream iss(message);
 
-    iss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6;
+    if (!(iss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6)) {
+        return handleCommandParameter(message);
+    }
     if (debug)
         std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
                   << " " << q5 << " " << q6 << std::endl;
@@ -93,7 +97,9 @@ void ServerMessageHandler::handleNewPlayer(const std::string &message)
     std::string teamName;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> x >> y >> orientation >> level >> teamName;
+    if (!(iss >> playerNumber >> x >> y >> orientation >> level >> teamName)) {
+        return handleCommandParameter(message);
+    }
 
     std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
     players.emplace_back(std::make_shared<Data::Player>(
@@ -110,7 +116,9 @@ void ServerMessageHandler::handlePlayerPosition(const std::string &message)
     int playerNumber, x, y, orientation;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> x >> y >> orientation;
+    if (!(iss >> playerNumber >> x >> y >> orientation)) {
+        return handleCommandParameter(message);
+    }
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
@@ -130,7 +138,9 @@ void ServerMessageHandler::handlePlayerLevel(const std::string &message)
     int playerNumber, level;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> level;
+    if (!(iss >> playerNumber >> level)) {
+        return handleCommandParameter(message);
+    }
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
@@ -149,7 +159,9 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
     int playerNumber, x, y, q0, q1, q2, q3, q4, q5, q6;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6;
+    if (!(iss >> playerNumber >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6)) {
+        return handleCommandParameter(message);
+    }
 
     auto &players = display.getMap().getPlayers();
     for (auto &player : players) {
@@ -170,7 +182,9 @@ void ServerMessageHandler::handleExpulsion(const std::string &message)
     int playerNumber;
     std::istringstream iss(message);
 
-    iss >> playerNumber;
+    if (!(iss >> playerNumber)) {
+        return handleCommandParameter(message);
+    }
 
     std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
     players.erase(
@@ -192,7 +206,9 @@ void ServerMessageHandler::handleBroadcast(const std::string &message)
     std::string broadcastMessage;
     std::istringstream iss(message);
 
-    iss >> playerNumber;
+    if (!(iss >> playerNumber)) {
+        return handleCommandParameter(message);
+    }
     getline(iss, broadcastMessage);
 
     display.addMessage(broadcastMessage, playerNumber);
@@ -204,7 +220,9 @@ void ServerMessageHandler::handleIncantationStart(const std::string &message)
 {
     std::istringstream iss(message);
     int x, y, level;
-    iss >> x >> y >> level;
+    if (!(iss >> x >> y >> level)) {
+        return handleCommandParameter(message);
+    }
 
     std::vector<int> players;
     int playerNumber;
@@ -235,7 +253,9 @@ void ServerMessageHandler::handleIncantationEnd(const std::string &message)
 {
     std::istringstream iss(message);
     int x, y, result;
-    iss >> x >> y >> result;
+    if (!(iss >> x >> y >> result)) {
+        return handleCommandParameter(message);
+    }
 
     auto &playerList = display.getMap().getPlayers();
     for (auto &player : playerList) {
@@ -255,7 +275,9 @@ void ServerMessageHandler::handleEggLaying(const std::string &message)
     int playerNumber;
     std::istringstream iss(message);
 
-    iss >> playerNumber;
+    if (!(iss >> playerNumber)) {
+        return handleCommandParameter(message);
+    }
     for (auto &player : display.getMap().getPlayers()) {
         if (player->getId() == playerNumber) {
             display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
@@ -272,7 +294,9 @@ void ServerMessageHandler::handleResourceDrop(const std::string &message)
     int playerNumber, resourceType;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> resourceType;
+    if (!(iss >> playerNumber >> resourceType)) {
+        return handleCommandParameter(message);
+    }
     for (auto &player : display.getMap().getPlayers()) {
         if (player->getId() == playerNumber) {
             Data::Tile &tile = display.getMap().getTile(player->getPos());
@@ -290,7 +314,9 @@ void ServerMessageHandler::handleResourceCollect(const std::string &message)
     int playerNumber, resourceType;
     std::istringstream iss(message);
 
-    iss >> playerNumber >> resourceType;
+    if (!(iss >> playerNumber >> resourceType)) {
+        return handleCommandParameter(message);
+    }
     for (auto &player : display.getMap().getPlayers()) {
         if (player->getId() == playerNumber) {
             Data::Tile &tile = display.getMap().getTile(player->getPos());
@@ -308,7 +334,9 @@ void ServerMessageHandler::handlePlayerDeath(const std::string &message)
     int playerNumber;
     std::istringstream iss(message);
 
-    iss >> playerNumber;
+    if (!(iss >> playerNumber)) {
+        return handleCommandParameter(message);
+    }
 
     auto &players = display.getMap().getPlayers();
     players.erase(
@@ -328,7 +356,9 @@ void ServerMessageHandler::handleEggLaid(const std::string &message)
     int eggNumber, playerNumber, x, y;
     std::istringstream iss(message);
 
-    iss >> eggNumber >> playerNumber >> x >> y;
+    if (!(iss >> eggNumber >> playerNumber >> x >> y)) {
+        return handleCommandParameter(message);
+    }
 
     std::vector<std::shared_ptr<Data::Egg>> &eggs = display.getMap().getEggs();
     eggs.emplace_back(std::make_shared<Data::Egg>(Pos<int, 2>{x, y}, eggNumber));
@@ -343,7 +373,9 @@ void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
     int eggNumber;
     std::istringstream iss(message);
 
-    iss >> eggNumber;
+    if (!(iss >> eggNumber)) {
+        return handleCommandParameter(message);
+    }
 
     auto &eggs = display.getMap().getEggs();
     auto eggIter = std::remove_if(eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) {
@@ -374,7 +406,9 @@ void ServerMessageHandler::handleEggDeath(const std::string &message)
     int eggNumber;
     std::istringstream iss(message);
 
-    iss >> eggNumber;
+    if (!(iss >> eggNumber)) {
+        return handleCommandParameter(message);
+    }
 
     auto &eggs = display.getMap().getEggs();
     eggs.erase(
@@ -395,7 +429,10 @@ void ServerMessageHandler::handleTimeUnit(const std::string &message)
     int timeUnit;
     std::istringstream iss(message);
 
-    iss >> timeUnit;
+    if (!(iss >> timeUnit)) {
+        handleCommandParameter(message);
+        return;
+    }
     display.setTimeUnit(timeUnit);
     if (debug)
         std::cout << "Time unit set to " << timeUnit << std::endl;
@@ -406,7 +443,9 @@ void ServerMessageHandler::handleTimeUnitModification(const std::string &message
     int timeUnit;
     std::istringstream iss(message);
 
-    iss >> timeUnit;
+    if (!(iss >> timeUnit)) {
+        return handleCommandParameter(message);
+    }
     display.setTimeUnit(timeUnit);
     if (debug)
         std::cout << "Time unit modified to " << timeUnit << std::endl;
@@ -423,9 +462,9 @@ void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 {
     display.addMessage(message);
     if (message.find("eni ") == 0)
-        //use handleEggLaid but with -1 as player number
+        // use handleEggLaid but with -1 as player number
         handleEggLaid(message.substr(4));
-    
+
     if (debug)
         std::cout << "Message from server: " << message << std::endl;
 }
