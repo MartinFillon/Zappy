@@ -23,7 +23,8 @@ fclean: clean
 	rm -f $(NAME)
 
 tests_run:
-	cargo test
+	cargo +stable install cargo-llvm-cov --locked
+	cargo llvm-cov
 
 re: fclean all
 

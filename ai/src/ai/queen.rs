@@ -206,6 +206,9 @@ impl Queen {
         }
     }
 
+    /// Spawns a new [`Queen`] from `id` to `id + 1`.
+    ///
+    /// * `id` - the id that is spawning the `Queen`, furthermore, this will give the new queen the `cli_id` and `p_id` of `id + 1`
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
         let info_clone = info.clone();
 
@@ -221,10 +224,10 @@ impl Queen {
         Ok(())
     }
 
-    /**
-        Move [`queen`] at level 4,
-        we assume that all the queens have the same direction
-    */
+    ///
+    /// Move [`Queen`] at level 4,
+    /// we assume that all the queens have the same direction
+    ///
     async fn move_queen_first_step(&mut self) -> Result<(), CommandError> {
         self.set_can_move(false);
         if self.info.p_id == 2 | 4 {
@@ -238,10 +241,9 @@ impl Queen {
         Ok(())
     }
 
-    /**
-        Move [`queen`] at level 6,
-        we will move queen's direction and then reunite them in a single tile
-    */
+    ///
+    /// Move [`Queen`] at level 6, we will move queen's direction and then reunite them in a single tile
+    ///
     async fn move_queen_second_step(&mut self) -> Result<(), CommandError> {
         match self.info.p_id {
             1 | 2 => {
@@ -384,7 +386,9 @@ impl Queen {
         }
     }
 
+    ///
     /// Transform Inventory info to exploit them later.
+    ///
     fn convert_to_inv(&mut self, vec: Vec<(String, i32)>) {
         for elem in vec.iter() {
             match elem.0.as_str() {

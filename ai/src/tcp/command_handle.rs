@@ -183,7 +183,7 @@ fn handle_message_response(
                     debug!("Encrypted message received: {}", final_msg);
                     let decrypted_message = match crypt.decrypt(&final_msg) {
                         Some(data) => data,
-                        None => return Ok(ResponseResult::OK),
+                        None => return Ok(ResponseResult::OK), // corrupt any undecryptable message for other teams?
                     };
                     debug!(
                         "Message received from direction {} (aka {}): {}",

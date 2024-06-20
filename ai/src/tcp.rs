@@ -241,7 +241,7 @@ pub async fn handle_tcp(address: String, team: String, id: usize) -> io::Result<
     Ok(client)
 }
 
-// run the server on port 4242
+// run the server with default values
 #[cfg(test)]
 mod tests {
     use super::handle_tcp;
@@ -249,10 +249,10 @@ mod tests {
 
     #[test]
     fn test_tcp_client() {
-        let mut rt = Runtime::new().unwrap();
+        let rt = Runtime::new().unwrap();
 
         rt.block_on(async {
-            let address = "127.0.0.1:4242".to_string();
+            let address = "127.0.0.1:8080".to_string();
             let team = "Team1".to_string();
 
             let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
@@ -261,7 +261,25 @@ mod tests {
             client.send_request(request.clone()).await.unwrap();
 
             let response = client.get_response().await.unwrap();
-            assert!(response.ends_with("\n"));
+            assert_ne!(response, "ko");
+        });
+    }
+
+    #[test]
+    fn test_tcp_client_err() {
+        let rt = Runtime::new().unwrap();
+
+        rt.block_on(async {
+            let address = "127.0.0.1:8080".to_string();
+            let team: String = "Team10".to_string();
+
+            let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
+
+            let request = "Team10\n".to_string();
+            client.send_request(request.clone()).await.unwrap();
+
+            let response = client.get_response().await.unwrap();
+            assert_eq!(response, "ko");
         });
     }
 }
