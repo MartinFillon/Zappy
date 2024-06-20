@@ -10,10 +10,21 @@
 #include "logger.h"
 #include "options/option.h"
 #include "options/parser.h"
+#include "str.h"
 
-static void warn_using_default(option_t *opt)
+static void warn_default(char *fmt, ...)
 {
-    logs(WARNING, "Using default value for option %s\n", opt->identifier);
+    str_t *str = str_snew("Using default value for option '%s': ");
+    va_list args;
+
+    if (str == NULL)
+        return logs(ERROR_LEVEL, "Allocation level for 'str_t'\n");
+    str_scadd(str, fmt);
+    str_cadd(str, '\0');
+    va_start(args, fmt);
+    valogs(WARNING, str->data, args);
+    va_end(args);
+    str_free(str);
 }
 
 void search_opt(option_t *opts, struct args *arguments, bool *found)
@@ -25,26 +36,27 @@ void search_opt(option_t *opts, struct args *arguments, bool *found)
     }
 }
 
-void set_default(union data *v, union default_data *d, enum arg_type type)
+void set_default(union data *v, union default_data *d, option_t *opt)
 {
-    switch (type) {
+    switch (opt->type) {
         case INT:
             v->number = d->number;
-            break;
+            return warn_default("%d\n", opt->identifier, v->number);
         case STRING:
             v->string = str_snew(d->string);
-            break;
+            return warn_default("%s\n", opt->identifier, d->string);
         case BOOL:
             v->boolean = d->boolean;
-            break;
+            return warn_default("%s\n", opt->identifier,
+                v->boolean ? "true" : "false");
         case FLOAT:
             v->flt = d->flt;
-            break;
+            return warn_default("%lf\n", opt->identifier, v->flt);
         case UINT:
             v->unsigned_number = d->unsigned_number;
-            break;
+            return warn_default("%lu\n", opt->identifier, v->unsigned_number);
         case STRING_LIST:
-            break;
+            return warn_default("");
     }
 }
 
@@ -58,9 +70,8 @@ void set_defaults(struct options *opts, struct args *arguments)
         if (!found && opts->data[i].has_default) {
             new.option = &opts->data[i];
             set_default(
-                &new.value, &opts->data[i].default_value, opts->data[i].type
+                &new.value, &opts->data[i].default_value, &opts->data[i]
             );
-            warn_using_default(&opts->data[i]);
             vec_pushback_args(arguments, new);
         }
         new = (argument_t){0};
