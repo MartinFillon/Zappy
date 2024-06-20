@@ -8,11 +8,10 @@
 #![allow(dead_code)]
 
 pub mod bot;
-pub mod empress;
 pub mod fetus;
 pub mod knight;
-pub mod queen;
 pub mod npc;
+pub mod queen;
 
 use crate::tcp::{
     self,

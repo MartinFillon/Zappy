@@ -7,11 +7,7 @@
 
 use crate::{
     ai::{start_ai, AIHandler, AI},
-    commands::drop_object,
-    tcp::{
-        command_handle::{CommandError, ResponseResult},
-        handle_tcp,
-    },
+    tcp::{command_handle::CommandError, handle_tcp},
 };
 
 use std::io::{self, Error};
@@ -21,8 +17,9 @@ use async_trait::async_trait;
 use tokio::sync::Mutex;
 
 use log::{error, info};
+use zappy_macros::Bean;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Bean)]
 pub struct NPC {
     info: AI,
 }
@@ -41,17 +38,20 @@ impl AIHandler for NPC {
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
-        loop {}
+        let mut client = self.info.client().lock().await;
+        while let Some(response) = client.get_response().await{
+            if response.trim_end() == "dead" {
+                break;
+            }
+        }
+        Ok(())
     }
 
     async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
         let c_id = info.cli_id + 1;
         let client = match handle_tcp(info.address.clone(), info.team.clone(), c_id).await {
             Ok(client) => {
-                info!(
-                    "[{}] New `NPC` client connected successfully.",
-                    info.cli_id
-                );
+                info!("[{}] New `NPC` client connected successfully.", info.cli_id);
                 Arc::new(Mutex::new(client))
             }
             Err(e) => return Err(Error::new(e.kind(), e)),
