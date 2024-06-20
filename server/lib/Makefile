@@ -48,6 +48,7 @@ SRC =   str/str.c\
 TEST_SRC = ../tests/lib/logger.spec.c\
 			../tests/lib/str.spec.c\
 			../tests/lib/json.spec.c\
+			../tests/lib/utils.spec.c
 
 TEST_OBJ = $(TEST_SRC:.c=.o)
 
