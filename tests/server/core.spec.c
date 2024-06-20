@@ -7,9 +7,12 @@
 
 #include <criterion/criterion.h>
 
+#include "core/clock.h"
 #include "core/gui/defs.h"
 #include "core/router/route.h"
 #include "core/types/client.h"
+#include "core/types/clock.h"
+#include "logger.h"
 #include "zappy.h"
 #include "fake_server.h"
 
@@ -312,4 +315,68 @@ Test(core, test_tile_content_invalid)
 
     map_content_tile(cli, &com);
     cr_assert_str_eq(cli->io.res->data, "sbp\n");
+}
+
+Test(core, clock)
+{
+    zclock_t *clock = clock_new(100);
+
+    cr_assert_not_null(clock);
+    cr_assert_eq(clock->frequency, 10000);
+
+    cr_assert_eq(has_n_ticks_passed(clock, 1), false);
+    clock->start = clock->start - 1000000;
+    cr_assert_eq(has_n_ticks_passed(clock, 1), true);
+}
+
+Test(core, clock_wait)
+{
+    zclock_t *clock = clock_new(100);
+
+    cr_assert_not_null(clock);
+    cr_assert_eq(clock->frequency, 10000);
+
+    wait_n_ticks(clock, 3);
+
+    cr_assert_eq(has_n_ticks_passed(clock, 3), true);
+}
+
+Test(core, clock_reset)
+{
+    zclock_t *clock = clock_new(100);
+
+    cr_assert_not_null(clock);
+    cr_assert_eq(clock->frequency, 10000);
+
+    wait_n_ticks(clock, 3);
+
+    cr_assert_eq(has_n_ticks_passed(clock, 3), true);
+
+    reset_clock(clock);
+
+    cr_assert_eq(has_n_ticks_passed(clock, 3), false);
+}
+
+Test(core, clock_elapsed_time)
+{
+    zclock_t *clock = clock_new(100);
+
+    cr_assert_not_null(clock);
+    cr_assert_eq(clock->frequency, 10000);
+
+    wait_n_ticks(clock, 3);
+
+    cr_assert_geq(get_elapsed_time(clock), 30000);
+}
+
+Test(core, current_tick)
+{
+    zclock_t *clock = clock_new(100);
+
+    cr_assert_not_null(clock);
+    cr_assert_eq(clock->frequency, 10000);
+
+    wait_n_ticks(clock, 3);
+
+    cr_assert_eq(current_tick(clock), 3);
 }
