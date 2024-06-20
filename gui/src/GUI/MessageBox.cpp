@@ -24,7 +24,12 @@ void MessageBox::addMessage(const std::string &message, int user)
     if (user == SERVER) {
         userStr = "Server";
     } else {
-        userStr = m_team[user];
+        if (user > static_cast<int>(m_team.size())) {
+            // TODO userStr = m_team[user - 1];
+            userStr = "TEAM";
+        } else {
+            userStr = "Unknown";
+        }
     }
 
     std::string timeStr = formatTime(now);
