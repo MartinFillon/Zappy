@@ -180,6 +180,7 @@ impl Queen {
 
         move_up::move_up(client).await?;
         fork::fork(client).await?;
+        inventory::inventory(client).await?;
         tokio::spawn(async move {
             if let Err(err) = fork_ai(info_clone).await {
                 error!("[{}] AI executing task fork error: {}", info.cli_id, err);

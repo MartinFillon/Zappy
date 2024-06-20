@@ -247,6 +247,7 @@ mod tests {
     use super::handle_tcp;
     use tokio::runtime::Runtime;
 
+    #[cfg(feature = "server_test")]
     #[test]
     fn test_tcp_client() {
         let rt = Runtime::new().unwrap();
@@ -265,6 +266,7 @@ mod tests {
         });
     }
 
+    #[cfg(feature = "server_test")]
     #[test]
     fn test_tcp_client_err() {
         let rt = Runtime::new().unwrap();

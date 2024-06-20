@@ -115,6 +115,7 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
 
     match start_ai(client, team, address, (info.cli_id, 0), false).await {
         Ok(mut ai) => {
+            debug!("[{}] AI is checked in", ai.cli_id);
             if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
                 ai.set_p_id(p_id);
                 ai.set_cli_id(c_id + 1);
