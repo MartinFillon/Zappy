@@ -7,17 +7,22 @@
 
 #![allow(dead_code)]
 
-use crate::commands::incantation::{get_current_level, handle_incantation};
-use crate::commands::inventory::read_inventory_output;
-use crate::commands::look_around::read_look_output;
-use crate::{crypt::Crypt, tcp::TcpClient};
+use crate::{
+    commands::{
+        incantation::{get_current_level, handle_incantation},
+        inventory::read_inventory_output,
+        look_around::read_look_output,
+    },
+    crypt::Crypt,
+    tcp::TcpClient,
+};
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{debug, info, warn};
+use log::{debug, warn};
 
 #[derive(PartialEq, Debug)]
 pub enum ResponseResult {
@@ -33,6 +38,7 @@ pub enum ResponseResult {
     Message((DirectionMessage, String)),
     Eject(DirectionEject),
     EjectUndone,
+    Unknown,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -72,7 +78,7 @@ pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError>;
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
-    async fn check_response(&mut self) -> Result<String, CommandError>;
+    async fn check_response(&mut self) -> String;
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
@@ -84,14 +90,20 @@ impl CommandHandler for TcpClient {
         }
         match self.get_response().await {
             Some(res) => Ok(res),
-            None => Err(CommandError::NoResponseReceived),
+            None => Ok(String::from("")),
         }
     }
 
-    async fn check_response(&mut self) -> Result<String, CommandError> {
+    async fn check_response(&mut self) -> String {
         match self.get_response().await {
-            Some(res) => Ok(res),
-            None => Err(CommandError::NoResponseReceived),
+            Some(res) => {
+                debug!("Response checked gives: ({})", res);
+                res
+            }
+            None => {
+                warn!("No response received.");
+                String::from("")
+            }
         }
     }
 
@@ -105,7 +117,7 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
-        let res = self.check_response().await?;
+        let res = self.check_response().await;
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
@@ -124,8 +136,8 @@ impl CommandHandler for TcpClient {
                 self.push_message(msg);
                 debug!("Message pushed to queue.");
             }
-            let res = self.check_response().await?;
-            return self.handle_response(res).await;
+            let response = self.check_response().await;
+            return self.handle_response(response).await;
         }
 
         if response.starts_with("eject: ") {
@@ -146,12 +158,12 @@ impl CommandHandler for TcpClient {
             x if x.starts_with("[player") => Ok(ResponseResult::Tiles(read_look_output(response))),
             x if !x.is_empty() && x.as_bytes()[0].is_ascii_digit() => match x.parse::<usize>() {
                 Ok(nb) => Ok(ResponseResult::Value(nb)),
-                Err(_) => Err(CommandError::InvalidResponse),
+                Err(_) => Ok(ResponseResult::KO),
             },
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
                 warn!("Invalid Response: ({}).", response.trim_end());
-                Err(CommandError::InvalidResponse)
+                Ok(ResponseResult::Unknown)
             }
         }
     }
@@ -161,7 +173,6 @@ fn handle_message_response(
     response: String,
     crypt: &Crypt,
 ) -> Result<ResponseResult, CommandError> {
-    debug!("Handling message response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() >= 3 && parts[0] == "message" {
@@ -172,13 +183,13 @@ fn handle_message_response(
                     debug!("Encrypted message received: {}", final_msg);
                     let decrypted_message = match crypt.decrypt(&final_msg) {
                         Some(data) => data,
-                        None => return Ok(ResponseResult::OK),
+                        None => return Ok(ResponseResult::OK), // corrupt any undecryptable message for other teams?
                     };
-                    info!(
+                    debug!(
                         "Message received from direction {} (aka {}): {}",
                         dir_enum, direction, decrypted_message
                     );
-                    return Ok(ResponseResult::Message((dir_enum, final_msg)));
+                    return Ok(ResponseResult::Message((dir_enum, decrypted_message)));
                 }
                 warn!("Failed to parse direction {}.", direction);
             }
@@ -186,18 +197,17 @@ fn handle_message_response(
         }
     }
 
-    Err(CommandError::InvalidResponse)
+    Ok(ResponseResult::Unknown)
 }
 
 fn handle_eject_response(response: String) -> Result<ResponseResult, CommandError> {
-    debug!("Handling eject response...");
     let parts: Vec<&str> = response.split_whitespace().collect();
 
     if parts.len() == 2 && parts[0] == "eject:" {
         match parts[1].trim_start().parse::<usize>() {
             Ok(direction) => {
                 if let Some(dir_enum) = DirectionEject::from_usize(direction) {
-                    info!(
+                    debug!(
                         "Receiving ejection from direction {} (aka {}).",
                         dir_enum, direction
                     );
@@ -212,7 +222,7 @@ fn handle_eject_response(response: String) -> Result<ResponseResult, CommandErro
         }
     }
 
-    Err(CommandError::InvalidResponse)
+    Ok(ResponseResult::Unknown)
 }
 
 pub trait DirectionHandler {
@@ -360,6 +370,7 @@ impl Display for ResponseResult {
             ResponseResult::Message((dir, msg)) => write!(f, "Message: ({}, {})", dir, msg),
             ResponseResult::Eject(dir) => write!(f, "Eject: {}", dir),
             ResponseResult::EjectUndone => write!(f, "Eject Undoed"),
+            ResponseResult::Unknown => write!(f, "Unknown type of response, seems invalid..."),
         }
     }
 }

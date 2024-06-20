@@ -8,22 +8,20 @@
 #![allow(dead_code)]
 
 pub mod bot;
-pub mod empress;
 pub mod fetus;
 pub mod knight;
+pub mod npc;
 pub mod queen;
 
 use crate::{
     commands::broadcast,
     tcp::{
-        self,
-        command_handle::{CommandError, ResponseResult},
+        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
         handle_tcp, TcpClient,
     },
 };
 
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter};
 use std::io::{self, Error, ErrorKind};
 use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -31,7 +29,7 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
-use empress::Empress;
+use bot::Bot;
 use fetus::Fetus;
 use knight::Knight;
 use queen::Queen;
@@ -49,12 +47,13 @@ pub struct AI {
     client: Arc<Mutex<TcpClient>>,
     map: (i32, i32),
     level: usize,
+    slots: i32,
 }
 
 #[derive(Debug, Clone)]
 enum Roles {
-    Empress,
     Fetus,
+    Bot,
     Knight,
     Queen,
 }
@@ -64,8 +63,8 @@ impl TryFrom<String> for Roles {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
-            "Empress" => Ok(Self::Empress),
             "Fetus" => Ok(Self::Fetus),
+            "Bot" => Ok(Self::Bot),
             "Knight" => Ok(Self::Knight),
             "Queen" => Ok(Self::Queen),
             _ => Err(format!("Unknown role: {}", value)),
@@ -76,8 +75,8 @@ impl TryFrom<String> for Roles {
 impl Display for Roles {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Empress => write!(f, "Empress"),
             Self::Fetus => write!(f, "Fetus"),
+            Self::Bot => write!(f, "Bot"),
             Self::Knight => write!(f, "Knight"),
             Self::Queen => write!(f, "Queen"),
         }
@@ -90,51 +89,54 @@ async fn send_role(client: &mut TcpClient, role: Roles) -> Result<ResponseResult
 
 fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, String> {
     Ok(match Roles::try_from(role)? {
-        Roles::Empress => Box::new(Empress::init(info.clone())),
         Roles::Fetus => Box::new(Fetus::init(info.clone())),
+        Roles::Bot => Box::new(Bot::init(info.clone())),
         Roles::Knight => Box::new(Knight::init(info.clone())),
         Roles::Queen => Box::new(Queen::init(info.clone())),
     })
 }
 
-pub async fn new_fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-    let client: Arc<Mutex<TcpClient>> =
-        match handle_tcp(info.address.clone(), info.team.clone()).await {
-            Ok(client) => {
-                debug!("New `Bot` client connected successfully.");
-                Arc::new(Mutex::new(client))
-            }
-            Err(e) => return Err(Error::new(e.kind(), e)),
-        };
-
-    let c_id = info.cli_id;
-    let p_id = set_id.unwrap_or(0);
+pub async fn fork_ai(info: AI) -> io::Result<()> {
+    let client = match handle_tcp(info.address.clone(), info.team.clone(), info.cli_id).await {
+        Ok(client) => {
+            info!(
+                "[{}] New client connected successfully for FORK.",
+                info.cli_id
+            );
+            Arc::new(Mutex::new(client))
+        }
+        Err(e) => {
+            error!("[{}] New client error from: {}", info.cli_id, e);
+            return Err(Error::new(e.kind(), e));
+        }
+    };
     let team = info.team.clone();
     let address = info.address.clone();
 
-    let handle = task::spawn(async move {
-        match start_ai(client, team, address, (c_id, p_id), false).await {
-            Ok(ai) => {
-                let mut rle = init_from_broadcast(&info, String::from("Bot"))
+    match start_ai(client, team, address, (info.cli_id, 0), false).await {
+        Ok(mut ai) => {
+            debug!("[{}] AI is checked in", ai.cli_id);
+            if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
+                ai.set_p_id(p_id);
+                ai.set_cli_id(c_id + 1);
+                info!(
+                    "[{}] Handling assignment of role {} with id {}",
+                    info.cli_id, role, p_id
+                );
+                let mut rle = init_from_broadcast(&ai, role)
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
                 if let Err(e) = rle.update().await {
-                    println!("Error: {}", e);
+                    println!("[{}] Error: {}", info.cli_id, e);
                 }
-                Ok(ai)
+                return Ok(());
             }
-            Err(e) => {
-                error!("{}", e);
-                Err(e)
-            }
+            warn!(
+                "[{}] No role assignment detected, turning to NPC...",
+                info.cli_id
+            );
         }
-    });
-
-    tokio::spawn(async move {
-        if let Err(e) = handle.await {
-            error!("Task failed: {:?}", e);
-        }
-    });
-
+        Err(e) => error!("[{}] {}", info.cli_id, e),
+    }
     Ok(())
 }
 
@@ -144,9 +146,6 @@ pub trait AIHandler: Send {
     where
         Self: Sized;
     async fn update(&mut self) -> Result<(), CommandError>;
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()>
-    where
-        Self: Sized;
 }
 
 #[async_trait]
@@ -171,11 +170,11 @@ impl AI {
     fn new(
         team: String,
         address: String,
-        cli_id: usize,
-        p_id: usize,
+        (cli_id, p_id): (usize, usize),
         client: Arc<Mutex<TcpClient>>,
         map: (i32, i32),
         level: usize,
+        slots: i32,
     ) -> Self {
         Self {
             team,
@@ -185,7 +184,51 @@ impl AI {
             client,
             map,
             level,
+            slots,
         }
+    }
+
+    async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
+        let mut client = self.client().lock().await;
+        if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
+            client.push_message(msg);
+        }
+        while let Some((dir, msg)) = client.pop_message() {
+            info!(
+                "[{}] AI {}: handling message: {}",
+                self.cli_id, self.p_id, msg
+            );
+            if dir != DirectionMessage::Center {
+                warn!("[{}] Ignoring message, out of bound.", self.cli_id);
+                return None;
+            }
+            let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                msg.split_at(idex)
+            } else {
+                ("0", msg.trim_end_matches('\n'))
+            };
+            if let Ok(c_id) = content.0.parse::<usize>() {
+                return self.handle_assign_msg(c_id, content.1).await;
+            }
+        }
+        None
+    }
+
+    async fn handle_assign_msg(&self, c_id: usize, msg: &str) -> Option<(usize, String, usize)> {
+        if msg.starts_with(" assign ") {
+            let mut lines = msg.split_whitespace();
+            lines.next();
+
+            let role: &str = lines.next()?;
+            let p_id = lines.next().and_then(|word| word.parse::<usize>().ok())?;
+
+            info!(
+                "[{}] AI is being assigned {} with id {}...",
+                self.cli_id, role, p_id
+            );
+            return Some((c_id, role.to_string(), p_id));
+        }
+        None
     }
 }
 
@@ -193,8 +236,8 @@ impl Display for AI {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "AI #{} = [team: {}, player ID: {}, map: ({}, {}), level: {}]",
-            self.cli_id, self.team, self.p_id, self.map.0, self.map.1, self.level
+            "AI #{} = [team: {}, player ID: {}, map: ({}, {}), level: {}, leftover slots: {}]",
+            self.cli_id, self.team, self.p_id, self.map.0, self.map.1, self.level, self.slots
         )
     }
 }
@@ -203,7 +246,7 @@ async fn parse_response(
     response: &str,
     client: Arc<Mutex<TcpClient>>,
 ) -> Result<(i32, i32, i32), io::Error> {
-    let mut cli = client.lock().await;
+    let mut cli: tokio::sync::MutexGuard<TcpClient> = client.lock().await;
     let client_number = response
         .parse::<i32>()
         .map_err(|_| Error::new(ErrorKind::InvalidData, "Invalid client number."))?;
@@ -235,15 +278,23 @@ async fn checkout_ai_info(
     parse_response(response, client.clone())
         .await
         .map(|(client_number, x, y)| {
-            info!("Client number detected as [{}].", client_number);
-            info!("Map size: ({}, {}).", x, y);
-            let ai = AI::new(team, address, c_id, p_id, client.clone(), (x, y), 1);
-            println!("New! >> {}", ai);
-            info!("AI #{} is initialized.", ai.cli_id);
+            info!("[{}] x{} unused slot(s)/ egg(s).", c_id, client_number);
+            info!("[{}] Map size: {}x{}.", c_id, x, y);
+            let ai = AI::new(
+                team,
+                address,
+                (c_id, p_id),
+                client.clone(),
+                (x, y),
+                1,
+                client_number,
+            );
+            println!("[{}] New! >> {}", c_id, ai);
+            debug!("[{}] AI is initialized.", ai.cli_id);
             ai
         })
-        .map_err(|e| {
-            debug!("Failed to parse response: {}", e);
+        .map_err(|e: Error| {
+            warn!("[{}] Failed to parse response: {}", c_id, e);
             e
         })
 }
@@ -255,23 +306,23 @@ async fn init_ai(
     address: String,
     (c_id, p_id): (usize, usize),
 ) -> io::Result<AI> {
-    info!("Initializing AI #{}...", c_id);
+    info!("[{}] Initializing AI...", c_id);
 
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
     match ai.cli_id {
-        0 => {
-            let mut empress = empress::Empress::init(ai.clone());
-            if let Err(e) = empress.update().await {
-                println!("Error: {}", e);
+        0..=3 => {
+            let mut queen = queen::Queen::init(ai.clone());
+            if let Err(e) = queen.update().await {
+                error!("[{}] Error: {}", queen.info().cli_id, e);
             }
         }
         _ => {
-            let mut fetus = fetus::Fetus::init(ai.clone());
-            if let Err(e) = fetus.update().await {
-                println!("Error: {}", e);
+            let mut bot = bot::Bot::init(ai.clone());
+            if let Err(e) = bot.update().await {
+                error!("[{}] Error: {}", bot.info().cli_id, e);
             }
         }
-    };
+    }
     Ok(ai)
 }
 
@@ -282,7 +333,7 @@ async fn start_ai(
     (c_id, p_id): (usize, usize),
     start: bool,
 ) -> io::Result<AI> {
-    println!("Starting AI process n{}...", c_id);
+    println!("[{}] Starting AI process...", c_id);
     {
         let client_lock = client.lock().await;
         client_lock.send_request(team.clone() + "\n").await?;
@@ -291,17 +342,17 @@ async fn start_ai(
         let mut client_lock = client.lock().await;
         client_lock.get_response().await
     } {
+        println!("[{}] server> {}", c_id, response);
         match response.trim_end() {
             "ko" => {
-                print!("server> {}", response);
-                debug!("Server doesn't handle any more connection.");
+                debug!("[{}] Server doesn't handle any more connection.", c_id);
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
                 ))
             }
             _ => {
-                info!("Connection to team successful.");
+                info!("[{}] Connection to team successful.", c_id);
                 let ai = match start {
                     true => init_ai(client.clone(), &response, team, address, (c_id, p_id)).await?,
                     false => {
@@ -313,7 +364,7 @@ async fn start_ai(
             }
         }
     } else {
-        debug!("Host not reachable.");
+        debug!("[{}] Host not reachable.", c_id);
         Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
@@ -330,17 +381,25 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     loop {
         if stop_flag.load(Ordering::SeqCst) {
-            println!("Stop flag is set, breaking the loop.");
+            println!(
+                "[AT {:?}] Stop flag is set, breaking the loop.",
+                connection_id
+            );
             break;
         }
-        let team = Arc::clone(&team);
 
-        match tcp::handle_tcp(address.to_string(), team.to_string()).await {
+        let team = Arc::clone(&team);
+        let address = Arc::clone(&address);
+        let connection_id = Arc::clone(&connection_id);
+        let stop_flag = Arc::clone(&stop_flag);
+
+        let curr_id = connection_id.load(Ordering::SeqCst);
+        println!("[{}] Attempting connection...", curr_id);
+
+        match handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {
-                let address = Arc::clone(&address);
                 let client = Arc::new(Mutex::new(client));
                 let id = connection_id.fetch_add(1, Ordering::SeqCst);
-                let stop_flag = Arc::clone(&stop_flag);
 
                 let handle = task::spawn(async move {
                     let result = start_ai(
@@ -354,11 +413,11 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
                     match result {
                         Ok(_) => {
-                            println!("Connection {} handled successfully", id);
+                            println!("[{}] Connection handled successfully", id);
                             Ok(())
                         }
                         Err(e) => {
-                            println!("Connection {} failed: {}", id, e);
+                            println!("[{}] Connection failed: {}", id, e);
                             stop_flag.store(true, Ordering::SeqCst);
                             Err(e)
                         }
@@ -367,7 +426,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
                 handles.push(handle);
             }
             Err(e) => {
-                println!("Failed to handle TCP: {}", e);
+                println!("[{}] Failed to handle TCP: {}", curr_id, e);
                 break;
             }
         }
@@ -381,9 +440,9 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         ));
     }
 
-    for handle in handles {
+    for (id, handle) in handles.into_iter().enumerate() {
         if let Err(e) = handle.await {
-            println!("Task failed: {:?}", e);
+            println!("[{}] Task failed: {:?}", id, e);
         }
     }
 

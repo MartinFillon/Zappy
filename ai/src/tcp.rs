@@ -33,10 +33,11 @@ pub struct TcpClient {
     connection_handle: Option<JoinHandle<()>>,
     messages: Vec<(DirectionMessage, String)>,
     crypt: Crypt,
+    id: usize,
 }
 
 impl TcpClient {
-    pub fn new(addr: &str, team: String) -> Self {
+    pub fn new(addr: &str, team: String, id: usize) -> Self {
         Self {
             addr: addr.to_string(),
             request_sender: None,
@@ -44,12 +45,13 @@ impl TcpClient {
             connection_handle: None,
             messages: Vec::new(),
             crypt: Crypt::new(team),
+            id,
         }
     }
 
     pub async fn connect(&mut self) -> io::Result<()> {
         let stream = TcpStream::connect(&self.addr).await?;
-        info!("Connected to the server at {}", self.addr);
+        info!("[{}] Connected to the server at {}", self.id, self.addr);
 
         let (read_half, write_half) = stream.into_split();
         let reader = BufReader::new(read_half);
@@ -64,6 +66,7 @@ impl TcpClient {
             write_half,
             request_receiver,
             response_sender,
+            self.id,
         ));
         self.connection_handle = Some(connection_handle);
 
@@ -71,14 +74,17 @@ impl TcpClient {
     }
 
     pub async fn send_request(&self, request: String) -> io::Result<()> {
-        debug!("Sending request: {}", request.trim_end());
+        debug!("[{}] Sending request: {}", self.id, request.trim_end());
         if let Some(sender) = &self.request_sender {
             sender
                 .send(request)
                 .await
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         } else {
-            error!("Failed to send request: Not connected to server.");
+            error!(
+                "[{}] Failed to send request: Not connected to server.",
+                self.id
+            );
             Err(io::Error::new(
                 io::ErrorKind::NotConnected,
                 "Not connected to server.",
@@ -90,14 +96,17 @@ impl TcpClient {
         if let Some(receiver) = &mut self.response_receiver {
             receiver.recv().await
         } else {
-            debug!("No response received, response receiver not available.");
+            warn!(
+                "[{}] No response received, response receiver not available.",
+                self.id
+            );
             None
         }
     }
 
-    async fn process_resp(response: String, response_sender: &Sender<String>) -> bool {
+    async fn process_resp(response: String, response_sender: &Sender<String>, id: usize) -> bool {
         if let Err(e) = response_sender.send(response).await {
-            error!("Failed to send response: {}", e);
+            error!("[{}] Failed to send response: {}", id, e);
             return false;
         }
         true
@@ -108,6 +117,7 @@ impl TcpClient {
         mut write_half: OwnedWriteHalf,
         mut request_receiver: Receiver<String>,
         response_sender: Sender<String>,
+        id: usize,
     ) {
         loop {
             let mut buffer = String::new();
@@ -116,19 +126,19 @@ impl TcpClient {
                 result = reader.read_line(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            warn!("Connection closed by the server.");
+                            warn!("[{}] Connection closed by the server.", id);
                             break;
                         }
                         Ok(n) => {
-                            debug!("Read {} bytes from the server.", n);
+                            debug!("[{}] Read {} bytes from the server.", id, n);
                             let response = buffer.trim().to_string();
-                            debug!("Received: '{}\\n'", response.trim_end());
-                            if !Self::process_resp(response, &response_sender).await {
+                            debug!("[{}] Received: '{}\\n'", id, response.trim_end());
+                            if !Self::process_resp(response, &response_sender, id).await {
                                 break;
                             }
                         }
                         Err(e) => {
-                            error!("Failed to read from socket: {}", e);
+                            error!("[{}] Failed to read from socket: {}", id, e);
                             break;
                         }
                     }
@@ -137,14 +147,13 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                error!("Failed to write to socket: {}", e);
+                                error!("[{}] Failed to write to socket: {}", id, e);
                                 break;
                             }
-                            debug!("Successfully wrote request to socket:");
-                            debug!("ai-client> `{}\\n`", req.trim_end());
+                            debug!("[{}] ai-client> `{}\\n`", id, req.trim_end());
                         }
                         None => {
-                            warn!("Request channel closed.");
+                            warn!("[{}] Request channel closed.", id);
                             break;
                         }
                     }
@@ -159,6 +168,7 @@ impl TcpClient {
         mut write_half: OwnedWriteHalf,
         mut request_receiver: Receiver<String>,
         response_sender: Sender<String>,
+        id: usize,
     ) {
         let mut buffer = vec![0; 1024];
 
@@ -167,19 +177,19 @@ impl TcpClient {
                 result = reader.read(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            warn!("Connection closed by the server.");
+                            warn!("[{}] Connection closed by the server.", id);
                             break;
                         }
                         Ok(n) => {
-                            debug!("Read {} bytes from the server.", n);
+                            debug!("[{}] Read {} bytes from the server.", id, n);
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
-                                error!("Failed to send response: {}", e);
+                                error!("[{}] Failed to send response: {}", id, e);
                                 break;
                             }
                         }
                         Err(e) => {
-                            error!("Failed to read from socket: {}", e);
+                            error!("[{}] Failed to read from socket: {}", id, e);
                             break;
                         }
                     }
@@ -188,14 +198,13 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                error!("Failed to write to socket: {}", e);
+                                error!("[{}] Failed to write to socket: {}", id, e);
                                 break;
                             }
-                            debug!("Successfully wrote request to socket:");
-                            debug!("ai-client> `{}\\n`", req.trim_end());
+                            debug!("[{}] Successfully wrote request to socket: `{}\\n`", id, req.trim_end());
                         }
                         None => {
-                            warn!("Request channel closed.");
+                            warn!("[{}] Request channel closed.", id);
                             break;
                         }
                     }
@@ -210,7 +219,6 @@ impl TcpClient {
 
     pub fn pop_message(&mut self) -> Option<(DirectionMessage, String)> {
         if self.messages.is_empty() {
-            warn!("No message to pop.");
             None
         } else {
             Some(self.messages.remove(0))
@@ -218,12 +226,12 @@ impl TcpClient {
     }
 }
 
-pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> {
-    let mut client = TcpClient::new(address.as_str(), team);
+pub async fn handle_tcp(address: String, team: String, id: usize) -> io::Result<TcpClient> {
+    let mut client = TcpClient::new(address.as_str(), team, id);
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {
-        print!("server> {}", response);
+        println!("[{}] server> {}", id, response);
     } else {
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
@@ -231,4 +239,49 @@ pub async fn handle_tcp(address: String, team: String) -> io::Result<TcpClient> 
         ));
     }
     Ok(client)
+}
+
+// run the server with default values
+#[cfg(test)]
+mod tests {
+    use super::handle_tcp;
+    use tokio::runtime::Runtime;
+
+    #[cfg(feature = "server_test")]
+    #[test]
+    fn test_tcp_client() {
+        let rt = Runtime::new().unwrap();
+
+        rt.block_on(async {
+            let address = "127.0.0.1:8080".to_string();
+            let team = "Team1".to_string();
+
+            let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
+
+            let request = "Team1\n".to_string();
+            client.send_request(request.clone()).await.unwrap();
+
+            let response = client.get_response().await.unwrap();
+            assert_ne!(response, "ko");
+        });
+    }
+
+    #[cfg(feature = "server_test")]
+    #[test]
+    fn test_tcp_client_err() {
+        let rt = Runtime::new().unwrap();
+
+        rt.block_on(async {
+            let address = "127.0.0.1:8080".to_string();
+            let team: String = "Team10".to_string();
+
+            let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
+
+            let request = "Team10\n".to_string();
+            client.send_request(request.clone()).await.unwrap();
+
+            let response = client.get_response().await.unwrap();
+            assert_eq!(response, "ko");
+        });
+    }
 }
