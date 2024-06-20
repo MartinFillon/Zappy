@@ -45,11 +45,11 @@ SRC =   str/str.c\
 		options/help.c\
 		utils/freeze_ai.c
 
-TEST_SRC = ../tests/lib/logger.spec.c\
-			../tests/lib/str.spec.c\
-			../tests/lib/json.spec.c\
-			../tests/lib/options.spec.c\
-			../tests/lib/utils.spec.c
+TEST_SRC =  ../../tests/lib/logger.spec.c\
+			../../tests/lib/str.spec.c\
+			../../tests/lib/json.spec.c\
+			../../tests/lib/options.spec.c\
+			../../tests/lib/utils.spec.c
 
 TEST_OBJ = $(TEST_SRC:.c=.o)
 

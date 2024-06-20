@@ -141,7 +141,7 @@ Test(json, parse_json_object)
 
 Test(json, json_from_file)
 {
-    json_data_t *data = json_from_file("../tests/lib/test.json");
+    json_data_t *data = json_from_file("../../tests/lib/test.json");
     cr_assert_not_null(data);
 
     str_t *key = str_snew("key");
