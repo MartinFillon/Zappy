@@ -11,11 +11,11 @@
 namespace GUI {
 
 Menu::Menu(int &screenWidth, int &screenHeight, OpenWindow &openWindow):
-    m_width(screenWidth), m_height(screenHeight), m_inPauseMenu(false), m_openWindow(openWindow)
+    m_width(screenWidth), m_height(screenHeight), m_inPauseMenu(false)
 {
-    m_button.push_back(Button<Rectangle, OpenWindow>("start", [](OpenWindow &openWindow){openWindow = GAME;}));
-    m_button.push_back(Button<Rectangle, OpenWindow>("settings", [](OpenWindow &openWindow){openWindow = SETTINGS;}));
-    m_button.push_back(Button<Rectangle, OpenWindow>("quit", [](OpenWindow &openWindow){openWindow = QUIT;}));
+    m_button.push_back(Button<Rectangle, OpenWindow>("start", openWindow, [](OpenWindow &openWindow){openWindow = GAME;}));
+    m_button.push_back(Button<Rectangle, OpenWindow>("settings", openWindow, [](OpenWindow &openWindow){openWindow = SETTINGS;}));
+    m_button.push_back(Button<Rectangle, OpenWindow>("quit", openWindow, [](OpenWindow &openWindow){openWindow = QUIT;}));
 }
 
 void Menu::display()
@@ -30,8 +30,8 @@ void Menu::display()
         if (m_inPauseMenu && i == 0)
             continue;
         Button<Rectangle, OpenWindow> &but = m_button.at(i);
-        rec.y += m_height / 8.0f;
-        but.checkButtonAction(rec, m_openWindow);
+        rec.y += rec.height;
+        but.checkButtonAction(rec);
         but.draw(rec, fontSize / 2.0f);
     }
 }

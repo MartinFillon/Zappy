@@ -21,8 +21,6 @@ class Menu {
     int &m_width;
     int &m_height;
     bool m_inPauseMenu;
-
-    OpenWindow &m_openWindow;
     };
 
 } // namespace GUI

@@ -7,21 +7,15 @@
 
 #pragma once
 
+#include "../Raylib.hpp"
 #include <functional>
 
 namespace GUI {
 
-enum OpenWindow {
-  MENU,
-  SETTINGS,
-  GAME,
-  QUIT
-};
-
 template <typename F, typename T>
 class IButton {
   public:
-    virtual void checkButtonAction(F &rec, T &val) = 0;
+    virtual void checkButtonAction(F &rec) = 0;
     virtual void draw(F &rec, int fontSize) = 0;
 };
 

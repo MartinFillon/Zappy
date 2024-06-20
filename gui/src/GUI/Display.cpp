@@ -12,8 +12,8 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}), m_is3D(true), m_isCameraFree(true), m_showCursor(true), m_openWindow(MENU),
-      m_menu(screenWidth, screenHeight, m_openWindow)
+      timeUnitInput(100, networkHandler), m_cam({}), m_openWindow(MENU),
+      m_menu(screenWidth, screenHeight, m_openWindow), m_settings(screenWidth, screenHeight)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -50,19 +50,19 @@ void Display::handleEvent()
         m_openWindow = (m_openWindow == MENU)? QUIT : MENU;
     }
     if (IsKeyPressed(KEY_P))
-        m_is3D = !m_is3D;
-    if (m_is3D) {
+        m_settings.switchIs3D();
+    if (m_settings.is3D()) {
         if (Raylib::isKeyPressed(KEY_R))
             m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
         if (Raylib::isKeyPressed(KEY_F))
-            m_isCameraFree = !m_isCameraFree;
+            m_settings.switchIsCameraFree();
         if (Raylib::isKeyPressed(KEY_C)) {
-            (m_showCursor)? Raylib::disableCursor() : Raylib::enableCursor();
-            m_showCursor = !m_showCursor;
+            (m_settings.showCursor())? Raylib::disableCursor() : Raylib::enableCursor();
+            m_settings.switchShowCursor();
         };
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        if (m_is3D)
+        if (m_settings.is3D())
             map.checkCollision3D(infoBox, m_cam);
         else
             map.checkCollision(infoBox);
@@ -79,14 +79,17 @@ void Display::displayMenu()
 
 void Display::displaySettings()
 {
-    ClearBackground(BLUE);
+    ClearBackground(WHITE);
+    m_settings.display();
 }
 
 void Display::displayGame()
 {
     ClearBackground(BLACK);
-    if (m_is3D) {
-        map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree);
+    if (m_settings.is3D()) {
+        if (m_settings.isCameraFree())
+            Raylib::updateCamera(m_cam, CAMERA_FREE);
+        map.displayTacticalView3D(infoBox, m_cam);
     } else {
         DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
         map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);

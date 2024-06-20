@@ -12,6 +12,7 @@
 
 #include "../Network/Handler.hpp"
 #include "Menu/Menu.hpp"
+#include "Menu/Settings.hpp"
 #include "Data/Map.hpp"
 #include "MessageBox.hpp"
 #include "TimeUnitInput.hpp"
@@ -77,13 +78,10 @@ class Display {
     TimeUnitInput timeUnitInput;
 
     Camera3D m_cam;
-    bool m_is3D;
-    bool m_isCameraFree;
-    bool m_showCursor;
-
     OpenWindow m_openWindow;
 
     Menu m_menu;
+    Settings m_settings;
 };
 
 } // namespace GUI

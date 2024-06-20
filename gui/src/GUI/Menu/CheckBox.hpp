@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** Button
+** CheckBox
 */
 
 #pragma once
@@ -12,22 +12,14 @@
 
 namespace GUI {
 
-enum OpenWindow {
-  MENU,
-  SETTINGS,
-  GAME,
-  QUIT
-};
-
-template <typename F, typename T>
-class Button : public AButton<F, T>
+class CheckBox : public AButton<Raylib::Square, bool>
 {
   public:
-    Button(const std::string &name, T &val, std::function<void(T&)> funct):
-      AButton<F, T>(name, val, funct) {}
+    CheckBox(const std::string &name, bool &val):
+      AButton<Raylib::Square, bool>(name, val, [](bool &val){val = !val;}) {}
 
-    void checkButtonAction(F &rec) override {
-        if (Raylib::checkCollisionMouseRec(rec)) {
+    void checkButtonAction(Raylib::Square &sqr) override {
+        if (Raylib::checkCollisionMouseSquare(sqr)) {
             if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT))
                 this->m_state = PRESSED;
             else
@@ -39,25 +31,28 @@ class Button : public AButton<F, T>
         }
     }
 
-    void draw(F &forme, int fontSize) override {
-        Color colorRec = WHITE;
+    void draw(Raylib::Square &sqr, int fontSize) override {
+        Color colorRec = BLUE;
+        Color colorBackRec = WHITE;
         Color colorText = BLACK;
+        Raylib::Square lightRec = {sqr.x + 5, sqr.y + 5, sqr.size - 10};
 
         switch (this->m_state)
         {
         case HOVER:
             colorRec = GRAY;
-            colorText = WHITE;
             break;
         case PRESSED:
             colorRec = GREEN;
-            colorText = WHITE;
             break;
         default:
             break;
         }
-        Raylib::draw(forme, colorRec);
-        Raylib::drawTextInForm(this->m_name, forme, fontSize, colorText);
+        Raylib::drawSquare(sqr, colorBackRec);
+        Raylib::drawSquareLines(sqr, colorRec);
+        if (m_val)
+            Raylib::drawSquare(lightRec, colorRec);
+        Raylib::drawText(this->m_name, sqr.x + sqr.size + 20, sqr.y, fontSize, colorText);
     }
 };
 

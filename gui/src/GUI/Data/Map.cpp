@@ -244,12 +244,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool isCameraFree) const
+void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
 {
     float tileSize = 1.0f;
-
-    if (isCameraFree)
-        Raylib::updateCamera(cam, CAMERA_FREE);
 
     Raylib::clearBackground(RAYWHITE);
     Raylib::beginMode3D(cam);

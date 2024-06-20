@@ -29,6 +29,7 @@ SRC = $(BASE_SRC) 							\
 				)							\
 				$(addprefix Menu/,			\
 					Menu					\
+					Settings				\
 				)							\
 				$(addprefix ModelManager/,	\
 					Model3D					\
