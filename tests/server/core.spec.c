@@ -11,10 +11,12 @@
 #include "core/gui/defs.h"
 #include "core/router/route.h"
 #include "core/router/router.h"
+#include "core/server.h"
 #include "core/types/client.h"
 #include "core/types/clock.h"
-#include "logger.h"
+#include "queue.h"
 #include "zappy.h"
+#include "core/serv_cmd/serv_cmds.h"
 #include "fake_server.h"
 
 Test(core, test_map_size)
@@ -494,4 +496,135 @@ Test(core, run_router_empty_str)
     run_router(z.server.router, cli, &z, str_snew(""));
     cr_assert_str_eq(cli->io.res->data, "");
     destroy_router(z.server.router);
+}
+
+Test(core, execute_two_ai_commands)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    cr_assert_eq(z.clients->size, 1);
+    queue_pushback_queue_command_t(cli->commands, str_snew("Forward"));
+    queue_pushback_queue_command_t(cli->commands, str_snew("Forward"));
+    execute_commands(&z);
+    execute_commands(&z);
+    wait_n_ticks(cli->ai->clock, cli->ai->cycles_to_wait);
+    execute_commands(&z);
+    cr_assert_str_eq(cli->io.res->data, "ok\nok\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, execute_gui_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+
+    cr_assert_eq(z.clients->size, 1);
+    queue_pushback_queue_command_t(cli->commands, str_snew("msz"));
+    execute_commands(&z);
+    cr_assert_str_eq(cli->io.res->data, "msz 10 10\n");
+    destroy_router(z.server.router);
+}
+
+Test(core, godmode_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(2);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+
+    godmode(&z, args);
+    cr_assert_eq(cli->ai->godmode, true);
+    godmode(&z, args);
+    cr_assert_eq(cli->ai->godmode, false);
+}
+
+Test(core, godmode_command_invalid_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+
+    godmode(&z, args);
+    cr_assert_eq(cli->ai->godmode, false);
+}
+
+Test(core, godmode_command_invalid_args2)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("100"));
+
+    godmode(&z, args);
+    cr_assert_eq(cli->ai->godmode, false);
+}
+
+Test(core, kill_player_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+
+    handle_kill_player(&z, args);
+    cr_assert_eq(z.game.ais->size, 0);
+}
+
+Test(core, kill_player_command_invalid_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+
+    handle_kill_player(&z, args);
+    cr_assert_eq(z.game.ais->size, 1);
+}
+
+Test(core, kill_player_command_invalid_args2)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("100"));
+
+    handle_kill_player(&z, args);
+    cr_assert_eq(z.game.ais->size, 1);
 }

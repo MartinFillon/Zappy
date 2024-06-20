@@ -51,7 +51,7 @@ void init_server(zappy_t *z)
 
 client_t *new_fake_client()
 {
-    int fd = 0;
+    int fd = -1;
 
     return init_client(fd, "localhost", 0);
 }
@@ -67,6 +67,7 @@ client_t *new_fake_ai_client(
     cr_assert_not_null(client);
     client->type = AI;
     cr_assert_eq(init_ai(test_game, client, test_team, lst), false);
+    vec_pushback_client_list(lst, client);
     return client;
 }
 
