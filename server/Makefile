@@ -58,12 +58,12 @@ fclean: clean docs-clean
 	$(MAKE) -C dashboard fclean
 
 $(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
+$(TEST_NAME): lib $(BASE_SRC) $(TEST_SRC)
 	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS) $(LDLIBS)
 
-tests_run:	lib $(TEST_NAME)
-	./$(TEST_NAME)
+tests_run:
+	$(MAKE) -C lib tests_run
 
 debug_submodules:
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)

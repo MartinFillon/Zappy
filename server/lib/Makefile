@@ -46,7 +46,8 @@ SRC =   str/str.c\
 		options/help.c\
 		utils/freeze_ai.c
 
-TEST_SRC = ../tests/lib/logger.spec.c
+TEST_SRC = ../tests/lib/logger.spec.c\
+			../tests/lib/str.spec.c
 
 TEST_OBJ = $(TEST_SRC:.c=.o)
 
@@ -55,6 +56,12 @@ NAME = ../libcore.a
 TEST_NAME = unit_tests
 
 OBJ = $(SRC:.c=.o)
+
+SRC_GCNOS = $(SRC:.c=.gcno)
+SRC_GCDA = $(SRC:.c=.gcda)
+TEST_GCDA = $(TEST_SRC:.c=.gcda)
+TEST_SRC_GCNOS = $(TEST_SRC:.c=.gcno)
+
 
 CFLAGS += -Wall -Wextra -Wno-unused-function -fPIC
 CPPFLAGS += -iquote ../include
@@ -67,10 +74,10 @@ $(NAME): $(OBJ)
 clean:
 	rm -f $(OBJ)
 	rm -f $(TEST_OBJ)
-	rm -f *.gcno
-	rm -f *.gcda
-	rm -f ../tests/lib/*.gcno
-	rm -f ../tests/lib/*.gcda
+	rm -f $(SRC_GCNOS)
+	rm -f $(SRC_GCDA)
+	rm -f $(TEST_GCDA)
+	rm -f $(TEST_SRC_GCNOS)
 
 fclean: clean
 	rm -f $(NAME)
