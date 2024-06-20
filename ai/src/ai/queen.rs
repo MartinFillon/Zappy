@@ -5,9 +5,8 @@
 // queen
 //
 
-use super::Listeners;
 use crate::{
-    ai::{fork_ai, AIHandler, Incantationers, AI},
+    ai::{fork_ai, AIHandler, Incantationers, Listeners, AI},
     commands::{
         broadcast, fork, incantation, inventory, look_around, move_up, take_object,
         turn::{self, DirectionTurn},
@@ -62,10 +61,10 @@ impl AIHandler for Queen {
                 "[{}] Blocking, checking requirements of all queens...",
                 info.cli_id
             );
-            debug!("[{}] Unused slot checked: {}", info.cli_id, info.slots);
             debug!(
-                "[{}] Number of queens created: {}",
+                "[{}] Unused slot checked: {} | Number of queens created: {}",
                 info.cli_id,
+                info.slots,
                 info.cli_id + 1
             );
             if info.slots == 0 && info.cli_id < 3 {
@@ -78,7 +77,10 @@ impl AIHandler for Queen {
             }
             info!("[{}] Unblocked.", info.cli_id);
         }
-        println!("[{}] Queen is officially crowned.", self.info.cli_id);
+        println!(
+            "[{}] Queen is now certified and verified.",
+            self.info.cli_id
+        );
 
         let _ = self.handle_message().await;
         self.fork_servants().await?;

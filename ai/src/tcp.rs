@@ -244,7 +244,11 @@ pub async fn handle_tcp(address: String, team: String, id: usize) -> io::Result<
 #[cfg(test)]
 mod tests {
     use super::handle_tcp;
+
+    use std::process::{Child, Command};
+    use std::time::Duration;
     use tokio::runtime::Runtime;
+    use tokio::time::sleep;
 
     #[cfg(feature = "server_test")]
     #[test]
@@ -282,5 +286,61 @@ mod tests {
             let response = client.get_response().await.unwrap();
             assert_eq!(response, "ko");
         });
+    }
+
+    #[cfg(feature = "server_test")]
+    fn start_server() -> Child {
+        let server_path = "./zappy_server";
+
+        Command::new(server_path)
+            .arg("-n")
+            .arg("Team1")
+            .spawn()
+            .expect("Failed to start server")
+    }
+
+    #[cfg(feature = "server_test")]
+    fn stop_server(child: &mut Child) {
+        child.kill().expect("Failed to kill server");
+    }
+
+    #[cfg(feature = "server_test")]
+    #[tokio::test]
+    async fn test_tcp_client_alias() {
+        let mut server = start_server();
+        sleep(Duration::from_secs(2)).await;
+
+        let address = "127.0.0.1:8080".to_string();
+        let team = "Team1".to_string();
+
+        let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
+
+        let request = "Team1\n".to_string();
+        client.send_request(request.clone()).await.unwrap();
+
+        let response = client.get_response().await.unwrap();
+        assert_ne!(response, "ko");
+
+        stop_server(&mut server);
+    }
+
+    #[cfg(feature = "server_test")]
+    #[tokio::test]
+    async fn test_tcp_client_err_alias() {
+        let mut server = start_server();
+        sleep(Duration::from_secs(2)).await;
+
+        let address = "127.0.0.1:8080".to_string();
+        let team: String = "Team10".to_string();
+
+        let mut client = handle_tcp(address.clone(), team.clone(), 0).await.unwrap();
+
+        let request = "Team10\n".to_string();
+        client.send_request(request.clone()).await.unwrap();
+
+        let response = client.get_response().await.unwrap();
+        assert_eq!(response, "ko");
+
+        stop_server(&mut server);
     }
 }
