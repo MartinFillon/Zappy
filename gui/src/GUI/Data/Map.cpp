@@ -6,6 +6,7 @@
 */
 
 #include "Map.hpp"
+#include <cstddef>
 #include <memory>
 #include <raylib.h>
 #include <vector>
@@ -231,6 +232,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
+        if (egg == nullptr) {
+            continue;
+        }
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
         int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
@@ -292,6 +296,8 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
     }
 
     for (const auto &egg : m_eggs) {
+        if (egg == nullptr)
+            continue;
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
         Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});

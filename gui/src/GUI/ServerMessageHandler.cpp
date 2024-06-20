@@ -96,7 +96,9 @@ void ServerMessageHandler::handleNewPlayer(const std::string &message)
     iss >> playerNumber >> x >> y >> orientation >> level >> teamName;
 
     std::vector<std::shared_ptr<Data::Player>> &players = display.getMap().getPlayers();
-    players.emplace_back(std::make_shared<Data::Player>(x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level));
+    players.emplace_back(std::make_shared<Data::Player>(
+        x, y, static_cast<Data::Player::Direction>(orientation), playerNumber, teamName, level
+    ));
 
     if (debug)
         std::cout << "New player #" << playerNumber << " joined at (" << x << ", " << y << ") with orientation "
@@ -254,9 +256,13 @@ void ServerMessageHandler::handleEggLaying(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber;
-    std::shared_ptr<Data::Player> player = display.getMap().getPlayers().at(playerNumber);
-    display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
-
+    for (auto &player : display.getMap().getPlayers()) {
+        if (player->getId() == playerNumber) {
+            display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
+        } else {
+            return;
+        }
+    }
     if (debug)
         std::cout << "Player #" << playerNumber << " has laid an egg" << std::endl;
 }
@@ -267,10 +273,14 @@ void ServerMessageHandler::handleResourceDrop(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
-    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
-    Data::Tile &tile = display.getMap().getTile(player->getPos());
-
-    player->drop(tile, resourceType);
+    for (auto &player : display.getMap().getPlayers()) {
+        if (player->getId() == playerNumber) {
+            Data::Tile &tile = display.getMap().getTile(player->getPos());
+            player->drop(tile, resourceType);
+        } else {
+            return;
+        }
+    }
     if (debug)
         std::cout << "Player #" << playerNumber << " dropped resource type " << resourceType << std::endl;
 }
@@ -281,10 +291,14 @@ void ServerMessageHandler::handleResourceCollect(const std::string &message)
     std::istringstream iss(message);
 
     iss >> playerNumber >> resourceType;
-    std::shared_ptr<Data::Player> &player = display.getMap().getPlayers().at(playerNumber);
-    Data::Tile &tile = display.getMap().getTile(player->getPos());
-
-    player->loot(tile, resourceType);
+    for (auto &player : display.getMap().getPlayers()) {
+        if (player->getId() == playerNumber) {
+            Data::Tile &tile = display.getMap().getTile(player->getPos());
+            player->loot(tile, resourceType);
+        } else {
+            return;
+        }
+    }
     if (debug)
         std::cout << "Player #" << playerNumber << " collected resource type " << resourceType << std::endl;
 }
@@ -305,7 +319,6 @@ void ServerMessageHandler::handlePlayerDeath(const std::string &message)
         ),
         players.end()
     );
-
     if (debug)
         std::cout << "Player #" << playerNumber << " has died" << std::endl;
 }
@@ -334,9 +347,11 @@ void ServerMessageHandler::handlePlayerConnectEgg(const std::string &message)
 
     auto &eggs = display.getMap().getEggs();
     auto eggIter = std::remove_if(eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) {
-        return egg->getId() == eggNumber;
+        return (egg != nullptr && egg->getId() == eggNumber);
     });
     if (eggIter != eggs.end()) {
+        if (*eggIter == nullptr)
+            return;
         int x = (*eggIter)->getPosition().x();
         int y = (*eggIter)->getPosition().y();
 
@@ -364,7 +379,9 @@ void ServerMessageHandler::handleEggDeath(const std::string &message)
     auto &eggs = display.getMap().getEggs();
     eggs.erase(
         std::remove_if(
-            eggs.begin(), eggs.end(), [eggNumber](const std::shared_ptr<Data::Egg> &egg) { return egg->getId() == eggNumber; }
+            eggs.begin(),
+            eggs.end(),
+            [eggNumber](const std::shared_ptr<Data::Egg> &egg) { return egg != nullptr && egg->getId() == eggNumber; }
         ),
         eggs.end()
     );
@@ -405,6 +422,10 @@ void ServerMessageHandler::handleEndGame(const std::string &message)
 void ServerMessageHandler::handleMessageFromServer(const std::string &message)
 {
     display.addMessage(message);
+    if (message.find("eni ") == 0)
+        //use handleEggLaid but with -1 as player number
+        handleEggLaid(message.substr(4));
+    
     if (debug)
         std::cout << "Message from server: " << message << std::endl;
 }
