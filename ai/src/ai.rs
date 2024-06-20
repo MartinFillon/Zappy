@@ -113,11 +113,7 @@ impl AI {
         None
     }
 
-    async fn handle_assign_msg(
-        &self,
-        c_id: usize,
-        msg: &str,
-    ) -> Option<(usize, String, usize)> {
+    async fn handle_assign_msg(&self, c_id: usize, msg: &str) -> Option<(usize, String, usize)> {
         if msg.starts_with("assign ") {
             let mut lines = msg.split_whitespace();
             lines.next();
