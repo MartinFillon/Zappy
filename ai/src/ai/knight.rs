@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{fork_ai, AIHandler, Incantationers, AI},
-    commands::{drop_object, fork, incantation, inventory, look_around, take_object},
+    commands::{broadcast, drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, ResponseResult},
@@ -31,7 +31,7 @@ pub struct Knight {
 }
 
 static mut LEVEL: usize = 1;
-const MIN_FOOD_ON_FLOOR: usize = 300;
+const MIN_FOOD_ON_FLOOR: usize = 200;
 
 #[async_trait]
 impl AIHandler for Knight {
@@ -176,6 +176,12 @@ impl Knight {
                             println!("[{}] AI successfully forked.", info.cli_id);
                         }
                     });
+                    broadcast::broadcast(
+                        client,
+                        format!("{} assign Fetus {}", self.info().cli_id, self.info().p_id)
+                            .as_str(),
+                    )
+                    .await?;
                 }
             }
         }
@@ -188,17 +194,16 @@ impl Knight {
         min: usize,
     ) -> Result<(), CommandError> {
         self.check_food(client, MIN_FOOD_ON_FLOOR).await?;
-        let res = inventory::inventory(client).await;
+        let mut res = inventory::inventory(client).await;
         if let ResponseResult::Inventory(mut inv) =
             Knight::knight_checkout_response(client, res).await?
         {
             if !inv.is_empty() && inv[0].0 == "food" {
-                while inv[0].1 < min as i32 {
-                    let mut res = take_object::take_object(client, "food").await;
+                res = Ok(ResponseResult::OK);
+                while inv[0].1 < min as i32 && res == Ok(ResponseResult::OK) {
+                    res = take_object::take_object(client, "food").await;
                     res = Knight::handle_eject(client, res).await;
-                    if res == Ok(ResponseResult::OK) {
-                        inv[0].1 += 1;
-                    }
+                    inv[0].1 += 1;
                 }
             }
         }

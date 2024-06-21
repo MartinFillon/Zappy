@@ -247,7 +247,7 @@ impl AI {
             let role: &str = lines.next()?;
             let p_id = lines.next().and_then(|word| word.parse::<usize>().ok())?;
 
-            info!(
+            println!(
                 "[{}] AI is being assigned {} with id {}...",
                 self.cli_id, role, p_id
             );
