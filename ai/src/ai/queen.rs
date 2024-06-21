@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{fork_ai, AIHandler, Incantationers, AI},
-    commands::{self, broadcast, fork, incantation, inventory, look_around, move_up},
+    commands::{broadcast, fork, incantation, inventory, look_around, move_up, take_object},
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast, turn_towards_broadcast},
     tcp::{
@@ -78,7 +78,7 @@ impl AIHandler for Queen {
     //         let look_res = {
     //             let mut cli = self.info.client.lock().await;
     //             println!("Queen {} calling Look...", self.info.p_id);
-    //             let res = commands::look_around::look_around(&mut cli).await;
+    //             let res = look_around::look_around(&mut cli).await;
     //             println!("Queen {} Look returned: {:?}", self.info.p_id, res);
     //             Queen::queen_checkout_response(&mut cli, res).await
     //         };
@@ -89,7 +89,7 @@ impl AIHandler for Queen {
     //         let inventory_res = {
     //             let mut cli = self.info.client.lock().await;
     //             println!("Queen {} calling Inventory...", self.info.p_id);
-    //             let res = commands::inventory::inventory(&mut cli).await;
+    //             let res = inventory::inventory(&mut cli).await;
     //             println!("Queen {} Inventory returned: {:?}", self.info.p_id, res);
     //             Queen::queen_checkout_response(&mut cli, res).await
     //         };
@@ -149,12 +149,12 @@ impl AIHandler for Queen {
             self.info.cli_id
         );
 
-        let _ = self.handle_message().await;
+        self.handle_message().await?;
         self.fork_servants().await?;
 
         loop {
-            let _ = self.handle_message().await;
-            let _ = self.check_move_elevation().await;
+            self.handle_message().await?;
+            self.check_move_elevation().await?;
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -174,7 +174,7 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            let _ = self.check_enough_food(5).await;
+            self.check_enough_food(5).await?;
 
             if self.check_requirement() {
                 println!(
@@ -348,9 +348,9 @@ impl Queen {
         }
         //{
         //    let mut cli = self.info.client.lock().await;
-        //    commands::move_up::move_up(&mut cli).await?;
+        //    move_up::move_up(&mut cli).await?;
         //    let broad_res =
-        //        commands::broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
+        //        broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
         //            .await?;
         //    Queen::queen_checkout_response(&mut cli, Ok(broad_res)).await?;
         //}
@@ -388,13 +388,12 @@ impl Queen {
         let mut level = self.info().level;
         {
             let mut cli = self.info.client.lock().await;
-            commands::broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str())
-                .await?;
+            broadcast::broadcast(&mut cli, format!("{} inc", self.info().p_id).as_str()).await?;
             println!(
                 "[{}] Ai Queen #{} launching incantation",
                 self.info.cli_id, self.info.p_id
             );
-            let incant_res = commands::incantation::incantation(&mut cli).await;
+            let incant_res = incantation::incantation(&mut cli).await;
             println!(
                 "[{}] Ai Queen #{} done incantating.",
                 self.info.cli_id, self.info.p_id
@@ -409,19 +408,19 @@ impl Queen {
                 level = lvl;
                 println!("Queen {} done. Now level {}", self.info.p_id, level);
                 if level == 4 || level == 6 {
-                    let _ = commands::broadcast::broadcast(
+                    broadcast::broadcast(
                         &mut cli,
                         format!("{} lvl {}", self.info().p_id, level).as_str(),
                     )
-                    .await;
+                    .await?;
                 }
             }
             if level == 4 || level == 6 {
-                let _ = commands::broadcast::broadcast(
+                broadcast::broadcast(
                     &mut cli,
                     format!("{} lvl {}", self.info().p_id, level).as_str(),
                 )
-                .await;
+                .await?;
             }
         }
         self.info.set_level(level);
@@ -431,9 +430,7 @@ impl Queen {
     async fn check_enough_food(&mut self, min: usize) -> Result<(), CommandError> {
         while *self.inv.food() < min {
             let mut cli = self.info.client.lock().await;
-            if let Ok(ResponseResult::OK) =
-                commands::take_object::take_object(&mut cli, "food").await
-            {
+            if let Ok(ResponseResult::OK) = take_object::take_object(&mut cli, "food").await {
                 self.inv.set_food(self.inv.food() + 1);
             }
         }
