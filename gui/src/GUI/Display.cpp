@@ -9,11 +9,11 @@
 
 namespace GUI {
 
-Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
-    : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
+Display::Display(const std::string &machine, int port, bool debug, int width, int height)
+    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
       timeUnitInput(100, networkHandler), m_cam({}),
-      m_menu(screenWidth, screenHeight), m_settings(screenWidth, screenHeight)
+      m_menu(networkHandler, screenWidth, screenHeight), m_settings(screenWidth, screenHeight)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -105,7 +105,9 @@ void Display::displayGame()
 
 void Display::run()
 {
-    while (!m_menu.getClose() && !WindowShouldClose() && networkHandler.isRunning()) {
+    while (!m_menu.getClose() && !WindowShouldClose()) {
+        if (!networkHandler.isRunning())
+            m_menu.setInGame(false);
         handleServerMessage();
 
         handleEvent();

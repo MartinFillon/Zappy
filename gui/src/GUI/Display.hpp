@@ -25,7 +25,7 @@ class ServerMessageHandler;
 
 class Display {
   public:
-    Display(Network::Handler &networkHandler, bool debug, int width = 1920, int height = 1080);
+    Display(const std::string &machine, int port, bool debug, int width = 1920, int height = 1080);
     ~Display();
     void run();
 
@@ -65,7 +65,7 @@ class Display {
     void handleServerMessage();
     void resize();
 
-    Network::Handler &networkHandler;
+    Network::Handler networkHandler;
     ServerMessageHandler serverMessageHandler;
     bool debug;
     Data::Map map;

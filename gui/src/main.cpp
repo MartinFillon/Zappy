@@ -41,13 +41,8 @@ int main(int argc, char *argv[])
         return ERROR;
     }
 
-    Network::Handler networkHandler(machine, port);
-    if (networkHandler.start()) {
-        GUI::Display display(networkHandler, debug);
-        display.run();
-    } else {
-        return ERROR;
-    }
+    GUI::Display display(machine, port, debug);
+    display.run();
 
     return SUCCESS;
 }

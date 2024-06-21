@@ -8,12 +8,13 @@
 #pragma once
 
 #include "Button.hpp"
+#include "../../Network/Handler.hpp"
 
 namespace GUI {
 
 class Menu {
   public:
-    Menu(int &screenWidth, int &screenHeight);
+    Menu(Network::Handler &networkHandler, int &screenWidth, int &screenHeight);
     void display();
 
     void setClose(bool val);
@@ -24,6 +25,8 @@ class Menu {
     bool getInSettings() const;
 
   private:
+    Network::Handler &networkHandler;
+
     std::vector<Button<Rectangle, bool>> m_button;
     int &m_width;
     int &m_height;
