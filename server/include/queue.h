@@ -92,7 +92,7 @@ static inline void FN_NAME(queue_pushfront, NAME)(
 }
 
 /**
-** @brief remove last elem in a queue
+** @brief remove first elem in a queue
 ** @param the queue to remove from
 **/
 static inline TYPE FN_NAME(queue_pop, NAME)(struct NAME *queue)
