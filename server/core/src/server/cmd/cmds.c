@@ -43,5 +43,6 @@ void handle_server_cmd(char const *cmd, zappy_t *z)
             return vec_free_vector_str_t(args, str_free);
         }
     }
+    logs(ERROR_LEVEL, "Unknown command %s\n", cmd);
     vec_free_vector_str_t(args, str_free);
 }

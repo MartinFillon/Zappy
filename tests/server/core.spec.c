@@ -5,19 +5,30 @@
 ** core.spec
 */
 
+#include <unistd.h>
 #include <criterion/criterion.h>
+#include <criterion/redirect.h>
 
 #include "core/clock.h"
 #include "core/gui/defs.h"
+#include "core/middlewares.h"
 #include "core/router/route.h"
 #include "core/router/router.h"
 #include "core/server.h"
 #include "core/types/client.h"
 #include "core/types/clock.h"
+#include "core/types/object.h"
 #include "queue.h"
+#include "str.h"
 #include "zappy.h"
 #include "core/serv_cmd/serv_cmds.h"
 #include "fake_server.h"
+
+void redirect(void)
+{
+    cr_redirect_stdout();
+    cr_redirect_stderr();
+}
 
 Test(core, test_map_size)
 {
@@ -627,4 +638,427 @@ Test(core, kill_player_command_invalid_args2)
 
     handle_kill_player(&z, args);
     cr_assert_eq(z.game.ais->size, 1);
+}
+
+Test(core, display_map_command_no_player, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("display_map"));
+
+    handle_display_map(&z, args);
+    cr_assert_stdout_neq_str("");
+}
+
+Test(core, give_player_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(4);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("LINEMATE"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    give(&z, args);
+    cr_assert_eq(cli->ai->inventory[LINEMATE], 1);
+}
+
+Test(core, give_player_command_invalid_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(4);
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("LINEMATE"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    give(&z, args);
+    cr_assert_eq(cli->ai->inventory[LINEMATE], 0);
+}
+
+Test(core, give_player_command_invalid_args2)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(4);
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("LINEMATE"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    give(&z, args);
+    cr_assert_eq(cli->ai->inventory[LINEMATE], 0);
+}
+
+Test(core, give_player_command_invalid_args3)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(4);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("LINEMATE"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+
+    give(&z, args);
+    cr_assert_eq(cli->ai->inventory[LINEMATE], 0);
+}
+
+Test(core, give_player_command_invalid_args4)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(4);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("youpi dansons la carioca"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    give(&z, args);
+    cr_assert_eq(cli->ai->inventory[LINEMATE], 0);
+}
+
+Test(core, help_command, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("help"));
+
+    handle_help(&z, args);
+    cr_assert_stdout_neq_str("");
+}
+
+Test(core, teleport_player_to_player)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    teleport(&z, args);
+    cr_assert_eq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_eq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, teleport_player_to_player_invalid_args)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    teleport(&z, args);
+    cr_assert_neq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_neq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, teleport_player_to_player_invalid_args2)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("4"));
+    vec_pushback_vector_str_t(args, str_snew("1"));
+
+    teleport(&z, args);
+    cr_assert_neq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_neq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, teleport_player_to_player_invalid_args3)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("a"));
+
+    teleport(&z, args);
+    cr_assert_neq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_neq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, teleport_player_to_player_invalid_args4)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("0"));
+    vec_pushback_vector_str_t(args, str_snew("youpi dansons la carioca"));
+
+    teleport(&z, args);
+    cr_assert_neq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_neq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, teleport_player_to_player_invalid_args5)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *cli2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(3);
+    vec_pushback_vector_str_t(args, str_snew("100"));
+    vec_pushback_vector_str_t(args, str_snew("4"));
+    vec_pushback_vector_str_t(args, str_snew("42"));
+
+    teleport(&z, args);
+    cr_assert_neq(cli1->ai->pos.x, cli2->ai->pos.x);
+    cr_assert_neq(cli1->ai->pos.y, cli2->ai->pos.y);
+}
+
+Test(core, get_egss_infos, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("display_eggs"));
+
+    handle_display_eggs(&z, args);
+
+    cr_assert_stdout_neq_str("");
+}
+
+Test(core, command_runner_invalid_arg, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    handle_server_cmd("/tp", &z);
+    cr_assert_stderr_neq_str("");
+}
+
+Test(core, command_runner_empty_string, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    handle_server_cmd("", &z);
+    cr_assert_stderr_eq_str("");
+}
+
+Test(core, unknown_command, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    handle_server_cmd("unknown", &z);
+    cr_assert_stderr_neq_str("");
+}
+
+Test(core, command_runner_success, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    handle_server_cmd("/help", &z);
+    cr_assert_stderr_eq_str("");
+    cr_assert_stdout_neq_str("");
+}
+
+Test(core, display_ai_info, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("/ais"));
+
+    handle_display_ais(&z, args);
+    char *res = NULL;
+
+    ai_t *ai = cli->ai;
+    asprintf(
+        &res,
+        "AI [%d][Team: %s] (%s) pos (%d, %d) | level %ld\n",
+        ai->id,
+        ai->team->name,
+        ai->alive ? "alive" : "dead",
+        ai->pos.y,
+        ai->pos.x,
+        ai->level
+    );
+    cr_assert_stdout_eq_str(res);
+}
+
+Test(core, display_ai_info_no_ai, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("/ais"));
+
+    handle_display_ais(&z, args);
+    cr_assert_stdout_eq_str("");
+}
+
+Test(core, display_ai_ressources, .init = redirect)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("/ais-res"));
+
+    handle_ressources_ais(&z, args);
+    char *res = NULL;
+
+    ai_t *ai = cli->ai;
+    asprintf(
+        &res,
+        "AI [%d][Team: %s] (%s)\n"
+        "Ressources: %lu %lu %lu %lu %lu %lu %lu\n",
+        ai->id,
+        ai->team->name,
+        ai->alive ? "alive" : "dead",
+        ai->inventory[FOOD],
+        ai->inventory[LINEMATE],
+        ai->inventory[DERAUMERE],
+        ai->inventory[SIBUR],
+        ai->inventory[MENDIANE],
+        ai->inventory[PHIRAS],
+        ai->inventory[THYSTAME]
+    );
+    cr_assert_stdout_eq_str(res);
+}
+
+Test(core, buffer_handling)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_client();
+
+    for (int i = 0; i < 10; i++)
+        str_sadd(cli->io.req, str_snew("msz\n"));
+    cr_assert_eq(cli->io.req->size, 10 * 4);
+    str_sadd(cli->io.req, str_snew("msz"));
+    handle_buffer(cli);
+    cr_assert_eq(cli->io.req->size, 3);
+    cr_assert_eq(cli->commands->size, 10);
+    for (int i = 0; i < 10; i++)
+        cr_assert_str_eq(cli->commands->data[i]->data, "msz");
+
+    cr_assert_str_eq(cli->io.req->data, "msz");
+}
+
+Test(core, empty_buffer_handling)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_client();
+
+    handle_buffer(cli);
+    cr_assert_eq(cli->io.req->size, 0);
+    cr_assert_eq(cli->commands->size, 0);
+}
+
+Test(core, online_buffer_handling)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_client();
+
+    str_sadd(cli->io.req, str_snew("msz\n"));
+    handle_buffer(cli);
+    cr_assert_eq(cli->io.req->size, 0);
+    cr_assert_eq(cli->commands->size, 1);
+    cr_assert_str_eq(cli->commands->data[0]->data, "msz");
+}
+
+Test(core, unknown_ai_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    send_unknown_command(cli);
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
 }
