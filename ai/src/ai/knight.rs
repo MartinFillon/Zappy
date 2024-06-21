@@ -6,8 +6,16 @@
 //
 
 use crate::{
-    ai::{fork_ai, AIHandler, Incantationers, AI},
-    commands::{broadcast, drop_object, fork, incantation, inventory, look_around, take_object},
+    ai::{fork_ai, AIHandler, Incantationers, Listeners, AI},
+    commands::{
+        broadcast::broadcast,
+        drop_object::drop_object,
+        fork::fork,
+        incantation::{handle_incantation, incantation},
+        inventory::inventory,
+        look_around::look_around,
+        take_object::take_object,
+    },
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, ResponseResult},
@@ -22,10 +30,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::sync::Mutex;
 
-use log::{error, info};
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 use zappy_macros::Bean;
-
-use super::Listeners;
 
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
@@ -69,7 +76,7 @@ impl AIHandler for Knight {
                         "[{}] Knight {} incantating...",
                         self.info.cli_id, self.info.p_id
                     );
-                    let res = incantation::incantation(&mut client).await;
+                    let res = incantation(&mut client).await;
                     println!(
                         "[{}] Knight {} incantation result: {:?}",
                         self.info.cli_id, self.info.p_id, res
@@ -112,7 +119,7 @@ impl Incantationers for Knight {
         mut res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Elevating) = res {
-            res = incantation::handle_incantation(client).await;
+            res = handle_incantation(client).await;
             if let Ok(ResponseResult::Incantation(lvl)) = res {
                 let mut level = self.level_ref.lock().await;
                 *level = lvl;
@@ -140,7 +147,7 @@ impl Knight {
         let mut total = 0;
 
         loop {
-            let command = drop_object::drop_object(&mut client_lock, "food").await;
+            let command = drop_object(&mut client_lock, "food").await;
             if let Ok(ResponseResult::OK) = command {
                 total += 1;
             }
@@ -153,7 +160,7 @@ impl Knight {
     }
 
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
-        let res = look_around::look_around(client).await;
+        let res = look_around(client).await;
         if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, res).await? {
             if !tiles.is_empty()
                 && tiles[0]
@@ -166,7 +173,7 @@ impl Knight {
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
                 );
-                let res = fork::fork(client).await?;
+                let res = fork(client).await?;
                 if let ResponseResult::OK = self.knight_checkout_response(client, Ok(res)).await? {
                     let info = self.info.clone();
                     tokio::spawn(async move {
@@ -176,7 +183,7 @@ impl Knight {
                             println!("[{}] AI successfully forked.", info.cli_id);
                         }
                     });
-                    broadcast::broadcast(
+                    broadcast(
                         client,
                         format!("{} assign Fetus {}", self.info().cli_id, self.info().p_id)
                             .as_str(),
@@ -194,14 +201,14 @@ impl Knight {
         min: usize,
     ) -> Result<(), CommandError> {
         self.check_food(client, MIN_FOOD_ON_FLOOR).await?;
-        let mut res = inventory::inventory(client).await;
+        let mut res = inventory(client).await;
         if let ResponseResult::Inventory(mut inv) =
             self.knight_checkout_response(client, res).await?
         {
             if !inv.is_empty() && inv[0].0 == "food" {
                 res = Ok(ResponseResult::OK);
                 while inv[0].1 < min as i32 && res == Ok(ResponseResult::OK) {
-                    res = take_object::take_object(client, "food").await;
+                    res = take_object(client, "food").await;
                     res = Knight::handle_eject(client, res).await;
                     inv[0].1 += 1;
                 }
@@ -254,7 +261,7 @@ impl Knight {
             return false;
         }
         let mut client = self.info().client().lock().await;
-        let res = look_around::look_around(&mut client).await;
+        let res = look_around(&mut client).await;
         println!("Knight {} Look returned: {:?}", self.info.p_id, res);
         if let Ok(ResponseResult::Tiles(tiles)) =
             self.knight_checkout_response(&mut client, res).await

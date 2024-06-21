@@ -7,13 +7,14 @@
 
 use crate::{
     ai::{AIHandler, AI},
-    commands::drop_object,
+    commands::drop_object::drop_object,
     tcp::command_handle::{CommandError, ResponseResult},
 };
 
 use async_trait::async_trait;
 
-use log::info;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 #[derive(Debug, Clone)]
 pub struct Fetus {
@@ -38,7 +39,7 @@ impl AIHandler for Fetus {
         let mut total = 0;
 
         loop {
-            match drop_object::drop_object(&mut client_lock, "food").await {
+            match drop_object(&mut client_lock, "food").await {
                 Ok(ResponseResult::OK) => {
                     total += 1;
                 }

@@ -8,12 +8,12 @@
 #![allow(dead_code)]
 
 use crate::{
-    ai::{AIHandler, AI},
+    ai::{AIHandler, Listeners, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        take_object,
+        take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -23,13 +23,15 @@ use crate::{
     },
 };
 
-use async_trait::async_trait;
-use log::{debug, info};
 use rand::Rng;
 use std::mem::swap;
-use zappy_macros::Bean;
 
-use super::Listeners;
+use async_trait::async_trait;
+
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
+
+use zappy_macros::Bean;
 
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 10;
@@ -65,14 +67,13 @@ impl AIHandler for Bot {
         );
         let mut idex: usize = 0;
         loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
             self.handle_message().await?;
             if idex > MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
                 for _ in 0..5 {
                     let mut client = self.info().client().lock().await;
-                    take_object::take_object(&mut client, "food").await?;
+                    take_object(&mut client, "food").await?;
                 }
                 idex = 0;
                 continue;
@@ -85,8 +86,7 @@ impl AIHandler for Bot {
                     if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
                         && tiles[0].last().unwrap_or(&String::from("player")) != "player"
                     {
-                        take_object::take_object(&mut client, tiles[0].last().unwrap().as_str())
-                            .await?;
+                        take_object(&mut client, tiles[0].last().unwrap().as_str()).await?;
                     }
                 }
             }
@@ -236,7 +236,7 @@ impl Bot {
                 } else {
                     self.move_to_tile(tile).await?;
                     let mut client = self.info().client().lock().await;
-                    take_object::take_object(&mut client, &best_item).await
+                    take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),

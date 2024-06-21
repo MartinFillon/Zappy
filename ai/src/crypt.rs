@@ -12,7 +12,8 @@ use sha2::{Digest, Sha256};
 
 use zappy_macros::Bean;
 
-use log::debug;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 /// The `Crypt` struct holds the encryption key and nonce.
 ///

@@ -21,7 +21,8 @@ use std::fmt::{Display, Formatter};
 
 use async_trait::async_trait;
 
-use log::{debug, warn};
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 #[derive(PartialEq, Debug)]
 pub enum ResponseResult {
@@ -116,6 +117,7 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
+        warn!("[{}] from here get broadcast", self.id);
         let res = self.check_response().await;
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =

@@ -33,9 +33,15 @@ use bot::Bot;
 use fetus::Fetus;
 use knight::Knight;
 use queen::Queen;
-use tokio::{sync::Mutex, task};
+use tokio::{
+    sync::Mutex,
+    task,
+    time::{self, Duration},
+};
 
+#[allow(unused_imports)]
 use log::{debug, error, info, warn};
+
 use zappy_macros::Bean;
 
 #[derive(Debug, Clone, Bean)]
@@ -216,7 +222,18 @@ impl AI {
 
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
+        let start_time = time::Instant::now();
+        let overall_timeout = Duration::from_secs(5);
+
         loop {
+            if start_time.elapsed() >= overall_timeout {
+                error!(
+                    "[{}] Assignment check timeout reached, stopping the loop.",
+                    self.cli_id
+                );
+                break;
+            }
+
             if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
                 client.get_broadcast().await
             {
@@ -224,9 +241,11 @@ impl AI {
                 debug!("[{}] Message pushed to queue.", self.cli_id);
                 break;
             }
+
+            time::sleep(Duration::from_millis(100)).await;
         }
         while let Some((_, msg)) = client.pop_message() {
-            info!(
+            debug!(
                 "[{}] AI {}: handling message: {}",
                 self.cli_id, self.p_id, msg
             );

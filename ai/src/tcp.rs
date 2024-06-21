@@ -23,6 +23,7 @@ use tokio::task::JoinHandle;
 
 use zappy_macros::Bean;
 
+#[allow(unused_imports)]
 use log::{debug, error, info, warn};
 
 #[derive(Debug, Bean)]

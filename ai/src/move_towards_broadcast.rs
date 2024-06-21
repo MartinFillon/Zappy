@@ -20,7 +20,8 @@ use crate::{
     },
 };
 
-use log::{debug, info};
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 const Y_MSG_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
 const X_MSG_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];
