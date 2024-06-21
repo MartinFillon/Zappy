@@ -11,7 +11,6 @@
 #include "core/router/route.h"
 #include "core/router/router.h"
 #include "core/types/client.h"
-#include "logger.h"
 #include "zappy.h"
 #include "core/router/error_callbacks.h"
 

@@ -11,7 +11,7 @@
 
 Test(loader, success_case)
 {
-    lib_t lib = open_dhl("../tests/server/base.so");
+    lib_t lib = open_dhl("tests/server/base.so");
 
     cr_assert_not_null(lib.handle);
     cr_assert_not_null(lib.loop);
@@ -32,7 +32,7 @@ Test(loader, fail_case)
 
 Test(loader, missing_function)
 {
-    lib_t lib = open_dhl("../tests/server/missing_function.so");
+    lib_t lib = open_dhl("tests/server/missing_function.so");
 
     cr_assert_null(lib.handle);
     cr_assert_null(lib.loop);

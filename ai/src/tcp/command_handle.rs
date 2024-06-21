@@ -9,8 +9,7 @@
 
 use crate::{
     commands::{
-        incantation::{get_current_level, handle_incantation},
-        inventory::read_inventory_output,
+        incantation::get_current_level, inventory::read_inventory_output,
         look_around::read_look_output,
     },
     crypt::Crypt,
@@ -122,8 +121,7 @@ impl CommandHandler for TcpClient {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
             {
-                self.push_message(msg.clone());
-                debug!("Message pushed to queue.");
+                debug!("[{}] Received message, to handle...", self.id);
                 return Ok(ResponseResult::Message(msg));
             }
         }
@@ -148,8 +146,8 @@ impl CommandHandler for TcpClient {
             "dead" => Err(CommandError::DeadReceived),
             "ok" => Ok(ResponseResult::OK),
             "ko" => Ok(ResponseResult::KO),
-            "Elevation underway" => handle_incantation(self).await,
-            x if x.starts_with("Current level: ") => {
+            "Elevation underway" => Ok(ResponseResult::Elevating),
+            x if x.starts_with("Current level:") => {
                 Ok(ResponseResult::Incantation(get_current_level(x)?))
             }
             x if x.starts_with("[food ") => {

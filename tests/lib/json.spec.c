@@ -141,7 +141,7 @@ Test(json, parse_json_object)
 
 Test(json, json_from_file)
 {
-    json_data_t *data = json_from_file("../../tests/lib/test.json");
+    json_data_t *data = json_from_file("tests/lib/test.json");
     cr_assert_not_null(data);
 
     str_t *key = str_snew("key");
@@ -213,6 +213,7 @@ Test(json, json_dump_object, .init = redirect)
 
     print_json(1, data);
     cr_assert_stdout_eq_str(
-        "{\"key\":{\"subkey\":\"value\"\n,\"subkey2\":42.00\n}\n}\n");
+        "{\"key\":{\"subkey\":\"value\"\n,\"subkey2\":42.00\n}\n}\n"
+    );
     json_free(data);
 }
