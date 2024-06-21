@@ -11,6 +11,13 @@
 #include <string>
 
 namespace Raylib {
+    struct RecWin {
+        int x;
+        int y;
+        int width;
+        int height;
+    };
+
     struct Square {
         float x;
         float y;
@@ -47,6 +54,7 @@ namespace Raylib {
     void draw(const Circle &circle, Color color);
     void drawTextInForm(const std::string &str, const Rectangle &rec, int fontSize, Color color);
     void drawRectangle(float x, float y, float width, float height, Color color);
+    void drawRectangle(Rectangle rec, Color color);
     void drawSquare(float x, float y, float size, Color color);
     void drawSquare(Square sqr, Color color);
     void drawRectangleLines(float x, float y, float width, float height, Color color);

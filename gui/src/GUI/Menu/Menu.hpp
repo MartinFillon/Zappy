@@ -9,12 +9,13 @@
 
 #include "Button.hpp"
 #include "../../Network/Handler.hpp"
+#include "window.hpp"
 
 namespace GUI {
 
 class Menu {
   public:
-    Menu(Network::Handler &networkHandler, int &screenWidth, int &screenHeight);
+    Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow);
     void display();
 
     void setClose(bool val);
@@ -28,8 +29,7 @@ class Menu {
     Network::Handler &networkHandler;
 
     std::vector<Button<Rectangle, bool>> m_button;
-    int &m_width;
-    int &m_height;
+    Raylib::RecWin &m_newWindow;
     bool m_close;
     bool m_inGame;
     bool m_inSettings;

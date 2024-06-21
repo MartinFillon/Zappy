@@ -71,8 +71,7 @@ class Display {
     Data::Map map;
     bool endGame;
     std::vector<std::string> endGameMessage;
-    int screenWidth, screenHeight;
-    int offsetX, offsetY, newWidth, newHeight;
+    Raylib::RecWin m_newWindow;
     MessageBox messageBox;
     InfoBox infoBox;
     TimeUnitInput timeUnitInput;

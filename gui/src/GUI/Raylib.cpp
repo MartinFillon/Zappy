@@ -106,6 +106,11 @@ void drawRectangle(float x, float y, float width, float height, Color color)
     DrawRectangle(x, y, width, height, color);
 }
 
+void drawRectangle(Rectangle rec, Color color)
+{
+    DrawRectangle(rec.x, rec.y, rec.width, rec.height, color);
+}
+
 void drawSquare(float x, float y, float size, Color color)
 {
     DrawRectangle(x, y, size, size, color);

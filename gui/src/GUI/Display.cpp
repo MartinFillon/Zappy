@@ -11,9 +11,9 @@ namespace GUI {
 
 Display::Display(const std::string &machine, int port, bool debug, int width, int height)
     : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
-      endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
+      endGame(false), endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
       timeUnitInput(100, networkHandler), m_cam({}),
-      m_menu(networkHandler, screenWidth, screenHeight), m_settings(screenWidth, screenHeight)
+      m_menu(networkHandler, m_newWindow), m_settings(m_newWindow)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -95,12 +95,13 @@ void Display::displayGame()
             Raylib::updateCamera(m_cam, CAMERA_FREE);
         map.displayTacticalView3D(infoBox, m_cam);
     } else {
-        DrawRectangle(offsetX, offsetY, newWidth, newHeight, RAYWHITE);
-        map.displayTacticalView(offsetX + 400, offsetY, newWidth + offsetX, newHeight + offsetY, infoBox);
+        Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
+            static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
+        map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
     }
-    infoBox.display(offsetX, offsetY, 400, 300);
-    messageBox.display(offsetX, offsetY + newHeight - 200, 400, 200);
-    timeUnitInput.display(offsetX + 10, offsetY + 340, 200, 30);
+    infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
+    messageBox.display(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+    timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
 }
 
 void Display::run()
@@ -134,19 +135,19 @@ void Display::handleServerMessage()
 
 void Display::resize()
 {
-    screenWidth = GetScreenWidth();
-    screenHeight = GetScreenHeight();
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
 
-    newWidth = screenWidth;
-    newHeight = screenWidth * 9 / 16;
+    m_newWindow.width = screenWidth;
+    m_newWindow.height = screenWidth * 9 / 16;
 
-    if (newHeight > screenHeight) {
-        newHeight = screenHeight;
-        newWidth = screenHeight * 16 / 9;
+    if (m_newWindow.height > screenHeight) {
+        m_newWindow.height = screenHeight;
+        m_newWindow.width = screenHeight * 16 / 9;
     }
 
-    offsetX = (screenWidth - newWidth) / 2;
-    offsetY = (screenHeight - newHeight) / 2;
+    m_newWindow.x = (screenWidth - m_newWindow.width) / 2;
+    m_newWindow.y = (screenHeight - m_newWindow.height) / 2;
 }
 
 } // namespace GUI

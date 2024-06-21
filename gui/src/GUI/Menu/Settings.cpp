@@ -10,8 +10,8 @@
 
 namespace GUI {
 
-Settings::Settings(int &screenWidth, int &screenHeight, bool is3D, bool isCameraFree, bool showCursor):
-    m_width(screenWidth), m_height(screenHeight), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor)
+Settings::Settings(Raylib::RecWin &newWindow, bool is3D, bool isCameraFree, bool showCursor):
+    m_newWindow(newWindow), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor)
 {
     m_button.push_back(CheckBox("3D", m_is3D));
     m_button.push_back(CheckBox("CameraFree", m_isCameraFree));
@@ -50,17 +50,23 @@ void Settings::switchShowCursor()
 
 void Settings::display()
 {
-    float fontSize = m_height / 8.0f;
-    Raylib::Square rec = {m_width * 0.3f, m_height / 4.0f, m_height / 25.0f};
+    float fontSize = HeightToFontSize(m_newWindow.height);
+    Raylib::Square rec = {
+        m_newWindow.x + m_newWindow.width * MulSetPosButton,
+        m_newWindow.y + m_newWindow.height * MulStrtY,
+        m_newWindow.height * MulSizeCheckBox};
     std::string name = "SETTINGS";
     int sizeText = Raylib::getMeasureTextEx(name, fontSize).x;
 
-    Raylib::drawText(name, (m_width - sizeText) / 2, m_height / 8.0f, fontSize, PURPLE);
+    Raylib::drawText(name,
+        m_newWindow.x + (m_newWindow.width - sizeText) / 2.0f,
+        m_newWindow.y + m_newWindow.height * MulNameY,
+        fontSize, PURPLE);
     for (size_t i = 0; i < m_button.size(); i++) {
         CheckBox &but = m_button.at(i);
-        rec.y += rec.size + 20.0f;
         but.checkButtonAction(rec);
         but.draw(rec, fontSize / 4.0f);
+        rec.y += rec.size + SpacingSetButY;
     }
 }
 
