@@ -121,8 +121,7 @@ impl CommandHandler for TcpClient {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
             {
-                self.push_message(msg.clone());
-                debug!("Message pushed to queue.");
+                debug!("[{}] Received message, to handle...", self.id);
                 return Ok(ResponseResult::Message(msg));
             }
         }

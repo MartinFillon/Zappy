@@ -209,6 +209,7 @@ impl Incantationers for Queen {
     }
 
     async fn handle_elevating(
+        &self,
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError> {
@@ -229,12 +230,13 @@ impl Listeners for Queen {
 
 impl Queen {
     async fn queen_checkout_response(
+        &self,
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError> {
         match res {
             Ok(ResponseResult::Eject(_)) => Queen::handle_eject(client, res).await,
-            Ok(ResponseResult::Elevating) => Queen::handle_elevating(client, res).await,
+            Ok(ResponseResult::Elevating) => self.handle_elevating(client, res).await,
             _ => res,
         }
     }
@@ -402,7 +404,7 @@ impl Queen {
                 self.info.p_id, incant_res
             );
             if let Ok(ResponseResult::Incantation(lvl)) =
-                Queen::queen_checkout_response(&mut cli, incant_res).await
+                self.queen_checkout_response(&mut cli, incant_res).await
             {
                 level = lvl;
                 println!("Queen {} done. Now level {}", self.info.p_id, level);
@@ -682,7 +684,7 @@ impl Queen {
     async fn create_bot(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         let res = fork::fork(&mut client).await;
-        if let Ok(ResponseResult::OK) = Queen::queen_checkout_response(&mut client, res).await {
+        if let Ok(ResponseResult::OK) = self.queen_checkout_response(&mut client, res).await {
             let info = self.info.clone();
             tokio::spawn(async move {
                 if let Err(err) = fork_ai(info.clone()).await {
