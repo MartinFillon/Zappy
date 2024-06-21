@@ -16,6 +16,7 @@ use log::debug;
 
 pub async fn fork(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Forking...");
+
     let response = client.check_dead("Fork\n").await?;
     client.handle_response(response).await
 }

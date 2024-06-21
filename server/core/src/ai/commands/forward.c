@@ -42,7 +42,7 @@ void move_by_dir(pos_t *pos, enum direction dir, map_t *map)
 void move_ai(ai_t *ai, enum direction dir, map_t *map)
 {
     vec_erase_vector_int(
-        map->arena[ai->pos.y][ai->pos.x].players, ai->id, &cmp_int
+        map->arena[ai->pos.y][ai->pos.x].players, &ai->id, &cmp_int
     );
     move_by_dir(&ai->pos, dir, map);
     vec_pushback_vector_int(map->arena[ai->pos.y][ai->pos.x].players, ai->id);

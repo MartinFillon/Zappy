@@ -6,13 +6,20 @@
 */
 
 #include "Display.hpp"
+#include <raylib.h>
 
 namespace GUI {
 
 Display::Display(const std::string &machine, int port, bool debug, int width, int height)
     : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}),
+      timeUnitInput(100, networkHandler), m_cam(
+                                              {(Vector3){15.0f, 5.0f, 15.0f},
+                                               (Vector3){0.0f, 0.0f, 1.0f},
+                                               (Vector3){0.0f, 1.0f, 0.0f},
+                                               45.0f,
+                                               CAMERA_PERSPECTIVE}
+                                          ),
       m_menu(networkHandler, m_newWindow), m_settings(m_newWindow)
 {
     if (debug) {
@@ -24,15 +31,9 @@ Display::Display(const std::string &machine, int port, bool debug, int width, in
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(width, height, "Zappy");
     SetTargetFPS(60);
-    SetWindowMinSize(800, 450);
+    SetWindowMinSize(1080, 450);
     SetExitKey(KEY_DELETE);
     resize();
-
-    m_cam.position = (Vector3){ 30.0f, 30.0f, 30.0f };
-    m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
-    m_cam.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-    m_cam.fovy = 45.0f;
-    m_cam.projection = CAMERA_PERSPECTIVE;
 }
 
 Display::~Display()
@@ -94,14 +95,17 @@ void Display::displayGame()
         if (m_settings.isCameraFree())
             Raylib::updateCamera(m_cam, CAMERA_FREE);
         map.displayTacticalView3D(infoBox, m_cam);
+        infoBox.display(0, 0, 400, 300);
+        messageBox.display(0, 0 + m_newWindow.height - 200, 400, 200);
+        timeUnitInput.display(0 + 10, 0 + 340, 200, 30);
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
         map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
+        infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
+        messageBox.display(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+        timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
     }
-    infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
-    messageBox.display(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
-    timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
 }
 
 void Display::run()

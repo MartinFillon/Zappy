@@ -12,26 +12,54 @@ use crate::tcp::{
     TcpClient,
 };
 
-pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
-    let checkpoint = client.check_dead("Incantation\n").await?;
-    match checkpoint.trim_end() {
-        "Elevation underway" => {
-            let response = client
-                .get_response()
-                .await
-                .ok_or(CommandError::NoResponseReceived)?;
-            match response.trim_end() {
-                "dead" => Err(CommandError::DeadReceived),
-                level if level.starts_with("Current level:") => {
-                    let level_str = level
-                        .split_once(": ")
-                        .and_then(|(_, l)| l.parse::<usize>().ok())
-                        .ok_or(CommandError::InvalidResponse)?;
-                    Ok(ResponseResult::Incantation(level_str))
-                }
-                _ => client.handle_response(response).await,
-            }
+use log::debug;
+
+pub fn get_current_level(level_str: &str) -> Result<usize, CommandError> {
+    level_str
+        .split_once(": ")
+        .and_then(|(_, l)| l.parse::<usize>().ok())
+        .ok_or(CommandError::InvalidResponse)
+}
+
+pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    loop {
+        let response = client
+            .get_response()
+            .await
+            .ok_or(CommandError::NoResponseReceived)?;
+        let res = client.handle_response(response).await?;
+        if let ResponseResult::Incantation(_) = res {
+            return Ok(res);
         }
-        _ => client.handle_response(checkpoint).await,
+        if res == ResponseResult::KO {
+            return Ok(res);
+        }
+    }
+}
+
+pub async fn wait_for_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    debug!("Waiting for incantation...");
+
+    let response = client.check_response().await;
+    let res = client.handle_response(response).await?;
+    if res == ResponseResult::Elevating {
+        return handle_incantation(client).await;
+    }
+    Ok(res)
+}
+
+pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
+    debug!("Incantation...");
+
+    let mut response = client.check_dead("Incantation\n").await?;
+    loop {
+        let res = client.handle_response(response).await?;
+        if res == ResponseResult::Elevating {
+            return handle_incantation(client).await;
+        }
+        if res == ResponseResult::KO {
+            return Ok(res);
+        }
+        response = client.check_response().await;
     }
 }

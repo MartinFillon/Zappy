@@ -22,9 +22,9 @@ void broadcast_to(
 
     va_start(va, fmt);
     for (size_t i = 0ul; i < clients->size; i++)
-        if (clients->data[i].type == type) {
+        if (clients->data[i]->type == type) {
             va_copy(tmp, va);
-            prepare_response_cat_va(&clients->data[i].io, fmt, tmp);
+            prepare_response_cat_va(&clients->data[i]->io, fmt, tmp);
             va_end(tmp);
         }
     va_end(va);

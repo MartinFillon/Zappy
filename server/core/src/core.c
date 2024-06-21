@@ -17,5 +17,6 @@ int core(zappy_t *z)
     exec_clients(z);
     check_eating(z->clients);
     refill_map(&z->game);
-    return !retval && !check_end(z->clients);
+    check_end(z->clients);
+    return !retval;
 }

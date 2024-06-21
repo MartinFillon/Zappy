@@ -17,13 +17,15 @@ $(NAME):
 	cargo build --release -p ai && cp $(BPATH) $(NAME)
 
 clean:
-	cargo clean
+	rm -rf cargo-test* json/cargo-test* macros/cargo-test* \
+	../server/tests/server-tester/cargo-test*
 
 fclean: clean
 	rm -f $(NAME)
 
 tests_run:
-	cargo test
+	cargo +stable install cargo-llvm-cov --locked
+	cargo llvm-cov --no-report
 
 re: fclean all
 

@@ -14,7 +14,7 @@
 #include "core/types/client.h"
 #include "core/types/game.h"
 
-#define TYPE client_t
+#define TYPE client_t *
 #define NAME client_list
 #include "vector.h"
 
@@ -24,16 +24,7 @@
  * @param fd the file descriptor
  * @param address the address of the client
  */
-client_t init_client(int fd, char *address, uint32_t port);
-
-/**
- * @brief Prepare the response of the client in his @param io parameter.
- *
- * @param io Input/Output structure containing the response buffer/size
- * @param fmt the message to send
- * @param ... the arguments to replace in the message
- */
-void prepare_response(io_t *io, char *fmt, ...);
+client_t *init_client(int fd, char *address, uint32_t port);
 
 /**
  * @brief Add the formatted string from @param fmt and @param ... in the
@@ -111,13 +102,6 @@ int unset_entrypoint(
 );
 
 /**
- * @brief Free and reset a buffer at 0
- *
- * @param buffer the buffer to be reseted
- */
-void free_buffer(struct buffer_s *buffer);
-
-/**
  * @brief Close the client
  *
  * @param c the client structure
@@ -142,7 +126,7 @@ void kill_ai(struct client_list *clients, struct vector_ai_t *ais, size_t i);
  * @param clients All the clients connected in the server.
  * @param n the number of the client
  */
-void make_ai_eat(client_t *cli, struct client_list *clients, int n);
+void make_ai_eat(client_t *cli, struct client_list *clients);
 
 /**
  * @brief init the ai
@@ -158,7 +142,7 @@ bool init_ai(
     team_t *team,
     struct client_list *restrict clients
 );
-void destroy_ai(ai_t *ai);
+void destroy_ai(ai_t **ai);
 /**
  * @brief Move the @param ai with respect with his direction
  * @param ai the ai to move

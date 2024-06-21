@@ -6,6 +6,7 @@
 */
 
 #include "Map.hpp"
+#include <cstddef>
 #include <memory>
 #include <raylib.h>
 #include <vector>
@@ -231,6 +232,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
     }
     for (const auto &egg : m_eggs) {
+        if (egg == nullptr) {
+            continue;
+        }
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
         int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
@@ -250,22 +254,15 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
 
     Raylib::clearBackground(RAYWHITE);
     Raylib::beginMode3D(cam);
-    Raylib::drawGrid(100, 1.0f);
-
     if (qm.getSize() == 0) {
         qm.init();
     }
 
-    for (const auto &player : m_players) {
-        float playerX = player->getPos().x() * tileSize + tileSize / 2;
-        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 150});
-    }
-
-    for (auto tile : m_map) {
+    for (auto tile : m_map)
+    {
         float tileX = tile->getPos().x() * tileSize + tileSize / 2;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
-        Raylib::drawCube({tileX, 0, tileZ}, tileSize, RED);
+        qm.DrawGrass({tileX, 0.5, tileZ});
         Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
         Inventory inv = tile->getInventory();
         for (size_t i = 0; i < inv.inv.size(); i++) {
@@ -278,9 +275,19 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
     }
 
     for (const auto &egg : m_eggs) {
+        if (egg == nullptr)
+            continue;
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 255});
+    }
+
+    for (const auto &player : m_players) {
+         if (!player || !player->isHatched())
+            continue;
+        float playerX = player->getPos().x() * tileSize + tileSize / 2;
+        float playerZ = player->getPos().y() * tileSize + tileSize / 2;
+        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 255});
     }
 
     if (info.isPrint() && info.getItem() != nullptr) {

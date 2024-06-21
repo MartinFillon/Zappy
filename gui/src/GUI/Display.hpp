@@ -52,7 +52,20 @@ class Display {
 
     void addMessage(std::string message, int user = SERVER)
     {
-        messageBox.addMessage(message, user);
+        if (user == SERVER)
+            messageBox.addMessage(message, user);
+        std::string team_str;
+        for (auto &player : map.getPlayers()) {
+            if (player->getId() == user) {
+                team_str = player->getTeam();
+                break;
+            }
+        }
+        for (size_t i = 0; i <= team.size(); i++) {
+            if (team_str == team[i]) {
+                return messageBox.addMessage(message, user);
+            }
+        }
     }
 
     std::vector<std::string> team;

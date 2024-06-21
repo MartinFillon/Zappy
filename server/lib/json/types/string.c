@@ -36,7 +36,7 @@ int parse_string(json_parser_t *p)
     elem->t = STRING;
     if (get(p) == '"')
         next(p);
-    while (get(p) != '"') {
+    while (get(p) != '"' && get(p) != -1) {
         if (get(p) == '\\') {
             next(p);
             add_escaped_char(p, elem->data.str);

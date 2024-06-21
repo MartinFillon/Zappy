@@ -37,7 +37,7 @@ void display_clients(struct client_list *lst, struct draw_state_s *st)
     int displayed = 0;
 
     for (int i = st->page; i < lst->size && i < st->page + st->paging; i++) {
-        displayed = display_client(&lst->data[i], x, y);
+        displayed = display_client(lst->data[i], x, y);
         if (displayed != 0)
             DrawRectangleLines(x - 10, y - 5, 200, displayed + 10, WHITE);
         x += 200;

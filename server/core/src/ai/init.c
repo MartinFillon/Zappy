@@ -14,6 +14,7 @@
 #include "core/types/client.h"
 #include "core/types/object.h"
 #include "core/types/team.h"
+#include "logger.h"
 #include "queue.h"
 
 static void send_infos(
@@ -23,7 +24,9 @@ static void send_infos(
     struct client_list *clis
 )
 {
-    dprintf(fd, "%d\n%lu %lu\n", new->id, game->map->x, game->map->y);
+    dprintf(
+        fd, "%ld\n%lu %lu\n", new->team->eggs->size, game->map->x, game->map->y
+    );
     broadcast_to(
         GUI,
         clis,
@@ -52,6 +55,13 @@ static void init_ai_info(ai_t *new, egg_t *egg, map_t *map)
     );
 }
 
+static bool no_more_space(client_t *c, team_t *team, ai_t *ai)
+{
+    free(ai);
+    logs(DEBUG, "No more eggs to place %d in team %s\n", c->fd, team->name);
+    return true;
+}
+
 bool init_ai(
     game_t *game,
     client_t *restrict client,
@@ -59,19 +69,20 @@ bool init_ai(
     struct client_list *restrict clients
 )
 {
-    ai_t new = {0};
+    ai_t *new = calloc(1, sizeof(ai_t));
     egg_t *egg = NULL;
 
     if (team->eggs->size == 0)
-        return true;
+        return no_more_space(client, team, new);
     egg = queue_pop_queue_egg_t(team->eggs);
-    new.clock = clock_new(game->frequency);
-    new.team = team;
-    new.food_clock = clock_new(game->frequency);
-    init_ai_info(&new, egg, game->map);
+    new->clock = clock_new(game->frequency);
+    new->team = team;
+    new->food_clock = clock_new(game->frequency);
+    init_ai_info(new, egg, game->map);
     free(egg);
     vec_pushback_vector_ai_t(game->ais, new);
-    client->ai = &game->ais->data[game->ais->size - 1];
-    send_infos(client->fd, game, &new, clients);
+    client->ai = new;
+    send_infos(client->fd, game, new, clients);
+    logs(WARNING, "Client %d AI %d is an AI\n", client->fd, client->ai->id);
     return false;
 }

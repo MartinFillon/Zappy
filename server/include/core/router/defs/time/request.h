@@ -14,7 +14,7 @@
 
 static const route_t REQUEST_ROUTE = {
     .args = 0,
-    .command = "sst",
+    .command = "sgt",
     .f = &request_time,
     .mode = GUI,
     .time = 0,

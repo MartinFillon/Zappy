@@ -14,7 +14,7 @@ use crate::tcp::{
 
 use log::debug;
 
-fn read_output(raw: String) -> Vec<Vec<String>> {
+pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');
     let tiles = tmp.split(',').fold(
         Vec::<Vec<String>>::new(),
@@ -31,30 +31,44 @@ fn read_output(raw: String) -> Vec<Vec<String>> {
             acc
         },
     );
+
     debug!("Tiles: {:?}", tiles);
     tiles
 }
 
 pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Looking around...");
-    let response = client.check_dead("Look\n").await?;
 
-    Ok(ResponseResult::Tiles(read_output(response)))
+    let mut response = client.check_dead("Look\n").await?;
+    loop {
+        let res = client.handle_response(response).await?;
+        if let ResponseResult::Tiles(_) = res {
+            return Ok(res);
+        }
+        response = client.check_response().await;
+    }
 }
 
 #[cfg(test)]
-pub mod tests {
-    use super::read_output;
+pub mod tests_look {
+    use super::read_look_output;
 
     #[test]
     fn output_reading() {
-        let res: Vec<Vec<String>> = read_output("[player food,,,food]\n".to_string());
+        let res: Vec<Vec<String>> = read_look_output("[player food,,,food]\n".to_string());
         let cmp: Vec<Vec<String>> = vec![
             vec!["player".to_string(), "food".to_string()],
             vec![],
             vec![],
             vec!["food".to_string()],
         ];
+        assert_eq!(cmp, res);
+    }
+
+    #[test]
+    fn output_reading_empty() {
+        let res: Vec<Vec<String>> = read_look_output("[]\n".to_string());
+        let cmp: Vec<Vec<String>> = vec![[].to_vec()];
         assert_eq!(cmp, res);
     }
 }

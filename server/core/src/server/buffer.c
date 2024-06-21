@@ -11,34 +11,34 @@
 #include "core/types/client.h"
 #include "logger.h"
 #include "str.h"
-#include "utils.h"
-#include "zappy.h"
 
-static int handle_buffer_internal(size_t idx, client_t *c, zappy_t *z)
+static int one_line_case(client_t *c, struct vector_str_t *lines)
 {
-    char *tmp = strdup(c->io.req.buffer + idx + 1);
-    char *com = strndup(c->io.req.buffer, idx);
-
-    if (!tmp || !com) {
-        va_free(2, tmp, com);
-        return 1;
-    }
-    free(c->io.req.buffer);
-    c->io.req.buffer = tmp;
-    c->io.req.size = strlen(tmp);
-    logs(INFO, "Client %d sent command: %s\n", c->fd, com);
-    if (c->type == GUI || c->type == UNSET ||
-        (c->type == AI && c->commands->size < 10))
-        queue_pushback_queue_command_t(c->commands, str_snew(com));
-    free(com);
-    return handle_buffer(c, z);
+    queue_pushfront_queue_command_t(c->commands, lines->data[0]);
+    str_clear(c->io.req);
+    vec_destroy_vector_str_t(lines);
+    return 0;
 }
 
-int handle_buffer(client_t *c, zappy_t *z)
+int handle_buffer(client_t *c)
 {
-    size_t idx = (size_t)(strstr(c->io.req.buffer, "\n") - c->io.req.buffer);
+    struct vector_str_t *lines = str_split(c->io.req, "\n");
+    bool is_last_line = c->io.req->data[c->io.req->size - 1] == '\n' ||
+        c->io.req->data[c->io.req->size] == '\n';
 
-    if (idx > c->io.req.size)
-        return 1;
-    return handle_buffer_internal(idx, c, z);
+    logs(DEBUG, "Client %d has %d lines in buffer %d\n", c->fd, lines->size);
+    if (lines->size == 0) {
+        vec_destroy_vector_str_t(lines);
+        return 0;
+    }
+    for (size_t i = 0; i < lines->size; i++)
+        logs(DEBUG, "Line %d: %s\n", i, lines->data[i]->data);
+    if (lines->size == 1)
+        return one_line_case(c, lines);
+    for (int i = 0; i < (int)lines->size - !is_last_line; i++)
+        queue_pushfront_queue_command_t(c->commands, lines->data[i]);
+    str_free(c->io.req);
+    c->io.req = !is_last_line ? lines->data[lines->size - 1] : str_new(1024);
+    vec_destroy_vector_str_t(lines);
+    return 0;
 }

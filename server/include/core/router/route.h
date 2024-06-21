@@ -23,13 +23,5 @@ typedef struct {
     double time;
     enum client_type_e mode;
     callback_t f;
-    size_t args;
+    int args;
 } route_t;
-
-/**
- * @brief Get the mode from string
- * @param mode the string to convert
- *
- * @return the mode
- */
-enum client_type_e get_mode(char const *mode);

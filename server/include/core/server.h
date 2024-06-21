@@ -22,7 +22,9 @@ typedef struct server_s {
     int fd;
     fd_set read_fds;
     fd_set write_fds;
+    fd_set except_fds;
     router_t *router;
+    sigset_t sig;
 } server_t;
 
 /**
@@ -54,10 +56,9 @@ int accept_new_client(server_t *s, struct client_list *clients);
  * @brief Handle the buffer
  *
  * @param c the client structure
- * @param z The zappy
  * @return int 0 if success, 84 if error
  */
-int handle_buffer(client_t *c, zappy_t *z);
+int handle_buffer(client_t *c);
 
 /**
  * @brief Destroy the server

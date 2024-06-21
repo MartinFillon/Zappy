@@ -108,12 +108,12 @@ static inline bool FN_NAME(vec_erase_at, NAME)(struct NAME *vec, size_t idx)
 **/
 static inline bool FN_NAME(vec_erase, NAME)(
     struct NAME *vec,
-    TYPE elem,
-    bool (*cmp)(TYPE, TYPE)
+    TYPE *elem,
+    bool (*cmp)(TYPE *, TYPE *)
 )
 {
     for (size_t i = 0; i < vec->size; i++) {
-        if (cmp(vec->data[i], elem)) {
+        if (cmp(&vec->data[i], elem)) {
             return FN_NAME(vec_erase_at, NAME)(vec, i);
         }
     }
@@ -138,6 +138,13 @@ static inline void FN_NAME(vec_foreach, NAME)(
     }
 }
 
+/**
+** @brief Free a vector @param vec and its element with the
+**        function @param free_func
+**
+** @param vec vector that will be freed
+** @param free_func Function to free element of vector
+**/
 static inline void FN_NAME(vec_free, NAME)(
     struct NAME *vec,
     void (*free_func)(TYPE)

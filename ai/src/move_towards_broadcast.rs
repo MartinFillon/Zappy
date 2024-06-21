@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-use log::info;
+use log::{debug, info};
 
 const Y_MSG_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
 const X_MSG_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];
@@ -42,21 +42,11 @@ fn get_eject_coordinates(dir: &DirectionEject) -> (i32, i32) {
     )
 }
 
-async fn move_player(client: &mut TcpClient, x: i32) -> Result<ResponseResult, CommandError> {
-    if x < 0 {
-        move_left(client).await?;
-    }
-    if x > 0 {
-        move_right(client).await?;
-    }
-    move_up::move_up(client).await
-}
-
-pub async fn move_towards_broadcast(
+pub async fn turn_towards_broadcast(
     client: &mut TcpClient,
     dir: DirectionMessage,
 ) -> Result<ResponseResult, CommandError> {
-    info!("Moving towards direction {}...", dir);
+    debug!("Turning towards direction {}...", dir);
     if dir == DirectionMessage::Center {
         return Ok(ResponseResult::OK);
     }
@@ -66,7 +56,36 @@ pub async fn move_towards_broadcast(
         turn::turn(client, DirectionTurn::Right).await?;
         turn::turn(client, DirectionTurn::Right).await?;
     }
-    move_player(client, x).await
+    if x < 0 {
+        turn::turn(client, DirectionTurn::Left).await?;
+    }
+    if x > 0 {
+        turn::turn(client, DirectionTurn::Right).await?;
+    }
+    Ok(ResponseResult::OK)
+}
+
+pub async fn move_towards_broadcast(
+    client: &mut TcpClient,
+    dir: DirectionMessage,
+) -> Result<ResponseResult, CommandError> {
+    debug!("Moving towards direction {}...", dir);
+    if dir == DirectionMessage::Center {
+        return Ok(ResponseResult::OK);
+    }
+    let (mut x, y) = get_msg_coordinates(&dir);
+    if y < 0 {
+        x = -x;
+        turn::turn(client, DirectionTurn::Right).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
+    }
+    if x < 0 {
+        move_left(client).await?;
+    }
+    if x > 0 {
+        move_right(client).await?;
+    }
+    move_up::move_up(client).await
 }
 
 async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {

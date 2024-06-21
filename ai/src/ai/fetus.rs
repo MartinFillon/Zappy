@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{AIHandler, AI},
-    commands,
+    commands::drop_object,
     tcp::command_handle::{CommandError, ResponseResult},
 };
 
@@ -29,6 +29,7 @@ impl Fetus {
 #[async_trait]
 impl AIHandler for Fetus {
     fn init(info: AI) -> Self {
+        println!("[{}] Fetus spawned.", info.cli_id);
         Self::new(info)
     }
 
@@ -37,16 +38,18 @@ impl AIHandler for Fetus {
         let mut total = 0;
 
         loop {
-            let command = commands::drop_object::drop_object(&mut client_lock, "food").await;
-            if let Ok(ResponseResult::OK) = command {
-                println!("AI #{}: Fetus dropping food x1...", self.info.cli_id);
-                total += 1;
-            } else if let Err(e) = command {
-                info!("Fetus dropped x{} food", total);
-                println!("AI #{}: Fetus died.", self.info.cli_id);
-                return Err(e);
-            } else {
-                continue;
+            match drop_object::drop_object(&mut client_lock, "food").await {
+                Ok(ResponseResult::OK) => {
+                    total += 1;
+                }
+                Err(CommandError::DeadReceived) | Ok(ResponseResult::KO) => {
+                    info!("[{}] Fetus dropped x{} food", self.info.cli_id, total);
+                    println!("[{}] AI : Fetus died.", self.info.cli_id);
+                    return Err(CommandError::DeadReceived);
+                }
+                _ => {
+                    continue;
+                }
             }
         }
     }

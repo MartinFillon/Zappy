@@ -5,6 +5,7 @@
 ** str
 */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,6 +13,8 @@
 
 void str_resize(str_t *s)
 {
+    if ((long long unsigned)s->capacity * 2 > SIZE_MAX)
+        return str_clear(s);
     s->capacity *= 2;
     s->data = realloc(s->data, s->capacity);
     memset(s->data + s->size, 0, s->capacity - s->size);

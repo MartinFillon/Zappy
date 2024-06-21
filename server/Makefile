@@ -26,12 +26,21 @@ DISPLAYERS = base
 
 SUBMODULES = lib core $(DISPLAYERS)
 
+TEST_SRC =  ../tests/server/loader.spec.c\
+			../tests/server/program.spec.c
+
+TEST_OBJ = $(TEST_SRC:.c=.o)
+NO_MAIN_OBJ = $(BASE_SRC:.c=.o)
+NO_MAIN_GCNO = $(NO_MAIN_OBJ:.o=.gcno)
+NO_MAIN_GCDA = $(NO_MAIN_OBJ:.o=.gcda)
+TEST_GCNO = $(TEST_OBJ:.o=.gcno)
+TEST_GCDA = $(TEST_OBJ:.o=.gcda)
+
 SRC += src/main.c
 
 OBJ = $(SRC:.c=.o)
 
 TEST_NAME = unit_tests
-TEST_SRC =
 
 all: submodules $(NAME)
 
@@ -42,9 +51,12 @@ submodules:
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule);)
 
 clean:
-	rm -f $(OBJ)
-	rm -f *.gcno
-	rm -f *.gcda
+	$(RM) $(OBJ)
+	$(RM) $(NO_MAIN_GCNO)
+	$(RM) $(NO_MAIN_GCDA)
+	$(RM) $(TEST_GCNO)
+	$(RM) $(TEST_GCDA)
+	$(RM) $(TEST_OBJ)
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) clean;)
 	$(MAKE) -C dashboard clean
 
@@ -57,22 +69,28 @@ fclean: clean docs-clean
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) fclean;)
 	$(MAKE) -C dashboard fclean
 
-$(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): blib $(BASE_SRC) $(TEST_SRC)
-	$(CC) $(BASE_SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
-		-o $(TEST_NAME) $(CPPFLAGS) $(CFLAGS) $(LDLIBS)
+$(TEST_NAME): LDLIBS += -lcriterion -lgcov
+$(TEST_NAME): CFLAGS += --coverage -DTEST
+$(TEST_NAME): clean submodules $(NO_MAIN_OBJ) $(TEST_OBJ)
+	$(CC) $(NO_MAIN_OBJ) $(TEST_OBJ) $(LDLIBS) -o $(TEST_NAME)
 
-tests_run:	lib $(TEST_NAME)
+tests_run: $(TEST_NAME)
 	./$(TEST_NAME)
 
+coverage:
+	gcovr --exclude ../tests/
+
+debug_submodules:
+	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)
+
 debug: CC = clang
-debug: CFLAGS += -g3 -fsanitize=address
-debug: LDFLAGS += -fsanitize=addres
-debug: fclean
-	$(MAKE) -C core debug
-	$(MAKE) -C lib debug
-	$(MAKE) $(NAME)
-	$(MAKE) -C base debug
+debug: CFLAGS += -g3
+debug: fclean debug_submodules all
+
+sanitize: CC = clang
+sanitize: CFLAGS += -g3 -fsanitize=address
+sanitize: LDLIBS += -fsanitize=address
+sanitize: fclean debug_submodules all
 
 re: fclean all
 

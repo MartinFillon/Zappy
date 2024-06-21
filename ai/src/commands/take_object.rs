@@ -19,6 +19,7 @@ pub async fn take_object(
     obj: &str,
 ) -> Result<ResponseResult, CommandError> {
     debug!("Taking object: ({})...", obj);
+
     let response = client.check_dead(&format!("Take {}\n", obj)).await?;
     client.handle_response(response).await
 }

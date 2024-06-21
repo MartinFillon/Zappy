@@ -9,7 +9,6 @@
 #include "core/router/router.h"
 #include "core/server.h"
 #include "core/types/client.h"
-#include "logger.h"
 #include "zappy.h"
 
 static void case_ai(zappy_t *z, client_t *c)
@@ -25,21 +24,18 @@ static void case_ai(zappy_t *z, client_t *c)
 void execute_commands(zappy_t *z)
 {
     for (size_t i = 0; i < z->clients->size; i++) {
-        if (z->clients->data[i].commands->size == 0)
+        if (z->clients->data[i]->commands->size == 0)
             continue;
-        logs(
-            DEBUG, "client com count: %d\n", z->clients->data[i].commands->size
-        );
-        if (z->clients->data[i].type == UNSET ||
-            z->clients->data[i].type == GUI) {
+        if (z->clients->data[i]->type == UNSET ||
+            z->clients->data[i]->type == GUI) {
             run_router(
                 z->server.router,
-                &z->clients->data[i],
+                z->clients->data[i],
                 z,
-                queue_pop_queue_command_t(z->clients->data[i].commands)
+                queue_pop_queue_command_t(z->clients->data[i]->commands)
             );
         }
-        if (z->clients->data[i].type == AI)
-            case_ai(z, &z->clients->data[i]);
+        if (z->clients->data[i]->type == AI)
+            case_ai(z, z->clients->data[i]);
     }
 }
