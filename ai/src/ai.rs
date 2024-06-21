@@ -181,6 +181,7 @@ pub trait Incantationers {
     ) -> Result<ResponseResult, CommandError>;
 
     async fn handle_elevating(
+        &self,
         client: &mut TcpClient,
         res: Result<ResponseResult, CommandError>,
     ) -> Result<ResponseResult, CommandError>;
@@ -215,18 +216,20 @@ impl AI {
 
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
-        if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
-            client.push_message(msg);
+        loop {
+            if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
+                client.get_broadcast().await
+            {
+                client.push_message((DirectionMessage::Center, message));
+                debug!("[{}] Message pushed to queue.", self.cli_id);
+                break;
+            }
         }
-        while let Some((dir, msg)) = client.pop_message() {
+        while let Some((_, msg)) = client.pop_message() {
             info!(
                 "[{}] AI {}: handling message: {}",
                 self.cli_id, self.p_id, msg
             );
-            if dir != DirectionMessage::Center {
-                warn!("[{}] Ignoring message, out of bound.", self.cli_id);
-                return None;
-            }
             let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                 msg.split_at(idex)
             } else {
@@ -247,7 +250,7 @@ impl AI {
             let role: &str = lines.next()?;
             let p_id = lines.next().and_then(|word| word.parse::<usize>().ok())?;
 
-            info!(
+            println!(
                 "[{}] AI is being assigned {} with id {}...",
                 self.cli_id, role, p_id
             );

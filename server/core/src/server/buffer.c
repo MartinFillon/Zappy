@@ -14,7 +14,7 @@
 
 static int one_line_case(client_t *c, struct vector_str_t *lines)
 {
-    queue_pushfront_queue_command_t(c->commands, lines->data[0]);
+    queue_pushback_queue_command_t(c->commands, lines->data[0]);
     str_clear(c->io.req);
     vec_destroy_vector_str_t(lines);
     return 0;
@@ -36,7 +36,7 @@ int handle_buffer(client_t *c)
     if (lines->size == 1)
         return one_line_case(c, lines);
     for (int i = 0; i < (int)lines->size - !is_last_line; i++)
-        queue_pushfront_queue_command_t(c->commands, lines->data[i]);
+        queue_pushback_queue_command_t(c->commands, lines->data[i]);
     str_free(c->io.req);
     c->io.req = !is_last_line ? lines->data[lines->size - 1] : str_new(1024);
     vec_destroy_vector_str_t(lines);
