@@ -473,3 +473,68 @@ Test(core_ai, fork_with_gui)
     cr_assert_str_eq(cli->io.res->data, event);
     cr_assert_eq(z.game.teams->data[0].eggs->size, old + 1);
 }
+
+Test(core_ai, eject_no_egg)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *ai2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    ai1->ai->dir = UP;
+    handle_server_cmd("/tp 0 1", &z);
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Eject"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    str_clear(cli->io.res);
+    handle_eject(ai1, &com);
+    cr_assert_str_eq(ai1->io.res->data, "ok\n");
+    cr_assert_str_eq(ai2->io.res->data, "eject: 1\n");
+    struct vector_str_t *res = str_split(cli->io.res, "\n");
+    cr_assert_str_eq(res->data[0]->data, "ppo 1 9 8 2");
+    cr_assert_str_eq(res->data[1]->data, "pex 0");
+}
+
+Test(core_ai, eject_with_egg)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *ai2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    ai1->ai->dir = UP;
+    handle_server_cmd("/tp 0 1", &z);
+    struct vector_str_t *argsf = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(argsf, str_snew("Fork"));
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Eject"));
+    command_state_t com = {args, z.clients, &z.game};
+    command_state_t comf = {argsf, z.clients, &z.game};
+
+    handle_fork(ai1, &comf);
+    str_clear(cli->io.res);
+    handle_eject(ai1, &com);
+
+    char *egg_dead = NULL;
+    asprintf(
+        &egg_dead,
+        "edi %ld",
+        ai1->ai->team->eggs->data[ai1->ai->team->eggs->size]->id
+    );
+    cr_assert_str_eq(ai1->io.res->data, "ok\nok\n");
+    cr_assert_str_eq(ai2->io.res->data, "eject: 1\n");
+    struct vector_str_t *res = str_split(cli->io.res, "\n");
+    cr_assert_str_eq(res->data[0]->data, "ppo 1 9 8 2");
+    cr_assert_str_eq(res->data[1]->data, egg_dead);
+    cr_assert_str_eq(res->data[2]->data, "pex 0");
+}
