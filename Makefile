@@ -41,5 +41,10 @@ tests_run: fclean
 	./server/lib/unit_tests
 	cargo +stable install cargo-llvm-cov --locked
 	cargo llvm-cov --no-report
+	$(MAKE) coverage
+
+coverage:
+	$(MAKE) -C server coverage
+	cargo llvm-cov report --open
 
 .PHONY: clean fclean re tests_run docs

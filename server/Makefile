@@ -77,6 +77,9 @@ $(TEST_NAME): clean submodules $(NO_MAIN_OBJ) $(TEST_OBJ)
 tests_run: $(TEST_NAME)
 	./$(TEST_NAME)
 
+coverage:
+	gcovr --exclude ../tests/
+
 debug_submodules:
 	$(foreach submodule, $(SUBMODULES), $(MAKE) -C $(submodule) debug;)
 
