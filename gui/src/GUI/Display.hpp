@@ -78,7 +78,6 @@ class Display {
     TimeUnitInput timeUnitInput;
 
     Camera3D m_cam;
-    OpenWindow m_openWindow;
 
     Menu m_menu;
     Settings m_settings;

@@ -10,12 +10,12 @@
 
 namespace GUI {
 
-Menu::Menu(int &screenWidth, int &screenHeight, OpenWindow &openWindow):
-    m_width(screenWidth), m_height(screenHeight), m_inPauseMenu(false)
+Menu::Menu(int &screenWidth, int &screenHeight):
+    m_width(screenWidth), m_height(screenHeight), m_close(false), m_inGame(false), m_inSettings(false)
 {
-    m_button.push_back(Button<Rectangle, OpenWindow>("start", openWindow, [](OpenWindow &openWindow){openWindow = GAME;}));
-    m_button.push_back(Button<Rectangle, OpenWindow>("settings", openWindow, [](OpenWindow &openWindow){openWindow = SETTINGS;}));
-    m_button.push_back(Button<Rectangle, OpenWindow>("quit", openWindow, [](OpenWindow &openWindow){openWindow = QUIT;}));
+    m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}));
+    m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}));
+    m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}));
 }
 
 void Menu::display()
@@ -27,13 +27,41 @@ void Menu::display()
 
     Raylib::drawText(name, (m_width - sizeText) / 2, m_height / 8.0f, fontSize, PURPLE);
     for (size_t i = 0; i < m_button.size(); i++) {
-        if (m_inPauseMenu && i == 0)
-            continue;
-        Button<Rectangle, OpenWindow> &but = m_button.at(i);
+        Button<Rectangle, bool> &but = m_button.at(i);
         rec.y += rec.height;
         but.checkButtonAction(rec);
         but.draw(rec, fontSize / 2.0f);
     }
+}
+
+void Menu::setClose(bool val)
+{
+    m_close = val;
+}
+
+void Menu::setInGame(bool val)
+{
+    m_inGame = val;
+}
+
+void Menu::setInSettings(bool val)
+{
+    m_inSettings = val;
+}
+
+bool Menu::getClose() const
+{
+    return m_close;
+}
+
+bool Menu::getInGame() const
+{
+    return m_inGame;
+}
+
+bool Menu::getInSettings() const
+{
+    return m_inSettings;
 }
 
 } // namespace GUI

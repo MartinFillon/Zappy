@@ -12,8 +12,8 @@ namespace GUI {
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), screenWidth(width), screenHeight(height), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam({}), m_openWindow(MENU),
-      m_menu(screenWidth, screenHeight, m_openWindow), m_settings(screenWidth, screenHeight)
+      timeUnitInput(100, networkHandler), m_cam({}),
+      m_menu(screenWidth, screenHeight), m_settings(screenWidth, screenHeight)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -47,7 +47,11 @@ void Display::handleEvent()
         resize();
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
-        m_openWindow = (m_openWindow == MENU)? QUIT : MENU;
+        if (m_menu.getInSettings())
+            m_menu.setInSettings(false);
+        else {
+            (m_menu.getInGame())? m_menu.setInSettings(true) : m_menu.setClose(true);
+        }
     }
     if (IsKeyPressed(KEY_P))
         m_settings.switchIs3D();
@@ -101,24 +105,18 @@ void Display::displayGame()
 
 void Display::run()
 {
-    while (m_openWindow != QUIT && !WindowShouldClose() && networkHandler.isRunning()) {
+    while (!m_menu.getClose() && !WindowShouldClose() && networkHandler.isRunning()) {
         handleServerMessage();
 
         handleEvent();
         BeginDrawing();
-        switch (m_openWindow)
-        {
-        case MENU:
-            displayMenu();
-            break;
-        case SETTINGS:
+        if (m_menu.getInSettings())
             displaySettings();
-            break;
-        case GAME:
-            displayGame();
-            break;
-        default:
-            break;
+        else {
+            if (m_menu.getInGame())
+                displayGame();
+            else
+                displayMenu();
         }
         EndDrawing();
     }

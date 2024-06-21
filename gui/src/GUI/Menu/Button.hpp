@@ -12,13 +12,6 @@
 
 namespace GUI {
 
-enum OpenWindow {
-  MENU,
-  SETTINGS,
-  GAME,
-  QUIT
-};
-
 template <typename F, typename T>
 class Button : public AButton<F, T>
 {
