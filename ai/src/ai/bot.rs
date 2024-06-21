@@ -55,13 +55,13 @@ pub struct Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
-        println!("[{}] BOT HERE.", info.cli_id);
+        println!("-[{}] BOT HERE.", info.cli_id);
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
-            "[{}] Bot [Queen {}] is now being handled...",
+            "-[{}] Bot [Queen {}] is now being handled...",
             self.info().cli_id,
             self.info().p_id
         );
@@ -252,7 +252,10 @@ impl Bot {
                     count -= 1;
                 }
             }
-            println!("Bot {} done dropping items.", self.info.p_id);
+            println!(
+                "-[{}] Bot {} done dropping items.",
+                self.info.cli_id, self.info.p_id
+            );
         }
         Ok(ResponseResult::OK)
     }
@@ -266,7 +269,7 @@ impl Bot {
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         info!(
-            "[{}] Bot [Queen {}]: backtracking...",
+            "-[{}] Bot [Queen {}]: backtracking...",
             self.info().cli_id,
             self.info().p_id
         );
@@ -283,7 +286,8 @@ impl Bot {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
-                "Bot [Queen {}]: handling message: {}",
+                "-[{}] Bot [Queen {}]: handling message: {}",
+                self.info().cli_id,
                 self.info().p_id,
                 message.1
             );

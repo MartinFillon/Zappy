@@ -45,18 +45,17 @@ const MIN_FOOD_ON_FLOOR: usize = 200;
 #[async_trait]
 impl AIHandler for Knight {
     fn init(info: AI) -> Self {
-        println!("[{}] Knight has been created.", info.cli_id);
+        println!("-[{}] Knight has been created.", info.cli_id);
         Self::new(info, Arc::new(Mutex::new(1)))
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
-            "[{}] Knight [Queen {}] is being handled...",
+            "-[{}] Knight [Queen {}] is being handled...",
             self.info().cli_id,
             self.info().p_id
         );
         loop {
-            info!("Handling knight [Queen {}]...", self.info().p_id);
             {
                 let level = self.level_ref.lock().await;
                 if *level != self.info().level {
@@ -152,8 +151,8 @@ impl Knight {
                 total += 1;
             }
             if command.is_err() {
-                info!("[{}] Knight dropped x{} food", self.info.cli_id, total);
-                info!("[{}] AI : Knight has killed himself.", id);
+                info!("-[{}] Knight dropped x{} food", self.info.cli_id, total);
+                info!("-[{}] AI : Knight has killed himself.", id);
                 break;
             }
         }
@@ -170,7 +169,8 @@ impl Knight {
                     < min
             {
                 info!(
-                    "Knight [Queen {}]: not enough food, producing more...",
+                    "-[{}] Knight [Queen {}]: not enough food, producing more...",
+                    self.info().cli_id,
                     self.info().p_id
                 );
                 let res = fork(client).await?;
@@ -178,9 +178,9 @@ impl Knight {
                     let info = self.info.clone();
                     tokio::spawn(async move {
                         if let Err(err) = fork_ai(info.clone()).await {
-                            error!("[{}] AI fork error: {}", info.cli_id, err);
+                            error!("-[{}] AI fork error: {}", info.cli_id, err);
                         } else {
-                            println!("[{}] AI successfully forked.", info.cli_id);
+                            println!("-[{}] AI successfully forked.", info.cli_id);
                         }
                     });
                     broadcast(
@@ -222,7 +222,8 @@ impl Knight {
 
         while let Some(message) = client.pop_message() {
             println!(
-                "Knight [Queen {}]: handling message: {}",
+                "-[{}] Knight [Queen {}]: handling message: {}",
+                self.info().cli_id,
                 self.info().p_id,
                 message.1
             );
@@ -262,7 +263,10 @@ impl Knight {
         }
         let mut client = self.info().client().lock().await;
         let res = look_around(&mut client).await;
-        println!("Knight {} Look returned: {:?}", self.info.p_id, res);
+        println!(
+            "-[{}] Knight {} Look returned: {:?}",
+            self.info.cli_id, self.info.p_id, res
+        );
         if let Ok(ResponseResult::Tiles(tiles)) =
             self.knight_checkout_response(&mut client, res).await
         {

@@ -30,7 +30,7 @@ impl Fetus {
 #[async_trait]
 impl AIHandler for Fetus {
     fn init(info: AI) -> Self {
-        println!("[{}] Fetus spawned.", info.cli_id);
+        println!("-[{}] Fetus spawned.", info.cli_id);
         Self::new(info)
     }
 
@@ -44,8 +44,10 @@ impl AIHandler for Fetus {
                     total += 1;
                 }
                 Err(CommandError::DeadReceived) | Ok(ResponseResult::KO) => {
-                    info!("[{}] Fetus dropped x{} food", self.info.cli_id, total);
-                    println!("[{}] AI : Fetus died.", self.info.cli_id);
+                    println!(
+                        "-[{}] AI : Fetus died and dropped x{} food.",
+                        self.info.cli_id, total
+                    );
                     return Err(CommandError::DeadReceived);
                 }
                 _ => {

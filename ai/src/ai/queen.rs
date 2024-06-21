@@ -416,6 +416,10 @@ impl Queen {
                 level = lvl;
                 println!("Queen {} done. Now level {}", self.info.p_id, level);
                 if level == 4 || level == 6 {
+                    error!(
+                        "[{}] Queen {} lvl {}",
+                        self.info.cli_id, self.info.p_id, level
+                    );
                     broadcast(
                         &mut cli,
                         format!("{} lvl {}", self.info().p_id, level).as_str(),
@@ -424,6 +428,10 @@ impl Queen {
                 }
             }
             if level == 4 || level == 6 {
+                error!(
+                    "[{}] Queen {} lvl {}",
+                    self.info.cli_id, self.info.p_id, level
+                );
                 broadcast(
                     &mut cli,
                     format!("{} lvl {}", self.info().p_id, level).as_str(),
@@ -553,6 +561,7 @@ impl Queen {
     }
 
     fn is_paired_queen(&self, id: usize, lvl: i32) -> bool {
+        error!("[{}] id = {}, level = {}", self.info.cli_id, id, lvl);
         (lvl == 4 && id == QUEENS_IDS[self.info().p_id - 1])
             || (lvl == 6
                 && ((id == 1 | 2 && self.info().p_id == 3 | 4)
