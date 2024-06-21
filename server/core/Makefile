@@ -93,7 +93,6 @@ SRC = $(addsuffix .c, 				\
 						destroy				\
 					)\
 					$(addprefix router/, 	\
-						mode_parser			\
 						init_router			\
 						destroy_router		\
 						run 				\
