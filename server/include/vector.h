@@ -138,6 +138,13 @@ static inline void FN_NAME(vec_foreach, NAME)(
     }
 }
 
+/**
+** @brief Free a vector @param vec and its element with the
+**        function @param free_func
+**
+** @param vec vector that will be freed
+** @param free_func Function to free element of vector
+**/
 static inline void FN_NAME(vec_free, NAME)(
     struct NAME *vec,
     void (*free_func)(TYPE)

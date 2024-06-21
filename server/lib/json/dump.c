@@ -29,7 +29,7 @@ void print_data(const int fd, json_data_t const *data)
             dprintf(fd, "\"%s\"\n", data->data.str->data);
             break;
         case NUMBER:
-            dprintf(fd, "%f\n", data->data.num);
+            dprintf(fd, "%.2f\n", data->data.num);
             break;
         case BOOLEAN:
             dprintf(fd, "%s\n", data->data.boolean ? "true" : "false");
@@ -51,6 +51,8 @@ void print_json(const int fd, json_data_t const *json)
     obj = json->data.obj;
     dprintf(fd, "{");
     for (size_t i = 0; i < obj->size; i++) {
+        if (i != 0)
+            dprintf(fd, ",");
         dprintf(fd, "\"%s\":", obj->data[i].key->data);
         print_data(fd, obj->data[i].data);
     }

@@ -15,6 +15,7 @@ bool check_required(struct options *opts, struct args *arguments)
     for (size_t i = 0; i < opts->size; i++) {
         if (!opts->data[i].required)
             continue;
+        found = false;
         search_opt(&opts->data[i], arguments, &found);
         if (!found) {
             logs(
@@ -24,7 +25,6 @@ bool check_required(struct options *opts, struct args *arguments)
             );
             return false;
         }
-        found = false;
     }
     return true;
 }

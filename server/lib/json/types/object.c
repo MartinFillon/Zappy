@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "json/map.h"
+#include "logger.h"
 #include "json/json_parser.h"
 
 static int parse_object_inner(json_parser_t *p)
@@ -21,7 +22,7 @@ static int parse_object_inner(json_parser_t *p)
         case ':':
             return parse_value(p);
         default:
-            return 0;
+            return -1;
     }
 }
 

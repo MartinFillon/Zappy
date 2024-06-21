@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-use log::info;
+use log::debug;
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
     let mut tile_count: usize = 0;
@@ -98,13 +98,13 @@ impl Bot {
     }
 
     pub async fn move_to_tile(&mut self, tile: usize) -> Result<ResponseResult, CommandError> {
-        info!("Moving to tile {}...", tile);
+        debug!("Moving to tile {}...", tile);
         match get_tile_coordinates(tile, *self.info().level()) {
             Some(coords) => {
                 self.update_coord_movement(coords);
                 self.move_ai_to_coords(coords).await
             }
-            None => Err(CommandError::RequestError),
+            None => Ok(ResponseResult::KO),
         }
     }
 }

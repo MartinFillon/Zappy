@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstddef>
 #include <map>
+#include <raylib.h>
 #include <string>
 #include "Model3D.hpp"
 #include "raymath.h"
@@ -34,6 +35,7 @@
 #define S4 "gui/assets/rocks/S_rocks_04.glb"
 #define S5 "gui/assets/rocks/S_rocks_05.glb"
 #define S6 "gui/assets/rocks/S_rocks_06.glb"
+#define GRASS "gui/assets/grass.glb"
 
 class RessourcesManager {
   public:
@@ -64,6 +66,7 @@ class RessourcesManager {
         _map[{2, 4}] = Model3D(L4);
         _map[{2, 5}] = Model3D(L5);
         _map[{2, 6}] = Model3D(L6);
+        _map[{0, 7}] = Model3D(GRASS);
         _resourcePositions[0] = {-0.4, -0.37};
         _resourcePositions[1] = {-0.43, 0.41};
         _resourcePositions[2] = {0.07, -0.24};
@@ -83,6 +86,11 @@ class RessourcesManager {
         return _map.size();
     }
 
+    void DrawGrass(Vector3 pos)
+    {
+        _map[{0,7}].Draw(pos, {0.5,0.6,0.5}, {0,0,0}, 0);
+    }
+
     void Draw(int size, int type, float x, float z, float tileSize = 1.f)
     {
         float y = tileSize / 2;
@@ -93,7 +101,7 @@ class RessourcesManager {
             ((static_cast<int>(x) % 3) ? -1 : 1) * ((static_cast<int>(z + x) % 6 >= 3) ? 1 : -1);
         z = (z + offsetZ) * tileSize;
         x = (x + offsetX) * tileSize;
-        y += 0.05 * size;
+        y += 0.05 * size * ((type == 0) ? 0 : 1);
         if (type == 0) {
             scale *= 5;
             tileSize /= 2;

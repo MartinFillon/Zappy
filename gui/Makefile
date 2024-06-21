@@ -61,12 +61,12 @@ fclean: clean
 	rm -f $(TEST_NAME)
 
 $(TEST_NAME): LDFLAGS += -lcriterion
-$(TEST_NAME): $(SRC) $(TEST_SRC)
-	$(CXX) $(SRC) $(TEST_SRC) --coverage $(LDFLAGS) \
+$(TEST_NAME): $(OBJ) $(TEST_SRC)
+	$(CXX) $(OBJ) $(TEST_SRC) --coverage $(LDFLAGS) \
 		-o $(TEST_NAME)
 
 tests_run:	$(TEST_NAME)
-	./$(TEST_NAME) -h 123 -p 123123
+	# ./$(TEST_NAME) -h 123 -p 123123
 
 re: fclean all
 

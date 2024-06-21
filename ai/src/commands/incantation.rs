@@ -49,6 +49,6 @@ pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, Comma
         if res == ResponseResult::KO {
             return Ok(res);
         }
-        response = client.check_response().await?;
+        response = client.check_response().await;
     }
 }

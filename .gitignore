@@ -19,3 +19,5 @@ doc/server
 server/doc
 gui/doc
 *.so
+unit_tests
+!tests/server/*.so

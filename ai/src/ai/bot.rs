@@ -8,30 +8,25 @@
 #![allow(dead_code)]
 
 use crate::{
-    ai::{start_ai, AIHandler, AI},
+    ai::{AIHandler, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        take_object::{self, take_object},
+        take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
     tcp::{
         command_handle::{CommandError, DirectionEject, DirectionMessage, ResponseResult},
-        handle_tcp, TcpClient,
+        TcpClient,
     },
 };
 
-use std::io::{self, Error};
-use std::mem::swap;
-use std::sync::Arc;
-
 use async_trait::async_trait;
+use log::{debug, info};
 use rand::Rng;
-use tokio::{sync::Mutex, task};
-
-use log::{debug, error, info};
+use std::mem::swap;
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -53,6 +48,63 @@ pub struct Bot {
     info: AI,
     coord: (i32, i32),
     backtrack_infos: Vec<(i32, i32)>,
+}
+
+#[async_trait]
+impl AIHandler for Bot {
+    fn init(info: AI) -> Self {
+        println!("[{}] BOT HERE.", info.cli_id);
+        Self::new(info)
+    }
+
+    async fn update(&mut self) -> Result<(), CommandError> {
+        info!(
+            "[{}] Bot [Queen {}] is now being handled...",
+            self.info().cli_id,
+            self.info().p_id
+        );
+        let mut idex: usize = 0;
+        loop {
+            info!("Handling bot [Queen {}]...", self.info().p_id);
+            let _ = self.handle_message().await;
+            if idex > MAX_MOVEMENTS {
+                let _ = self.backtrack().await;
+                let _ = self.drop_items().await;
+                for _ in 0..5 {
+                    let mut client = self.info().client().lock().await;
+                    let _ = take_object::take_object(&mut client, "food").await;
+                }
+                idex = 0;
+                continue;
+            }
+            let random: usize = rand::thread_rng().gen_range(1..=3);
+            let _ = self.move_to_tile(random).await;
+            {
+                let mut client = self.info().client().lock().await;
+                if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
+                    if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
+                        && tiles[0].last().unwrap_or(&String::from("player")) != "player"
+                    {
+                        let _ = take_object::take_object(
+                            &mut client,
+                            tiles[0].last().unwrap().as_str(),
+                        )
+                        .await;
+                    }
+                }
+            }
+            idex += 1;
+        }
+    }
+}
+
+fn get_item_index(item: &str, inv: &[(String, i32)]) -> Option<usize> {
+    for (i, elem) in inv.iter().enumerate() {
+        if elem.0.as_str() == item {
+            return Some(i);
+        }
+    }
+    None
 }
 
 fn make_item_prioritised(item: &str) {
@@ -105,18 +157,20 @@ async fn seek_best_item_index(
     match inventory(client).await? {
         ResponseResult::Inventory(inv) => {
             let mut idex = 0;
-            for tile in tiles {
-                let (pos, item) = get_best_item_in_tile(&tile, &inv);
+            let mut tile_idex = 0;
+            for (i, tile) in tiles.iter().enumerate() {
+                let (_, item) = get_best_item_in_tile(tile, &inv);
                 if get_item_priority(item.as_str()) > get_item_priority(inv[idex].0.as_str())
-                    && player_count_on_tile(&tile) < COLONY_PLAYER_COUNT
+                    && player_count_on_tile(tile) < COLONY_PLAYER_COUNT
                 {
-                    idex = pos;
+                    idex = get_item_index(item.as_str(), &inv).unwrap_or(idex);
+                    tile_idex = i;
                     best_item.clone_from(&item);
                 }
             }
-            Ok(idex)
+            Ok(tile_idex)
         }
-        _ => Err(CommandError::RequestError),
+        _ => Err(CommandError::InvalidResponse),
     }
 }
 
@@ -139,92 +193,9 @@ impl Bot {
     }
 }
 
-#[async_trait]
-impl AIHandler for Bot {
-    fn init(info: AI) -> Self {
-        println!("BOT HERE.");
-        Self::new(info)
-    }
-
-    async fn update(&mut self) -> Result<(), CommandError> {
-        let mut idex: usize = 0;
-        loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
-            let _ = self.handle_message().await;
-            if idex > MAX_MOVEMENTS {
-                let _ = self.backtrack().await;
-                let _ = self.drop_items().await;
-                for _ in 0..5 {
-                    let mut client = self.info().client().lock().await;
-                    let _ = take_object::take_object(&mut client, "food").await;
-                }
-                idex = 0;
-                continue;
-            }
-            //if self.seek_objects().await? == ResponseResult::KO {
-            let random: usize = rand::thread_rng().gen_range(1..=3);
-            let _ = self.move_to_tile(random).await;
-            {
-                let mut client = self.info().client().lock().await;
-                if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
-                    if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
-                        && tiles[0].last().unwrap() != "player"
-                    {
-                        let _ = take_object(&mut client, tiles[0].last().unwrap().as_str()).await;
-                    }
-                }
-            }
-            //}
-            idex += 1;
-        }
-    }
-
-    async fn fork_dupe(info: AI, set_id: Option<usize>) -> io::Result<()> {
-        let client: Arc<Mutex<TcpClient>> =
-            match handle_tcp(info.address.clone(), info.team.clone()).await {
-                Ok(client) => {
-                    debug!("New `Bot` client connected successfully.");
-                    Arc::new(Mutex::new(client))
-                }
-                Err(e) => return Err(Error::new(e.kind(), e)),
-            };
-
-        let c_id = info.cli_id;
-        let p_id = set_id.unwrap_or(0);
-        let team = info.team.clone();
-        let address = info.address.clone();
-
-        let handle = task::spawn(async move {
-            match start_ai(client, team, address, (c_id, p_id), false).await {
-                Ok(ai) => {
-                    let mut bot = Bot::init(ai.clone());
-                    if let Err(e) = bot.update().await {
-                        println!("Error: {}", e);
-                    }
-                    Ok(ai)
-                }
-                Err(e) => {
-                    error!("{}", e);
-                    Err(e)
-                }
-            }
-        });
-
-        tokio::spawn(async move {
-            if let Err(e) = handle.await {
-                error!("Task failed: {:?}", e);
-            }
-        });
-
-        Ok(())
-    }
-}
-
 impl Bot {
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
-        debug!("Updating movement of offset: ({}, {})...", d.0, d.1);
-
         let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
 
         debug!(
@@ -268,7 +239,7 @@ impl Bot {
                 } else {
                     let _ = self.move_to_tile(tile).await;
                     let mut client = self.info().client().lock().await;
-                    take_object(&mut client, &best_item).await
+                    take_object::take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),
@@ -291,13 +262,17 @@ impl Bot {
 
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
-        let _ = turn(&mut client, DirectionTurn::Right).await;
-        let _ = turn(&mut client, DirectionTurn::Right).await;
+        turn(&mut client, DirectionTurn::Right).await?;
+        turn(&mut client, DirectionTurn::Right).await?;
         Ok(ResponseResult::OK)
     }
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
-        info!("Bot [Queen {}]: backtracking...", self.info().p_id);
+        info!(
+            "[{}] Bot [Queen {}]: backtracking...",
+            self.info().cli_id,
+            self.info().p_id
+        );
         let _ = self.turn_around().await;
         while !self.backtrack_infos.is_empty() {
             let coords = self.backtrack_infos.pop().unwrap_or((0, 0));
@@ -330,7 +305,8 @@ impl Bot {
                         let content = msg.split_at(idex);
                         if let Ok(id) = content.0.parse::<usize>() {
                             if id == *self.info().p_id() {
-                                handle_queen_message(&mut client, (dir, content.1.trim_start())).await?;
+                                handle_queen_message(&mut client, (dir, content.1.trim_start()))
+                                    .await?;
                             }
                         }
                     }

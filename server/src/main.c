@@ -51,10 +51,16 @@ static void destroy_args(struct args *ag, struct options *opts)
     vec_destroy_options(opts);
 }
 
+static void sigint(int sig)
+{
+    (void)sig;
+    logs(DEBUG, "SIGINT received\n");
+}
+
 static int run_program(args_infos_t *args)
 {
     signal(SIGPIPE, SIG_IGN);
-    signal(SIGINT, SIG_IGN);
+    signal(SIGINT, &sigint);
     if (loop_server(args) == ERROR)
         return EPI_ERROR;
     return SUCCESS;

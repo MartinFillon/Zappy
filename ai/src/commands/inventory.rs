@@ -43,7 +43,7 @@ pub async fn inventory(client: &mut TcpClient) -> Result<ResponseResult, Command
         if let ResponseResult::Inventory(_) = res {
             return Ok(res);
         }
-        response = client.check_response().await?;
+        response = client.check_response().await;
     }
 }
 

@@ -12,5 +12,5 @@ bool convert_bool(argument_t *arg, parser_t *p)
 {
     arg->value.boolean = true;
     p->idx -= 1;
-    return true;
+    return false;
 }

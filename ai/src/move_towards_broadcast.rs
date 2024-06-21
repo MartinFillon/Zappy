@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-use log::info;
+use log::{debug, info};
 
 const Y_MSG_DIRS: [i32; 8] = [1, 1, 0, -1, -1, -1, 0, 1];
 const X_MSG_DIRS: [i32; 8] = [0, -1, -1, -1, 0, 1, 1, 1];
@@ -46,6 +46,7 @@ pub async fn turn_towards_broadcast(
     client: &mut TcpClient,
     dir: DirectionMessage,
 ) -> Result<ResponseResult, CommandError> {
+    debug!("Turning towards direction {}...", dir);
     if dir == DirectionMessage::Center {
         return Ok(ResponseResult::OK);
     }
@@ -68,7 +69,7 @@ pub async fn move_towards_broadcast(
     client: &mut TcpClient,
     dir: DirectionMessage,
 ) -> Result<ResponseResult, CommandError> {
-    info!("Moving towards direction {}...", dir);
+    debug!("Moving towards direction {}...", dir);
     if dir == DirectionMessage::Center {
         return Ok(ResponseResult::OK);
     }

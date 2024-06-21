@@ -64,7 +64,7 @@ static bool parse_argument(struct args *lst, parser_t *p, option_t *opts)
         logs(
             ERROR_LEVEL,
             "Couldn't find a converter for the argument %s\n",
-            opts->type
+            opts->identifier
         );
         return true;
     }
@@ -79,7 +79,7 @@ static bool parse_inner(parser_t *parser, struct args *lst)
     if (opt == NULL)
         return true;
     parser->idx += 1;
-    if (parser->idx >= parser->args_size) {
+    if (opt->type != BOOL && parser->idx >= parser->args_size) {
         logs(ERROR_LEVEL, "Missing value for argument: %s\n", opt->identifier);
         return true;
     }

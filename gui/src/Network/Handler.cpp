@@ -7,6 +7,7 @@
 
 #include "Handler.hpp"
 #include <asio/error.hpp>
+#include <chrono>
 #include <iostream>
 
 namespace Network {
@@ -101,7 +102,7 @@ void Handler::run()
         }
 
         while (!handlerEnd) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             requestMapSize();
             requestMapContent();
             requestTimeUnit();
