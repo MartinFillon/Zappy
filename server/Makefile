@@ -74,12 +74,10 @@ $(TEST_NAME): CFLAGS += --coverage -DTEST
 $(TEST_NAME): clean submodules $(NO_MAIN_OBJ) $(TEST_OBJ)
 	$(CC) $(NO_MAIN_OBJ) $(TEST_OBJ) $(LDLIBS) -o $(TEST_NAME)
 
-tests_run: fclean
-	$(MAKE) -C lib unit_tests
-	$(MAKE) $(TEST_NAME)
-	$(MAKE) -C lib tests_run
-	$(MAKE) -C core tests_run
+tests_run: $(TEST_NAME)
 	./$(TEST_NAME)
+
+coverage:
 	gcovr --exclude ../tests/
 
 debug_submodules:
