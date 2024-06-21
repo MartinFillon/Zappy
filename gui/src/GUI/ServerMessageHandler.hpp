@@ -15,7 +15,7 @@ class Display;
 
 class ServerMessageHandler {
   public:
-    ServerMessageHandler(bool debug, Display &display);
+    ServerMessageHandler(const bool &debug, Display &display);
 
     void handleServerMessage(const std::string &message);
 
@@ -45,7 +45,7 @@ class ServerMessageHandler {
     void handleCommandParameter(const std::string &message);
     void handleNewPlayer(const std::string &message);
 
-    bool debug;
+    const bool &debug;
     Display &display;
     std::unordered_map<std::string, std::function<void(const std::string &)>> commandHandlers;
 };
