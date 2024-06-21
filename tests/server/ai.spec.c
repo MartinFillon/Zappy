@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <criterion/criterion.h>
+#include "core/types/client.h"
 #include "core/types/object.h"
 
 #include "fake_server.h"
@@ -537,4 +538,35 @@ Test(core_ai, eject_with_egg)
     cr_assert_str_eq(res->data[0]->data, "ppo 1 9 8 2");
     cr_assert_str_eq(res->data[1]->data, egg_dead);
     cr_assert_str_eq(res->data[2]->data, "pex 0");
+}
+
+Test(core_ai, broadcast_command)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai1 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *ai2 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *ai3 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+    client_t *ai4 =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    ai4->ai->pos.x = 1;
+    ai4->ai->pos.y = 1;
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Broadcast"));
+    vec_pushback_vector_str_t(args, str_snew("Hello"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    str_clear(cli->io.res);
+    handle_broadcast(ai1, &com);
+    cr_assert_str_eq(ai1->io.res->data, "ok\n");
+    cr_assert_str_eq(ai2->io.res->data, "message 6, Hello\n");
+    cr_assert_str_eq(ai3->io.res->data, "message 5, Hello\n");
+    cr_assert_str_eq(ai4->io.res->data, "message 7, Hello\n");
+    cr_assert_str_eq(cli->io.res->data, "pbc 0 Hello\n");
 }
