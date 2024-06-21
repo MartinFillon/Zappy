@@ -143,6 +143,56 @@ cli_simple_cmds = ConfigTest(
     )
 )
 
+connect_nbr_cmds = ConfigTest(
+    name = "[TEST Connect_nbr] ",
+    config = Config(
+        args=[
+            "./zappy_server",
+            "-p", "8080",
+            "-x", "10",
+            "-y", "10",
+            "-n", "team1", "team2", "team3",
+            "-c", "4",
+            "-f", "100",
+            "-l", "DEBUG"
+        ]
+    ),
+    success = "Test Connect_nbr handled: OK",
+    failure = "Test Connect_nbr not handled: KO",
+
+    cliConf=ConfigClient(
+        port=8080,
+        cmd_line= None,
+        cmds= ["team1\n", "Connect_nbr\n"],
+        output= "WELCOME\n3\n10 10\n3\n"
+    )
+)
+
+broadcast_cmds = ConfigTest(
+    name = "[TEST Broadcast] ",
+    config = Config(
+        args=[
+            "./zappy_server",
+            "-p", "4242",
+            "-x", "10",
+            "-y", "10",
+            "-n", "team1", "team2", "team3",
+            "-c", "4",
+            "-f", "100",
+            "-l", "DEBUG"
+        ]
+    ),
+    success = "Test Broadcast handled: OK",
+    failure = "Test Broadcast not handled: KO",
+
+    cliConf=ConfigClient(
+        port=4242,
+        cmd_line= None,
+        cmds= ["team1\n", "Broadcast Hello\n"],
+        output= "WELCOME\n2\n10 10\nok\n"
+    )
+)
+
 hard_test = ConfigTest(
     name = "[TEST Hard input] ",
     config = Config(

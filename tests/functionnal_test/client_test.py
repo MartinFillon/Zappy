@@ -7,8 +7,8 @@
 
 import subprocess
 from time import sleep
-from config import ConfigTest, team_connection, cli_simple_cmds
-from utils import get_lines, ignore_timeout, init_socket_client
+from config import ConfigTest, team_connection, cli_simple_cmds, connect_nbr_cmds
+from utils import ignore_timeout, init_socket_client
 
 def client_output_test(config: ConfigTest):
     """
@@ -34,7 +34,8 @@ def client_output_test(config: ConfigTest):
         print("\t", config.success)
     else:
         print("\t", config.failure)
-    print("Output:\n", buff.decode(), config.cliConf.output, sep="")
+    print("Output:\n", buff.decode(), sep="")
+    print("VS:\n", config.cliConf.output, sep="")
     
 
 def client_tests():
@@ -45,3 +46,4 @@ def client_tests():
     """
     client_output_test(team_connection)
     client_output_test(cli_simple_cmds)
+    client_output_test(connect_nbr_cmds)
