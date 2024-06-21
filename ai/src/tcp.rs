@@ -74,7 +74,6 @@ impl TcpClient {
     }
 
     pub async fn send_request(&self, request: String) -> io::Result<()> {
-        debug!("[{}] Sending request: {}", self.id, request.trim_end());
         if let Some(sender) = &self.request_sender {
             sender
                 .send(request)
