@@ -282,8 +282,7 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
-    async fn analyse_messages(&mut self, p_id: &mut usize) -> Result<ResponseResult, CommandError> {
-        let res = Ok(ResponseResult::OK);
+    async fn analyse_messages(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
@@ -291,40 +290,27 @@ impl Bot {
                 self.info().p_id,
                 message.1
             );
-            match message {
-                (DirectionMessage::Center, msg) => {
-                    if let Ok(id) = msg.parse::<usize>() {
-                        p_id.clone_from(&id);
-                    }
-                }
-                (dir, msg) => {
-                    if !msg.contains(' ') || msg.len() < 2 {
-                        continue;
-                    }
-                    if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
-                        let content = msg.split_at(idex);
-                        if let Ok(id) = content.0.parse::<usize>() {
-                            if id == *self.info().p_id() {
-                                handle_queen_message(&mut client, (dir, content.1.trim_start()))
-                                    .await?;
-                            }
-                        }
+            let (dir, msg) = message;
+            if !msg.contains(' ') || msg.len() < 2 {
+                continue;
+            }
+            if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                let content = msg.split_at(idex);
+                if let Ok(id) = content.0.parse::<usize>() {
+                    if id == *self.info().p_id() {
+                        handle_queen_message(&mut client, (dir, content.1.trim_start())).await?;
                     }
                 }
             }
         }
-        res
+        Ok(ResponseResult::OK)
     }
 }
 
 #[async_trait]
 impl Listeners for Bot {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut id: usize = 0;
-        self.analyse_messages(&mut id).await?;
-        if id != 0 {
-            self.info.set_p_id(id);
-        }
+        self.analyse_messages().await?;
         Ok(ResponseResult::OK)
     }
 }

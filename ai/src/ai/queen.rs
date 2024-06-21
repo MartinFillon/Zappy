@@ -137,12 +137,13 @@ impl AIHandler for Queen {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
                 info!("[{}] Spawned queen.", info.cli_id);
             }
-            if info.slots > 0 && info.cli_id > 3 {
-                info!("[{}] Identified as bot.", info.cli_id);
+            if info.slots >= 0 && info.cli_id > 3 {
+                info!("[{}] Identified as NPC.", info.cli_id);
                 Queen::connect_leftovers(info.clone()).await?;
             }
             info!("[{}] Unblocked.", info.cli_id);
         }
+        self.info.set_p_id(self.info().cli_id);
         println!(
             "[{}] Queen is now certified and verified.",
             self.info.cli_id
@@ -384,7 +385,6 @@ impl Queen {
     async fn check_enough_food(&mut self, min: usize) -> Result<(), CommandError> {
         while *self.inv.food() < min {
             let mut cli = self.info.client.lock().await;
-            println!("Queen {} called Take.", self.info.p_id);
             if let Ok(ResponseResult::OK) =
                 commands::take_object::take_object(&mut cli, "food").await
             {

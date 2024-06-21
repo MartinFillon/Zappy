@@ -10,7 +10,7 @@ use crate::{
     commands::{drop_object, fork, incantation, inventory, look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
-        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
+        command_handle::{CommandError, CommandHandler, ResponseResult},
         TcpClient,
     },
 };
@@ -28,7 +28,6 @@ use super::Listeners;
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
     info: AI,
-    can_start: bool,
 }
 
 static mut LEVEL: usize = 1;
@@ -47,28 +46,16 @@ impl AIHandler for Knight {
             self.info().cli_id,
             self.info().p_id
         );
-        while !self.can_start {
-            {
-                let mut client = self.info().client().lock().await;
-                if let Ok(ResponseResult::Message(msg)) = client.get_broadcast().await {
-                    client.push_message(msg);
-                }
-            }
-            let _ = self.handle_message().await;
-        }
         loop {
             info!("Handling knight [Queen {}]...", self.info().p_id);
             if unsafe { LEVEL } != self.info().level {
                 self.info.set_level(unsafe { LEVEL });
             }
-            let _ = self.handle_message().await;
+            self.handle_message().await?;
 
-            if self.info().level == 6 && (self.info().p_id == 3 || self.info().p_id == 4) {
-                break;
-            }
             {
                 let mut client = self.info().client().lock().await;
-                let _ = self.check_enough_food(&mut client, 10).await;
+                self.check_enough_food(&mut client, 10).await?;
             }
             if self.can_incantate().await {
                 {
@@ -99,7 +86,6 @@ impl AIHandler for Knight {
                 continue;
             }
         }
-        Err(CommandError::DeadReceived)
     }
 }
 
@@ -137,25 +123,14 @@ impl Incantationers for Knight {
 #[async_trait]
 impl Listeners for Knight {
     async fn handle_message(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut id: usize = 0;
-        let mut can_start = false;
-        self.analyse_messages(&mut id, &mut can_start).await?;
-        if id != 0 {
-            self.info.set_p_id(id);
-        }
-        if can_start {
-            self.set_can_start(true);
-        }
+        self.analyse_messages().await?;
         Ok(ResponseResult::OK)
     }
 }
 
 impl Knight {
     fn new(info: AI) -> Self {
-        Self {
-            info,
-            can_start: false,
-        }
+        Self { info }
     }
 
     async fn die(&mut self, id: usize) {
@@ -189,8 +164,9 @@ impl Knight {
                     "Knight [Queen {}]: not enough food, producing more...",
                     self.info().p_id
                 );
-                let res = fork::fork(client).await;
-                if let Ok(ResponseResult::OK) = Knight::knight_checkout_response(client, res).await
+                let res = fork::fork(client).await?;
+                if let ResponseResult::OK =
+                    Knight::knight_checkout_response(client, Ok(res)).await?
                 {
                     let info = self.info.clone();
                     tokio::spawn(async move {
@@ -229,11 +205,7 @@ impl Knight {
         Ok(())
     }
 
-    async fn analyse_messages(
-        &mut self,
-        p_id: &mut usize,
-        can_start: &mut bool,
-    ) -> Result<ResponseResult, CommandError> {
+    async fn analyse_messages(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             println!(
@@ -241,38 +213,29 @@ impl Knight {
                 self.info().p_id,
                 message.1
             );
-            let _ = self.check_enough_food(&mut client, 10).await;
-            match message {
-                (DirectionMessage::Center, msg) => {
-                    if let Ok(id) = msg.parse::<usize>() {
-                        p_id.clone_from(&id);
-                        *can_start = true;
+            self.check_enough_food(&mut client, 10).await?;
+            let (dir, msg) = message;
+            if !msg.contains(' ') || msg.len() < 2 {
+                continue;
+            }
+            if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
+                let content = msg.split_at(idex);
+                if let Ok(id) = content.0.parse::<usize>() {
+                    if id == self.info().p_id && content.1.trim_start() == "mv" {
+                        let res = move_towards_broadcast(&mut client, dir).await;
+                        Knight::knight_checkout_response(&mut client, res).await?;
                     }
-                }
-                (dir, msg) => {
-                    if !msg.contains(' ') || msg.len() < 2 {
-                        continue;
-                    }
-                    if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
-                        let content = msg.split_at(idex);
-                        if let Ok(id) = content.0.parse::<usize>() {
-                            if id == self.info().p_id && content.1.trim_start() == "mv" {
-                                let res = move_towards_broadcast(&mut client, dir).await;
-                                Knight::knight_checkout_response(&mut client, res).await?;
-                            }
-                            if id == self.info().p_id
-                                && content.1.trim_start() == "inc"
-                                && self.info().level != 1
-                            {
-                                let response = client.check_response().await;
-                                let res = client.handle_response(response).await;
-                                println!(
-                                    "Knight {} received \"inc\" from Queen, read response: {:?}",
-                                    self.info.p_id, res
-                                );
-                                Knight::knight_checkout_response(&mut client, res).await?;
-                            }
-                        }
+                    if id == self.info().p_id
+                        && content.1.trim_start() == "inc"
+                        && self.info().level != 1
+                    {
+                        let response = client.check_response().await;
+                        let res = client.handle_response(response).await;
+                        println!(
+                            "Knight {} received \"inc\" from Queen, read response: {:?}",
+                            self.info.p_id, res
+                        );
+                        Knight::knight_checkout_response(&mut client, res).await?;
                     }
                 }
             }
