@@ -14,7 +14,7 @@ namespace GUI {
 
 class Settings {
   public:
-    Settings(Raylib::RecWin &m_newWindow, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
+    Settings(Raylib::RecWin &m_newWindow, bool &debug, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
     bool is3D();
     bool isCameraFree();
     bool showCursor();
@@ -30,6 +30,7 @@ class Settings {
     bool m_is3D;
     bool m_isCameraFree;
     bool m_showCursor;
+    bool &m_debug;
    };
 
 } // namespace GUI

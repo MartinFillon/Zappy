@@ -10,8 +10,8 @@
 
 namespace GUI {
 
-Display::Display(const std::string &machine, int port, bool debug, int width, int height)
-    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
+Display::Display(const std::string &machine, int port, bool &debug, int width, int height)
+    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
       timeUnitInput(100, networkHandler), m_cam(
                                               {(Vector3){15.0f, 5.0f, 15.0f},
@@ -20,7 +20,7 @@ Display::Display(const std::string &machine, int port, bool debug, int width, in
                                                45.0f,
                                                CAMERA_PERSPECTIVE}
                                           ),
-      m_menu(networkHandler, m_newWindow), m_settings(m_newWindow)
+      m_menu(networkHandler, m_newWindow), m_settings(m_newWindow, debug)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -58,7 +58,7 @@ void Display::handleEvent()
         m_settings.switchIs3D();
     if (m_settings.is3D()) {
         if (Raylib::isKeyPressed(KEY_R))
-            m_cam.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+            m_cam.target = (Vector3){ 5.0f, 1.0f, 5.0f };
         if (Raylib::isKeyPressed(KEY_F))
             m_settings.switchIsCameraFree();
         if (Raylib::isKeyPressed(KEY_C)) {
@@ -94,6 +94,10 @@ void Display::displayGame()
     if (m_settings.is3D()) {
         if (m_settings.isCameraFree())
             Raylib::updateCamera(m_cam, CAMERA_FREE);
+        else {
+            Raylib::updateCamera(m_cam, CAMERA_PERSPECTIVE);
+            m_cam.target = (Vector3){5.0f, 1.0f, 5.0f};
+        }
         map.displayTacticalView3D(infoBox, m_cam);
         infoBox.display(0, 0, 400, 300);
         messageBox.display(0, 0 + m_newWindow.height - 200, 400, 200);
