@@ -6,8 +6,9 @@
 ##
 
 import subprocess
+from time import sleep
 from config import timeout_config, simple_connection
-from utils import ignore_timeout
+from utils import ignore_timeout, init_socket_client
 
 def test_timeout():
     """" Here we test the timeout of the server after `timeout` seconds """
@@ -27,15 +28,12 @@ def test_simple_connection():
     print(simple_connection.name)
     args = simple_connection.config.args
     server = subprocess.Popen(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    cli = subprocess.Popen(args=["nc", "localhost", "4242"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
+    sleep(1)
+    cli = init_socket_client(simple_connection.cliConf.port)
     ignore_timeout(server, 2.0)
 
-    try:
-        cli.wait(2.0)
-    except subprocess.TimeoutExpired:
-        line = cli.stdout.readline().decode()
-        if line == simple_connection.cli_output:
-            print("\t", simple_connection.success)
-        else:
-            print("\t", simple_connection.failure)
+    data = cli.recv(1024)
+    if data.decode() == simple_connection.cliConf.output:
+        print("\t", simple_connection.success)
+    else:
+        print("\t", simple_connection.failure)

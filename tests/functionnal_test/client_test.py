@@ -8,7 +8,7 @@
 import subprocess
 from time import sleep
 from config import ConfigTest, team_connection, cli_simple_cmds
-from utils import get_lines
+from utils import get_lines, ignore_timeout, init_socket_client
 
 def client_output_test(config: ConfigTest):
     """
@@ -20,32 +20,21 @@ def client_output_test(config: ConfigTest):
     args = config.config.args
     server = subprocess.Popen(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     sleep(1)
-    cli = subprocess.Popen(
-        args=["nc", "localhost", "8080"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        stdin=subprocess.PIPE
-    )
+    cli = init_socket_client(config.cliConf.port)
 
-    for cmd in config.cli_cmd:
-        print(cmd.encode())
-        cli.stdin.write(cmd.encode())
+    for cmd in config.cliConf.cmds:
+        cli.send(cmd.encode())
         sleep(1)
 
-    stdout, _ = cli.communicate()
-    print(stdout)
-    serv = server.communicate()[0]
-    print(serv.decode())
-    try:
-        server.wait(2.0)
-        cli.wait(2.0)
-    except subprocess.TimeoutExpired:
-        buff: str = "\n".join(get_lines(stdout.split(b"\n")))
-        if buff == config.cli_output:
-            print("\t", config.success)
-        else:
-            print("\t", config.failure)
-        print("Output:\n", buff, sep="")
+    buff = cli.recv(1024)
+    ignore_timeout(server, 2.0)
+    server.kill()
+
+    if buff.decode() == config.cliConf.output:
+        print("\t", config.success)
+    else:
+        print("\t", config.failure)
+    print("Output:\n", buff.decode(), config.cliConf.output, sep="")
     
 
 def client_tests():
@@ -54,5 +43,5 @@ def client_tests():
             - `team_connection`
             - `cli_simple_cmds`
     """
-    # client_output_test(team_connection)
+    client_output_test(team_connection)
     client_output_test(cli_simple_cmds)

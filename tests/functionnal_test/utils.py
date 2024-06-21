@@ -6,15 +6,19 @@
 ##
 
 import subprocess
-from typing import IO
-
+import socket
 
 def ignore_timeout(proc: subprocess.Popen, timeout: float):
     try:
         proc.wait(timeout)
-        pass
     except subprocess.TimeoutExpired:
+        print("Timeout")
         pass
 
 def get_lines(stdout: list[bytes]) -> list[str]:
     return [s.decode() for s in stdout]
+
+def init_socket_client(port: int, host: str ="localhost") -> socket:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
+    return sock

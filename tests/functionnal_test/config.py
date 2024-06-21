@@ -10,6 +10,21 @@ class Config:
         self.args = args
         self.timeout = timeout
 
+class ConfigClient:
+    def __init__(
+        self,
+        port: int,
+        cmd_line: None | list[str],
+        cmds: None | list[str],
+        output: None | str,
+        host: str="127.0.0.1"
+    ) -> None:
+        self.port = port
+        self.host = host
+        self.cmd_line = cmd_line
+        self.cmds = cmds
+        self.output = output
+
 class ConfigTest:
     def __init__(
         self,
@@ -17,17 +32,13 @@ class ConfigTest:
         config: Config,
         success: str,
         failure: str,
-        cli_cmd_line: None | list[str],
-        cli_cmd: None | list[str],
-        cli_output: None | str
+        cliConf: ConfigClient,
     ) -> None:
         self.name = name
         self.config = config
         self.success = success
         self.failure = failure
-        self.cli_output = cli_output
-        self.cli_cmd_line = cli_cmd_line
-        self.cli_cmd = cli_cmd
+        self.cliConf = cliConf
 
 ### CONFIGS ###
 
@@ -48,10 +59,12 @@ timeout_config = ConfigTest(
     ),
     success = "Test has timeout: OK",
     failure = "Test has not timeout: KO",
-
-    cli_cmd_line=None,
-    cli_cmd=None,
-    cli_output=None
+    cliConf=ConfigClient(
+        port=4242,
+        cmd_line= None,
+        cmds= None,
+        output= None,
+    )
 )
 
 
@@ -72,9 +85,12 @@ simple_connection = ConfigTest(
     success = "Test connection handled: OK",
     failure = "Test client not handled: KO",
 
-    cli_cmd_line=None,
-    cli_cmd=None,
-    cli_output="WELCOME\n"
+    cliConf=ConfigClient(
+        port=4242,
+        cmd_line= None,
+        cmds= None,
+        output= "WELCOME\n",
+    )
 )
 
 team_connection = ConfigTest(
@@ -94,9 +110,12 @@ team_connection = ConfigTest(
     success = "Test Team handled: OK",
     failure = "Test Team not handled: KO",
 
-    cli_cmd_line=None,
-    cli_cmd=["team1\n"],
-    cli_output="WELCOME\n3\n10 10\n"
+    cliConf=ConfigClient(
+        port=8080,
+        cmd_line= None,
+        cmds= ["team1\n"],
+        output= "WELCOME\n3\n10 10\n",
+    )
 )
 
 cli_simple_cmds = ConfigTest(
@@ -116,9 +135,12 @@ cli_simple_cmds = ConfigTest(
     success = "Test Simple commands handled: OK",
     failure = "Test Simple commands not handled: KO",
 
-    cli_cmd_line=["echo", "-ne", "team1\nForward\nRight\nLeft"],
-    cli_cmd=["team1\n", "Forward\n", "Left\n", "Right\n"],
-    cli_output="WELCOME\n3\n10 10\nok\nok\nok\n"
+    cliConf=ConfigClient(
+        port=8080,
+        cmd_line= ["echo", "-ne", "team1\nForward\nRight\nLeft"],
+        cmds= ["team1\n", "Forward\n", "Left\n", "Right\n"],
+        output= "WELCOME\n3\n10 10\nok\nok\nok\n"
+    )
 )
 
 hard_test = ConfigTest(
@@ -138,7 +160,10 @@ hard_test = ConfigTest(
     success = "Test Hard input handled: OK",
     failure = "Test Hard input handled: KO",
 
-    cli_cmd_line=["cat", "/dev/urandom"],
-    cli_cmd=None,
-    cli_output="WELCOME\n"
+    cliConf=ConfigClient(
+        port=8080,
+        cmd_line= ["cat", "/dev/urandom"],
+        cmds= None,
+        output= "WELCOME\n"
+    )
 )

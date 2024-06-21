@@ -9,14 +9,16 @@ import subprocess
 from config import hard_test
 
 def hard_test_urandom():
-    """"
+    """
         Hard test `cat /dev/urandom | nc localhost 8080`,
         to test server integrity with huge inputs
+        NOTE: To test this command, the easiest way is to use subprocess
+        (other solution is socket + subprocess)
     """
     print(hard_test.name)
     args = hard_test.config.args
     server = subprocess.Popen(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    urandom = subprocess.Popen(args=hard_test.cli_cmd_line, stdout=subprocess.PIPE)
+    urandom = subprocess.Popen(args=hard_test.cliConf.cmd_line, stdout=subprocess.PIPE)
     cli = subprocess.Popen(
         args=["nc", "localhost", "8080"],
         stdout=subprocess.PIPE,

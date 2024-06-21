@@ -14,7 +14,7 @@ from client_test import client_tests
 
 ### CALL TESTS ###
 
-# test_timeout()
-# test_simple_connection()
+test_timeout()
+test_simple_connection()
 client_tests()
-# hard_test_urandom()
+hard_test_urandom()
