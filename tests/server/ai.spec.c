@@ -251,4 +251,225 @@ Test(core_ai, take_object)
     cr_assert_str_eq(cli->io.res->data, "ok\n");
 }
 
+Test(core_ai, take_object_fail)
+{
+    zappy_t z;
 
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Take"));
+    vec_pushback_vector_str_t(args, str_snew("thystame"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    z.game.map->arena[cli->ai->pos.y][cli->ai->pos.x].content[THYSTAME] = 0;
+
+    handle_take_object(cli, &com);
+    cr_assert_eq(cli->ai->inventory[THYSTAME], 0);
+    cr_assert_eq(
+        z.game.map->arena[cli->ai->pos.y][cli->ai->pos.x].content[THYSTAME], 0
+    );
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+}
+
+Test(core_ai, take_object_invalid)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Take"));
+    vec_pushback_vector_str_t(args, str_snew("invalid"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    handle_take_object(cli, &com);
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+}
+
+Test(core_ai, take_object_with_gui)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Take"));
+    vec_pushback_vector_str_t(args, str_snew("thystame"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    z.game.map->arena[ai->ai->pos.y][ai->ai->pos.x].content[THYSTAME] = 1;
+
+    str_clear(cli->io.res);
+    handle_take_object(ai, &com);
+    char *event = NULL;
+    asprintf(&event, "pgt %d %d\n", ai->ai->id, THYSTAME);
+    cr_assert_str_eq(ai->io.res->data, "ok\n");
+    cr_assert_str_eq(cli->io.res->data, event);
+}
+
+Test(core_ai, set_object)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Set"));
+    vec_pushback_vector_str_t(args, str_snew("thystame"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    cli->ai->inventory[THYSTAME] = 1;
+
+    handle_set_object(cli, &com);
+    cr_assert_eq(cli->ai->inventory[THYSTAME], 0);
+    cr_assert_eq(
+        z.game.map->arena[cli->ai->pos.y][cli->ai->pos.x].content[THYSTAME], 1
+    );
+    cr_assert_str_eq(cli->io.res->data, "ok\n");
+}
+
+Test(core_ai, set_object_fail)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Set"));
+    vec_pushback_vector_str_t(args, str_snew("thystame"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    cli->ai->inventory[THYSTAME] = 0;
+
+    handle_set_object(cli, &com);
+    cr_assert_eq(cli->ai->inventory[THYSTAME], 0);
+    cr_assert_eq(
+        z.game.map->arena[cli->ai->pos.y][cli->ai->pos.x].content[THYSTAME], 0
+    );
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+}
+
+Test(core_ai, set_object_invalid)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Set"));
+    vec_pushback_vector_str_t(args, str_snew("invalid"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    handle_set_object(cli, &com);
+    cr_assert_str_eq(cli->io.res->data, "ko\n");
+}
+
+Test(core_ai, set_object_with_gui)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Set"));
+    vec_pushback_vector_str_t(args, str_snew("thystame"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    ai->ai->inventory[THYSTAME] = 1;
+
+    str_clear(cli->io.res);
+    handle_set_object(ai, &com);
+    char *event = NULL;
+    asprintf(&event, "pdr %d %d\n", ai->ai->id, THYSTAME);
+    cr_assert_str_eq(ai->io.res->data, "ok\n");
+    cr_assert_str_eq(cli->io.res->data, event);
+}
+
+Test(core_ai, look)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Look"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    str_clear(cli->io.res);
+    handle_look(cli, &com);
+    cr_assert_str_eq(
+        cli->io.res->data,
+        "[player deraumere,linemate thystame,food linemate thystame,food "
+        "phiras]\n"
+    );
+}
+
+Test(core_ai, fork)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Fork"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    size_t old = z.game.teams->data[0].eggs->size;
+    str_clear(cli->io.res);
+    handle_fork(cli, &com);
+    cr_assert_str_eq(cli->io.res->data, "ok\n");
+    cr_assert_eq(z.game.teams->data[0].eggs->size, old + 1);
+}
+
+Test(core_ai, fork_with_gui)
+{
+    zappy_t z;
+
+    init_server(&z);
+    client_t *cli = new_fake_gui_client(z.clients);
+    client_t *ai =
+        new_fake_ai_client(&z.game.teams->data[0], &z.game, z.clients);
+
+    struct vector_str_t *args = vec_create_vector_str_t(1);
+    vec_pushback_vector_str_t(args, str_snew("Fork"));
+    command_state_t com = {args, z.clients, &z.game};
+
+    size_t old = z.game.teams->data[0].eggs->size;
+    str_clear(cli->io.res);
+    handle_fork(ai, &com);
+    char *event = NULL;
+    asprintf(
+        &event,
+        "pfk %d\nenw %ld %d %d %d\n",
+        ai->ai->id,
+        z.game.teams->data[0]
+            .eggs->data[z.game.teams->data[0].eggs->size - 1]
+            ->id,
+        ai->ai->id,
+        ai->ai->pos.x,
+        ai->ai->pos.y
+    );
+    cr_assert_str_eq(cli->io.res->data, event);
+    cr_assert_eq(z.game.teams->data[0].eggs->size, old + 1);
+}
