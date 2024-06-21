@@ -36,6 +36,7 @@
 #define S5 "gui/assets/rocks/S_rocks_05.glb"
 #define S6 "gui/assets/rocks/S_rocks_06.glb"
 #define GRASS "gui/assets/grass.glb"
+#define EGG "gui/assets/egg.glb"
 
 class RessourcesManager {
   public:
@@ -67,6 +68,7 @@ class RessourcesManager {
         _map[{2, 5}] = Model3D(L5);
         _map[{2, 6}] = Model3D(L6);
         _map[{0, 7}] = Model3D(GRASS);
+        _map[{0, 8}] = Model3D(EGG);
         _resourcePositions[0] = {-0.4, -0.37};
         _resourcePositions[1] = {-0.43, 0.41};
         _resourcePositions[2] = {0.07, -0.24};
@@ -86,9 +88,14 @@ class RessourcesManager {
         return _map.size();
     }
 
+    void DrawEgg(Vector3 pos)
+    {
+        _map[{0, 8}].Draw(pos, {0.003, 0.003, 0.003}, {0, 0, 0}, 0, Color{253, 249, 0, 255});
+    }
+
     void DrawGrass(Vector3 pos)
     {
-        _map[{0,7}].Draw(pos, {0.5,0.6,0.5}, {0,0,0}, 0);
+        _map[{0, 7}].Draw(pos, {0.5, 0.6, 0.5}, {0, 0, 0}, 0);
     }
 
     void Draw(int size, int type, float x, float z, float tileSize = 1.f)

@@ -297,7 +297,7 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
             continue;
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 255});
+        qm.DrawEgg({eggX, tileSize / 2, eggZ});
     }
 
     for (const auto &player : m_players) {

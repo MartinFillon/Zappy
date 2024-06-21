@@ -18,7 +18,7 @@ class Model3D {
     Model3D(const std::string &modelPath, const std::string &texturePath = "");
     ~Model3D();
 
-    void Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle) const;
+    void Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle, Color color = WHITE) const;
     void SetTexture(const char *texturePath);
 
     Model model;
