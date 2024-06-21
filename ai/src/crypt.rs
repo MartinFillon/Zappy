@@ -108,7 +108,7 @@ fn derive_nonce_from_string(input: &str) -> [u8; 12] {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_crypt {
     use super::{derive_nonce_from_string, Crypt};
 
     #[test]

@@ -233,7 +233,6 @@ impl AI {
                 );
                 break;
             }
-
             if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
                 client.get_broadcast().await
             {
@@ -241,9 +240,9 @@ impl AI {
                 debug!("[{}] Message pushed to queue.", self.cli_id);
                 break;
             }
-
             time::sleep(Duration::from_millis(100)).await;
         }
+
         while let Some((_, msg)) = client.pop_message() {
             debug!(
                 "[{}] AI {}: handling message: {}",

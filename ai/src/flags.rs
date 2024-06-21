@@ -142,3 +142,80 @@ pub fn usage() {
     -h `machine` name of the machine; localhost by default"
     )
 }
+
+#[cfg(test)]
+mod test_flags {
+    use super::*;
+
+    #[test]
+    fn test_parse_arg_success() {
+        let arg = Some(OsString::from("8080"));
+        let result: Result<usize, String> = parse_arg("port", arg);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 8080);
+    }
+
+    #[test]
+    fn test_parse_arg_missing_argument() {
+        let arg: Option<OsString> = None;
+        let result: Result<usize, String> = parse_arg("port", arg);
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), "Flag `port` argument is missing.");
+    }
+
+    #[test]
+    fn test_parse_arg_parse_error() {
+        let arg = Some(OsString::from("abc"));
+        let result: Result<usize, String> = parse_arg("port", arg);
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), "Failed to parse argument for port.");
+    }
+
+    #[test]
+    fn test_display_flags() {
+        let flags = Flags {
+            port: Some(8080),
+            name: Some("team_name".to_string()),
+            machine: String::from(LOCALHOST),
+        };
+        let expected_output =
+            "Flags {\n  Machine: 127.0.0.1,\n  Port: 8080,\n  Name: team_name\n};";
+        assert_eq!(format!("{}", flags), expected_output);
+    }
+
+    #[test]
+    fn test_parse_arg_usize_success() {
+        let args = vec![OsString::from("8080")];
+        let mut args_iter = args.into_iter();
+        let result: Result<usize, String> = parse_arg("port", args_iter.next());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 8080);
+    }
+
+    #[test]
+    fn test_parse_arg_string_success() {
+        let args = vec![OsString::from("team_name")];
+        let mut args_iter = args.into_iter();
+        let result: Result<String, String> = parse_arg("name", args_iter.next());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "team_name");
+    }
+
+    #[test]
+    fn test_parse_arg_string_missing_argument() {
+        let args: Vec<OsString> = vec![];
+        let mut args_iter = args.into_iter();
+        let result: Result<String, String> = parse_arg("name", args_iter.next());
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), "Flag `name` argument is missing.");
+    }
+
+    #[test]
+    fn test_parse_arg_usize_parse_error() {
+        let args = vec![OsString::from("abc")];
+        let mut args_iter = args.into_iter();
+        let result: Result<usize, String> = parse_arg("port", args_iter.next());
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), "Failed to parse argument for port.");
+    }
+}

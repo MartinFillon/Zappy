@@ -111,7 +111,7 @@ impl Bot {
 }
 
 #[cfg(test)]
-pub mod tests {
+pub mod tests_move_to_tile {
     use crate::move_to_tile::{get_col, get_row, get_tile_coordinates};
 
     /* get_row() */
