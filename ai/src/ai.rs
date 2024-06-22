@@ -131,8 +131,16 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                 );
                 let mut rle = init_from_broadcast(&ai, role)
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
-                if let Err(e) = rle.update().await {
+                let ai_status = rle.update().await;
+                if let Err(CommandError::DeadReceived) = ai_status {
+                    println!("~[{}] AI is dead, stopping the process...", info.cli_id);
+                    return Err(Error::new(ErrorKind::ConnectionAborted, "AI is now dead."));
+                } else if let Err(e) = ai_status {
                     println!("~[{}] Error: {}", info.cli_id, e);
+                    return Err(Error::new(
+                        ErrorKind::ConnectionAborted,
+                        "AI received error from server.",
+                    ));
                 }
                 return Ok(());
             }
@@ -140,6 +148,10 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                 "~[{}] No role assignment detected, turning to idle...",
                 info.cli_id
             );
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                "No role detected, AI is slowly dying.",
+            ));
         }
         Err(e) => error!("=[{}] {}", info.cli_id, e),
     }
@@ -355,8 +367,8 @@ async fn init_ai(
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
     let mut queen = queen::Queen::init(ai.clone());
     if let Err(e) = queen.update().await {
-        println!("QUEEN received error {}", e);
-        error!("[{}] !!!!Error: {}", queen.info().cli_id, e);
+        println!("[{}] QUEEN received error.", c_id);
+        error!("[{}] Error: {}", queen.info().cli_id, e);
     }
     Ok(ai)
 }

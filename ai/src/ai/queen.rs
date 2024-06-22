@@ -147,13 +147,7 @@ impl AIHandler for Queen {
                     "[{}] Queen {} is incantating",
                     self.info.cli_id, self.info.p_id
                 );
-                if let Err(e) = self.incantate().await {
-                    warn!("[{}] Error from incantation: {}", self.info.cli_id, e);
-                    println!(
-                        "[{}] Error with Queen #{} incantating.",
-                        self.info.cli_id, self.info.p_id
-                    );
-                }
+                self.incantate().await?
             }
         }
     }
@@ -269,7 +263,10 @@ impl Queen {
     /// we assume that all the queens have the same direction
     ///
     async fn move_queen_first_step(&mut self) -> Result<(), CommandError> {
-        println!("Queen {} handling can move.", self.info.p_id);
+        println!(
+            "[{}] Queen {} handling can move.",
+            self.info.cli_id, self.info.p_id
+        );
         Ok(())
         // if self.info.p_id == 1 || self.info.p_id == 3 {
         //     let mut joined_queens = false;
@@ -373,20 +370,19 @@ impl Queen {
                 "[{}] Queen {} launching incantation",
                 self.info.cli_id, self.info.p_id
             );
-            let incant_res = incantation(&mut cli).await;
+            let incant_res = incantation(&mut cli).await?;
             println!(
                 "[{}] Queen {} done incantating.",
                 self.info.cli_id, self.info.p_id
             );
-            println!(
-                "Queen {} Incantation result: {:?}",
-                self.info.p_id, incant_res
-            );
             if let Ok(ResponseResult::Incantation(lvl)) =
-                self.queen_checkout_response(&mut cli, incant_res).await
+                self.queen_checkout_response(&mut cli, Ok(incant_res)).await
             {
                 level = lvl;
-                println!("Queen {} done. Now level {}", self.info.p_id, level);
+                println!(
+                    "[{}] Queen {} done. Now level {}",
+                    self.info.cli_id, self.info.p_id, level
+                );
                 if level == 4 || level == 6 {
                     error!(
                         "[{}] Queen {} lvl {}",
@@ -399,17 +395,6 @@ impl Queen {
                     .await?;
                 }
             }
-            // if level == 4 || level == 6 {
-            //     error!(
-            //         "[{}] Queen {} lvl {}",
-            //         self.info.cli_id, self.info.p_id, level
-            //     );
-            //     broadcast(
-            //         &mut cli,
-            //         format!("{} lvl {}", self.info().p_id, level).as_str(),
-            //     )
-            //     .await?;
-            // }
         }
         if level != self.info.level {
             self.create_bot().await?;
@@ -555,7 +540,10 @@ impl Queen {
             }
             move_towards_broadcast(client, dir.clone()).await?;
             broadcast(client, format!("{} mv", self.info().p_id).as_str()).await?;
-            println!("Queen {} level {} moved!", self.info.p_id, self.info.level);
+            println!(
+                "[{}] Queen {} level {} moved!",
+                self.info.cli_id, self.info.p_id, self.info.level
+            );
         }
         Ok(ResponseResult::OK)
     }
@@ -638,7 +626,12 @@ impl Queen {
         {
             let mut client = self.info.client.lock().await;
             while let Some((dir, msg)) = client.pop_message() {
-                info!("Queen {}: handling message: {}", self.info().p_id, msg);
+                info!(
+                    "[{}] Queen {}: handling message: {}",
+                    self.info().cli_id,
+                    self.info().p_id,
+                    msg
+                );
                 let content = if let Some(idex) = msg.trim_end_matches('\n').find(' ') {
                     msg.split_at(idex)
                 } else {
@@ -659,11 +652,17 @@ impl Queen {
         }
         if self.can_move && !can_move {
             if self.info().level == 4 {
-                println!("Queen {} set moved lvl 4 to true.", self.info.p_id);
+                println!(
+                    "[{}] Queen {} set moved lvl 4 to true.",
+                    self.info.cli_id, self.info.p_id
+                );
                 self.set_moved_lvl4(true);
             }
             if self.info().level == 6 {
-                println!("Queen {} set moved lvl 6 to true.", self.info.p_id);
+                println!(
+                    "[{}] Queen {} set moved lvl 6 to true.",
+                    self.info.cli_id, self.info.p_id
+                );
                 self.set_moved_lvl6(true);
             }
         }

@@ -77,13 +77,10 @@ impl AIHandler for Knight {
                         "[{}] Knight {} incantating...",
                         self.info.cli_id, self.info.p_id
                     );
-                    let res = incantation(&mut client).await;
-                    println!(
-                        "[{}] Knight {} incantation result: {:?}",
-                        self.info.cli_id, self.info.p_id, res
-                    );
-                    if let Ok(ResponseResult::Incantation(lvl)) =
-                        self.knight_checkout_response(&mut client, res).await
+                    let incant_res = incantation(&mut client).await?;
+                    if let Ok(ResponseResult::Incantation(lvl)) = self
+                        .knight_checkout_response(&mut client, Ok(incant_res))
+                        .await
                     {
                         let mut level = self.level_ref.lock().await;
                         *level = lvl;
