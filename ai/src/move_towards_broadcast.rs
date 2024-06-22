@@ -83,7 +83,12 @@ pub async fn move_towards_broadcast(
     if x > 0 {
         move_right(client).await?;
     }
-    move_up::move_up(client).await
+    move_up::move_up(client).await?;
+    if y < 0 {
+        turn::turn(client, DirectionTurn::Right).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
+    }
+    Ok(ResponseResult::OK)
 }
 
 async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {

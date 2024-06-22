@@ -143,11 +143,11 @@ impl AIHandler for Queen {
                 info.slots,
                 info.cli_id + 1
             );
-            if info.slots == 0 && info.cli_id < 3 {
+            if info.slots == 0 && info.cli_id < 7 {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
                 info!("[{}] Spawned queen.", info.cli_id);
             }
-            if info.slots >= 0 && info.cli_id > 3 {
+            if info.slots >= 0 && info.cli_id > 7 {
                 info!("[{}] Identified as NPC.", info.cli_id);
                 Queen::connect_leftovers(info.clone()).await?;
             }
@@ -159,12 +159,29 @@ impl AIHandler for Queen {
             self.info.cli_id
         );
 
-        self.handle_message().await?;
+        if self.info.p_id == 0 {
+            let mut client = self.info.client.lock().await;
+            broadcast(&mut client, format!("{} waiting", self.info.p_id).as_str()).await?;
+        } else {
+            let mut client = self.info.client.lock().await;
+            println!("Queen {} moving towards Queen 0.", self.info.p_id);
+            loop {
+                if let ResponseResult::Message((dir, _)) = client.get_broadcast().await? {
+                    if dir == DirectionMessage::Center {
+                        break;
+                    }
+                    move_towards_broadcast(&mut client, dir.clone()).await?;
+                }
+            }
+        }
+
         self.fork_servants().await?;
+
+        println!("Queen {} ready to go!", self.info.p_id);
 
         loop {
             self.handle_message().await?;
-            self.check_move_elevation().await?;
+            //self.check_move_elevation().await?;
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -272,7 +289,7 @@ impl Queen {
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
         let info_clone = info.clone();
 
-        move_up(client).await?;
+        //move_up(client).await?;
         fork(client).await?;
         inventory(client).await?;
         tokio::spawn(async move {
@@ -329,7 +346,9 @@ impl Queen {
                     format!("{} waiting", self.info().p_id).as_str(),
                 )
                 .await?;
-                if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) = client.get_broadcast().await {
+                if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
+                    client.get_broadcast().await
+                {
                     if message == format!("{} mv", QUEENS_IDS[self.info.p_id]) {
                         println!(
                             "Queen {} level {} found Queen {} on same tile.",
@@ -518,18 +537,12 @@ impl Queen {
         let r_inv = require.inv();
         let look = &self.look;
 
-        if self.can_move {
-            return false;
-        }
-        if self.info().level >= 4
-            && self.moved_lvl4
-            && (self.info().p_id == 0 || self.info().p_id == 2)
-        {
-            return false;
-        }
-        if self.info().level >= 6 && self.moved_lvl6 && (self.info().p_id == 1) {
-            return false;
-        }
+        // if self.info.level >= 4 && self.info.p_id % 2 == 1 {
+        //     return false;
+        // }
+        // if self.info.level >= 6 && self.info.p_id != 0 {
+        //     return false;
+        // }
 
         look.nb_player >= *require.nb_players()
             && look.inv.food() >= r_inv.food()
@@ -581,6 +594,7 @@ impl Queen {
 
     fn is_paired_queen(&self, id: usize, lvl: i32) -> bool {
         error!("[{}] id = {}, level = {}", self.info.cli_id, id, lvl);
+        return true;
         ((lvl == 4 || lvl == 5) && id == QUEENS_IDS[self.info().p_id])
             || ((lvl == 6 || lvl == 7)
                 && (((id <= 1) && (self.info().p_id == 2 || self.info().p_id == 3))
@@ -619,7 +633,7 @@ impl Queen {
     ) -> Result<ResponseResult, CommandError> {
         match msg {
             level if level.starts_with("lvl ") => {
-                if let Ok(lvl) = msg.split_at(3).1.trim_start().parse::<i32>() {
+                /*if let Ok(lvl) = msg.split_at(3).1.trim_start().parse::<i32>() {
                     if self.is_paired_queen(id, lvl) {
                         *can_move = true;
                         println!(
@@ -627,13 +641,13 @@ impl Queen {
                             self.info.p_id, id
                         );
                     }
-                }
+                }*/
             }
             "Done" => {
                 //turn_towards_broadcast(client, dir.clone()).await?;
             }
             "waiting" => {
-                if self.is_paired_queen(id, self.info().level as i32) {
+                /*if self.is_paired_queen(id, self.info().level as i32) {
                     if (self.info().level == 4 && self.moved_lvl4)
                         || (self.info().level == 6 && self.moved_lvl6)
                     {
@@ -657,10 +671,10 @@ impl Queen {
                         self.info.p_id, self.info.level, id
                     );
                     *can_move = false;
-                }
+                }*/
             }
             "inc" => {
-                if (self.info.level == 4 || self.info.level == 5)
+                /*if (self.info.level == 4 || self.info.level == 5)
                     && self.moved_lvl4
                     && self.is_paired_queen(id, self.info.level as i32)
                 {
@@ -672,7 +686,7 @@ impl Queen {
                     if let ResponseResult::Incantation(lvl) = wait_for_incantation(client).await? {
                         *level = lvl;
                     }
-                }
+                }*/
             }
             _ => {}
         }
