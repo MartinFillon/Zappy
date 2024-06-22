@@ -10,9 +10,12 @@
 
 bool check_end(struct client_list *list)
 {
-    for (size_t i = 0; i < list->size; i++)
+    static bool winned = false;
+
+    for (size_t i = 0; !winned && i < list->size; i++)
         if (list->data[i]->type == AI && list->data[i]->ai->level >= 8) {
             broadcast_to(GUI, list, "seg %s\n", list->data[i]->ai->team->name);
+            winned = true;
             return true;
         }
     return false;
