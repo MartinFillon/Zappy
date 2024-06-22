@@ -14,7 +14,7 @@
 
 namespace GUI {
 
-ServerMessageHandler::ServerMessageHandler(bool debug, Display &display) : debug(debug), display(display)
+ServerMessageHandler::ServerMessageHandler(const bool &debug, Display &display) : debug(debug), display(display)
 {
     commandHandlers["msz"] = std::bind(&ServerMessageHandler::handleMapSize, this, std::placeholders::_1);
     commandHandlers["bct"] = std::bind(&ServerMessageHandler::handleTileContent, this, std::placeholders::_1);

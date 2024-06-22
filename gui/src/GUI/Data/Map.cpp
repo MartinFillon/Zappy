@@ -216,7 +216,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
                     continue;
                 Color color = (ressources[i] <= SIZE_STEP_1) ? RED : (ressources[i] <= SIZE_STEP_2) ? ORANGE : GREEN;
                 float ressourceX = tileX + (i % 3) * (tileSize / 3.0f);
-                float ressourceY = tileY + (static_cast<float>(i) / 3) * (tileSize / 3.0f);
+                float ressourceY = tileY + (i / 3) * (tileSize / 3.0f);
                 Raylib::drawSquare(ressourceX, ressourceY, tileSize / 3.0f, color);
             }
             Raylib::drawSquareLines(tileX, tileY, tileSize, BLACK);
@@ -228,7 +228,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         int playerX = player->getPos().x() * tileSize + start_x + tileSize / 2;
         int playerY = player->getPos().y() * tileSize + start_y + tileSize / 2;
 
-        Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
+        Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 200});
     }
     for (const auto &egg : m_eggs) {
         if (egg == nullptr) {
@@ -237,7 +237,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
         int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
-        Raylib::drawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 200});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
@@ -247,27 +247,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCursor, bool &isCameraFree) const
+void Map::displayTacticalView3D(const InfoBox &info) const
 {
     float tileSize = 1.0f;
-
-    if (Raylib::isKeyPressed('R'))
-        cam.target = (Vector3){5.0f, 1.0f, 5.0f};
-    if (Raylib::isKeyPressed('F'))
-        isCameraFree = !isCameraFree;
-    if (Raylib::isKeyPressed('C')) {
-        if (showCursor)
-            Raylib::disableCursor();
-        else
-            Raylib::enableCursor();
-        showCursor = !showCursor;
-    }
-    if (isCameraFree)
-        Raylib::updateCamera(cam, CAMERA_FREE);
-    else {
-        Raylib::updateCamera(cam, CAMERA_PERSPECTIVE);
-        cam.target = (Vector3){5.0f, 1.0f, 5.0f};
-    }
 
     if (qm.getSize() == 0) {
         qm.init();
@@ -302,7 +284,6 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
             continue;
         float playerX = player->getPos().x() * tileSize + tileSize / 2;
         float playerZ = player->getPos().y() * tileSize + tileSize / 2;
-        //Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 255});
         qm.DrawPlayer({playerX, tileSize / 2, playerZ}, player->getOrientation());
     }
 

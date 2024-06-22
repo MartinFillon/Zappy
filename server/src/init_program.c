@@ -26,6 +26,7 @@ int init_program(args_infos_t *args, zappy_t *z)
 {
     logs(INFO, "Starting server on port %d\n", args->port);
     z->server.fd = server_init(args->port);
+    z->server.docker = args->docker;
     if (z->server.fd == ERROR)
         return ERROR;
     z->server.router = init_router();

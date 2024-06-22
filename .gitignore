@@ -21,3 +21,4 @@ gui/doc
 *.so
 unit_tests
 !tests/server/*.so
+__pycache__
