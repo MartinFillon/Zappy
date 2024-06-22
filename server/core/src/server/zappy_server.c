@@ -78,7 +78,7 @@ int select_server(zappy_t *z)
     }
     if (FD_ISSET(STDIN_FILENO, &z->server.read_fds)) {
         if (getline(&line, &n, stdin) == -1)
-            return SERV_END;
+            return z->server.docker ? SUCCESS : SERV_END;
         line[strlen(line) - 1] = '\0';
         handle_server_cmd(line, z);
     }

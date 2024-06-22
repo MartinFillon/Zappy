@@ -25,6 +25,7 @@ typedef struct server_s {
     fd_set except_fds;
     router_t *router;
     sigset_t sig;
+    bool docker;
 } server_t;
 
 /**
