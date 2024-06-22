@@ -5,10 +5,12 @@
 ** MessageBox
 */
 
-#include "MessageBox.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+
+#include "MessageBox.hpp"
+#include "Raylib.hpp"
 #include "define.hpp"
 
 MessageBox::MessageBox()
@@ -42,7 +44,7 @@ void MessageBox::addMessage(const std::string &message, int user)
         m_totalLines += wrapText(msg.lines[0], m_lineHeight).size();
     }
 
-    if (m_formattedMessages.size() > 100) {
+    if (m_formattedMessages.size() > MAX_LINES) {
         m_formattedMessages.erase(m_formattedMessages.begin());
     }
 }
@@ -64,6 +66,13 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
     std::string currentLine;
     std::istringstream wordStream(text);
     std::string word;
+
+    auto pushLine = [&](const std::string &line) {
+        if (!line.empty()) {
+            lines.push_back(line);
+        }
+    };
+
     while (wordStream >> word) {
         if (currentLine.empty()) {
             currentLine = word;
@@ -71,24 +80,38 @@ std::vector<std::string> MessageBox::wrapText(const std::string &text, int width
             std::string testLine = currentLine + " " + word;
             int textWidth = MeasureText(testLine.c_str(), fontSize);
             if (textWidth > width) {
-                lines.push_back(currentLine);
+                pushLine(currentLine);
                 currentLine = word;
             } else {
                 currentLine = testLine;
             }
         }
     }
-
-    while (!currentLine.empty()) {
-        std::string splitLine = currentLine.substr(0, width);
-        if (splitLine.size() > static_cast<size_t>(width)) {
-            splitLine = splitLine.substr(0, width);
+    pushLine(currentLine);
+    std::vector<std::string> finalLines;
+    for (const auto &line : lines) {
+        if (MeasureText(line.c_str(), fontSize) <= width) {
+            finalLines.push_back(line);
+        } else {
+            std::string part;
+            for (char ch : line) {
+                std::string testPart = part + ch;
+                if (MeasureText(testPart.c_str(), fontSize) > width) {
+                    if (!part.empty()) {
+                        finalLines.push_back(part);
+                    }
+                    part = ch;
+                } else {
+                    part = testPart;
+                }
+            }
+            if (!part.empty()) {
+                finalLines.push_back(part);
+            }
         }
-        lines.push_back(splitLine);
-        currentLine = currentLine.substr(splitLine.size());
     }
 
-    return lines;
+    return finalLines;
 }
 
 bool MessageBox::isMouseOver() const
@@ -118,16 +141,17 @@ void MessageBox::handleInput()
     }
     int scrollAmount = Raylib::getMouseWheelMove();
     if (scrollAmount != 0) {
-        scroll(scrollAmount);
+        scroll(-scrollAmount);
     }
-    if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) && isMouseOver(x + width - 20, y, 20, height)) {
+    if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) &&
+        isMouseOver(x + width - SCROLL_WIDTH, y, SCROLL_WIDTH, height)) {
         int maxOffset = std::max(0, m_totalLines - m_maxLines);
         float clickPosition = Raylib::getMousePosition().y - y;
         float scrollbarHeight =
             static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
-        float scrollbarCenter = scrollbarHeight / 2.0f;
+        float scrollbarCenter = scrollbarHeight / 2;
         m_scrollOffset =
-            std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
+            std::clamp(static_cast<int>((clickPosition + scrollbarCenter) / height * maxOffset), 0, maxOffset);
     }
 }
 
@@ -151,8 +175,10 @@ void MessageBox::display(int x, int y, int width, int height)
     float scrollbarHeight =
         static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
-    Raylib::drawRectangle(x + width - 20, y, 20, height, (Color){255, 255, 255, 50});
-    Raylib::drawRectangle(x + width - 20, scrollbarY, 20, scrollbarHeight, (Color){255, 255, 255, 100});
+    Raylib::drawRectangle(x + width - SCROLL_WIDTH, y, SCROLL_WIDTH, height, (Color){255, 255, 255, 50});
+    Raylib::drawRectangle(
+        x + width - SCROLL_WIDTH, scrollbarY, SCROLL_WIDTH, scrollbarHeight, (Color){255, 255, 255, 100}
+    );
 
     int startLine = std::max(0, m_totalLines - m_maxLines - m_scrollOffset);
     int currentLine = 0;
