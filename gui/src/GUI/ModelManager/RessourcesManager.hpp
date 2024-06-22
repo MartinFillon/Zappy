@@ -13,6 +13,7 @@
 #include <string>
 #include "Model3D.hpp"
 #include "raymath.h"
+#include "../Data/Player.hpp"
 
 #define L0 "gui/assets/food/L_food.glb"
 #define L1 "gui/assets/rocks/L_rocks_01.glb"
@@ -37,6 +38,7 @@
 #define S6 "gui/assets/rocks/S_rocks_06.glb"
 #define GRASS "gui/assets/grass.glb"
 #define EGG "gui/assets/egg.glb"
+#define PLAYER "gui/assets/player.glb"
 
 class RessourcesManager {
   public:
@@ -69,6 +71,7 @@ class RessourcesManager {
         _map[{2, 6}] = Model3D(L6);
         _map[{0, 7}] = Model3D(GRASS);
         _map[{0, 8}] = Model3D(EGG);
+        _map[{0, 9}] = Model3D(PLAYER);
         _resourcePositions[0] = {-0.4, -0.37};
         _resourcePositions[1] = {-0.43, 0.41};
         _resourcePositions[2] = {0.07, -0.24};
@@ -81,6 +84,7 @@ class RessourcesManager {
         for (int i = 0; i <= 2; i++) {
             _map[{i, 0}].model.transform = MatrixRotateXYZ((Vector3){DEG2RAD * 270, 0, 0});
         }
+        _map[{0, 9}].model.transform = MatrixRotateXYZ((Vector3){DEG2RAD * 90, 0, DEG2RAD * 180});
     }
 
     size_t getSize()
@@ -96,6 +100,12 @@ class RessourcesManager {
     void DrawGrass(Vector3 pos)
     {
         _map[{0, 7}].Draw(pos, {0.5, 0.6, 0.5}, {0, 0, 0}, 0);
+    }
+
+    void DrawPlayer(Vector3 pos, GUI::Data::Player::Direction orientation)
+    {
+        pos.y += 0.05;
+        _map[{0, 9}].Draw(pos, {0.15,0.15,0.15}, {0, 1, 0}, (-1 + static_cast<int>(orientation)) * 90, WHITE);
     }
 
     void Draw(int size, int type, float x, float z, float tileSize = 1.f)
