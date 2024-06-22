@@ -72,6 +72,14 @@ static const option_t DISPLAYER = {
     .description = "Set the path to the displayer if you want to use one",
 };
 
+static const option_t DOCKER = {
+    .identifier = "--docker",
+    .type = BOOL,
+    .description = "Set the docker mode",
+    .has_default = true,
+    .default_value = {.boolean = false},
+};
+
 static const option_t OPTIONS[] = {
     LOGGER_MODE,
     PORT,
@@ -81,6 +89,7 @@ static const option_t OPTIONS[] = {
     CLIENT_NUMBER,
     TEAM_NAMES,
     DISPLAYER,
+    DOCKER,
     {
         .identifier = NULL,
         .type = STRING,

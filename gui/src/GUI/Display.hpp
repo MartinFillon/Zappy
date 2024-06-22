@@ -18,6 +18,7 @@
 #include "TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
+#include "Skybox.hpp"
 
 namespace GUI {
 
@@ -90,6 +91,7 @@ class Display {
     MessageBox messageBox;
     InfoBox infoBox;
     TimeUnitInput timeUnitInput;
+    Skybox skybox;
 
     Camera3D m_cam;
 

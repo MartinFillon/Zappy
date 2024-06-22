@@ -26,6 +26,8 @@ typedef struct args_infos_s {
     int level;
 
     str_t *displayer_path;
+
+    bool docker;
 } args_infos_t;
 
 /**

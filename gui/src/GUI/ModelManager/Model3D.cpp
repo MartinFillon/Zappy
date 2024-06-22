@@ -21,9 +21,9 @@ Model3D::~Model3D()
 {
 }
 
-void Model3D::Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle) const
+void Model3D::Draw(Vector3 position, Vector3 scale, Vector3 rotationAxis, float rotationAngle, Color color) const
 {
-    DrawModelEx(model, position, rotationAxis, rotationAngle, scale, WHITE);
+    DrawModelEx(model, position, rotationAxis, rotationAngle, scale, color);
 }
 
 void Model3D::SetTexture(const char *texturePath)
