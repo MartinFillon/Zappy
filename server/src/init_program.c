@@ -18,6 +18,7 @@ static void init_mask(zappy_t *z)
 
     sigemptyset(&z->server.sig);
     sigemptyset(&sig);
+    sigaddset(&sig, SIGINT);
     sigaddset(&sig, SIGPIPE);
     sigprocmask(SIG_BLOCK, &sig, NULL);
 }
