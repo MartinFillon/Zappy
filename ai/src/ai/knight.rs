@@ -76,10 +76,16 @@ impl AIHandler for Knight {
                         "[{}] Knight {} incantating...",
                         self.info.cli_id, self.info.p_id
                     );
-                    let incant_res = incantation(&mut client).await?;
-                    if let Ok(ResponseResult::Incantation(lvl)) = self
-                        .knight_checkout_response(&mut client, Ok(incant_res))
-                        .await
+                    let incant_res = incantation(&mut client).await;
+                    if let Err(err) = incant_res {
+                        error!(
+                            "-[{}] Knight {} incantation error: {}",
+                            self.info.cli_id, self.info.p_id, err
+                        );
+                        return Err(err);
+                    }
+                    if let Ok(ResponseResult::Incantation(lvl)) =
+                        self.knight_checkout_response(&mut client, incant_res).await
                     {
                         let mut level = self.level_ref.lock().await;
                         *level = lvl;
@@ -251,12 +257,21 @@ impl Knight {
                             "Knight {} received \"inc\" from Queen, waiting for response...",
                             self.info.p_id
                         );
-                        let res = incantation::wait_for_incantation(&mut client).await?;
+                        let res = incantation::wait_for_incantation(&mut client).await;
+                        if let Err(err) = res {
+                            error!(
+                                "-[{}] Knight [Queen {}]: incantation error: {}",
+                                self.info().cli_id,
+                                self.info.p_id,
+                                err
+                            );
+                            return Err(err);
+                        }
                         println!(
-                            "Knight {} received \"inc\" from Queen, read response: {:?}",
-                            self.info.p_id, res
+                            "[{}] Knight {} received \"inc\" from Queen, read response: {:?}",
+                            self.info.cli_id, self.info.p_id, res
                         );
-                        self.knight_checkout_response(&mut client, Ok(res)).await?;
+                        self.knight_checkout_response(&mut client, res).await?;
                     }
                 }
             }

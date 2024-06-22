@@ -149,15 +149,11 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                 );
                 let ai_clone = ai.clone();
                 tokio::spawn(async move {
-                    match init_and_update(ai_clone, role).await {
-                        Ok(_) => info!(
+                    if init_and_update(ai_clone, role).await.is_ok() {
+                        info!(
                             "~[{}] AI successfully initialized and updated.",
                             info.cli_id
-                        ),
-                        Err(e) => error!(
-                            "~[{}] AI initialization and update error: {}",
-                            info.cli_id, e
-                        ),
+                        )
                     }
                 });
                 return Ok(());
@@ -253,7 +249,7 @@ impl AI {
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
         let start_time = time::Instant::now();
-        let overall_timeout = Duration::from_secs(5);
+        let overall_timeout = Duration::from_secs(1);
 
         loop {
             if start_time.elapsed() >= overall_timeout {

@@ -90,7 +90,8 @@ impl CommandHandler for TcpClient {
         }
         match self.get_response().await {
             Some(res) => Ok(res),
-            None => Ok(String::from("")),
+            None => Err(CommandError::NoResponseReceived),
+            // None => Ok(String::from("")),
         }
     }
 
@@ -117,7 +118,6 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
-        warn!("[{}] from here get broadcast", self.id);
         let res = self.check_response().await;
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
@@ -163,7 +163,7 @@ impl CommandHandler for TcpClient {
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
                 warn!("Invalid Response: ({}).", response.trim_end());
-                Ok(ResponseResult::Unknown)
+                Err(CommandError::InvalidResponse)
             }
         }
     }
