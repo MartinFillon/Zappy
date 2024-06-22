@@ -7,7 +7,7 @@
 
 use crate::{
     ai::{fork_ai, AIHandler, Incantationers, AI},
-    commands::{broadcast, drop_object, fork, incantation, inventory, look_around, take_object},
+    commands::{broadcast, drop_object, fork, incantation, inventory, look_around::look_around, take_object},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
         command_handle::{CommandError, CommandHandler, ResponseResult},
@@ -22,7 +22,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tokio::sync::Mutex;
 
-use log::{error, info};
+#[allow(unused_imports)]
+use log::{error, info, debug, warn};
 use zappy_macros::Bean;
 
 use super::Listeners;
@@ -38,7 +39,7 @@ const MIN_FOOD_ON_FLOOR: usize = 200;
 #[async_trait]
 impl AIHandler for Knight {
     fn init(info: AI) -> Self {
-        println!("[{}] Knight has been created.", info.cli_id);
+        println!("-[{}] Knight has been created with ID {}", info.cli_id, info.p_id);
         Self::new(info, Arc::new(Mutex::new(1)))
     }
 
@@ -66,12 +67,12 @@ impl AIHandler for Knight {
                 {
                     let mut client = self.info().client().lock().await;
                     println!(
-                        "[{}] Knight {} incantating...",
+                        "-[{}] Knight {} incantating...",
                         self.info.cli_id, self.info.p_id
                     );
                     let res = incantation::incantation(&mut client).await;
                     println!(
-                        "[{}] Knight {} incantation result: {:?}",
+                        "-[{}] Knight {} incantation result: {:?}",
                         self.info.cli_id, self.info.p_id, res
                     );
                     if let Ok(ResponseResult::Incantation(lvl)) =
@@ -80,7 +81,7 @@ impl AIHandler for Knight {
                         let mut level = self.level_ref.lock().await;
                         *level = lvl;
                         println!(
-                            "[{}] Knight {} done. Now level {}",
+                            "-[{}] Knight {} done. Now level {}",
                             self.info.cli_id, self.info.p_id, *level
                         );
                     }
@@ -153,7 +154,7 @@ impl Knight {
     }
 
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
-        let res = look_around::look_around(client).await;
+        let res = look_around(client).await;
         if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, res).await? {
             if !tiles.is_empty()
                 && tiles[0]
@@ -254,8 +255,11 @@ impl Knight {
             return false;
         }
         let mut client = self.info().client().lock().await;
-        let res = look_around::look_around(&mut client).await;
-        println!("Knight {} Look returned: {:?}", self.info.p_id, res);
+        let res = look_around(&mut client).await;
+        debug!(
+            "-[{}] Knight {} Look returned: {:?}",
+            self.info.cli_id, self.info.p_id, res
+        );
         if let Ok(ResponseResult::Tiles(tiles)) =
             self.knight_checkout_response(&mut client, res).await
         {

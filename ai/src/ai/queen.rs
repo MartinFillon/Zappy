@@ -174,7 +174,7 @@ impl AIHandler for Queen {
                 self.convert_to_inv(vec);
             }
 
-            let _ = self.check_enough_food(5).await;
+            self.check_enough_food(8).await?;
 
             if self.check_requirement() {
                 println!(
@@ -552,6 +552,7 @@ impl Queen {
     }
 
     fn is_paired_queen(&self, id: usize, lvl: i32) -> bool {
+        error!("[{}] id = {}, level = {}, pid = {}", self.info.cli_id, id, lvl, self.info().p_id);
         (lvl == 4 && id == QUEENS_IDS[self.info().p_id - 1])
             || (lvl == 6
                 && ((id == 1 | 2 && self.info().p_id == 3 | 4)
@@ -573,7 +574,8 @@ impl Queen {
                     if self.is_paired_queen(id, lvl) {
                         *can_move = true;
                         println!(
-                            "Queen {} can now move towards Queen {}!",
+                            "[{}] Queen {} can now move towards Queen {}!",
+                            self.info.cli_id,
                             self.info.p_id, id
                         );
                     }
@@ -707,4 +709,9 @@ impl Display for Queen {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "Queen => {}", self.info)
     }
+}
+
+#[cfg(test)]
+mod test_queen {
+
 }

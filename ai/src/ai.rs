@@ -33,7 +33,7 @@ use bot::Bot;
 use fetus::Fetus;
 use knight::Knight;
 use queen::Queen;
-use tokio::{sync::Mutex, task};
+use tokio::{sync::Mutex, task, time::{self, Duration}};
 
 use log::{debug, error, info, warn};
 use zappy_macros::Bean;
@@ -123,10 +123,12 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                     "[{}] Handling assignment of role {} with id {}",
                     info.cli_id, role, p_id
                 );
-                let mut rle = init_from_broadcast(&ai, role)
+                let mut rle = init_from_broadcast(&ai, role.clone())
                     .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
                 if let Err(e) = rle.update().await {
-                    println!("[{}] Error: {}", info.cli_id, e);
+                    if role != "Fetus" {
+                        println!("~[{}] Error with {}: {}", info.cli_id, role, e);
+                    }
                 }
                 return Ok(());
             }
@@ -216,14 +218,25 @@ impl AI {
 
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
+        let start_time = time::Instant::now();
+        let overall_timeout = time::Duration::from_secs(5);
+
         loop {
             if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
-                client.get_broadcast().await
+            client.get_broadcast().await
             {
                 client.push_message((DirectionMessage::Center, message));
-                debug!("[{}] Message pushed to queue.", self.cli_id);
+                debug!("~[{}] Message pushed to queue.", self.cli_id);
                 break;
             }
+            if start_time.elapsed() >= overall_timeout {
+                error!(
+                    "~[{}] Assignment check timeout reached, stopping the loop.",
+                    self.cli_id
+                );
+                break;
+            }
+            time::sleep(Duration::from_millis(100)).await;
         }
         while let Some((_, msg)) = client.pop_message() {
             info!(
