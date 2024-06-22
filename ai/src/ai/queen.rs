@@ -120,7 +120,6 @@ impl AIHandler for Queen {
 
         loop {
             self.handle_message().await?;
-            //self.check_move_elevation().await?;
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
@@ -267,71 +266,61 @@ impl Queen {
             "[{}] Queen {} handling can move.",
             self.info.cli_id, self.info.p_id
         );
+        if self.info.p_id == 1 || self.info.p_id == 3 {
+            let mut joined_queens = false;
+            println!(
+                "Queen {} level {} broadcasting...",
+                self.info.p_id, self.info.level
+            );
+            while !joined_queens {
+                self.check_enough_food(15).await?;
+                let mut client = self.info().client().lock().await;
+                broadcast(
+                    &mut client,
+                    format!("{} waiting", self.info().p_id).as_str(),
+                )
+                .await?;
+                if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
+                    client.get_broadcast().await
+                {
+                    if message == format!("{} mv", QUEENS_IDS[self.info.p_id]) {
+                        println!(
+                            "Queen {} level {} found Queen {} on same tile.",
+                            self.info.p_id, self.info.level, QUEENS_IDS[self.info.p_id]
+                        );
+                        joined_queens = true;
+                    }
+                }
+            }
+            println!(
+                "Queen {} level {} joined with other Queen",
+                self.info.p_id, self.info.level
+            );
+            self.set_can_move(false);
+            self.set_moved_lvl4(true);
+            return Ok(());
+        } else {
+            println!(
+                "Queen {} level {} trying to receive broadcast \"waiting\".",
+                self.info.p_id, self.info.level
+            );
+            loop {
+                self.check_enough_food(15).await?;
+                self.analyse_messages().await?;
+                if self.partner_dir.is_none() {
+                    continue;
+                }
+                let mut client = self.info().client().lock().await;
+                self.move_queen_towards_broadcast(
+                    &mut client,
+                    QUEENS_IDS[self.info.p_id],
+                    self.partner_dir.clone().unwrap(),
+                )
+                .await?;
+                break;
+            }
+        }
         Ok(())
-        // if self.info.p_id == 1 || self.info.p_id == 3 {
-        //     let mut joined_queens = false;
-        //     println!(
-        //         "Queen {} level {} broadcasting...",
-        //         self.info.p_id, self.info.level
-        //     );
-        //     while !joined_queens {
-        //         self.check_enough_food(15).await?;
-        //         let mut client = self.info().client().lock().await;
-        //         broadcast(
-        //             &mut client,
-        //             format!("{} waiting", self.info().p_id).as_str(),
-        //         )
-        //         .await?;
-        //         if let Ok(ResponseResult::Message((DirectionMessage::Center, message))) =
-        //             client.get_broadcast().await
-        //         {
-        //             if message == format!("{} mv", QUEENS_IDS[self.info.p_id]) {
-        //                 println!(
-        //                     "Queen {} level {} found Queen {} on same tile.",
-        //                     self.info.p_id, self.info.level, QUEENS_IDS[self.info.p_id]
-        //                 );
-        //                 joined_queens = true;
-        //             }
-        //         }
-        //     }
-        //     println!(
-        //         "Queen {} level {} joined with other Queen",
-        //         self.info.p_id, self.info.level
-        //     );
-        //     self.set_can_move(false);
-        //     self.set_moved_lvl4(true);
-        //     return Ok(());
-        // } else {
-        //     println!(
-        //         "Queen {} level {} trying to receive broadcast \"waiting\".",
-        //         self.info.p_id, self.info.level
-        //     );
-        //     loop {
-        //         self.check_enough_food(15).await?;
-        //         self.analyse_messages().await?;
-        //         if self.partner_dir.is_none() {
-        //             continue;
-        //         }
-        //         let mut client = self.info().client().lock().await;
-        //         self.move_queen_towards_broadcast(
-        //             &mut client,
-        //             QUEENS_IDS[self.info.p_id],
-        //             self.partner_dir.clone().unwrap(),
-        //         )
-        //         .await?;
-        //         break;
-        //     }
-        // }
-        //{
-        //-------
-        //    let mut cli = self.info.client.lock().await;
-        //    move_up::move_up(&mut cli).await?;
-        //    let broad_res =
-        //        broadcast::broadcast(&mut cli, format!("{} mv", self.info.p_id).as_str())
-        //            .await?;
-        //    Queen::queen_checkout_response(&mut cli, Ok(broad_res)).await?;
-        //}
-        // Ok(())
     }
 
     ///
@@ -460,13 +449,6 @@ impl Queen {
         let r_inv = require.inv();
         let look = &self.look;
 
-        // if self.info.level >= 4 && self.info.p_id % 2 == 1 {
-        //     return false;
-        // }
-        // if self.info.level >= 6 && self.info.p_id != 0 {
-        //     return false;
-        // }
-
         look.nb_player >= *require.nb_players()
             && look.inv.food() >= r_inv.food()
             && look.inv.linemate() >= r_inv.linemate()
@@ -516,12 +498,10 @@ impl Queen {
     }
 
     fn is_paired_queen(&self, id: usize, lvl: i32) -> bool {
-        error!("[{}] id = {}, level = {}", self.info.cli_id, id, lvl);
-        true
-        // ((lvl == 4 || lvl == 5) && id == QUEENS_IDS[self.info().p_id])
-        //     || ((lvl == 6 || lvl == 7)
-        //         && (((id <= 1) && (self.info().p_id == 2 || self.info().p_id == 3))
-        //             || ((id == 2 || id == 3) && self.info().p_id <= 1)))
+        ((lvl == 4 || lvl == 5) && id == QUEENS_IDS[self.info().p_id])
+            || ((lvl == 6 || lvl == 7)
+                && (((id <= 1) && (self.info().p_id == 2 || self.info().p_id == 3))
+                    || ((id == 2 || id == 3) && self.info().p_id <= 1)))
     }
 
     async fn move_queen_towards_broadcast(

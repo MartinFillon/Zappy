@@ -133,7 +133,7 @@ fn get_best_item_in_tile(tile: &[String], inv: &[(String, i32)]) -> (usize, Stri
         if obj.as_str() == "player" {
             continue;
         }
-        let in_inv = inv.iter().position(|(item, _)| item == obj).unwrap_or(0); // check for (index out of bounds: the len is 0 but the index is 0)
+        let in_inv = inv.iter().position(|(item, _)| item == obj).unwrap_or(0);
         if inv[in_inv].0 != inv[best].0
             && inv[in_inv].1 < 3
             && get_item_priority(obj) > get_item_priority(inv[best].0.as_str())
