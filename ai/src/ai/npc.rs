@@ -28,7 +28,7 @@ impl NPC {
 #[async_trait]
 impl AIHandler for NPC {
     fn init(info: AI) -> Self {
-        println!("[{}] NPC spawned.", info.cli_id);
+        println!("-[{}] NPC spawned.", info.cli_id);
         Self::new(info)
     }
 
@@ -36,7 +36,7 @@ impl AIHandler for NPC {
         let mut client = self.info.client().lock().await;
         while let Some(response) = client.get_response().await {
             if response.trim_end() == "dead" {
-                println!("[{}] AI : NPC died.", self.info.cli_id);
+                println!("-[{}] AI : NPC died.", self.info.cli_id);
                 break;
             }
         }

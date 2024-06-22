@@ -109,6 +109,9 @@ NAME = ../libcore.a
 
 TEST_SRC =  ../../tests/server/core.spec.c\
 			../../tests/server/fake_server.c\
+			../../tests/server/ai.spec.c\
+			../../tests/server/gui.spec.c\
+
 
 TEST_NAME = unit_tests
 

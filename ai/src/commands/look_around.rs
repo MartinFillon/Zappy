@@ -12,7 +12,8 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
     let tmp = raw.trim_matches(|c| c == '[' || c == ']' || c == '\n');

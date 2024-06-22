@@ -12,7 +12,8 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 pub async fn fork(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Forking...");

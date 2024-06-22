@@ -12,7 +12,8 @@ use crate::tcp::{
     TcpClient,
 };
 
-use log::debug;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 pub fn get_current_level(level_str: &str) -> Result<usize, CommandError> {
     level_str

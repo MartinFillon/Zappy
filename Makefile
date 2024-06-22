@@ -41,7 +41,7 @@ tests_run: fclean
 	./server/lib/unit_tests
 	cargo +stable install cargo-llvm-cov --locked
 	cargo llvm-cov --no-report
-	$(MAKE) coverage
+	# $(MAKE) coverage
 
 coverage:
 	$(MAKE) -C server coverage

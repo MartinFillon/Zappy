@@ -23,6 +23,7 @@ use tokio::task::JoinHandle;
 
 use zappy_macros::Bean;
 
+#[allow(unused_imports)]
 use log::{debug, error, info, warn};
 
 #[derive(Debug, Bean)]
@@ -51,7 +52,7 @@ impl TcpClient {
 
     pub async fn connect(&mut self) -> io::Result<()> {
         let stream = TcpStream::connect(&self.addr).await?;
-        info!("[{}] Connected to the server at {}", self.id, self.addr);
+        info!("=[{}] Connected to the server at {}", self.id, self.addr);
 
         let (read_half, write_half) = stream.into_split();
         let reader = BufReader::new(read_half);
@@ -81,7 +82,7 @@ impl TcpClient {
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         } else {
             error!(
-                "[{}] Failed to send request: Not connected to server.",
+                "=[{}] Failed to send request: Not connected to server.",
                 self.id
             );
             Err(io::Error::new(
@@ -96,7 +97,7 @@ impl TcpClient {
             receiver.recv().await
         } else {
             warn!(
-                "[{}] No response received, response receiver not available.",
+                "=[{}] No response received, response receiver not available.",
                 self.id
             );
             None
@@ -105,7 +106,7 @@ impl TcpClient {
 
     async fn process_resp(response: String, response_sender: &Sender<String>, id: usize) -> bool {
         if let Err(e) = response_sender.send(response).await {
-            error!("[{}] Failed to send response: {}", id, e);
+            error!("=[{}] Failed to send response: {}", id, e);
             return false;
         }
         true
@@ -125,19 +126,19 @@ impl TcpClient {
                 result = reader.read_line(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            warn!("[{}] Connection closed by the server.", id);
+                            warn!("=[{}] Connection closed by the server.", id);
                             break;
                         }
                         Ok(n) => {
-                            debug!("[{}] Read {} bytes from the server.", id, n);
+                            debug!("=[{}] Read {} bytes from the server.", id, n);
                             let response = buffer.trim().to_string();
-                            debug!("[{}] Received: '{}\\n'", id, response.trim_end());
+                            debug!("=[{}] Received: '{}\\n'", id, response.trim_end());
                             if !Self::process_resp(response, &response_sender, id).await {
                                 break;
                             }
                         }
                         Err(e) => {
-                            error!("[{}] Failed to read from socket: {}", id, e);
+                            error!("=[{}] Failed to read from socket: {}", id, e);
                             break;
                         }
                     }
@@ -146,13 +147,13 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                error!("[{}] Failed to write to socket: {}", id, e);
+                                error!("=[{}] Failed to write to socket: {}", id, e);
                                 break;
                             }
-                            debug!("[{}] ai-client> `{}\\n`", id, req.trim_end());
+                            debug!("=[{}] ai-client> `{}\\n`", id, req.trim_end());
                         }
                         None => {
-                            warn!("[{}] Request channel closed.", id);
+                            warn!("=[{}] Request channel closed.", id);
                             break;
                         }
                     }
@@ -176,19 +177,19 @@ impl TcpClient {
                 result = reader.read(&mut buffer) => {
                     match result {
                         Ok(0) => {
-                            warn!("[{}] Connection closed by the server.", id);
+                            warn!("=[{}] Connection closed by the server.", id);
                             break;
                         }
                         Ok(n) => {
-                            debug!("[{}] Read {} bytes from the server.", id, n);
+                            debug!("=[{}] Read {} bytes from the server.", id, n);
                             let response = String::from_utf8_lossy(&buffer[..n]).to_string();
                             if let Err(e) = response_sender.send(response).await {
-                                error!("[{}] Failed to send response: {}", id, e);
+                                error!("=[{}] Failed to send response: {}", id, e);
                                 break;
                             }
                         }
                         Err(e) => {
-                            error!("[{}] Failed to read from socket: {}", id, e);
+                            error!("=[{}] Failed to read from socket: {}", id, e);
                             break;
                         }
                     }
@@ -197,13 +198,13 @@ impl TcpClient {
                     match request {
                         Some(req) => {
                             if let Err(e) = write_half.write_all(req.as_bytes()).await {
-                                error!("[{}] Failed to write to socket: {}", id, e);
+                                error!("=[{}] Failed to write to socket: {}", id, e);
                                 break;
                             }
-                            debug!("[{}] Successfully wrote request to socket: `{}\\n`", id, req.trim_end());
+                            debug!("=[{}] Successfully wrote request to socket: `{}\\n`", id, req.trim_end());
                         }
                         None => {
-                            warn!("[{}] Request channel closed.", id);
+                            warn!("=[{}] Request channel closed.", id);
                             break;
                         }
                     }
@@ -234,7 +235,7 @@ pub async fn handle_tcp(address: String, team: String, id: usize) -> io::Result<
     client.connect().await?;
 
     if let Some(response) = client.get_response().await {
-        println!("[{}] server> {}", id, response);
+        println!("=[{}] server> {}", id, response);
     } else {
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
@@ -245,12 +246,12 @@ pub async fn handle_tcp(address: String, team: String, id: usize) -> io::Result<
 }
 
 // run the server with default values
+#[cfg(feature = "server_test")]
 #[cfg(test)]
 mod tests {
     use super::handle_tcp;
     use tokio::runtime::Runtime;
 
-    #[cfg(feature = "server_test")]
     #[test]
     fn test_tcp_client() {
         let rt = Runtime::new().unwrap();
@@ -269,7 +270,6 @@ mod tests {
         });
     }
 
-    #[cfg(feature = "server_test")]
     #[test]
     fn test_tcp_client_err() {
         let rt = Runtime::new().unwrap();

@@ -71,7 +71,7 @@ void handle_eject(client_t *cli, command_state_t *s)
             is_coord_equal(&cli->ai->pos, &s->clients->data[i]->ai->pos)) {
             eject_ai(cli, s->clients->data[i], s);
             prepare_response_cat(
-                &s->clients->data[i]->io, "eject: %d\n", cli->ai->dir
+                &s->clients->data[i]->io, "eject: %d\n", cli->ai->dir + 1
             );
             has_ejected = true;
         }

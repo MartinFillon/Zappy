@@ -27,6 +27,9 @@ tests_run:
 	cargo +stable install cargo-llvm-cov --locked
 	cargo llvm-cov --no-report
 
+coverage:
+	cargo llvm-cov
+
 re: fclean all
 
 .PHONY: all re clean fclean tests_run

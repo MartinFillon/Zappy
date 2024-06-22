@@ -17,7 +17,8 @@ use crate::{
     },
 };
 
-use log::debug;
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
 
 fn get_row(tile: usize, lvl: usize) -> Option<i32> {
     let mut tile_count: usize = 0;
@@ -110,7 +111,7 @@ impl Bot {
 }
 
 #[cfg(test)]
-pub mod tests {
+pub mod tests_move_to_tile {
     use crate::move_to_tile::{get_col, get_row, get_tile_coordinates};
 
     /* get_row() */

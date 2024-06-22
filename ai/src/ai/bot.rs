@@ -8,12 +8,12 @@
 #![allow(dead_code)]
 
 use crate::{
-    ai::{AIHandler, AI},
+    ai::{AIHandler, Listeners, AI},
     commands::{
         drop_object::drop_object,
         inventory::inventory,
         look_around::look_around,
-        take_object,
+        take_object::take_object,
         turn::{turn, DirectionTurn},
     },
     move_towards_broadcast::move_towards_broadcast,
@@ -23,13 +23,15 @@ use crate::{
     },
 };
 
-use async_trait::async_trait;
-use log::{debug, info};
 use rand::Rng;
 use std::mem::swap;
-use zappy_macros::Bean;
 
-use super::Listeners;
+use async_trait::async_trait;
+
+#[allow(unused_imports)]
+use log::{debug, error, info, warn};
+
+use zappy_macros::Bean;
 
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 10;
@@ -53,43 +55,38 @@ pub struct Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
-        println!("[{}] BOT HERE.", info.cli_id);
+        println!("-[{}] BOT HERE.", info.cli_id);
         Self::new(info)
     }
 
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
-            "[{}] Bot [Queen {}] is now being handled...",
+            "-[{}] Bot [Queen {}] is now being handled...",
             self.info().cli_id,
             self.info().p_id
         );
         let mut idex: usize = 0;
         loop {
-            info!("Handling bot [Queen {}]...", self.info().p_id);
-            let _ = self.handle_message().await;
+            self.handle_message().await?;
             if idex > MAX_MOVEMENTS {
-                let _ = self.backtrack().await;
-                let _ = self.drop_items().await;
+                self.backtrack().await?;
+                self.drop_items().await?;
                 for _ in 0..5 {
                     let mut client = self.info().client().lock().await;
-                    let _ = take_object::take_object(&mut client, "food").await;
+                    take_object(&mut client, "food").await?;
                 }
                 idex = 0;
                 continue;
             }
             let random: usize = rand::thread_rng().gen_range(1..=3);
-            let _ = self.move_to_tile(random).await;
+            self.move_to_tile(random).await?;
             {
                 let mut client = self.info().client().lock().await;
                 if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
                     if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
                         && tiles[0].last().unwrap_or(&String::from("player")) != "player"
                     {
-                        let _ = take_object::take_object(
-                            &mut client,
-                            tiles[0].last().unwrap().as_str(),
-                        )
-                        .await;
+                        take_object(&mut client, tiles[0].last().unwrap().as_str()).await?;
                     }
                 }
             }
@@ -237,9 +234,9 @@ impl Bot {
                 if best_item.is_empty() {
                     Ok(ResponseResult::KO)
                 } else {
-                    let _ = self.move_to_tile(tile).await;
+                    self.move_to_tile(tile).await?;
                     let mut client = self.info().client().lock().await;
-                    take_object::take_object(&mut client, &best_item).await
+                    take_object(&mut client, &best_item).await
                 }
             }
             res => Ok(res),
@@ -251,11 +248,14 @@ impl Bot {
         if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
             for (item, mut count) in inv {
                 while item.as_str() != "food" && count > 0 {
-                    let _ = drop_object(&mut client, item.as_str()).await;
+                    drop_object(&mut client, item.as_str()).await?;
                     count -= 1;
                 }
             }
-            println!("Bot {} done dropping items.", self.info.p_id);
+            println!(
+                "-[{}] Bot {} done dropping items.",
+                self.info.cli_id, self.info.p_id
+            );
         }
         Ok(ResponseResult::OK)
     }
@@ -269,14 +269,14 @@ impl Bot {
 
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         info!(
-            "[{}] Bot [Queen {}]: backtracking...",
+            "-[{}] Bot [Queen {}]: backtracking...",
             self.info().cli_id,
             self.info().p_id
         );
-        let _ = self.turn_around().await;
+        self.turn_around().await?;
         while !self.backtrack_infos.is_empty() {
             let coords = self.backtrack_infos.pop().unwrap_or((0, 0));
-            let _ = self.move_ai_to_coords(coords).await;
+            self.move_ai_to_coords(coords).await?;
         }
         self.set_coord((0, 0));
         Ok(ResponseResult::OK)
@@ -286,7 +286,8 @@ impl Bot {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
             info!(
-                "Bot [Queen {}]: handling message: {}",
+                "-[{}] Bot [Queen {}]: handling message: {}",
+                self.info().cli_id,
                 self.info().p_id,
                 message.1
             );
