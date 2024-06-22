@@ -104,7 +104,7 @@ static void end_ais_elevation(
 
     for (size_t i = 0; i < clis->size; i++) {
         oth = clis->data[i];
-        if (oth->type == GUI)
+        if (oth->type != AI)
             continue;
         if (cli->ai->id != oth->ai->id &&
             is_coord_equal(&cli->ai->pos, &oth->ai->pos) &&
