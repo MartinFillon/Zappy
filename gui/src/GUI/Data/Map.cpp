@@ -10,7 +10,6 @@
 #include <memory>
 #include <raylib.h>
 #include <vector>
-#include "../ModelManager/Model3D.hpp"
 #include "../Raylib.hpp"
 #include "Inventory.hpp"
 
@@ -26,7 +25,7 @@ Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
     std::shared_ptr<Player> test =
-        std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(1), 42, "debugTeam", 99, true);
+        std::make_shared<Player>(5, 5, static_cast<Data::Player::Direction>(3), 42, "debugTeam", 99, true);
     m_players.push_back(test);
 }
 
@@ -216,9 +215,9 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
                 if (ressources[i] == 0)
                     continue;
                 Color color = (ressources[i] <= SIZE_STEP_1) ? RED : (ressources[i] <= SIZE_STEP_2) ? ORANGE : GREEN;
-                float ressourceX = tileX + (i % 3) * tileSize / 3;
-                float ressourceY = tileY + (i / 3) * tileSize / 3;
-                Raylib::drawSquare(ressourceX, ressourceY, tileSize / 3, color);
+                float ressourceX = tileX + (i % 3) * (tileSize / 3.0f);
+                float ressourceY = tileY + (i / 3) * (tileSize / 3.0f);
+                Raylib::drawSquare(ressourceX, ressourceY, tileSize / 3.0f, color);
             }
             Raylib::drawSquareLines(tileX, tileY, tileSize, BLACK);
         }
@@ -229,7 +228,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         int playerX = player->getPos().x() * tileSize + start_x + tileSize / 2;
         int playerY = player->getPos().y() * tileSize + start_y + tileSize / 2;
 
-        Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 150});
+        Raylib::drawCircle(playerX, playerY, tileSize / 6, Color{0, 121, 241, 200});
     }
     for (const auto &egg : m_eggs) {
         if (egg == nullptr) {
@@ -238,7 +237,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
         int eggX = egg->getPosition().x() * tileSize + start_x + tileSize / 2;
         int eggY = egg->getPosition().y() * tileSize + start_y + tileSize / 2;
 
-        Raylib::drawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 150});
+        Raylib::drawCircle(eggX, eggY, tileSize / 8, Color{253, 249, 0, 200});
     }
     if (info.isPrint() && info.getItem() != nullptr) {
         auto item = info.getItem();
@@ -248,12 +247,10 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
+void Map::displayTacticalView3D(const InfoBox &info) const
 {
     float tileSize = 1.0f;
 
-    Raylib::clearBackground(RAYWHITE);
-    Raylib::beginMode3D(cam);
     if (qm.getSize() == 0) {
         qm.init();
     }
@@ -263,7 +260,7 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
         float tileX = tile->getPos().x() * tileSize + tileSize / 2;
         float tileZ = tile->getPos().y() * tileSize + tileSize / 2;
         qm.DrawGrass({tileX, 0.5, tileZ});
-        Raylib::drawCubeWires({tileX, 0, tileZ}, tileSize, BROWN);
+        Raylib::drawCubeWires({tileX, 0.02, tileZ}, tileSize, (Color){100, 100, 100, 150});
         Inventory inv = tile->getInventory();
         for (size_t i = 0; i < inv.inv.size(); i++) {
             if (inv.inv[i] == 0) {
@@ -279,15 +276,15 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
             continue;
         float eggX = egg->getPosition().x() * tileSize + tileSize / 2;
         float eggZ = egg->getPosition().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({eggX, tileSize / 8 + tileSize / 2, eggZ}, tileSize / 8, Color{253, 249, 0, 255});
+        qm.DrawEgg({eggX, tileSize / 2, eggZ});
     }
 
     for (const auto &player : m_players) {
-         if (!player || !player->isHatched())
+        if (!player || !player->isHatched())
             continue;
         float playerX = player->getPos().x() * tileSize + tileSize / 2;
         float playerZ = player->getPos().y() * tileSize + tileSize / 2;
-        Raylib::drawSphere({playerX, tileSize / 6 + tileSize / 2, playerZ}, tileSize / 6, Color{0, 121, 241, 255});
+        qm.DrawPlayer({playerX, tileSize / 2, playerZ}, player->getOrientation());
     }
 
     if (info.isPrint() && info.getItem() != nullptr) {
@@ -299,8 +296,6 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam) const
         float sizeCube = tileSize * info.getSize() + 2 * plus;
         Raylib::drawCubeWires({itemX, itemY, itemZ}, sizeCube, GREEN);
     }
-
-    Raylib::endMode3D();
 }
 
 } // namespace Data

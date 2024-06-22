@@ -7,13 +7,14 @@
 
 #include "Display.hpp"
 #include <raylib.h>
+#include "Skybox.hpp"
 
 namespace GUI {
 
 Display::Display(const std::string &machine, int port, bool &debug, int width, int height)
-    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), map(Pos<int, 2>{1, 1}),
-      endGame(false), endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam(
+    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), map(Pos<int, 2>{1, 1}), endGame(false),
+      endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
+      timeUnitInput(100, networkHandler), skybox(), m_cam(
                                               {(Vector3){15.0f, 5.0f, 15.0f},
                                                (Vector3){0.0f, 0.0f, 1.0f},
                                                (Vector3){0.0f, 1.0f, 0.0f},
@@ -34,6 +35,7 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
     SetWindowMinSize(1080, 450);
     SetExitKey(KEY_DELETE);
     resize();
+    skybox.Load();
 }
 
 Display::~Display()
@@ -90,7 +92,7 @@ void Display::displaySettings()
 
 void Display::displayGame()
 {
-    ClearBackground(BLACK);
+    Raylib::clearBackground(BLACK);
     if (m_settings.is3D()) {
         if (m_settings.isCameraFree())
             Raylib::updateCamera(m_cam, CAMERA_FREE);
@@ -98,7 +100,10 @@ void Display::displayGame()
             Raylib::updateCamera(m_cam, CAMERA_PERSPECTIVE);
             m_cam.target = (Vector3){5.0f, 1.0f, 5.0f};
         }
-        map.displayTacticalView3D(infoBox, m_cam);
+        Raylib::beginMode3D(m_cam);
+        skybox.Draw();
+        map.displayTacticalView3D(infoBox);
+        Raylib::endMode3D();
         infoBox.display(0, 0, 400, 300);
         messageBox.display(0, 0 + m_newWindow.height - 200, 400, 200);
         timeUnitInput.display(0 + 10, 0 + 340, 200, 30);
