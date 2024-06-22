@@ -78,5 +78,6 @@ client_t *new_fake_gui_client(struct client_list *lst)
     cr_assert_not_null(client);
     client->type = GUI;
     vec_pushback_client_list(lst, client);
+    cr_assert_neq(lst->size, 0);
     return client;
 }
