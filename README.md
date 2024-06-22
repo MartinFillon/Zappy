@@ -67,6 +67,35 @@ It is advised to run `zappy_server` first
 - `name`    name of the team
 - `machine` name of the machine; localhost by default
 
+### AI Broadcast Protocol
+
+Protocol of broadcasts done by the `AI(s)` to the server:
+
+Each following broadcasts are formatted like this as requests to the server:
+```bash
+Broadcast <command>\n
+```
+
+| Command  | Definition | Sent by |
+| -------- | ---------- | ------- |
+| `<ID> assign <role> <pID>` | assign role to a new AI (by **default** considered a `Queen`) | `Queen`\|`Knight` |
+| `<ID> inc` | Incantating | `Queen` |
+| `<ID> mv` | Moved | `Queen` |
+| `<ID> lvl <level>` | Notify level | `Queen` |
+| `<ID> nf` | Need `food` | `Queen` |
+| `<ID> nl` | Need `linemate` | `Queen` |
+| `<ID> nd` | Need `deraumere` | `Queen` |
+| `<ID> ns` | Need `sibur` | `Queen` |
+| `<ID> nm` | Need `mendiane` | `Queen` |
+| `<ID> np` | Need `phiras` | `Queen` |
+| `<ID> nt` | Need `thystame` | `Queen` |
+-----------------------------------
+
+- `ID` = `AI` **ID** (based off of Connection)
+- `role` = role of `AI`, aka {**Bot** | **Fetus** | **Knight**}
+- `pID` = player **ID** of an `AI`(based on assignation, by **default** is `0`)
+- `level` = actual level of the `AI`
+
 ## GUI
 
 ```sh
