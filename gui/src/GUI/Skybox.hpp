@@ -10,14 +10,14 @@
 #include <string>
 #include "raylib.h"
 
-constexpr std::string_view DEFAULT_SKYBOX_PATH = "gui/assets/skybox/skybox.gltf";
+constexpr char DEFAULT_SKYBOX_PATH[] = "gui/assets/skybox/skybox.gltf";
 
 class Skybox {
   public:
     Skybox();
     ~Skybox();
 
-    void Load(const std::string &filepath = std::string(DEFAULT_SKYBOX_PATH));
+    void Load(const std::string &filepath = DEFAULT_SKYBOX_PATH);
     void Draw();
 
   private:
