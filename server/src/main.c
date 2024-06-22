@@ -32,6 +32,7 @@ static void fill_infos(args_infos_t *infos, struct args *const ag)
     infos->names = get_arg(ag, "-n").string_list;
     infos->level = set_log_level_from_str(log_level ? log_level->data : NULL);
     infos->displayer_path = get_arg(ag, "-d").string;
+    infos->docker = get_arg(ag, "--docker").boolean;
 }
 
 static struct options *create_opts(void)
