@@ -26,7 +26,7 @@ int handle_buffer(client_t *c)
     bool is_last_line = c->io.req->data[c->io.req->size - 1] == '\n' ||
         c->io.req->data[c->io.req->size] == '\n';
 
-    logs(DEBUG, "Client %d has %d lines in buffer %d\n", c->fd, lines->size);
+    logs(DEBUG, "Client %d has %d lines in buffer\n", c->fd, lines->size);
     if (lines->size == 0) {
         vec_destroy_vector_str_t(lines);
         return 0;
