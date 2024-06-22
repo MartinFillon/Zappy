@@ -7,13 +7,14 @@
 
 #include "Display.hpp"
 #include <raylib.h>
+#include "Skybox.hpp"
 
 namespace GUI {
 
 Display::Display(Network::Handler &networkHandler, bool debug, int width, int height)
     : team(), networkHandler(networkHandler), serverMessageHandler(debug, *this), debug(debug), map(Pos<int, 2>{1, 1}),
       endGame(false), endGameMessage(), offsetX(0), offsetY(0), newWidth(width), newHeight(height), messageBox(),
-      timeUnitInput(100, networkHandler), m_cam(
+      timeUnitInput(100, networkHandler), skybox(), m_cam(
                                               {(Vector3){15.0f, 5.0f, 15.0f},
                                                (Vector3){0.0f, 0.0f, 1.0f},
                                                (Vector3){0.0f, 1.0f, 0.0f},
@@ -33,6 +34,7 @@ Display::Display(Network::Handler &networkHandler, bool debug, int width, int he
     SetTargetFPS(60);
     SetWindowMinSize(1080, 450);
     resize();
+    skybox.Load();
 }
 
 Display::~Display()
@@ -67,7 +69,10 @@ void Display::run()
         BeginDrawing();
         ClearBackground(BLACK);
         if (m_is3D) {
+            Raylib::beginMode3D(m_cam);
+            skybox.Draw();
             map.displayTacticalView3D(infoBox, m_cam, m_isCameraFree, m_showCursor);
+            Raylib::endMode3D();
             infoBox.display(0, 0, 400, 300);
             messageBox.display(0, 0 + newHeight - 200, 400, 200);
             timeUnitInput.display(0 + 10, 0 + 340, 200, 30);

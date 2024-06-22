@@ -25,7 +25,7 @@ Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
     std::shared_ptr<Player> test =
-        std::make_shared<Player>(0, 0, static_cast<Data::Player::Direction>(3), 42, "debugTeam", 99, true);
+        std::make_shared<Player>(5, 5, static_cast<Data::Player::Direction>(3), 42, "debugTeam", 99, true);
     m_players.push_back(test);
 }
 
@@ -269,8 +269,6 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         cam.target = (Vector3){5.0f, 1.0f, 5.0f};
     }
 
-    Raylib::clearBackground(RAYWHITE);
-    Raylib::beginMode3D(cam);
     if (qm.getSize() == 0) {
         qm.init();
     }
@@ -317,8 +315,6 @@ void Map::displayTacticalView3D(const InfoBox &info, Camera3D &cam, bool &showCu
         float sizeCube = tileSize * info.getSize() + 2 * plus;
         Raylib::drawCubeWires({itemX, itemY, itemZ}, sizeCube, GREEN);
     }
-
-    Raylib::endMode3D();
 }
 
 } // namespace Data
