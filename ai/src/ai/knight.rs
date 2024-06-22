@@ -35,14 +35,13 @@ use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 const FETUS_NEED: usize = 2;
+const MIN_FOOD_ON_FLOOR: usize = 200;
 
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
     info: AI,
     level_ref: Arc<Mutex<usize>>,
 }
-
-const MIN_FOOD_ON_FLOOR: usize = 200;
 
 #[async_trait]
 impl AIHandler for Knight {
@@ -158,8 +157,9 @@ impl Knight {
     }
 
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
-        let res = look_around(client).await;
-        if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, res).await? {
+        let res = look_around(client).await?;
+        if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, Ok(res)).await?
+        {
             if !tiles.is_empty()
                 && tiles[0]
                     .iter()
@@ -204,15 +204,15 @@ impl Knight {
         min: usize,
     ) -> Result<(), CommandError> {
         self.check_food(client, MIN_FOOD_ON_FLOOR).await?;
-        let mut res = inventory(client).await;
+        let mut res = inventory(client).await?;
         if let ResponseResult::Inventory(mut inv) =
-            self.knight_checkout_response(client, res).await?
+            self.knight_checkout_response(client, Ok(res)).await?
         {
             if !inv.is_empty() && inv[0].0 == "food" {
-                res = Ok(ResponseResult::OK);
-                while inv[0].1 < min as i32 && res == Ok(ResponseResult::OK) {
-                    res = take_object(client, "food").await;
-                    res = Knight::handle_eject(client, res).await;
+                res = ResponseResult::OK;
+                while inv[0].1 < min as i32 && res == ResponseResult::OK {
+                    res = take_object(client, "food").await?;
+                    res = Knight::handle_eject(client, Ok(res)).await?;
                     inv[0].1 += 1;
                 }
             }
@@ -239,8 +239,8 @@ impl Knight {
                 if let Ok(id) = content.0.parse::<usize>() {
                     if id == self.info().p_id && content.1.trim_start() == "mv" {
                         println!("Knight {} moving towards Queen...", self.info.p_id);
-                        let res = move_towards_broadcast(&mut client, dir.clone()).await;
-                        self.knight_checkout_response(&mut client, res).await?;
+                        let res = move_towards_broadcast(&mut client, dir.clone()).await?;
+                        self.knight_checkout_response(&mut client, Ok(res)).await?;
                     }
                     if id == self.info().p_id
                         && content.1.trim_start() == "inc"
@@ -251,12 +251,12 @@ impl Knight {
                             "Knight {} received \"inc\" from Queen, waiting for response...",
                             self.info.p_id
                         );
-                        let res = incantation::wait_for_incantation(&mut client).await;
+                        let res = incantation::wait_for_incantation(&mut client).await?;
                         println!(
                             "Knight {} received \"inc\" from Queen, read response: {:?}",
                             self.info.p_id, res
                         );
-                        self.knight_checkout_response(&mut client, res).await?;
+                        self.knight_checkout_response(&mut client, Ok(res)).await?;
                     }
                 }
             }
@@ -270,10 +270,13 @@ impl Knight {
         }
         let mut client = self.info().client().lock().await;
         let res = look_around(&mut client).await;
-        println!(
+        debug!(
             "-[{}] Knight {} Look returned: {:?}",
             self.info.cli_id, self.info.p_id, res
         );
+        if res.is_err() {
+            return false;
+        }
         if let Ok(ResponseResult::Tiles(tiles)) =
             self.knight_checkout_response(&mut client, res).await
         {

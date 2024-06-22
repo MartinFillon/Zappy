@@ -102,6 +102,24 @@ fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, St
     })
 }
 
+async fn init_and_update(ai: AI, role: String) -> io::Result<()> {
+    let mut rle =
+        init_from_broadcast(&ai, role).map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
+
+    let ai_status = rle.update().await;
+    if let Err(CommandError::DeadReceived) = ai_status {
+        println!("~[{}] AI is dead, stopping the process...", ai.cli_id);
+        return Err(Error::new(ErrorKind::ConnectionAborted, "AI is now dead."));
+    } else if let Err(e) = ai_status {
+        println!("~[{}] Error: {}", ai.cli_id, e);
+        return Err(Error::new(
+            ErrorKind::ConnectionAborted,
+            "AI received error from server.",
+        ));
+    }
+    Ok(())
+}
+
 pub async fn fork_ai(info: AI) -> io::Result<()> {
     let client = match handle_tcp(info.address.clone(), info.team.clone(), info.cli_id).await {
         Ok(client) => {
@@ -129,19 +147,19 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                     "~[{}] Handling assignment of role {} with id {}",
                     info.cli_id, role, p_id
                 );
-                let mut rle = init_from_broadcast(&ai, role)
-                    .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
-                let ai_status = rle.update().await;
-                if let Err(CommandError::DeadReceived) = ai_status {
-                    println!("~[{}] AI is dead, stopping the process...", info.cli_id);
-                    return Err(Error::new(ErrorKind::ConnectionAborted, "AI is now dead."));
-                } else if let Err(e) = ai_status {
-                    println!("~[{}] Error: {}", info.cli_id, e);
-                    return Err(Error::new(
-                        ErrorKind::ConnectionAborted,
-                        "AI received error from server.",
-                    ));
-                }
+                let ai_clone = ai.clone();
+                tokio::spawn(async move {
+                    match init_and_update(ai_clone, role).await {
+                        Ok(_) => info!(
+                            "~[{}] AI successfully initialized and updated.",
+                            info.cli_id
+                        ),
+                        Err(e) => error!(
+                            "~[{}] AI initialization and update error: {}",
+                            info.cli_id, e
+                        ),
+                    }
+                });
                 return Ok(());
             }
             warn!(

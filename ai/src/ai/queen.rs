@@ -124,8 +124,8 @@ impl AIHandler for Queen {
 
             let look_res = {
                 let mut cli = self.info.client.lock().await;
-                let res = look_around(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
+                let res = look_around(&mut cli).await?;
+                Queen::handle_eject(&mut cli, Ok(res)).await
             };
             if let Ok(ResponseResult::Tiles(vec)) = look_res {
                 self.convert_to_look_info(vec[0].clone());
@@ -133,10 +133,10 @@ impl AIHandler for Queen {
 
             let inventory_res = {
                 let mut cli = self.info.client.lock().await;
-                let res = inventory(&mut cli).await;
-                Queen::handle_eject(&mut cli, res).await
+                let res = inventory(&mut cli).await?;
+                Queen::handle_eject(&mut cli, Ok(res)).await?
             };
-            if let Ok(ResponseResult::Inventory(vec)) = inventory_res {
+            if let ResponseResult::Inventory(vec) = inventory_res {
                 self.convert_to_inv(vec);
             }
 
@@ -675,9 +675,9 @@ impl Queen {
     }
 
     async fn create_bot(&mut self) -> Result<ResponseResult, CommandError> {
-        let mut client = self.info().client().lock().await;
-        let res = fork(&mut client).await;
-        if let Ok(ResponseResult::OK) = self.queen_checkout_response(&mut client, res).await {
+        let mut client = self.info.client.lock().await;
+        let res = fork(&mut client).await?;
+        if let Ok(ResponseResult::OK) = self.queen_checkout_response(&mut client, Ok(res)).await {
             let info = self.info.clone();
             tokio::spawn(async move {
                 if let Err(err) = fork_ai(info.clone()).await {
