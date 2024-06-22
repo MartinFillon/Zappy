@@ -71,7 +71,7 @@ impl AIHandler for Bot {
             if idex > MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
-                for _ in 0..5 {
+                for _ in 0..10 {
                     let mut client = self.info().client().lock().await;
                     take_object(&mut client, "food").await?;
                 }

@@ -11,14 +11,14 @@ use crate::{
         broadcast::broadcast,
         drop_object::drop_object,
         fork::fork,
-        incantation::{handle_incantation, incantation},
+        incantation::{self, handle_incantation, incantation},
         inventory::inventory,
         look_around::look_around,
         take_object::take_object,
     },
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
     tcp::{
-        command_handle::{CommandError, CommandHandler, ResponseResult},
+        command_handle::{CommandError, CommandHandler, DirectionMessage, ResponseResult},
         TcpClient,
     },
 };
@@ -63,11 +63,11 @@ impl AIHandler for Knight {
                 }
             }
             self.handle_message().await?;
-
             {
                 let mut client = self.info().client().lock().await;
-                self.check_enough_food(&mut client, 10).await?;
+                self.check_enough_food(&mut client, 20).await?;
             }
+
             if self.can_incantate().await {
                 {
                     let mut client = self.info().client().lock().await;
@@ -173,22 +173,26 @@ impl Knight {
                     self.info().cli_id,
                     self.info().p_id
                 );
-                let res = fork(client).await?;
-                if let ResponseResult::OK = self.knight_checkout_response(client, Ok(res)).await? {
-                    let info = self.info.clone();
-                    tokio::spawn(async move {
-                        if let Err(err) = fork_ai(info.clone()).await {
-                            error!("-[{}] AI fork error: {}", info.cli_id, err);
-                        } else {
-                            println!("-[{}] AI successfully forked.", info.cli_id);
-                        }
-                    });
-                    broadcast(
-                        client,
-                        format!("{} assign Fetus {}", self.info().cli_id, self.info().p_id)
-                            .as_str(),
-                    )
-                    .await?;
+                for _ in 0..4 {
+                    let res = fork(client).await?;
+                    if let ResponseResult::OK =
+                        self.knight_checkout_response(client, Ok(res)).await?
+                    {
+                        let info = self.info.clone();
+                        tokio::spawn(async move {
+                            if let Err(err) = fork_ai(info.clone()).await {
+                                error!("-[{}] AI fork error: {}", info.cli_id, err);
+                            } else {
+                                println!("-[{}] AI successfully forked.", info.cli_id);
+                            }
+                        });
+                        broadcast(
+                            client,
+                            format!("{} assign Fetus {}", self.info().cli_id, self.info().p_id)
+                                .as_str(),
+                        )
+                        .await?;
+                    }
                 }
             }
         }
@@ -227,7 +231,6 @@ impl Knight {
                 self.info().p_id,
                 message.1
             );
-            self.check_enough_food(&mut client, 10).await?;
             let (dir, msg) = message;
             if !msg.contains(' ') || msg.len() < 2 {
                 continue;
@@ -236,15 +239,20 @@ impl Knight {
                 let content = msg.split_at(idex);
                 if let Ok(id) = content.0.parse::<usize>() {
                     if id == self.info().p_id && content.1.trim_start() == "mv" {
-                        let res = move_towards_broadcast(&mut client, dir).await;
+                        println!("Knight {} moving towards Queen...", self.info.p_id);
+                        let res = move_towards_broadcast(&mut client, dir.clone()).await;
                         self.knight_checkout_response(&mut client, res).await?;
                     }
                     if id == self.info().p_id
                         && content.1.trim_start() == "inc"
                         && self.info().level != 1
+                        && dir.clone() == DirectionMessage::Center
                     {
-                        let response = client.check_response().await;
-                        let res = client.handle_response(response).await;
+                        println!(
+                            "Knight {} received \"inc\" from Queen, waiting for response...",
+                            self.info.p_id
+                        );
+                        let res = incantation::wait_for_incantation(&mut client).await;
                         println!(
                             "Knight {} received \"inc\" from Queen, read response: {:?}",
                             self.info.p_id, res
@@ -270,7 +278,16 @@ impl Knight {
         if let Ok(ResponseResult::Tiles(tiles)) =
             self.knight_checkout_response(&mut client, res).await
         {
-            if tiles[0].iter().any(|tile| tile.as_str() == "linemate") {
+            if !tiles.is_empty()
+                && tiles[0]
+                    .iter()
+                    .filter(|item| item.as_str() == "food")
+                    .count()
+                    < (MIN_FOOD_ON_FLOOR / 4)
+            {
+                return false;
+            }
+            if !tiles.is_empty() && tiles[0].iter().any(|item| item.as_str() == "linemate") {
                 return true;
             }
         }
