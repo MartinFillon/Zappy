@@ -45,8 +45,9 @@ static bool verif_start_specification(ai_t *ai, game_t *game)
         logs(DEBUG, "Not enough player for start_incantation.\n");
         return false;
     }
-    if (!verif_tile_requirement(game->map->arena[pos->y][pos->x].content,
-        incant_req[idx].ressource)) {
+    if (!verif_tile_requirement(
+            game->map->arena[pos->y][pos->x].content, incant_req[idx].ressource
+        )) {
         logs(DEBUG, "Tiles requirements are not fullfilled in start.\n");
         return false;
     }
@@ -59,7 +60,7 @@ static void start_ais_elevation(struct client_list *clis, client_t *cli)
 
     for (size_t i = 0; i < clis->size; i++) {
         oth = clis->data[i];
-        if (oth->type == GUI)
+        if (oth->type != AI || oth->ai->id == cli->ai->id)
             continue;
         if (is_coord_equal(&cli->ai->pos, &oth->ai->pos) &&
             !oth->ai->incant.is_incant && oth->ai->level == cli->ai->level) {
