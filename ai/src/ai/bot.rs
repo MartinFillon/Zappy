@@ -33,6 +33,8 @@ use log::{debug, error, info, warn};
 
 use zappy_macros::Bean;
 
+const REFILL_FOOD: usize = 8;
+
 pub const COLONY_PLAYER_COUNT: usize = 2;
 const MAX_MOVEMENTS: usize = 10;
 static ITEM_PRIORITY: [(&str, usize); 7] = [
@@ -71,7 +73,7 @@ impl AIHandler for Bot {
             if idex > MAX_MOVEMENTS {
                 self.backtrack().await?;
                 self.drop_items().await?;
-                for _ in 0..=5 {
+                for _ in 0..=REFILL_FOOD {
                     let mut client = self.info().client().lock().await;
                     take_object(&mut client, "food").await?;
                 }

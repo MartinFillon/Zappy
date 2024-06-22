@@ -34,6 +34,8 @@ use tokio::sync::Mutex;
 use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
+const FETUS_NEED: usize = 2;
+
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
     info: AI,
@@ -173,7 +175,7 @@ impl Knight {
                     self.info().cli_id,
                     self.info().p_id
                 );
-                for _ in 0..4 {
+                for _ in 0..FETUS_NEED {
                     let res = fork(client).await?;
                     if let ResponseResult::OK =
                         self.knight_checkout_response(client, Ok(res)).await?
