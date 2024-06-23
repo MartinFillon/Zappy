@@ -126,6 +126,39 @@ The levels are set using the `-l` argument and are the following.
 
 The gui as a debug mode by adding the argument `-d` and the value `true` or `false` to enable or disable the log from raylib
 
+## How use GUI
+
+### keyboard shortcut
+
+| Key  | Use |
+| ---- | --- |
+| `ESCAPE`| **Close** in Menu \| **Switch** betweens settings and game |
+| `DELETE` | **Close** GUI window |
+| `P` | **Switch** betweens 3D and 2D |
+| `F` | **Switch** betweens perspective and free camera|
+| `C` | **Enable** and **Disable** cursor|
+| `R` | **Reposition** the camera to focus in the map center |
+--------------
+
+### Menu / Settings
+
+Menu and settings are accessible at the start. In the game, you can only access to the settings with `ESCAPE` and return to the game with the same way. Connection with **server** is only after clicked at the **start button** in menu.
+
+Click button with **cursor** or move with **arrow keys** and **Enter**.
+
+**Sound** and **Music** are **editable** in settings.
+
+### Game
+
+- Select a **Tile** or a **Player** with you cursor to see details
+- Edit the **Tick Duration**, click and enter a new tick duration
+- View logs with message box at bottom left
+
+### 3D mode Camera
+
+you can use `A` | `Z` | `E` | `Q` | `S` | `D` | `CTRL` | `SPACE` | `ARROW KEYS` to move the camera.
+
+
 ## Code documentation
 
 There are two main directories for the code documentation. They can be generated using `make docs`.
