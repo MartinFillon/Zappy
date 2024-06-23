@@ -18,7 +18,8 @@ class MessageBox {
   public:
     MessageBox();
     void addMessage(const std::string &message, int user);
-    void display(int x, int y, int width, int height);
+    void display();
+    void resize(int x, int y, int width, int height);
     void scroll(int amount);
     bool isMouseOver() const;
     bool isMouseOver(int x, int y, int width, int height) const;

@@ -28,7 +28,6 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
     } else {
         SetTraceLogLevel(LOG_ERROR);
     }
-    SetTraceLogLevel(LOG_ALL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(width, height, "Zappy");
     SetTargetFPS(60);
@@ -105,14 +104,14 @@ void Display::displayGame()
         map.displayTacticalView3D(infoBox);
         Raylib::endMode3D();
         infoBox.display(0, 0, 400, 300);
-        messageBox.display(0, 0 + m_newWindow.height - 200, 400, 200);
+        messageBox.display();
         timeUnitInput.display(0 + 10, 0 + 340, 200, 30);
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
         map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
         infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
-        messageBox.display(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+        messageBox.display();
         timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
     }
 }
@@ -161,6 +160,11 @@ void Display::resize()
 
     m_newWindow.x = (screenWidth - m_newWindow.width) / 2;
     m_newWindow.y = (screenHeight - m_newWindow.height) / 2;
+    if (m_settings.is3D()) {
+        messageBox.resize(0, screenHeight - 200, 400, 200);
+    } else {
+        messageBox.resize(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+    }
 }
 
 } // namespace GUI

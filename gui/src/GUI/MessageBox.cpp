@@ -155,12 +155,16 @@ void MessageBox::handleInput()
     }
 }
 
-void MessageBox::display(int x, int y, int width, int height)
+void MessageBox::resize(int x, int y, int width, int height)
 {
     this->x = x;
     this->y = y;
     this->width = width;
     this->height = height;
+}
+
+void MessageBox::display()
+{
     Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
     m_maxLines = height / m_lineHeight;
