@@ -10,16 +10,17 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include "UIComponent.hpp"
 
 constexpr int SCROLL_WIDTH = 20;
 constexpr int MAX_LINES = 100;
 
-class MessageBox {
+class MessageBox : public UIComponent {
   public:
     MessageBox();
     void addMessage(const std::string &message, int user);
-    void display();
-    void resize(int x, int y, int width, int height);
+    void display() const override;
+    void resize(int x, int y, int width, int height) override;
     void scroll(int amount);
     bool isMouseOver() const;
     bool isMouseOver(int x, int y, int width, int height) const;
@@ -37,8 +38,8 @@ class MessageBox {
 
     int m_scrollOffset;
     int m_lineHeight;
-    int m_totalLines;
-    int m_maxLines;
+    mutable int m_totalLines;
+    mutable int m_maxLines;
     std::vector<std::vector<std::string>> m_wrappedMessages;
     std::vector<FormattedMessage> m_formattedMessages;
     std::vector<std::string> m_team;

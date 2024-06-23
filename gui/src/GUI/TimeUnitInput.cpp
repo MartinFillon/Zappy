@@ -9,17 +9,8 @@
 
 TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
     : timeUnit(initialValue), oldTimeUnit(initialValue), timeUnitStr(std::to_string(initialValue)), selected(false),
-      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), x(0), y(0), width(0), height(0),
-      networkHandler(networkHandler)
+      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), networkHandler(networkHandler)
 {
-}
-
-void TimeUnitInput::resize(int x, int y, int width, int height)
-{
-    this->x = x;
-    this->y = y;
-    this->width = width;
-    this->height = height;
 }
 
 void TimeUnitInput::display() const
@@ -43,7 +34,9 @@ void TimeUnitInput::handleEvent()
         cursorBlinkTime = 0.0f;
     }
 
-    if (Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height))) {
+    if (Raylib::checkCollisionMouseRec(
+            static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)
+        )) {
         if (Raylib::isMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             selected = true;
             oldTimeUnit = timeUnit;

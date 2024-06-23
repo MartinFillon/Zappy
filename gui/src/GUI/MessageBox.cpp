@@ -149,9 +149,9 @@ void MessageBox::handleInput()
         float clickPosition = Raylib::getMousePosition().y - y;
         float scrollbarHeight =
             static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
-        float scrollbarCenter = scrollbarHeight / 2;
+        float scrollbarCenter = scrollbarHeight / 2.0f;
         m_scrollOffset =
-            std::clamp(static_cast<int>((clickPosition + scrollbarCenter) / height * maxOffset), 0, maxOffset);
+            std::clamp(static_cast<int>((clickPosition - scrollbarCenter) / height * maxOffset * 2), 0, maxOffset);
     }
 }
 
@@ -163,7 +163,7 @@ void MessageBox::resize(int x, int y, int width, int height)
     this->height = height;
 }
 
-void MessageBox::display()
+void MessageBox::display() const
 {
     Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
 
@@ -176,15 +176,11 @@ void MessageBox::display()
         m_totalLines += wrappedMessages.back().size();
     }
 
-    float scrollbarHeight = std::min(
-        static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines)),
-        static_cast<float>(height)
-    );
+    float scrollbarHeight =
+        static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
     Raylib::drawRectangle(x + width - SCROLL_WIDTH, y, SCROLL_WIDTH, height, (Color){255, 255, 255, 50});
-    Raylib::drawRectangle(
-        x + width - SCROLL_WIDTH, scrollbarY, SCROLL_WIDTH, scrollbarHeight, (Color){255, 255, 255, 100}
-    );
+    Raylib::drawRectangle(x + width - SCROLL_WIDTH, scrollbarY, SCROLL_WIDTH, scrollbarHeight, (Color){255, 255, 255, 100});
 
     int startLine = std::max(0, m_totalLines - m_maxLines - m_scrollOffset);
     int currentLine = 0;

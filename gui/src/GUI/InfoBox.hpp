@@ -11,10 +11,11 @@
 #include <memory>
 
 #include "Data/ISelectItem.hpp"
+#include "UIComponent.hpp"
 
 namespace GUI
 {
-    class InfoBox {
+    class InfoBox : public UIComponent {
         public:
             InfoBox();
             InfoBox(InfoBox &other) = default;
@@ -22,8 +23,6 @@ namespace GUI
 
             bool isPrint() const;
             void setPrint(bool print);
-
-            void resize(int x, int y, int width, int height);
 
             Pos<float, 3> getPosTile() const;
             void setPosTile(Pos<float, 3> posTile);
@@ -36,7 +35,7 @@ namespace GUI
             std::shared_ptr<Data::ISelectItem> &getItem();
             std::shared_ptr<Data::ISelectItem> getItem() const;
 
-            void display() const;
+            void display() const override;
 
         private:
             bool m_isPrint;
@@ -46,9 +45,5 @@ namespace GUI
 
             std::array<std::string, 7> m_itemName;
             int m_lineHeight;
-            int m_x;
-            int m_y;
-            int m_width;
-            int m_height;
     };
 }
