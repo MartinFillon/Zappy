@@ -163,8 +163,6 @@ void MessageBox::resize(int x, int y, int width, int height)
     this->height = height;
 }
 
-#include <iostream>
-
 void MessageBox::display()
 {
     Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});

@@ -51,6 +51,11 @@ class Display {
         return timeUnitInput.getTimeUnit();
     }
 
+    bool didChange3D() const
+    {
+        return Last3D != m_settings.is3D();
+    }
+
     void addMessage(std::string message, int user = SERVER)
     {
         if (user == SERVER)
@@ -85,6 +90,7 @@ class Display {
     Data::Map map;
 
     bool endGame;
+    bool Last3D;
     std::vector<std::string> endGameMessage;
 
     Raylib::RecWin m_newWindow;

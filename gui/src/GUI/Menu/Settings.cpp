@@ -19,17 +19,17 @@ Settings::Settings(Raylib::RecWin &newWindow, bool &debug, bool is3D, bool isCam
     m_button.push_back(CheckBox("Debug", m_debug));
 }
 
-bool Settings::is3D()
+bool Settings::is3D() const
 {
     return m_is3D;
 }
 
-bool Settings::isCameraFree()
+bool Settings::isCameraFree() const
 {
     return m_isCameraFree;
 }
 
-bool Settings::showCursor()
+bool Settings::showCursor() const
 {
     return m_showCursor;
 }
