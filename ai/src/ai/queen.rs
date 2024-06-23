@@ -105,14 +105,13 @@ impl AIHandler for Queen {
             );
             loop {
                 if let ResponseResult::Message((dir, msg)) = client.get_broadcast().await? {
-                    if dir == DirectionMessage::Center && msg.contains("0") {
+                    if dir == DirectionMessage::Center && msg.contains('0') {
                         break;
                     }
                     move_towards_broadcast(&mut client, dir.clone()).await?;
                 }
             }
         }
-        error!("[{}] Queen {} is now at the queen.", self.info.cli_id, self.info.p_id);
         self.fork_servants().await?;
 
         println!(
