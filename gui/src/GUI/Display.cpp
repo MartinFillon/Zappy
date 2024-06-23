@@ -160,6 +160,7 @@ void Display::resize()
 
     m_newWindow.x = (screenWidth - m_newWindow.width) / 2;
     m_newWindow.y = (screenHeight - m_newWindow.height) / 2;
+
     if (m_settings.is3D()) {
         messageBox.resize(0, screenHeight - 200, 400, 200);
     } else {

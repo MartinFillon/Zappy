@@ -163,6 +163,8 @@ void MessageBox::resize(int x, int y, int width, int height)
     this->height = height;
 }
 
+#include <iostream>
+
 void MessageBox::display()
 {
     Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
@@ -172,12 +174,14 @@ void MessageBox::display()
 
     std::vector<std::vector<std::string>> wrappedMessages;
     for (const FormattedMessage &msg : m_formattedMessages) {
-        wrappedMessages.push_back(wrapText(msg.lines[0], width - 40, m_lineHeight));
+        wrappedMessages.push_back(wrapText(msg.lines[0], width - SCROLL_WIDTH, m_lineHeight));
         m_totalLines += wrappedMessages.back().size();
     }
 
-    float scrollbarHeight =
-        static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines));
+    float scrollbarHeight = std::min(
+        static_cast<float>(height) * (static_cast<float>(m_maxLines) / static_cast<float>(m_totalLines)),
+        static_cast<float>(height)
+    );
     float scrollbarY = y + (static_cast<float>(m_scrollOffset) / static_cast<float>(m_totalLines)) * height;
     Raylib::drawRectangle(x + width - SCROLL_WIDTH, y, SCROLL_WIDTH, height, (Color){255, 255, 255, 50});
     Raylib::drawRectangle(
