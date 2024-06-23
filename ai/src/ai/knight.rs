@@ -254,3 +254,38 @@ impl Display for Knight {
         write!(f, "Knight => {}", self.info)
     }
 }
+
+#[cfg(test)]
+mod knight_test {
+    use super::*;
+    use tokio::sync::Mutex;
+    use std::sync::Arc;
+
+    fn setup_client() -> TcpClient {
+        TcpClient::new("127.0.0.1", "Team".to_string(), 1)
+    }
+
+    fn setup_knight() -> Knight {
+        let client = setup_client();
+        let ai = AI {
+            address: "127.0.0.1".to_string(),
+            team: "Team".to_string(),
+            cli_id: 1,
+            p_id: 1,
+            client: Arc::new(Mutex::new(client)),
+            map: (10, 10),
+            level: 1,
+            slots: 0,
+        };
+        Knight::new(ai, Arc::new(Mutex::new(1)))
+    }
+
+    #[tokio::test]
+    async fn test_knight_init() {
+        let knight = setup_knight();
+
+        assert_eq!(knight.info().cli_id, 1);
+        assert_eq!(knight.info().p_id, 1);
+        assert_eq!(knight.info().level, 1);
+    }
+}

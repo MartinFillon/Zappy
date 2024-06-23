@@ -533,3 +533,28 @@ impl Display for Queen {
         write!(f, "Queen => {}", self.info)
     }
 }
+
+#[cfg(test)]
+mod queen_test {
+    use super::*;
+    use crate::ai::AI;
+    use crate::tcp::TcpClient;
+
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    fn setup_queen() -> Queen {
+        let client = TcpClient::new("127.0.0.1", "Team".to_string(), 1);
+        let ai = AI {
+            address: "127.0.0.1".to_string(),
+            team: "Team".to_string(),
+            cli_id: 1,
+            p_id: 1,
+            client: Arc::new(Mutex::new(client)),
+            map: (10, 10),
+            level: 1,
+            slots: 0,
+        };
+        Queen::new(ai)
+    }
+}

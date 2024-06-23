@@ -231,3 +231,82 @@ pub fn wrap_coordinate(coord: i32, max: i32) -> i32 {
     }
     wrapped
 }
+
+#[cfg(test)]
+mod bot_test {
+    use super::*;
+    use crate::ai::AI;
+    use crate::tcp::TcpClient;
+
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    #[test]
+    fn test_wrap_coordinate() {
+        assert_eq!(wrap_coordinate(5, 10), 5);
+        assert_eq!(wrap_coordinate(-5, 10), 5);
+
+        assert_eq!(wrap_coordinate(10, 10), 0);
+        assert_eq!(wrap_coordinate(-10, 10), 0);
+
+        assert_eq!(wrap_coordinate(15, 10), -6);
+        assert_eq!(wrap_coordinate(20, 10), -11);
+
+        assert_eq!(wrap_coordinate(-15, 10), 6);
+        assert_eq!(wrap_coordinate(-20, 10), 1);
+
+        assert_eq!(wrap_coordinate(0, 10), 0);
+        assert_eq!(wrap_coordinate(10, 1), -2);
+        assert_eq!(wrap_coordinate(-10, 1), 1);
+    }
+
+    fn setup_bot() -> Bot {
+        let client = TcpClient::new("127.0.0.1", "Team".to_string(), 1);
+        let ai = AI {
+            address: "127.0.0.1".to_string(),
+            team: "Team".to_string(),
+            cli_id: 1,
+            p_id: 1,
+            client: Arc::new(Mutex::new(client)),
+            map: (10, 10),
+            level: 1,
+            slots: 0,
+        };
+        Bot::new(ai)
+    }
+
+    #[test]
+    fn test_update_coord_movement() {
+        let mut bot = setup_bot();
+        bot.update_coord_movement((1, 1));
+        assert_eq!(*bot.coord(), (1, 1));
+
+        bot.update_coord_movement((-2, -2));
+        assert_eq!(*bot.coord(), (4, 4));
+    }
+
+    #[test]
+    fn test_update_eject_coord() {
+        let mut bot = setup_bot();
+        bot.update_eject_coord(DirectionEject::North);
+        assert_eq!(*bot.coord(), (0, 1));
+
+        bot.update_eject_coord(DirectionEject::East);
+        assert_eq!(*bot.coord(), (1, 1));
+
+        bot.update_eject_coord(DirectionEject::South);
+        assert_eq!(*bot.coord(), (1, 0));
+
+        bot.update_eject_coord(DirectionEject::West);
+        assert_eq!(*bot.coord(), (0, 0));
+    }
+
+    #[tokio::test]
+    async fn test_bot_init() {
+        let bot = setup_bot();
+
+        assert_eq!(bot.info().cli_id, 1);
+        assert_eq!(bot.info().p_id, 1);
+        assert_eq!(bot.info().level, 1);
+    }
+}
