@@ -13,7 +13,7 @@ use crate::{
         incantation::{handle_incantation, incantation},
         inventory::inventory,
         look_around::look_around,
-        take_object::take_object,
+        take_object::take_object, turn::{DirectionTurn, turn},
     },
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
@@ -88,7 +88,7 @@ impl AIHandler for Queen {
                 self.incantate().await?;
             }
         }
-        error!(
+        info!(
             "[{}] Queen {} lvl {}",
             self.info.cli_id, self.info.p_id, self.info.level
         );
@@ -157,7 +157,7 @@ impl Queen {
             );
             if info.slots == 0 && info.cli_id < NB_INIT_QUEENS - 1 {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
-                error!("[{}] Spawned queen.", info.cli_id);
+                info!("[{}] Spawned queen.", info.cli_id);
             }
             if info.slots >= 0 && info.cli_id > NB_INIT_QUEENS - 1 {
                 info!("[{}] Identified as NPC.", info.cli_id);
@@ -234,13 +234,14 @@ impl Queen {
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
         let info_clone = info.clone();
 
+        info!("[{}] Spawning a queen...", info.cli_id);
         fork(client).await?;
-        inventory(client).await?;
+        turn(client, DirectionTurn::Left).await?;
         tokio::spawn(async move {
             if let Err(err) = fork_ai(info_clone).await {
                 error!("[{}] AI executing task fork error: {}", info.cli_id, err);
             } else {
-                println!("[{}] AI successfully forked task.", info.cli_id);
+                info!("[{}] AI successfully forked task.", info.cli_id);
             }
         });
         broadcast(

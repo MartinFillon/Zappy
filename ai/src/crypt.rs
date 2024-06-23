@@ -163,4 +163,11 @@ mod test_crypt {
         let key = Crypt::get_key(key);
         assert_eq!(key.len(), 32);
     }
+
+    #[test]
+    fn test_encrypt_decrypt_long_rand() {
+        let crypt = Crypt::new("Team1".to_string());
+        let decrypted_data = crypt.decrypt("e0750ed361ae1a13863a4cd29c40bd20657f11cd764402587e827bfee6b5dc2c");
+        assert_eq!(Some("3 assign Fetus 2"), decrypted_data.as_deref());
+    }
 }

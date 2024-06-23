@@ -442,7 +442,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     loop {
         if stop_flag.load(Ordering::SeqCst) {
-            println!(
+            warn!(
                 "=[AT {:?}] Stop flag is set, breaking the loop.",
                 connection_id
             );
