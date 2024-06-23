@@ -34,7 +34,7 @@ use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 const FETUS_NEED: usize = 2;
-const MIN_FOOD_ON_FLOOR: usize = 500;
+const MIN_FOOD_ON_FLOOR: usize = 200;
 
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {

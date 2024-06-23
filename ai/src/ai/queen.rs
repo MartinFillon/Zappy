@@ -382,7 +382,7 @@ impl Queen {
         let r_inv = require.inv();
         let look = &self.look;
 
-        if self.info.level >= 6 && self.info.p_id % 2 == 1 {
+        if self.info.level >= 6 && self.info.p_id % 6 != 0 {
             return false;
         }
 
