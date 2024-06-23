@@ -113,17 +113,14 @@ void Display::displayGame()
         skybox.Draw();
         map.displayTacticalView3D(infoBox);
         Raylib::endMode3D();
-        infoBox.display();
-        messageBox.display();
-        timeUnitInput.display();
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
         map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
-        infoBox.display();
-        messageBox.display();
-        timeUnitInput.display();
     }
+    infoBox.display();
+    messageBox.display();
+    timeUnitInput.display();
 }
 
 void Display::run()
