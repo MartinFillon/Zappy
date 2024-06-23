@@ -42,5 +42,5 @@ class MessageBox {
     std::vector<std::vector<std::string>> m_wrappedMessages;
     std::vector<FormattedMessage> m_formattedMessages;
     std::vector<std::string> m_team;
-    mutable int x, y, width, height;
+    int x, y, width, height;
 };

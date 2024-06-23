@@ -107,14 +107,14 @@ void Display::displayGame()
         skybox.Draw();
         map.displayTacticalView3D(infoBox);
         Raylib::endMode3D();
-        infoBox.display(0, 0, 400, 300);
+        infoBox.display();
         messageBox.display();
         timeUnitInput.display(0 + 10, 0 + 340, 200, 30);
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
         map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
-        infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
+        infoBox.display();
         messageBox.display();
         timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
     }
@@ -167,8 +167,10 @@ void Display::resize()
 
     if (m_settings.is3D()) {
         messageBox.resize(0, screenHeight - 200, 400, 200);
+        infoBox.resize(0, 0, 400, 300);
     } else {
         messageBox.resize(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+        infoBox.resize(m_newWindow.x, m_newWindow.y, 400, 300);
     }
 }
 
