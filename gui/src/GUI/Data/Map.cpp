@@ -25,9 +25,6 @@ Map::Map(int x, int y) : m_size({x, y}), x(0), y(0), end_x(0), end_y(0)
 Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
-    std::shared_ptr<Player> test =
-        std::make_shared<Player>(5, 5, static_cast<Data::Player::Direction>(3), 42, "debugTeam", 99, true);
-    m_players.push_back(test);
 }
 
 Tile &Map::getTile(const Pos<int, 2> &pos)
