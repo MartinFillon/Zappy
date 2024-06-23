@@ -76,21 +76,26 @@ impl AIHandler for Queen {
             self.info.cli_id, self.info.p_id
         );
 
-        loop {
-            if self.info.level < 8 {
-                self.get_look_infos().await?;
-                self.get_inv_infos().await?;
-            }
+        while self.info.level < 8 {
+            self.get_look_infos().await?;
+            self.get_inv_infos().await?;
 
             self.check_enough_food(30).await?;
 
-            if self.info.level < 8 && self.check_requirement() {
+            if self.check_requirement() {
                 println!(
                     "[{}] Queen {} is incantating",
                     self.info.cli_id, self.info.p_id
                 );
                 self.incantate().await?;
             }
+        }
+        error!(
+            "[{}] Queen {} lvl {}",
+            self.info.cli_id, self.info.p_id, self.info.level
+        );
+        loop {
+            self.check_enough_food(30).await?;
         }
     }
 }
@@ -283,7 +288,6 @@ impl Queen {
             if let Ok(ResponseResult::Incantation(lvl)) =
                 self.queen_checkout_response(&mut cli, Ok(incant_res)).await
             {
-                println!("Queen {} Incantation -> {}", self.info.p_id, lvl);
                 level = lvl;
                 println!(
                     "[{}] Queen {} done. Now level {}",
@@ -294,11 +298,6 @@ impl Queen {
                         "[{}] Queen {} lvl {}",
                         self.info.cli_id, self.info.p_id, level
                     );
-                    broadcast(
-                        &mut cli,
-                        format!("{} lvl {}", self.info().p_id, level).as_str(),
-                    )
-                    .await?;
                 }
                 self.create_bot(&mut cli).await?;
             }
@@ -321,7 +320,19 @@ impl Queen {
             };
             match res {
                 ResponseResult::OK => self.inv.set_food(self.inv.food() + 1),
-                ResponseResult::Incantation(lvl) => self.info.set_level(lvl),
+                ResponseResult::Incantation(lvl) => {
+                    self.info.set_level(lvl);
+                    if self.info.level == 4 || self.info.level == 6 {
+                        error!(
+                            "[{}] Queen {} lvl {}",
+                            self.info.cli_id, self.info.p_id, self.info.level
+                        );
+                    }
+                    println!(
+                        "[{}] Queen {} done. Now level {}",
+                        self.info.cli_id, self.info.p_id, self.info.level
+                    );
+                },
                 _ => {}
             }
         }
@@ -408,6 +419,16 @@ impl Queen {
         let vec = match &res {
             ResponseResult::Incantation(lvl) => {
                 self.info.set_level(*lvl);
+                if self.info.level == 4 || self.info.level == 6 {
+                    error!(
+                        "[{}] Queen {} lvl {}",
+                        self.info.cli_id, self.info.p_id, self.info.level
+                    );
+                }
+                println!(
+                    "[{}] Queen {} done. Now level {}",
+                    self.info.cli_id, self.info.p_id, self.info.level
+                );
                 return Ok(());
             }
             ResponseResult::Tiles(tiles) => {
@@ -451,6 +472,16 @@ impl Queen {
         let vec: Vec<(String, i32)> = match &res {
             ResponseResult::Incantation(lvl) => {
                 self.info.set_level(*lvl);
+                if self.info.level == 4 || self.info.level == 6 {
+                    error!(
+                        "[{}] Queen {} lvl {}",
+                        self.info.cli_id, self.info.p_id, self.info.level
+                    );
+                }
+                println!(
+                    "[{}] Queen {} done. Now level {}",
+                    self.info.cli_id, self.info.p_id, self.info.level
+                );
                 return Ok(());
             }
             ResponseResult::Inventory(inv) => {
