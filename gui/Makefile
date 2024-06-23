@@ -42,6 +42,7 @@ SRC = $(BASE_SRC) 							\
 				Raylib						\
 				Display						\
 				ServerMessageHandler		\
+				MusicGame						\
 				Skybox						\
 			)								\
 		)									\

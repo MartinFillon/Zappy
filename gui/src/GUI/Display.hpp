@@ -20,6 +20,7 @@
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 #include "Skybox.hpp"
+#include "MusicGame.hpp"
 
 namespace GUI {
 
@@ -107,6 +108,8 @@ class Display {
     UI::TimeUnitInput timeUnitInput;
     Skybox skybox;
     Camera3D m_cam;
+    MusicGame m_music;
+
     Menu m_menu;
     Settings m_settings;
 };

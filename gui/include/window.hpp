@@ -12,6 +12,7 @@ constexpr float HeightToFontSize(float height) {return height / 8.0f;};
 constexpr float MulSetPosButton = 0.35f;
 constexpr float MulSizeCheckBox = 0.04f;
 constexpr float SpacingSetButY = 20.0f;
+constexpr int SpacingSliderY = 50;
 
 constexpr float MulMenuPosButton = 0.4f;
 constexpr float MulMenuButX = 1.0f - MulMenuPosButton * 2;

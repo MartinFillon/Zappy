@@ -18,6 +18,13 @@ namespace Raylib {
         int height;
     };
 
+    struct Line {
+        int sx;
+        int sy;
+        int ex;
+        int ey;
+    };
+
     struct Square {
         float x;
         float y;
@@ -33,6 +40,7 @@ namespace Raylib {
 // Check Collision
     bool checkCollisionMouseCircle(float x, float y, float radius);
     bool checkCollisionMouseCircle(const Vector2 &vec, float radius);
+    bool checkCollisionMouseCircle(const Circle &cir);
     bool checkCollisionMouseRec(float x, float y, float width, float height);
     bool checkCollisionMouseRec(const Rectangle &rec);
     bool checkCollisionMouseSquare(float x, float y, float size);
@@ -62,6 +70,7 @@ namespace Raylib {
     void drawSquareLines(Square sqr, Color color);
     void drawCircle(float x, float y, float radius, Color color);
     void drawCircle(const Vector2 &vec, float radius, Color color);
+    void drawCircle(const Circle &cir, Color color);
     void drawGrid(int slices, float spacing);
     void drawCuboid(const Vector3 &pStart, const Vector3 &pEnd, Color color);
     void drawCuboidWires(const Vector3 &pStart, const Vector3 &pEnd, Color color);
@@ -70,6 +79,7 @@ namespace Raylib {
     void drawSphere(const Vector3 &p, float radius, Color color);
     void drawText(const std::string &str, int x, int y, int fontSize, Color color);
     void drawLine(int sx, int sy, int ex, int ey, Color color);
+    void drawLine(const Line &line, Color color);
 
 // Event
     bool isMouseButtonPressed(int button);
