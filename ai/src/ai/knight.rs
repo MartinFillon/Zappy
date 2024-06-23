@@ -44,11 +44,19 @@ pub struct Knight {
 
 #[async_trait]
 impl AIHandler for Knight {
+    ///
+    /// Initializes the [`Knight`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] Knight has been created.", info.cli_id);
         Self::new(info, Arc::new(Mutex::new(1)))
     }
 
+    ///
+    /// [`Knight`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
             "-[{}] Knight [Queen {}] is being handled...",
@@ -112,10 +120,16 @@ impl Listeners for Knight {
 }
 
 impl Knight {
+    ///
+    /// [`Knight`] initialize the struct with `AI` struct
+    ///
     fn new(info: AI, level_ref: Arc<Mutex<usize>>) -> Self {
         Self { info, level_ref }
     }
 
+    ///
+    /// [`Knight`] Spawns a new [`Fetus`] if there is not enough food on the floor
+    ///
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
         let res = look_around(client).await?;
         if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, Ok(res)).await?
@@ -158,6 +172,9 @@ impl Knight {
         Ok(())
     }
 
+    ///
+    /// [`Knight`] checks if there is enough food on the floor
+    ///
     async fn check_enough_food(
         &self,
         client: &mut TcpClient,
@@ -180,6 +197,9 @@ impl Knight {
         Ok(())
     }
 
+    ///
+    /// [`Knight`] handles the messages received from the server
+    ///
     async fn analyse_messages(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
 
@@ -236,6 +256,9 @@ impl Knight {
         Ok(ResponseResult::OK)
     }
 
+    ///
+    /// [`Knight`] checks the response from the server to sort
+    ///
     async fn knight_checkout_response(
         &self,
         client: &mut TcpClient,
@@ -252,5 +275,40 @@ impl Knight {
 impl Display for Knight {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "Knight => {}", self.info)
+    }
+}
+
+#[cfg(test)]
+mod knight_test {
+    use super::*;
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    fn setup_client() -> TcpClient {
+        TcpClient::new("127.0.0.1", "Team".to_string(), 1)
+    }
+
+    fn setup_knight() -> Knight {
+        let client = setup_client();
+        let ai = AI {
+            address: "127.0.0.1".to_string(),
+            team: "Team".to_string(),
+            cli_id: 1,
+            p_id: 1,
+            client: Arc::new(Mutex::new(client)),
+            map: (10, 10),
+            level: 1,
+            slots: 0,
+        };
+        Knight::new(ai, Arc::new(Mutex::new(1)))
+    }
+
+    #[tokio::test]
+    async fn test_knight_init() {
+        let knight = setup_knight();
+
+        assert_eq!(knight.info().cli_id, 1);
+        assert_eq!(knight.info().p_id, 1);
+        assert_eq!(knight.info().level, 1);
     }
 }

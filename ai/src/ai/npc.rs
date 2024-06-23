@@ -20,6 +20,9 @@ pub struct NPC {
 }
 
 impl NPC {
+    ///
+    /// [`NPC`] initialize the struct with `AI` struct
+    ///
     fn new(info: AI) -> Self {
         Self { info }
     }
@@ -27,11 +30,19 @@ impl NPC {
 
 #[async_trait]
 impl AIHandler for NPC {
+    ///
+    /// Initializes the [`NPC`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] NPC spawned.", info.cli_id);
         Self::new(info)
     }
 
+    ///
+    /// [`NPC`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         let mut client = self.info.client().lock().await;
         while let Some(response) = client.get_response().await {

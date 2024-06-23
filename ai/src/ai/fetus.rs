@@ -16,12 +16,19 @@ use async_trait::async_trait;
 #[allow(unused_imports)]
 use log::{debug, error, info, warn};
 
-#[derive(Debug, Clone)]
+use zappy_macros::Bean;
+
+#[derive(Debug, Clone, Bean)]
 pub struct Fetus {
     info: AI,
 }
 
 impl Fetus {
+    ///
+    /// [`Fetus`] initialize the struct with `AI` struct
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn new(info: AI) -> Self {
         Self { info }
     }
@@ -29,11 +36,19 @@ impl Fetus {
 
 #[async_trait]
 impl AIHandler for Fetus {
+    ///
+    /// Initializes the [`Fetus`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] Fetus spawned.", info.cli_id);
         Self::new(info)
     }
 
+    ///
+    /// [`Fetus`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         let mut client_lock = self.info.client.lock().await;
         let mut total = 0;
@@ -55,5 +70,39 @@ impl AIHandler for Fetus {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod fetus_test {
+    use super::*;
+    use crate::ai::AI;
+    use crate::tcp::TcpClient;
+
+    use std::sync::Arc;
+    use tokio::sync::Mutex;
+
+    fn setup_fetus() -> Fetus {
+        let client = TcpClient::new("127.0.0.1", "Team".to_string(), 1);
+        let ai = AI {
+            address: "127.0.0.1".to_string(),
+            team: "Team".to_string(),
+            cli_id: 1,
+            p_id: 1,
+            client: Arc::new(Mutex::new(client)),
+            map: (10, 10),
+            level: 1,
+            slots: 0,
+        };
+        Fetus::new(ai)
+    }
+
+    #[tokio::test]
+    async fn test_bot_init() {
+        let fetus = setup_fetus();
+
+        assert_eq!(fetus.info().cli_id, 1);
+        assert_eq!(fetus.info().p_id, 1);
+        assert_eq!(fetus.info().level, 1);
     }
 }
