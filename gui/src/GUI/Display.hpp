@@ -32,6 +32,11 @@ class Display {
     ~Display();
     void run();
 
+    void collision();
+    void collision3D();
+    void display2D(int start_x, int start_y, int end_x, int end_y);
+    void display3D();
+
     Data::Map &getMap()
     {
         return map;
@@ -46,6 +51,9 @@ class Display {
     {
         endGame = end;
         endGameMessage = message;
+        for (auto &message : message) {
+            addMessage(message, SERVER);
+        }
     }
 
     int getTimeUnit() const
@@ -94,13 +102,11 @@ class Display {
     bool endGame;
     bool Last3D;
     std::vector<std::string> endGameMessage;
-
     Raylib::RecWin m_newWindow;
     UI::MessageBox messageBox;
     UI::InfoBox infoBox;
     UI::TimeUnitInput timeUnitInput;
     Skybox skybox;
-
     Camera3D m_cam;
     MusicGame m_music;
 

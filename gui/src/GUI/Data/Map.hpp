@@ -8,18 +8,17 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <raylib.h>
+#include <vector>
 
-#include "../UI/InfoBox.hpp"
+#include "../ModelManager/RessourcesManager.hpp"
 #include "Egg.hpp"
 #include "Player.hpp"
 #include "Pos.hpp"
 #include "Tile.hpp"
-#include "../ModelManager/RessourcesManager.hpp"
 
-#define SIZE_STEP_1 1
-#define SIZE_STEP_2 2
+#define SIZE_STEP_1 3
+#define SIZE_STEP_2 5
 
 namespace GUI {
 namespace Data {
@@ -34,24 +33,27 @@ class Map {
     Tile getTile(const Pos<int, 2> &pos) const;
     Tile getTile(int x, int y) const;
     std::vector<std::shared_ptr<Player>> &getPlayers();
+    const std::vector<std::shared_ptr<Player>> &getPlayers() const;
     std::vector<std::shared_ptr<Egg>> &getEggs();
+    std::vector<std::shared_ptr<Tile>> &getTiles();
 
     Pos<int, 2> getSize() const;
     void resize(int x, int y);
     void resize(const Pos<int, 2> &size);
 
-    void checkCollision(UI::InfoBox &infoBox) const;
-    void checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const;
-    void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const;
-    void displayTacticalView3D(const UI::InfoBox &info) const;
+    void set2DDisplay(int start_x, int start_y, int end_x, int end_y);
+
+  private:
+    Pos<int, 2> m_size;
+
+  public:
+    mutable int x, y, end_x, end_y;
+    mutable RessourcesManager qm;
 
   private:
     std::vector<std::shared_ptr<Tile>> m_map;
     std::vector<std::shared_ptr<Player>> m_players;
     std::vector<std::shared_ptr<Egg>> m_eggs;
-    Pos<int, 2> m_size;
-    mutable int x, y, end_x, end_y;
-    mutable RessourcesManager qm;
 };
 
 } // namespace Data
