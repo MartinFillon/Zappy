@@ -33,8 +33,7 @@ static size_t count_nb_ai_available(
         ai = ais->data[i];
         for (size_t k = 0; k < tile->players->size; k++) {
             count += ai->id == tile->players->data[k] &&
-                !ai->incant.is_incant &&
-                ai->level == level;
+                !ai->incant.is_incant && ai->level == level;
         }
     }
     return count;
@@ -45,7 +44,8 @@ static bool verif_start_specification(ai_t *ai, game_t *game)
     pos_t *pos = &ai->pos;
     size_t idx = ai->level - 1;
     size_t nb_player = count_nb_ai_available(
-        game, &game->map->arena[pos->y][pos->x], ai->level);
+        game, &game->map->arena[pos->y][pos->x], ai->level
+    );
 
     if (nb_player < incant_req[idx].nb_player) {
         logs(DEBUG, "Not enough player for start_incantation.\n");
@@ -66,9 +66,8 @@ static void start_ais_elevation(struct client_list *clis, client_t *cli)
     size_t idx = cli->ai->level - 1;
     size_t n = 0;
 
-    dprintf(1, "--- ID FOR INCANT: %d ---\n", cli->ai->id);
-    for (size_t i = 0; n < incant_req[idx].nb_player - 1 &&
-        i < clis->size; i++) {
+    for (size_t i = 0; n < incant_req[idx].nb_player - 1 && i < clis->size;
+         i++) {
         oth = clis->data[i];
         if (oth->type != AI || oth->ai->id == cli->ai->id)
             continue;
