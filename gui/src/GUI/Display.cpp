@@ -122,9 +122,8 @@ void Display::displayEndGame()
         m_newWindow.x + (m_newWindow.width - sizeTitle.x) / 2.0f,
         m_newWindow.y + m_newWindow.height * MulEndY - sizeTitle.y,
         fontSize / 2, PURPLE);
-    endGameMessage.push_back("Blloooop :3");
     if (endGameMessage.empty())
-        return;
+        endGameMessage.push_back("Unknow");
     const std::string &str = endGameMessage.at(0);
     int sizeText = Raylib::getMeasureTextEx(str, fontSize).x;
     Raylib::drawText(str,
