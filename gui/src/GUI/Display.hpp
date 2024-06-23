@@ -14,8 +14,9 @@
 #include "Menu/Menu.hpp"
 #include "Menu/Settings.hpp"
 #include "Data/Map.hpp"
-#include "MessageBox.hpp"
-#include "TimeUnitInput.hpp"
+#include "UI/InfoBox.hpp"
+#include "UI/MessageBox.hpp"
+#include "UI/TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 #include "Skybox.hpp"
@@ -49,6 +50,11 @@ class Display {
     int getTimeUnit() const
     {
         return timeUnitInput.getTimeUnit();
+    }
+
+    bool didChange3D() const
+    {
+        return Last3D != m_settings.is3D();
     }
 
     void addMessage(std::string message, int user = SERVER)
@@ -85,12 +91,13 @@ class Display {
     Data::Map map;
 
     bool endGame;
+    bool Last3D;
     std::vector<std::string> endGameMessage;
 
     Raylib::RecWin m_newWindow;
-    MessageBox messageBox;
-    InfoBox infoBox;
-    TimeUnitInput timeUnitInput;
+    UI::MessageBox messageBox;
+    UI::InfoBox infoBox;
+    UI::TimeUnitInput timeUnitInput;
     Skybox skybox;
 
     Camera3D m_cam;

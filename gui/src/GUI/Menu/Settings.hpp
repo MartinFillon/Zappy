@@ -8,20 +8,20 @@
 #pragma once
 
 #include "CheckBox.hpp"
-#include "window.hpp"
+#include "AMenu.hpp"
 
 namespace GUI {
 
-class Settings {
+class Settings : public AMenu {
   public:
     Settings(Raylib::RecWin &m_newWindow, bool &debug, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
-    bool is3D();
-    bool isCameraFree();
-    bool showCursor();
+    void display();
+    bool is3D() const;
+    bool isCameraFree() const;
+    bool showCursor() const;
     void switchIs3D();
     void switchIsCameraFree();
     void switchShowCursor();
-    void display();
 
   private:
     std::vector<CheckBox> m_button;

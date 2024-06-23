@@ -5,10 +5,11 @@
 ** InfoBox
 */
 
+#include "../Raylib.hpp"
 #include "InfoBox.hpp"
-#include "Raylib.hpp"
 
 namespace GUI {
+namespace UI {
 
 InfoBox::InfoBox(): m_posTile({0.0f, 0.0f, 0.0f}), m_size(0.0f), m_lineHeight(20)
 {
@@ -65,7 +66,7 @@ std::shared_ptr<Data::ISelectItem> InfoBox::getItem() const
     return m_item;
 }
 
-void InfoBox::display(int x, int y, int width, int height) const
+void InfoBox::display() const
 {
     if (m_isPrint && m_item != nullptr) {
         Raylib::drawRectangle(x, y, width, height, (Color){0, 0, 0, 200});
@@ -85,4 +86,5 @@ void InfoBox::display(int x, int y, int width, int height) const
     }
 }
 
+} // namespace UI
 } // namespace GUI

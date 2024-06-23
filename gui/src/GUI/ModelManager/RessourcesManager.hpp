@@ -15,30 +15,30 @@
 #include "raymath.h"
 #include "../Data/Player.hpp"
 
-#define L0 "gui/assets/food/L_food.glb"
-#define L1 "gui/assets/rocks/L_rocks_01.glb"
-#define L2 "gui/assets/rocks/L_rocks_02.glb"
-#define L3 "gui/assets/rocks/L_rocks_03.glb"
-#define L4 "gui/assets/rocks/L_rocks_04.glb"
-#define L5 "gui/assets/rocks/L_rocks_05.glb"
-#define L6 "gui/assets/rocks/L_rocks_06.glb"
-#define M0 "gui/assets/food/M_food.glb"
-#define M1 "gui/assets/rocks/M_rocks_01.glb"
-#define M2 "gui/assets/rocks/M_rocks_02.glb"
-#define M3 "gui/assets/rocks/M_rocks_03.glb"
-#define M4 "gui/assets/rocks/M_rocks_04.glb"
-#define M5 "gui/assets/rocks/M_rocks_05.glb"
-#define M6 "gui/assets/rocks/M_rocks_06.glb"
-#define S0 "gui/assets/food/S_food.glb"
-#define S1 "gui/assets/rocks/S_rocks_01.glb"
-#define S2 "gui/assets/rocks/S_rocks_02.glb"
-#define S3 "gui/assets/rocks/S_rocks_03.glb"
-#define S4 "gui/assets/rocks/S_rocks_04.glb"
-#define S5 "gui/assets/rocks/S_rocks_05.glb"
-#define S6 "gui/assets/rocks/S_rocks_06.glb"
-#define GRASS "gui/assets/grass.glb"
-#define EGG "gui/assets/egg.glb"
-#define PLAYER "gui/assets/player.glb"
+constexpr char L0[] = "gui/assets/food/L_food.glb";
+constexpr char L1[] = "gui/assets/rocks/L_rocks_01.glb";
+constexpr char L2[] = "gui/assets/rocks/L_rocks_02.glb";
+constexpr char L3[] = "gui/assets/rocks/L_rocks_03.glb";
+constexpr char L4[] = "gui/assets/rocks/L_rocks_04.glb";
+constexpr char L5[] = "gui/assets/rocks/L_rocks_05.glb";
+constexpr char L6[] = "gui/assets/rocks/L_rocks_06.glb";
+constexpr char M0[] = "gui/assets/food/M_food.glb";
+constexpr char M1[] = "gui/assets/rocks/M_rocks_01.glb";
+constexpr char M2[] = "gui/assets/rocks/M_rocks_02.glb";
+constexpr char M3[] = "gui/assets/rocks/M_rocks_03.glb";
+constexpr char M4[] = "gui/assets/rocks/M_rocks_04.glb";
+constexpr char M5[] = "gui/assets/rocks/M_rocks_05.glb";
+constexpr char M6[] = "gui/assets/rocks/M_rocks_06.glb";
+constexpr char S0[] = "gui/assets/food/S_food.glb";
+constexpr char S1[] = "gui/assets/rocks/S_rocks_01.glb";
+constexpr char S2[] = "gui/assets/rocks/S_rocks_02.glb";
+constexpr char S3[] = "gui/assets/rocks/S_rocks_03.glb";
+constexpr char S4[] = "gui/assets/rocks/S_rocks_04.glb";
+constexpr char S5[] = "gui/assets/rocks/S_rocks_05.glb";
+constexpr char S6[] = "gui/assets/rocks/S_rocks_06.glb";
+constexpr char GRASS[] = "gui/assets/grass.glb";
+constexpr char EGG[] = "gui/assets/egg.glb";
+constexpr char PLAYER[] = "gui/assets/player.glb";
 
 class RessourcesManager {
   public:
@@ -105,7 +105,7 @@ class RessourcesManager {
     void DrawPlayer(Vector3 pos, GUI::Data::Player::Direction orientation)
     {
         pos.y += 0.05;
-        _map[{0, 9}].Draw(pos, {0.15,0.15,0.15}, {0, 1, 0}, (-1 + static_cast<int>(orientation)) * 90, WHITE);
+        _map[{0, 9}].Draw(pos, {0.15,0.15,0.15}, {0, 1, 0}, (-1 + static_cast<int>(orientation)) * -90, WHITE);
     }
 
     void Draw(int size, int type, float x, float z, float tileSize = 1.f)
