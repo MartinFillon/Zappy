@@ -11,14 +11,14 @@
 namespace GUI {
 
 Settings::Settings(Raylib::RecWin &newWindow, bool &debug, bool is3D, bool isCameraFree, bool showCursor):
-    m_newWindow(newWindow), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor), m_debug(debug),
-    m_iselected_but(0), modeKey(false)
+    AMenu(), m_newWindow(newWindow), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor), m_debug(debug)
 {
     m_button.push_back(CheckBox("3D", m_is3D));
     m_button.push_back(CheckBox("CameraFree", m_isCameraFree));
     m_button.push_back(CheckBox("ShowCursor", m_showCursor));
     m_button.push_back(CheckBox("Debug", m_debug));
-    m_iselected_but = m_button.size() - 1;
+    nb_but = m_button.size();
+    m_iselected_but = nb_but - 1;
 }
 
 void Settings::display()
@@ -47,22 +47,6 @@ void Settings::display()
         }
         but.draw(rec, fontSize / 4.0f);
         rec.y += rec.size + SpacingSetButY;
-    }
-}
-
-void Settings::eventhandler()
-{
-    Vector2 cursorMove = GetMouseDelta();
-    if (modeKey && (cursorMove.x > 0.001f || cursorMove.y > 0.001f )) {
-        modeKey = false;
-    }
-    if (Raylib::isKeyPressed(KEY_UP)) {
-        m_iselected_but = (m_iselected_but == 0) ? m_button.size() - 1 : m_iselected_but - 1;
-        modeKey = true;
-    }
-    if (Raylib::isKeyPressed(KEY_DOWN)) {
-        m_iselected_but = ((m_iselected_but + 1) % m_button.size());
-        modeKey = true;
     }
 }
 
