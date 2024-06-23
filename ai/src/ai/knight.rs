@@ -9,9 +9,8 @@ use crate::{
     ai::{fork_ai, AIHandler, Incantationers, Listeners, AI},
     commands::{
         broadcast::broadcast,
-        drop_object::drop_object,
         fork::fork,
-        incantation::{self, handle_incantation, incantation},
+        incantation::{self, handle_incantation},
         inventory::inventory,
         look_around::look_around,
         take_object::take_object,
@@ -35,7 +34,7 @@ use log::{debug, error, info, warn};
 use zappy_macros::Bean;
 
 const FETUS_NEED: usize = 2;
-const MIN_FOOD_ON_FLOOR: usize = 200;
+const MIN_FOOD_ON_FLOOR: usize = 500;
 
 #[derive(Debug, Clone, Bean)]
 pub struct Knight {
@@ -64,39 +63,8 @@ impl AIHandler for Knight {
                 }
             }
             self.handle_message().await?;
-            {
-                let mut client = self.info().client().lock().await;
-                self.check_enough_food(&mut client, 20).await?;
-            }
-
-            if self.can_incantate().await {
-                {
-                    let mut client = self.info().client().lock().await;
-                    println!(
-                        "[{}] Knight {} incantating...",
-                        self.info.cli_id, self.info.p_id
-                    );
-                    let incant_res = incantation(&mut client).await;
-                    if let Err(err) = incant_res {
-                        error!(
-                            "-[{}] Knight {} incantation error: {}",
-                            self.info.cli_id, self.info.p_id, err
-                        );
-                        return Err(err);
-                    }
-                    if let Ok(ResponseResult::Incantation(lvl)) =
-                        self.knight_checkout_response(&mut client, incant_res).await
-                    {
-                        let mut level = self.level_ref.lock().await;
-                        *level = lvl;
-                        println!(
-                            "[{}] Knight {} done. Now level {}",
-                            self.info.cli_id, self.info.p_id, *level
-                        );
-                    }
-                }
-                continue;
-            }
+            let mut client = self.info().client().lock().await;
+            self.check_enough_food(&mut client, 20).await?;
         }
     }
 }
@@ -143,23 +111,6 @@ impl Listeners for Knight {
 impl Knight {
     fn new(info: AI, level_ref: Arc<Mutex<usize>>) -> Self {
         Self { info, level_ref }
-    }
-
-    async fn die(&mut self, id: usize) {
-        let mut client_lock = self.info.client.lock().await;
-        let mut total = 0;
-
-        loop {
-            let command = drop_object(&mut client_lock, "food").await;
-            if let Ok(ResponseResult::OK) = command {
-                total += 1;
-            }
-            if command.is_err() {
-                info!("-[{}] Knight dropped x{} food", self.info.cli_id, total);
-                info!("-[{}] AI : Knight has killed himself.", id);
-                break;
-            }
-        }
     }
 
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
@@ -277,38 +228,6 @@ impl Knight {
             }
         }
         Ok(ResponseResult::OK)
-    }
-
-    async fn can_incantate(&mut self) -> bool {
-        if self.info().level == 1 {
-            return false;
-        }
-        let mut client = self.info().client().lock().await;
-        let res = look_around(&mut client).await;
-        debug!(
-            "-[{}] Knight {} Look returned: {:?}",
-            self.info.cli_id, self.info.p_id, res
-        );
-        if res.is_err() {
-            return false;
-        }
-        if let Ok(ResponseResult::Tiles(tiles)) =
-            self.knight_checkout_response(&mut client, res).await
-        {
-            if !tiles.is_empty()
-                && tiles[0]
-                    .iter()
-                    .filter(|item| item.as_str() == "food")
-                    .count()
-                    < (MIN_FOOD_ON_FLOOR / 4)
-            {
-                return false;
-            }
-            if !tiles.is_empty() && tiles[0].iter().any(|item| item.as_str() == "linemate") {
-                return true;
-            }
-        }
-        false
     }
 
     async fn knight_checkout_response(
