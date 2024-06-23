@@ -7,15 +7,16 @@
 
 #include "Menu.hpp"
 
-
 namespace GUI {
 
 Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow):
-    networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false)
+    AMenu(), networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false)
 {
     m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}));
     m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}));
     m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}));
+    nb_but = m_button.size();
+    m_iselected_but = nb_but - 1;
 }
 
 void Menu::display()
@@ -36,7 +37,15 @@ void Menu::display()
         fontSize, PURPLE);
     for (size_t i = 0; i < m_button.size(); i++) {
         Button<Rectangle, bool> &but = m_button.at(i);
-        but.checkButtonAction(rec);
+
+        if (!modeKey && but.checkRecAction(rec))
+            m_iselected_but = i;
+        if (modeKey) {
+            if (m_iselected_but == i)
+                but.checkAction();
+            else
+                but.toDefault();
+        }
         but.draw(rec, fontSize * MulButFontSize);
         rec.y += rec.height;
     }

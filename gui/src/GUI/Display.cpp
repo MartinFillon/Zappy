@@ -73,6 +73,12 @@ void Display::handleEvent()
         else
             map.checkCollision(infoBox);
     }
+    if (!m_menu.getInGame()) {
+        if (!m_menu.getInSettings())
+            m_menu.eventhandler();
+        else
+            m_settings.eventhandler();
+    }
     messageBox.handleInput();
     timeUnitInput.handleEvent();
     if (didChange3D()) {

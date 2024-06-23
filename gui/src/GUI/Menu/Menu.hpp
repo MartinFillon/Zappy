@@ -10,10 +10,11 @@
 #include "Button.hpp"
 #include "../../Network/Handler.hpp"
 #include "window.hpp"
+#include "AMenu.hpp"
 
 namespace GUI {
 
-class Menu {
+class Menu : public AMenu {
   public:
     Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow);
     void display();
