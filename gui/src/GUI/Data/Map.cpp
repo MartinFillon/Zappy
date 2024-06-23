@@ -13,6 +13,7 @@
 #include "../Raylib.hpp"
 #include "Inventory.hpp"
 #include "../UI/InfoBox.hpp"
+#include "../../Network/Handler.hpp"
 
 namespace GUI {
 namespace Data {
@@ -110,7 +111,7 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(UI::InfoBox &infoBox) const
+void Map::collision(UI::InfoBox &infoBox, Network::Handler &handler) const
 {
     int mapWidth = end_x - x;
     int mapHeight = end_y - y;
@@ -127,6 +128,8 @@ void Map::checkCollision(UI::InfoBox &infoBox) const
                 item = player;
                 infoBox.setPosTile(0.25, 0.25, 0.25);
                 infoBox.setSize(0.5);
+                handler.requestPlayerInventory(player->getId());
+                handler.requestPlayerLevel(player->getId());
             }
             return;
         }
@@ -142,12 +145,13 @@ void Map::checkCollision(UI::InfoBox &infoBox) const
                 item = tile;
                 infoBox.setPosTile(0, 0, 0);
                 infoBox.setSize(1);
+                handler.requestTileContent(tile->getPos().x(), tile->getPos().y());
             }
         }
     }
 }
 
-void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
+void Map::collision3D(UI::InfoBox &infoBox, const Camera3D &cam, Network::Handler &handler) const
 {
     float tileSize = 1.0f;
     Ray ray = Raylib::GetMouseRay(cam);
@@ -166,6 +170,8 @@ void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
             tmpInfo.setItem(player);
             tmpInfo.setPosTile(0.0f, 0.67f, 0.0f);
             tmpInfo.setSize(0.4f);
+            handler.requestPlayerInventory(player->getId());
+            handler.requestPlayerLevel(player->getId());
         }
     }
     for (auto tile : m_map) {
@@ -177,6 +183,7 @@ void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
             tmpInfo.setItem(tile);
             tmpInfo.setPosTile(0.0f, 0.0f, 0.0f);
             tmpInfo.setSize(1.0f);
+            handler.requestTileContent(tile->getPos().x(), tile->getPos().y());
         }
     }
     auto &tmpItem = tmpInfo.getItem();
@@ -191,7 +198,7 @@ void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
     }
 }
 
-void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const
+void Map::display2D(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const
 {
     this->x = start_x;
     this->y = start_y;
@@ -245,7 +252,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const UI::InfoBox &info) const
+void Map::display3D(const UI::InfoBox &info) const
 {
     float tileSize = 1.0f;
 

@@ -69,9 +69,9 @@ void Display::handleEvent()
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         if (m_settings.is3D())
-            map.checkCollision3D(infoBox, m_cam);
+            map.collision3D(infoBox, m_cam, networkHandler);
         else
-            map.checkCollision(infoBox);
+            map.collision(infoBox, networkHandler);
     }
     if (!m_menu.getInGame()) {
         if (!m_menu.getInSettings())
@@ -111,12 +111,12 @@ void Display::displayGame()
         }
         Raylib::beginMode3D(m_cam);
         skybox.Draw();
-        map.displayTacticalView3D(infoBox);
+        map.display3D(infoBox);
         Raylib::endMode3D();
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
-        map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
+        map.display2D(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
     }
     infoBox.display();
     messageBox.display();
