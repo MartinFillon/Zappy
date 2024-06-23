@@ -60,11 +60,19 @@ pub struct Queen {
 
 #[async_trait]
 impl AIHandler for Queen {
+    ///
+    /// Initializes the [`Queen`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("[{}] Queen has arrived. (default)", info.cli_id);
         Self::new(info)
     }
 
+    ///
+    /// [`Queen`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         self.start_queen().await?;
         self.join_queens().await?;
@@ -135,8 +143,9 @@ impl Listeners for Queen {
 
 impl Queen {
     ///
-    /// Meant to initialize the connected Queen, if there is no more room for players, new Queens are forked.
-    /// If there is too many room for players, Queen just dies to get rid of leftover eggs.
+    /// Meant to initialize the connected [`Queen`], if there is no more room for players, new [`Queen`]s are forked.
+    ///
+    /// If there is too many room for players, [`Queen`] just dies to get rid of leftover eggs.
     ///
     async fn start_queen(&mut self) -> Result<(), CommandError> {
         {
@@ -171,9 +180,9 @@ impl Queen {
     }
 
     ///
-    /// All Queens move towards first Queen logged in (p_id 0).
+    /// All [`Queen`]s move towards first Queen logged in (p_id 0).
     ///
-    /// First Queen logged in just broadcasts.
+    /// First [`Queen`] logged in just broadcasts.
     ///
     async fn join_queens(&mut self) -> Result<(), CommandError> {
         if self.info.p_id == 0 {
@@ -197,7 +206,9 @@ impl Queen {
         Ok(())
     }
 
+    ///
     /// Checks for an "eject" of "Elevation underway" response
+    ///
     async fn queen_checkout_response(
         &self,
         client: &mut TcpClient,
@@ -210,7 +221,11 @@ impl Queen {
         }
     }
 
-    /// Creates a new [`Queen`].
+    ///
+    /// Creates a new [`Queen`] instance with the given `info`
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn new(info: AI) -> Self {
         Self {
             info,
@@ -228,6 +243,7 @@ impl Queen {
     /// Spawns a new [`Queen`] from `id` to `id + 1`.
     ///
     /// * `id` - the id that is spawning the `Queen`, furthermore, this will give the new queen the `cli_id` and `p_id` of `id + 1`
+    ///
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
         let info_clone = info.clone();
 
@@ -252,6 +268,7 @@ impl Queen {
     /// Connects a new [`Bot`] client from `id`.
     ///
     /// * `id` - the id that is spawning the `Bot`, furthermore, this will give the new bot the preceeding `cli_id` and `p_id` of `0`
+    ///
     async fn connect_leftovers(info: AI) -> Result<(), CommandError> {
         let mut client = info.client().lock().await;
         while let Some(response) = client.get_response().await {
@@ -267,7 +284,7 @@ impl Queen {
     }
 
     ///
-    /// Launches Queen's incantation process to level up
+    /// Launches [`Queen`]'s incantation process to level up
     ///
     async fn incantate(&mut self) -> Result<(), CommandError> {
         let mut level = self.info().level;
@@ -304,7 +321,7 @@ impl Queen {
     }
 
     ///
-    /// Checks if Queen has enough food compared to `min`
+    /// Checks if [`Queen`] has enough food compared to `min`
     ///
     /// If the amount held is lower than `min`, she picks up food
     ///
@@ -336,6 +353,9 @@ impl Queen {
         Ok(())
     }
 
+    ///
+    /// Forks [`Bot`] to help the [`Queen`] level up
+    ///
     async fn fork_servants(&mut self) -> Result<(), CommandError> {
         let mut cli = self.info.client.lock().await;
 
@@ -377,7 +397,7 @@ impl Queen {
     }
 
     ///
-    /// Checks if Queen can level up based on `self.look` and `self.inv` infos
+    /// Checks if [`Queen`] can level up based on `self.look` and `self.inv` infos
     ///
     fn check_requirement(&self) -> bool {
         let idx = if self.info.level == 8 {
@@ -407,7 +427,7 @@ impl Queen {
     }
 
     ///
-    /// Transform Look info to exploit them later
+    /// Transform `Look` info to exploit them later
     ///
     async fn get_look_infos(&mut self) -> Result<(), CommandError> {
         let res = {
@@ -460,7 +480,7 @@ impl Queen {
     }
 
     ///
-    /// Transform Inventory info to exploit them later.
+    /// Transform `Inventory` info to exploit them later.
     ///
     async fn get_inv_infos(&mut self) -> Result<(), CommandError> {
         let res = {
@@ -507,6 +527,9 @@ impl Queen {
         Ok(())
     }
 
+    ///
+    /// Creates a new [`Bot`] to help the [`Queen`] level up
+    ///
     async fn create_bot(&self, client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
         let res = fork(client).await?;
         if let Ok(ResponseResult::OK) = self.queen_checkout_response(client, Ok(res)).await {

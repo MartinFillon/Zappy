@@ -44,11 +44,19 @@ pub struct Knight {
 
 #[async_trait]
 impl AIHandler for Knight {
+    ///
+    /// Initializes the [`Knight`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] Knight has been created.", info.cli_id);
         Self::new(info, Arc::new(Mutex::new(1)))
     }
 
+    ///
+    /// [`Knight`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
             "-[{}] Knight [Queen {}] is being handled...",
@@ -112,10 +120,16 @@ impl Listeners for Knight {
 }
 
 impl Knight {
+    ///
+    /// [`Knight`] initialize the struct with `AI` struct
+    ///
     fn new(info: AI, level_ref: Arc<Mutex<usize>>) -> Self {
         Self { info, level_ref }
     }
 
+    ///
+    /// [`Knight`] Spawns a new [`Fetus`] if there is not enough food on the floor
+    ///
     async fn check_food(&self, client: &mut TcpClient, min: usize) -> Result<(), CommandError> {
         let res = look_around(client).await?;
         if let ResponseResult::Tiles(tiles) = self.knight_checkout_response(client, Ok(res)).await?
@@ -158,6 +172,9 @@ impl Knight {
         Ok(())
     }
 
+    ///
+    /// [`Knight`] checks if there is enough food on the floor
+    ///
     async fn check_enough_food(
         &self,
         client: &mut TcpClient,
@@ -180,6 +197,9 @@ impl Knight {
         Ok(())
     }
 
+    ///
+    /// [`Knight`] handles the messages received from the server
+    ///
     async fn analyse_messages(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
 
@@ -236,6 +256,9 @@ impl Knight {
         Ok(ResponseResult::OK)
     }
 
+    ///
+    /// [`Knight`] checks the response from the server to sort
+    ///
     async fn knight_checkout_response(
         &self,
         client: &mut TcpClient,
@@ -258,8 +281,8 @@ impl Display for Knight {
 #[cfg(test)]
 mod knight_test {
     use super::*;
-    use tokio::sync::Mutex;
     use std::sync::Arc;
+    use tokio::sync::Mutex;
 
     fn setup_client() -> TcpClient {
         TcpClient::new("127.0.0.1", "Team".to_string(), 1)

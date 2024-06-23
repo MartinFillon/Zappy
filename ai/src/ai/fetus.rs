@@ -24,6 +24,11 @@ pub struct Fetus {
 }
 
 impl Fetus {
+    ///
+    /// [`Fetus`] initialize the struct with `AI` struct
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn new(info: AI) -> Self {
         Self { info }
     }
@@ -31,11 +36,19 @@ impl Fetus {
 
 #[async_trait]
 impl AIHandler for Fetus {
+    ///
+    /// Initializes the [`Fetus`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] Fetus spawned.", info.cli_id);
         Self::new(info)
     }
 
+    ///
+    /// [`Fetus`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         let mut client_lock = self.info.client.lock().await;
         let mut total = 0;

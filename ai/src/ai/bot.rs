@@ -46,11 +46,19 @@ pub struct Bot {
 
 #[async_trait]
 impl AIHandler for Bot {
+    ///
+    /// Initializes the [`Bot`]
+    ///
+    /// * `info` - `AI` structure that represents the basic info of an AI client
+    ///
     fn init(info: AI) -> Self {
         println!("-[{}] BOT here.", info.cli_id);
         Self::new(info)
     }
 
+    ///
+    /// [`Bot`]'s main loop
+    ///
     async fn update(&mut self) -> Result<(), CommandError> {
         info!(
             "-[{}] Bot [Queen {}] is now being handled...",
@@ -78,11 +86,21 @@ impl AIHandler for Bot {
     }
 }
 
+///
+/// Returns the number of players on a tile
+///
+/// * `tile` - A vector of strings representing the tile
+///
 fn player_count_on_tile(tile: &[String]) -> usize {
     tile.iter().filter(|obj| obj.as_str() == "player").count()
 }
 
 impl Bot {
+    ///
+    /// Creates a new `Bot` instance with the provided `info`
+    ///
+    /// * `info` - An `AI` struct that represents the basic info of an AI client.
+    ///
     fn new(info: AI) -> Self {
         Self {
             info,
@@ -93,6 +111,11 @@ impl Bot {
 }
 
 impl Bot {
+    ///
+    /// Updates the bot's coordinates to the provided `coords`
+    ///
+    /// * `coords` - A tuple of two integers representing the offset of coordinate.
+    ///
     pub fn update_coord_movement(&mut self, d: (i32, i32)) {
         let (x, y) = (self.coord().0 + d.0, self.coord().1 + d.1);
         let (width, height) = (self.info().map().0 / 2, self.info().map().1 / 2);
@@ -111,6 +134,11 @@ impl Bot {
         self.backtrack_infos.push(d);
     }
 
+    ///
+    /// Updates the bot's coordinates based on the provided `direction`
+    ///
+    /// * `direction` - ejection received
+    ///
     fn update_eject_coord(&mut self, direction: DirectionEject) {
         debug!("Updating movement from Direction: {}...", direction);
         match direction {
@@ -121,6 +149,9 @@ impl Bot {
         }
     }
 
+    ///
+    /// Searches for objects on the tile and takes them if possible
+    ///
     pub async fn seek_objects(&mut self) -> Result<(), CommandError> {
         let mut client = self.info().client().lock().await;
         if let Ok(ResponseResult::Tiles(tiles)) = look_around(&mut client).await {
@@ -139,6 +170,9 @@ impl Bot {
         Ok(())
     }
 
+    ///
+    /// Drops items on the tile for [`Queen`]
+    ///
     pub async fn drop_items(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         if let Ok(ResponseResult::Inventory(inv)) = inventory(&mut client).await {
@@ -156,6 +190,8 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
+    ///
+    /// Turns the bot to `180`
     async fn turn_around(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         turn(&mut client, DirectionTurn::Right).await?;
@@ -163,6 +199,9 @@ impl Bot {
         Ok(ResponseResult::OK)
     }
 
+    ///
+    /// Moves back from the backtracked coordinates stored in the [`Bot`] instance
+    ///
     pub async fn backtrack(&mut self) -> Result<ResponseResult, CommandError> {
         info!(
             "-[{}] Bot [Queen {}]: backtracking...",
@@ -222,6 +261,12 @@ async fn handle_queen_message(
     Ok(ResponseResult::OK)
 }
 
+///
+/// Wraps the provided `coord` based on the `max` value
+///
+/// * `coord` - The coordinate to wrap
+/// * `max` - The maximum value of the coordinate
+///
 pub fn wrap_coordinate(coord: i32, max: i32) -> i32 {
     let mut wrapped = (coord % max + max) % max;
     if coord > max {
