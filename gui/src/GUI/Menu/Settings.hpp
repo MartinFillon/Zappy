@@ -9,14 +9,14 @@
 
 #include "CheckBox.hpp"
 #include "window.hpp"
+#include "AMenu.hpp"
 
 namespace GUI {
 
-class Settings {
+class Settings : public AMenu {
   public:
     Settings(Raylib::RecWin &m_newWindow, bool &debug, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
     void display();
-    void eventhandler();
 
     bool is3D();
     bool isCameraFree();
@@ -33,9 +33,6 @@ class Settings {
     bool m_isCameraFree;
     bool m_showCursor;
     bool &m_debug;
-
-    size_t m_iselected_but;
-    bool modeKey;
    };
 
 } // namespace GUI

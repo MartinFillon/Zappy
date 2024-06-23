@@ -10,13 +10,13 @@
 namespace GUI {
 
 Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow):
-    networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false),
-    m_iselected_but(0), modeKey(false)
+    AMenu(), networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false)
 {
     m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}));
     m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}));
     m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}));
-    m_iselected_but = m_button.size() - 1;
+    nb_but = m_button.size();
+    m_iselected_but = nb_but - 1;
 }
 
 void Menu::display()
@@ -51,22 +51,6 @@ void Menu::display()
     }
     if (inGame != m_inGame) {
         networkHandler.start();
-    }
-}
-
-void Menu::eventhandler()
-{
-    Vector2 cursorMove = GetMouseDelta();
-    if (modeKey && (cursorMove.x > 0.001f || cursorMove.y > 0.001f )) {
-        modeKey = false;
-    }
-    if (Raylib::isKeyPressed(KEY_UP)) {
-        m_iselected_but = (m_iselected_but == 0) ? m_button.size() - 1 : m_iselected_but - 1;
-        modeKey = true;
-    }
-    if (Raylib::isKeyPressed(KEY_DOWN)) {
-        m_iselected_but = ((m_iselected_but + 1) % m_button.size());
-        modeKey = true;
     }
 }
 
