@@ -32,8 +32,6 @@ pub fn read_look_output(raw: String) -> Vec<Vec<String>> {
             acc
         },
     );
-
-    debug!("Tiles: {:?}", tiles);
     tiles
 }
 

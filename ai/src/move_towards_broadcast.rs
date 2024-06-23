@@ -102,7 +102,7 @@ async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
 }
 
 pub async fn backtrack_eject(client: &mut TcpClient, dir: DirectionEject) -> bool {
-    info!("Backtracking back from ejection {}...", dir);
+    warn!("Backtracking back from ejection {}...", dir);
     let (mut x, y) = get_eject_coordinates(&dir);
     if y < 0 {
         x = -x;

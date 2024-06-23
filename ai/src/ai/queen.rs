@@ -82,10 +82,6 @@ impl AIHandler for Queen {
             self.check_enough_food(30).await?;
 
             if self.check_requirement() {
-                println!(
-                    "[{}] Queen {} is incantating",
-                    self.info.cli_id, self.info.p_id
-                );
                 self.incantate().await?;
             }
         }
@@ -295,7 +291,7 @@ impl Queen {
                     self.info.cli_id, self.info.p_id, level
                 );
                 if level == 4 || level == 6 {
-                    error!(
+                    info!(
                         "[{}] Queen {} lvl {}",
                         self.info.cli_id, self.info.p_id, level
                     );
@@ -376,7 +372,6 @@ impl Queen {
             format!("{} assign Bot {}", self.info().cli_id, self.info().p_id).as_str(),
         )
         .await?;
-        info!("[{}] Miserable peasants... SERVE ME.\n", self.info.cli_id);
 
         Ok(())
     }
@@ -424,7 +419,7 @@ impl Queen {
             ResponseResult::Incantation(lvl) => {
                 self.info.set_level(*lvl);
                 if self.info.level == 4 || self.info.level == 6 {
-                    error!(
+                    warn!(
                         "[{}] Queen {} lvl {}",
                         self.info.cli_id, self.info.p_id, self.info.level
                     );

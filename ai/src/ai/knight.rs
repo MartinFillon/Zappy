@@ -184,7 +184,7 @@ impl Knight {
         let mut client = self.info().client().lock().await;
 
         while let Some(message) = client.pop_message() {
-            println!(
+            debug!(
                 "-[{}] Knight [Queen {}]: handling message: {}",
                 self.info().cli_id,
                 self.info().p_id,
@@ -198,7 +198,10 @@ impl Knight {
                 let content = msg.split_at(idex);
                 if let Ok(id) = content.0.parse::<usize>() {
                     if id == self.info().p_id && content.1.trim_start() == "mv" {
-                        println!("Knight {} moving towards Queen...", self.info.p_id);
+                        info!(
+                            "-[{}] Knight {} moving towards Queen...",
+                            self.info.cli_id, self.info.p_id
+                        );
                         let res = move_towards_broadcast(&mut client, dir.clone()).await?;
                         self.knight_checkout_response(&mut client, Ok(res)).await?;
                     }
@@ -207,7 +210,7 @@ impl Knight {
                         && self.info().level != 1
                         && dir.clone() == DirectionMessage::Center
                     {
-                        println!(
+                        debug!(
                             "Knight {} received \"inc\" from Queen, waiting for response...",
                             self.info.p_id
                         );
@@ -221,7 +224,7 @@ impl Knight {
                             );
                             return Err(err);
                         }
-                        println!(
+                        debug!(
                             "[{}] Knight {} received \"inc\" from Queen, read response: {:?}",
                             self.info.cli_id, self.info.p_id, res
                         );

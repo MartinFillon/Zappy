@@ -44,7 +44,7 @@ impl AIHandler for Fetus {
                     total += 1;
                 }
                 Err(CommandError::DeadReceived) | Ok(ResponseResult::KO) => {
-                    println!(
+                    info!(
                         "-[{}] AI : Fetus died and dropped x{} food.",
                         self.info.cli_id, total
                     );

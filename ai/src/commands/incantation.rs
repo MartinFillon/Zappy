@@ -68,7 +68,7 @@ pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, Comma
         if res == ResponseResult::KO {
             return wait_for_incantation(client).await;
         }
-        println!("[{}] Incantation result: {:?}", client.id(), res);
+        debug!("[{}] Incantation result: {:?}", client.id(), res);
         response = client
             .check_response()
             .await

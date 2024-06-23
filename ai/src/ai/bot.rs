@@ -47,7 +47,7 @@ pub struct Bot {
 #[async_trait]
 impl AIHandler for Bot {
     fn init(info: AI) -> Self {
-        println!("-[{}] BOT HERE.", info.cli_id);
+        println!("-[{}] BOT here.", info.cli_id);
         Self::new(info)
     }
 
@@ -148,7 +148,7 @@ impl Bot {
                     count -= 1;
                 }
             }
-            println!(
+            info!(
                 "-[{}] Bot {} done dropping items.",
                 self.info.cli_id, self.info.p_id
             );
@@ -181,7 +181,7 @@ impl Bot {
     async fn analyse_messages(&mut self) -> Result<ResponseResult, CommandError> {
         let mut client = self.info().client().lock().await;
         while let Some(message) = client.pop_message() {
-            info!(
+            debug!(
                 "-[{}] Bot [Queen {}]: handling message: {}",
                 self.info().cli_id,
                 self.info().p_id,
