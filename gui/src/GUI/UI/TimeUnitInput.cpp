@@ -6,20 +6,19 @@
 */
 
 #include "TimeUnitInput.hpp"
+#include "../Raylib.hpp"
+
+namespace GUI {
+namespace UI {
 
 TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
     : timeUnit(initialValue), oldTimeUnit(initialValue), timeUnitStr(std::to_string(initialValue)), selected(false),
-      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), x(0), y(0), width(0), height(0),
-      networkHandler(networkHandler)
+      cursorPos(timeUnitStr.length()), cursorBlinkTime(0.0f), cursorVisible(true), networkHandler(networkHandler)
 {
 }
 
-void TimeUnitInput::display(int x, int y, int width, int height) const
+void TimeUnitInput::display() const
 {
-    this->x = x;
-    this->y = y;
-    this->width = width;
-    this->height = height;
     Color boxColor = selected ? DARKGRAY : LIGHTGRAY;
     Raylib::drawText("Tick Duration:", x, y - 30, 20, LIGHTGRAY);
     Raylib::drawRectangle(x, y, width, height, boxColor);
@@ -39,7 +38,9 @@ void TimeUnitInput::handleEvent()
         cursorBlinkTime = 0.0f;
     }
 
-    if (Raylib::checkCollisionMouseRec(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height))) {
+    if (Raylib::checkCollisionMouseRec(
+            static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)
+        )) {
         if (Raylib::isMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             selected = true;
             oldTimeUnit = timeUnit;
@@ -100,3 +101,6 @@ void TimeUnitInput::setTimeUnit(int time)
         timeUnitStr = std::to_string(timeUnit);
     }
 }
+
+} // namespace UI
+} // namespace GUI

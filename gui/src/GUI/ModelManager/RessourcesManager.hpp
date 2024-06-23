@@ -105,7 +105,7 @@ class RessourcesManager {
     void DrawPlayer(Vector3 pos, GUI::Data::Player::Direction orientation)
     {
         pos.y += 0.05;
-        _map[{0, 9}].Draw(pos, {0.15,0.15,0.15}, {0, 1, 0}, (-1 + static_cast<int>(orientation)) * 90, WHITE);
+        _map[{0, 9}].Draw(pos, {0.15,0.15,0.15}, {0, 1, 0}, (-1 + static_cast<int>(orientation)) * -90, WHITE);
     }
 
     void Draw(int size, int type, float x, float z, float tileSize = 1.f)

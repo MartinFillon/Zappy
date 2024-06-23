@@ -11,7 +11,7 @@
 #include <vector>
 #include <raylib.h>
 
-#include "../InfoBox.hpp"
+#include "../UI/InfoBox.hpp"
 #include "Egg.hpp"
 #include "Player.hpp"
 #include "Pos.hpp"
@@ -40,10 +40,10 @@ class Map {
     void resize(int x, int y);
     void resize(const Pos<int, 2> &size);
 
-    void checkCollision(InfoBox &infoBox) const;
-    void checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const;
-    void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const;
-    void displayTacticalView3D(const InfoBox &info) const;
+    void checkCollision(UI::InfoBox &infoBox) const;
+    void checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const;
+    void displayTacticalView(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const;
+    void displayTacticalView3D(const UI::InfoBox &info) const;
 
   private:
     std::vector<std::shared_ptr<Tile>> m_map;

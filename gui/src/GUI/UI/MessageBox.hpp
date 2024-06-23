@@ -10,13 +10,13 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include "UI/UIComponent.hpp"
-
-namespace GUI {
-namespace UI {
+#include "UIComponent.hpp"
 
 constexpr int SCROLL_WIDTH = 20;
 constexpr int MAX_LINES = 100;
+
+namespace GUI {
+namespace UI {
 
 class MessageBox : public UIComponent {
   public:

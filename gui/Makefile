@@ -34,14 +34,16 @@ SRC = $(BASE_SRC) 							\
 				$(addprefix ModelManager/,	\
 					Model3D					\
 				)							\
+				$(addprefix UI/,			\
+					MessageBox				\
+					InfoBox					\
+					TimeUnitInput			\
+				)							\
 				Raylib						\
 				Display						\
 				ServerMessageHandler		\
-				MessageBox					\
-				InfoBox						\
 				MusicGame						\
 				Skybox						\
-				TimeUnitInput				\
 			)								\
 		)									\
 	)

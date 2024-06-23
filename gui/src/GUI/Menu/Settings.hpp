@@ -17,10 +17,9 @@ class Settings : public AMenu {
   public:
     Settings(Raylib::RecWin &m_newWindow, MusicGame &music, bool &debug, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
     void display();
-
-    bool is3D();
-    bool isCameraFree();
-    bool showCursor();
+    bool is3D() const;
+    bool isCameraFree() const;
+    bool showCursor() const;
     void switchIs3D();
     void switchIsCameraFree();
     void switchShowCursor();

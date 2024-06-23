@@ -1,11 +1,7 @@
 # ZAPPY
 Zappy a epitech project
 
-[![Rust Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml)
-
-[![GUI Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml)
-
-[![Server Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml)
+[![Rust Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml)[![GUI Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml)[![Server Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml)
 
 ## Compiling the project
 
@@ -56,6 +52,17 @@ It is advised to run `zappy_server` first
 - `nameX`	    is the name of the team X
 - `clientsNb`	is the number of authorized clients per team
 - `freq`	    is the reciprocal of time unit for execution of actions
+
+It can also be runned using docker, by either building the image yourself or using the docker compose.
+
+If you want to configure the server using the docker compose you have access to multiple env vars:
+
+- `ZAPPY_LOG_LEVEL`     for the log level       `-l`
+- `ZAPPY_TEAM_NAMES`    for the team names      `-n`
+- `ZAPPY_CLIENT_NUMBER` for the client count    `-c`
+- `ZAPPY_FREQUENCY`     for the frequency       `-f`
+- `ZAPPY_WIDTH`         for the width           `-x`
+- `ZAPPY_HEIGHT`        for the height          `-y`
 
 ## AI
 
