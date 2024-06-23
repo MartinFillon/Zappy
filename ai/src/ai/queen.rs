@@ -14,7 +14,7 @@ use crate::{
         inventory::inventory,
         look_around::look_around,
         take_object::take_object,
-        turn::{DirectionTurn, turn}
+        turn::{turn, DirectionTurn},
     },
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
