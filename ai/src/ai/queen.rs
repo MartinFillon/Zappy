@@ -103,8 +103,8 @@ impl AIHandler for Queen {
                 self.info.cli_id, self.info.p_id
             );
             loop {
-                if let ResponseResult::Message((dir, _)) = client.get_broadcast().await? {
-                    if dir == DirectionMessage::Center {
+                if let ResponseResult::Message((dir, msg)) = client.get_broadcast().await? {
+                    if dir == DirectionMessage::Center && msg.contains("0") {
                         break;
                     }
                     move_towards_broadcast(&mut client, dir.clone()).await?;
@@ -367,6 +367,7 @@ impl Queen {
             if let Ok(ResponseResult::Incantation(lvl)) =
                 self.queen_checkout_response(&mut cli, Ok(incant_res)).await
             {
+                println!("Queen {} Incantation -> {}", self.info.p_id, lvl);
                 level = lvl;
                 println!(
                     "[{}] Queen {} done. Now level {}",
@@ -385,9 +386,9 @@ impl Queen {
                 }
             }
         }
-        if level != self.info.level {
-            self.create_bot().await?;
-        }
+        // if level != self.info.level {
+        //     self.create_bot().await?;
+        // }
         self.info.set_level(level);
         Ok(())
     }

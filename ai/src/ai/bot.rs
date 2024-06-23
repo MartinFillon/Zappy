@@ -88,7 +88,11 @@ impl AIHandler for Bot {
                     if player_count_on_tile(&tiles[0]) < COLONY_PLAYER_COUNT
                         && tiles[0].last().unwrap_or(&String::from("player")) != "player"
                     {
-                        take_object(&mut client, tiles[0].last().unwrap().as_str()).await?;
+                        if tiles[0].contains(&"sibur".to_owned()) {
+                            take_object(&mut client, "sibur").await?;
+                        } else {
+                            take_object(&mut client, tiles[0].last().unwrap().as_str()).await?;
+                        }
                     }
                 }
             }

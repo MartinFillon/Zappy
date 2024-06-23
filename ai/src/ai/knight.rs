@@ -280,7 +280,7 @@ impl Knight {
     }
 
     async fn can_incantate(&mut self) -> bool {
-        if self.info().level != 1 {
+        if self.info().level == 1 {
             return false;
         }
         let mut client = self.info().client().lock().await;
