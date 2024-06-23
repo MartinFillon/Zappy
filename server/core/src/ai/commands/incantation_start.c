@@ -67,7 +67,7 @@ static void start_ais_elevation(struct client_list *clis, client_t *cli)
     size_t n = 0;
 
     for (size_t i = 0; n < incant_req[idx].nb_player - 1 && i < clis->size;
-         i++) {
+        i++) {
         oth = clis->data[i];
         if (oth->type != AI || oth->ai->id == cli->ai->id)
             continue;
