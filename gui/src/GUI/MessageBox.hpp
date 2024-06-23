@@ -8,9 +8,11 @@
 #pragma once
 
 #include <chrono>
-#include "Raylib.hpp"
 #include <string>
 #include <vector>
+
+constexpr int SCROLL_WIDTH = 20;
+constexpr int MAX_LINES = 100;
 
 class MessageBox {
   public:
@@ -36,6 +38,7 @@ class MessageBox {
     int m_lineHeight;
     int m_totalLines;
     int m_maxLines;
+    std::vector<std::vector<std::string>> m_wrappedMessages;
     std::vector<FormattedMessage> m_formattedMessages;
     std::vector<std::string> m_team;
     mutable int x, y, width, height;

@@ -18,17 +18,26 @@ class CheckBox : public AButton<Raylib::Square, bool>
     CheckBox(const std::string &name, bool &val):
       AButton<Raylib::Square, bool>(name, val, [](bool &val){val = !val;}) {}
 
-    void checkButtonAction(Raylib::Square &sqr) override {
+    void toDefault(void) override {
+        this->m_state = DEFAULT;
+    }
+
+    void checkAction(void) override {
+        if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER))
+            this->m_state = PRESSED;
+        else
+            this->m_state = HOVER;
+        if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsKeyReleased(KEY_ENTER))
+            this->m_funct(this->m_val);
+    }
+
+    bool checkRecAction(Raylib::Square &sqr) override {
         if (Raylib::checkCollisionMouseSquare(sqr)) {
-            if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT))
-                this->m_state = PRESSED;
-            else
-                this->m_state = HOVER;
-            if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT))
-                this->m_funct(this->m_val);
-        } else {
-            this->m_state = DEFAULT;
+            checkAction();
+            return true;
         }
+        this->m_state = DEFAULT;
+        return false;
     }
 
     void draw(Raylib::Square &sqr, int fontSize) override {
