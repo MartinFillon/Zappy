@@ -12,6 +12,7 @@
 #include <vector>
 #include "../Raylib.hpp"
 #include "Inventory.hpp"
+#include "../UI/InfoBox.hpp"
 
 namespace GUI {
 namespace Data {
@@ -24,9 +25,6 @@ Map::Map(int x, int y) : m_size({x, y}), x(0), y(0), end_x(0), end_y(0)
 Map::Map(const Pos<int, 2> &pos) : m_size(pos), x(0), y(0), end_x(0), end_y(0)
 {
     resize(pos);
-    std::shared_ptr<Player> test =
-        std::make_shared<Player>(5, 5, static_cast<Data::Player::Direction>(3), 42, "debugTeam", 99, true);
-    m_players.push_back(test);
 }
 
 Tile &Map::getTile(const Pos<int, 2> &pos)
@@ -112,7 +110,7 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(InfoBox &infoBox) const
+void Map::checkCollision(UI::InfoBox &infoBox) const
 {
     int mapWidth = end_x - x;
     int mapHeight = end_y - y;
@@ -149,13 +147,13 @@ void Map::checkCollision(InfoBox &infoBox) const
     }
 }
 
-void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
+void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
 {
     float tileSize = 1.0f;
     Ray ray = Raylib::GetMouseRay(cam);
     RayCollision collision = {};
     RayCollision collisionTmp = {};
-    InfoBox tmpInfo = infoBox;
+    UI::InfoBox tmpInfo = infoBox;
 
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
@@ -193,7 +191,7 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     }
 }
 
-void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
+void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const
 {
     this->x = start_x;
     this->y = start_y;
@@ -247,7 +245,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info) const
+void Map::displayTacticalView3D(const UI::InfoBox &info) const
 {
     float tileSize = 1.0f;
 

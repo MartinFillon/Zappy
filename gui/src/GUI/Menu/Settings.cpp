@@ -6,6 +6,7 @@
 */
 
 #include "Settings.hpp"
+#include "window.hpp"
 
 
 namespace GUI {
@@ -50,17 +51,17 @@ void Settings::display()
     }
 }
 
-bool Settings::is3D()
+bool Settings::is3D() const
 {
     return m_is3D;
 }
 
-bool Settings::isCameraFree()
+bool Settings::isCameraFree() const
 {
     return m_isCameraFree;
 }
 
-bool Settings::showCursor()
+bool Settings::showCursor() const
 {
     return m_showCursor;
 }

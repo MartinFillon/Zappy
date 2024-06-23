@@ -7,15 +7,18 @@
 
 #pragma once
 
-#include "Raylib.hpp"
 #include <string>
 
-#include "../Network/Handler.hpp"
+#include "../../Network/Handler.hpp"
+#include "UIComponent.hpp"
 
-class TimeUnitInput {
+namespace GUI {
+namespace UI {
+
+class TimeUnitInput : public UIComponent {
   public:
     TimeUnitInput(int initialValue, Network::Handler &networkHandler);
-    void display(int x, int y, int width, int height) const;
+    void display() const override;
     void handleEvent();
     int getTimeUnit() const;
     void setTimeUnit(int time);
@@ -28,6 +31,8 @@ class TimeUnitInput {
     size_t cursorPos;
     mutable float cursorBlinkTime;
     mutable bool cursorVisible;
-    mutable int x, y, width, height;
     Network::Handler &networkHandler;
 };
+
+} // namespace UI
+} // namespace GUI

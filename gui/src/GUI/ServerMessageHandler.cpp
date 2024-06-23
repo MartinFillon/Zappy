@@ -77,9 +77,9 @@ void ServerMessageHandler::handleTileContent(const std::string &message)
     if (!(iss >> x >> y >> q0 >> q1 >> q2 >> q3 >> q4 >> q5 >> q6)) {
         return handleCommandParameter(message);
     }
-    if (debug)
-        std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
-                  << " " << q5 << " " << q6 << std::endl;
+    // if (debug)
+    //     std::cout << "Tile (" << x << ", " << y << "): " << q0 << " " << q1 << " " << q2 << " " << q3 << " " << q4
+    //               << " " << q5 << " " << q6 << std::endl;
     display.getMap().getTile(x, y).updateRessources(q0, q1, q2, q3, q4, q5, q6);
 }
 
@@ -124,10 +124,11 @@ void ServerMessageHandler::handlePlayerPosition(const std::string &message)
     for (auto &player : players) {
         if (player->getId() == playerNumber) {
             player->setPosition(x, y, static_cast<Data::Player::Direction>(orientation));
+            if (!player->isHatched())
+                player->spawn();
             break;
         }
     }
-
     if (debug)
         std::cout << "Player #" << playerNumber << " position: (" << x << ", " << y << ") orientation: " << orientation
                   << std::endl;
@@ -146,6 +147,8 @@ void ServerMessageHandler::handlePlayerLevel(const std::string &message)
     for (auto &player : players) {
         if (player->getId() == playerNumber) {
             player->setLevel(level);
+            if (!player->isHatched())
+                player->spawn();
             break;
         }
     }
@@ -168,6 +171,8 @@ void ServerMessageHandler::handlePlayerInventory(const std::string &message)
         if (player->getId() == playerNumber) {
             player->setPosition(x, y, player->getOrientation());
             player->getInventory().update(q0, q1, q2, q3, q4, q5, q6);
+            if (!player->isHatched())
+                player->spawn();
             break;
         }
     }
@@ -236,6 +241,8 @@ void ServerMessageHandler::handleIncantationStart(const std::string &message)
             if (player->getId() == playerId) {
                 player->getIncantation().start(300 / display.getTimeUnit(), x, y);
                 break;
+                if (!player->isHatched())
+                    player->spawn();
             }
         }
     }
@@ -262,6 +269,8 @@ void ServerMessageHandler::handleIncantationEnd(const std::string &message)
         Data::Player::Incantation incantation = player->getIncantation();
         if (incantation.isStarted() && incantation.getTarget().x() == x && incantation.getTarget().y() == y) {
             incantation.end();
+            if (!player->isHatched())
+                player->spawn();
         }
     }
 
@@ -281,6 +290,8 @@ void ServerMessageHandler::handleEggLaying(const std::string &message)
     for (auto &player : display.getMap().getPlayers()) {
         if (player->getId() == playerNumber) {
             display.getMap().getEggs().emplace_back(std::make_shared<Data::Egg>(player->getPos(), playerNumber));
+            if (!player->isHatched())
+                player->spawn();
         } else {
             return;
         }
@@ -301,6 +312,8 @@ void ServerMessageHandler::handleResourceDrop(const std::string &message)
         if (player->getId() == playerNumber) {
             Data::Tile &tile = display.getMap().getTile(player->getPos());
             player->drop(tile, resourceType);
+            if (!player->isHatched())
+                player->spawn();
         } else {
             return;
         }
@@ -321,6 +334,8 @@ void ServerMessageHandler::handleResourceCollect(const std::string &message)
         if (player->getId() == playerNumber) {
             Data::Tile &tile = display.getMap().getTile(player->getPos());
             player->loot(tile, resourceType);
+            if (!player->isHatched())
+                player->spawn();
         } else {
             return;
         }
