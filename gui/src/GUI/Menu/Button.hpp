@@ -23,7 +23,7 @@ class Button : public AButton<F, T>
         this->m_state = DEFAULT;
     }
 
-    void checkAction(F &) override {
+    void checkAction(const F &) override {
         if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER))
             this->m_state = PRESSED;
         else
@@ -34,7 +34,7 @@ class Button : public AButton<F, T>
         }
     }
 
-    bool checkRecAction(F &rec) override {
+    bool checkRecAction(const F &rec) override {
         if (Raylib::checkCollisionMouseRec(rec)) {
             checkAction(rec);
             return true;
@@ -43,7 +43,7 @@ class Button : public AButton<F, T>
         return false;
     }
 
-    void draw(F &forme, int fontSize) override {
+    void draw(const F &forme, int fontSize) override {
         Color colorRec = WHITE;
         Color colorText = BLACK;
 

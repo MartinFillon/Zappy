@@ -9,7 +9,6 @@
 
 #include "CheckBox.hpp"
 #include "Slider.hpp"
-#include "window.hpp"
 #include "AMenu.hpp"
 
 namespace GUI {

@@ -66,7 +66,7 @@ void Settings::display()
                 but.toDefault();
         }
         but.draw(line, fontSize / 4.0f);
-        line.sy += 50 + SpacingSetButY;
+        line.sy += SpacingSliderY + SpacingSetButY;
         line.ey = line.sy;
     }
 }

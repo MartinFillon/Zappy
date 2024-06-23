@@ -22,7 +22,7 @@ class CheckBox : public AButton<Raylib::Square, bool>
         this->m_state = DEFAULT;
     }
 
-    void checkAction(Raylib::Square &) override {
+    void checkAction(const Raylib::Square &) override {
         if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER))
             this->m_state = PRESSED;
         else
@@ -33,7 +33,7 @@ class CheckBox : public AButton<Raylib::Square, bool>
         }
     }
 
-    bool checkRecAction(Raylib::Square &sqr) override {
+    bool checkRecAction(const Raylib::Square &sqr) override {
         if (Raylib::checkCollisionMouseSquare(sqr)) {
             checkAction(sqr);
             return true;
@@ -42,7 +42,7 @@ class CheckBox : public AButton<Raylib::Square, bool>
         return false;
     }
 
-    void draw(Raylib::Square &sqr, int fontSize) override {
+    void draw(const Raylib::Square &sqr, int fontSize) override {
         Color colorRec = BLUE;
         Color colorBackRec = WHITE;
         Color colorText = BLACK;

@@ -8,9 +8,9 @@
 #pragma once
 
 #include "AButton.hpp"
+#include "window.hpp"
 #include <functional>
 #include <algorithm>
-#include <iostream>
 
 namespace GUI {
 
@@ -24,7 +24,7 @@ class Slider : public AButton<Raylib::Line, float>
         this->m_state = DEFAULT;
     }
 
-    void checkAction(Raylib::Line &line) override {
+    void checkAction(const Raylib::Line &line) override {
         if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER)) {
             updateValue(line);
             this->m_state = PRESSED;
@@ -37,8 +37,8 @@ class Slider : public AButton<Raylib::Line, float>
         }
     }
 
-    bool checkRecAction(Raylib::Line &refLine) override {
-        Raylib::Line line = {refLine.sx, refLine.sy + 50, refLine.ex, refLine.ey + 50};
+    bool checkRecAction(const Raylib::Line &refLine) override {
+        Raylib::Line line = {refLine.sx, refLine.sy + SpacingSliderY, refLine.ex, refLine.ey + SpacingSliderY};
         Raylib::Circle cir = getCirle(line);
 
         if (this->m_state == PRESSED && (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER))) {
@@ -53,10 +53,10 @@ class Slider : public AButton<Raylib::Line, float>
         return false;
     }
 
-    void draw(Raylib::Line &refLine, int fontSize) override {
+    void draw(const Raylib::Line &refLine, int fontSize) override {
         Color colorCircle = BLACK;
         int sy = refLine.sy;
-        Raylib::Line line = {refLine.sx, refLine.sy + 50, refLine.ex, refLine.ey + 50};
+        Raylib::Line line = {refLine.sx, refLine.sy + SpacingSliderY, refLine.ex, refLine.ey + SpacingSliderY};
         Raylib::Circle cir = getCirle(line);
 
         switch (this->m_state)
@@ -75,7 +75,7 @@ class Slider : public AButton<Raylib::Line, float>
         Raylib::drawText(this->m_name, line.sx, sy, fontSize, BLACK);
     }
 
-    Raylib::Circle getCirle(Raylib::Line &line) {
+    Raylib::Circle getCirle(const Raylib::Line &line) {
         return (Raylib::Circle){
             static_cast<float>(line.sx + (line.ex - line.sx) * m_val),
             static_cast<float>(line.ey),
