@@ -79,7 +79,7 @@ impl AIHandler for Queen {
             );
             if info.slots == 0 && info.cli_id < 7 {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
-                info!("[{}] Spawned queen.", info.cli_id);
+                error!("[{}] Spawned queen.", info.cli_id);
             }
             if info.slots >= 0 && info.cli_id > 7 {
                 info!("[{}] Identified as NPC.", info.cli_id);
@@ -96,6 +96,7 @@ impl AIHandler for Queen {
         if self.info.p_id == 0 {
             let mut client = self.info.client.lock().await;
             broadcast(&mut client, format!("{} waiting", self.info.p_id).as_str()).await?;
+            broadcast(&mut client, format!("{} waiting", self.info.p_id).as_str()).await?;
         } else {
             let mut client = self.info.client.lock().await;
             println!(
@@ -111,6 +112,7 @@ impl AIHandler for Queen {
                 }
             }
         }
+        error!("[{}] Queen {} is now at the queen.", self.info.cli_id, self.info.p_id);
         self.fork_servants().await?;
 
         println!(
@@ -221,7 +223,7 @@ impl Queen {
     async fn spawn_queen(info: AI, id: usize, client: &mut TcpClient) -> Result<(), CommandError> {
         let info_clone = info.clone();
 
-        //move_up(client).await?;
+        error!("{} Spawning queen...", info.cli_id);
         fork(client).await?;
         inventory(client).await?;
         tokio::spawn(async move {
