@@ -1,11 +1,7 @@
 # ZAPPY
 Zappy a epitech project
 
-[![Rust Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml)
-
-[![GUI Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml)
-
-[![Server Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml)
+[![Rust Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-rust.yml)[![GUI Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-gui.yml)[![Server Pipeline](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml/badge.svg)](https://github.com/MartinFillon/Zappy/actions/workflows/pipeline-server.yml)
 
 ## Compiling the project
 
