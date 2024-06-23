@@ -10,7 +10,6 @@
 #include "Button.hpp"
 #include "../../Network/Handler.hpp"
 #include "window.hpp"
-#include <iostream>
 
 namespace GUI {
 
@@ -18,8 +17,8 @@ class Menu {
   public:
     Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow);
     void display();
-
     void eventhandler();
+
     void setClose(bool val);
     void setInGame(bool val);
     void setInSettings(bool val);
@@ -35,8 +34,8 @@ class Menu {
     bool m_close;
     bool m_inGame;
     bool m_inSettings;
-    size_t m_iselected_but;
 
+    size_t m_iselected_but;
     bool modeKey;
     };
 
