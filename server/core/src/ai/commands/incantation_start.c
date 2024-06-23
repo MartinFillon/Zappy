@@ -33,7 +33,7 @@ static size_t count_nb_ai_available(
         ai = ais->data[i];
         for (size_t k = 0; k < tile->players->size; k++) {
             count += ai->id == tile->players->data[k] &&
-                !ai->incant.is_incant && 
+                !ai->incant.is_incant &&
                 ai->level == level;
         }
     }
@@ -66,9 +66,11 @@ static void start_ais_elevation(struct client_list *clis, client_t *cli)
     size_t idx = cli->ai->level - 1;
     size_t n = 0;
 
-    for (size_t i = 0; n < incant_req[idx].nb_player && i < clis->size; i++) {
+    dprintf(1, "--- ID FOR INCANT: %d ---\n", cli->ai->id);
+    for (size_t i = 0; n < incant_req[idx].nb_player - 1 &&
+        i < clis->size; i++) {
         oth = clis->data[i];
-        if (oth->type != AI)
+        if (oth->type != AI || oth->ai->id == cli->ai->id)
             continue;
         if (is_coord_equal(&cli->ai->pos, &oth->ai->pos) &&
             !oth->ai->incant.is_incant && oth->ai->level == cli->ai->level) {
@@ -77,6 +79,8 @@ static void start_ais_elevation(struct client_list *clis, client_t *cli)
             prepare_response_cat(&oth->io, "Elevation underway\n");
         }
     }
+    freeze_ai(cli->ai, cli->ai->id);
+    prepare_response_cat(&cli->io, "Elevation underway\n");
 }
 
 static void send_incantation_start(client_t *cli, struct client_list *clients)
@@ -102,6 +106,8 @@ void handle_start_incantation(client_t *cli, command_state_t *s)
 {
     str_t *end_incant = NULL;
 
+    if (cli->ai->incant.is_incant)
+        return;
     cli->ai->incant.last_verif = verif_start_specification(cli->ai, s->game);
     if (cli->ai->incant.last_verif) {
         start_ais_elevation(s->clients, cli);
