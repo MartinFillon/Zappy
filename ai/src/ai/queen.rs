@@ -96,7 +96,6 @@ impl AIHandler for Queen {
         if self.info.p_id == 0 {
             let mut client = self.info.client.lock().await;
             broadcast(&mut client, format!("{} waiting", self.info.p_id).as_str()).await?;
-            broadcast(&mut client, format!("{} waiting", self.info.p_id).as_str()).await?;
         } else {
             let mut client = self.info.client.lock().await;
             println!(
@@ -161,7 +160,7 @@ impl Incantationers for Queen {
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                let response = client.check_response().await;
+                let response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
                 client.handle_response(response).await?;
             }
         }

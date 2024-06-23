@@ -41,7 +41,7 @@ pub async fn handle_incantation(client: &mut TcpClient) -> Result<ResponseResult
 pub async fn wait_for_incantation(client: &mut TcpClient) -> Result<ResponseResult, CommandError> {
     debug!("Waiting for incantation...");
 
-    let response = client.check_response().await;
+    let response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
     let res = client.handle_response(response).await?;
     if res == ResponseResult::Elevating {
         return handle_incantation(client).await;
@@ -62,6 +62,6 @@ pub async fn incantation(client: &mut TcpClient) -> Result<ResponseResult, Comma
             return Ok(res);
         }
         println!("[{}] Incantation result: {:?}", client.id(), res);
-        response = client.check_response().await;
+        response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
     }
 }
