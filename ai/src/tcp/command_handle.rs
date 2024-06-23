@@ -78,7 +78,7 @@ pub trait CommandHandler {
     async fn send_command(&mut self, command: &str) -> Result<String, CommandError>;
     async fn check_dead(&mut self, command: &str) -> Result<String, CommandError>;
     async fn handle_response(&mut self, response: String) -> Result<ResponseResult, CommandError>;
-    async fn check_response(&mut self) -> String;
+    async fn check_response(&mut self) -> Option<String>;
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError>;
 }
 
@@ -90,19 +90,19 @@ impl CommandHandler for TcpClient {
         }
         match self.get_response().await {
             Some(res) => Ok(res),
-            None => Ok(String::from("")),
+            None => Err(CommandError::NoResponseReceived),
         }
     }
 
-    async fn check_response(&mut self) -> String {
+    async fn check_response(&mut self) -> Option<String> {
         match self.get_response().await {
             Some(res) => {
                 debug!("Response checked gives: ({})", res);
-                res
+                Some(res)
             }
             None => {
                 warn!("No response received.");
-                String::from("")
+                None
             }
         }
     }
@@ -117,8 +117,10 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
-        warn!("[{}] from here get broadcast", self.id);
-        let res = self.check_response().await;
+        let res = self
+            .check_response()
+            .await
+            .ok_or(CommandError::NoResponseReceived)?;
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
@@ -134,9 +136,12 @@ impl CommandHandler for TcpClient {
         if response.starts_with("message ") {
             if let ResponseResult::Message(msg) = handle_message_response(response, self.crypt())? {
                 self.push_message(msg);
-                debug!("Message pushed to queue.");
+                debug!("~[{}] Message pushed to queue.", self.id);
             }
-            let response = self.check_response().await;
+            let response = self
+                .check_response()
+                .await
+                .ok_or(CommandError::NoResponseReceived)?;
             return self.handle_response(response).await;
         }
 
@@ -162,8 +167,8 @@ impl CommandHandler for TcpClient {
             },
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
-                warn!("Invalid Response: ({}).", response.trim_end());
-                Ok(ResponseResult::Unknown)
+                error!("Invalid Response: ({}).", response.trim_end());
+                Ok(ResponseResult::KO)
             }
         }
     }

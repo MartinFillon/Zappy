@@ -83,7 +83,12 @@ pub async fn move_towards_broadcast(
     if x > 0 {
         move_right(client).await?;
     }
-    move_up::move_up(client).await
+    move_up::move_up(client).await?;
+    if y < 0 {
+        turn::turn(client, DirectionTurn::Right).await?;
+        turn::turn(client, DirectionTurn::Right).await?;
+    }
+    Ok(ResponseResult::OK)
 }
 
 async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
@@ -97,7 +102,7 @@ async fn undo_eject(client: &mut TcpClient, x: i32) -> bool {
 }
 
 pub async fn backtrack_eject(client: &mut TcpClient, dir: DirectionEject) -> bool {
-    info!("Backtracking back from ejection {}...", dir);
+    warn!("Backtracking back from ejection {}...", dir);
     let (mut x, y) = get_eject_coordinates(&dir);
     if y < 0 {
         x = -x;

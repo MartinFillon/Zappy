@@ -86,9 +86,10 @@ Broadcast <command>\n
 | Command  | Definition | Sent by |
 | -------- | ---------- | ------- |
 | `<ID> assign <role> <pID>` | assign role to a new AI (by **default** considered a `Queen`) | `Queen`\|`Knight` |
+| `<ID> waiting` | Wait for AI `Queen` to join at same tile | `Queen` |
 | `<ID> inc` | Incantating | `Queen` |
-| `<ID> mv` | Moved | `Queen` |
 | `<ID> lvl <level>` | Notify level | `Queen` |
+| `<ID> mv` | Moved | `Queen` |
 | `<ID> nf` | Need `food` | `Queen` |
 | `<ID> nl` | Need `linemate` | `Queen` |
 | `<ID> nd` | Need `deraumere` | `Queen` |

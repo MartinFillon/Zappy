@@ -102,6 +102,24 @@ fn init_from_broadcast(info: &AI, role: String) -> Result<Box<dyn AIHandler>, St
     })
 }
 
+async fn init_and_update(ai: AI, role: String) -> io::Result<()> {
+    let mut rle =
+        init_from_broadcast(&ai, role).map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
+
+    let ai_status = rle.update().await;
+    if let Err(CommandError::DeadReceived) = ai_status {
+        info!("~[{}] AI is dead, stopping the process...", ai.cli_id);
+        return Err(Error::new(ErrorKind::ConnectionAborted, "AI is now dead."));
+    } else if let Err(e) = ai_status {
+        error!("~[{}] Error: {}", ai.cli_id, e);
+        return Err(Error::new(
+            ErrorKind::ConnectionAborted,
+            "AI received error from server.",
+        ));
+    }
+    Ok(())
+}
+
 pub async fn fork_ai(info: AI) -> io::Result<()> {
     let client = match handle_tcp(info.address.clone(), info.team.clone(), info.cli_id).await {
         Ok(client) => {
@@ -129,45 +147,28 @@ pub async fn fork_ai(info: AI) -> io::Result<()> {
                     "~[{}] Handling assignment of role {} with id {}",
                     info.cli_id, role, p_id
                 );
-                let mut rle = init_from_broadcast(&ai, role)
-                    .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
-                if let Err(e) = rle.update().await {
-                    println!("~[{}] Error: {}", info.cli_id, e);
-                }
+                let ai_clone = ai.clone();
+                tokio::spawn(async move {
+                    if init_and_update(ai_clone, role).await.is_ok() {
+                        info!(
+                            "~[{}] AI successfully initialized and updated.",
+                            info.cli_id
+                        )
+                    }
+                });
                 return Ok(());
             }
             warn!(
                 "~[{}] No role assignment detected, turning to idle...",
                 info.cli_id
             );
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                "No role detected, AI is slowly dying.",
+            ));
         }
         Err(e) => error!("=[{}] {}", info.cli_id, e),
     }
-    Ok(())
-}
-
-pub async fn connect_ai(mut ai: AI) -> io::Result<()> {
-    debug!("~[{}] AI is being checked in...", ai.cli_id);
-    if let Some((c_id, role, p_id)) = ai.clone().wait_assignment().await {
-        ai.set_p_id(p_id);
-        ai.set_cli_id(c_id + 1);
-        info!(
-            "~[{}] Handling assignment of role {} with connection id {}",
-            ai.cli_id,
-            role,
-            c_id + 1
-        );
-        let mut rle = init_from_broadcast(&ai, role)
-            .map_err(|e| std::io::Error::new(ErrorKind::NotFound, e))?;
-        if let Err(e) = rle.update().await {
-            println!("~[{}] Error: {}", ai.cli_id, e);
-        }
-        return Ok(());
-    }
-    warn!(
-        "~[{}] No role assignment detected, turning to idle...",
-        ai.cli_id
-    );
     Ok(())
 }
 
@@ -223,7 +224,7 @@ impl AI {
     async fn wait_assignment(&mut self) -> Option<(usize, String, usize)> {
         let mut client = self.client().lock().await;
         let start_time = time::Instant::now();
-        let overall_timeout = Duration::from_secs(5);
+        let overall_timeout = Duration::from_secs(1);
 
         loop {
             if start_time.elapsed() >= overall_timeout {
@@ -335,8 +336,7 @@ async fn checkout_ai_info(
                 1,
                 client_number,
             );
-            println!("~[{}] New! >> {}", c_id, ai);
-            debug!("~[{}] AI is initialized.", ai.cli_id);
+            println!("~[{}] New AI! >> {}", c_id, ai);
             ai
         })
         .map_err(|e: Error| {
@@ -355,8 +355,8 @@ async fn init_ai(
     let ai = checkout_ai_info(client, response, team, address, (c_id, p_id)).await?;
     let mut queen = queen::Queen::init(ai.clone());
     if let Err(e) = queen.update().await {
-        println!("QUEEN received error {}", e);
-        error!("[{}] !!!!Error: {}", queen.info().cli_id, e);
+        error!("[{}] Error: {}", queen.info().cli_id, e);
+        println!("[{}] QUEEN received error.", c_id);
     }
     Ok(ai)
 }
@@ -380,7 +380,7 @@ async fn start_ai(
         println!("~[{}] server> {}", c_id, response);
         match response.trim_end() {
             "ko" => {
-                debug!("~[{}] Server doesn't handle any more connection.", c_id);
+                warn!("~[{}] Server doesn't handle any more connection.", c_id);
                 Err(Error::new(
                     ErrorKind::ConnectionRefused,
                     "No room for player.",
@@ -399,7 +399,7 @@ async fn start_ai(
             }
         }
     } else {
-        debug!("=[{}] Host not reachable.", c_id);
+        error!("=[{}] Host not reachable.", c_id);
         Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
@@ -416,7 +416,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     loop {
         if stop_flag.load(Ordering::SeqCst) {
-            println!(
+            warn!(
                 "=[AT {:?}] Stop flag is set, breaking the loop.",
                 connection_id
             );
@@ -429,7 +429,6 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
         let stop_flag = Arc::clone(&stop_flag);
 
         let curr_id = connection_id.load(Ordering::SeqCst);
-        println!("=[{}] Attempting connection...", curr_id);
 
         match handle_tcp(address.to_string(), team.to_string(), curr_id).await {
             Ok(client) => {
@@ -448,11 +447,11 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
                     match result {
                         Ok(_) => {
-                            println!("=[{}] Connection handled successfully", id);
+                            info!("=[{}] Connection handled successfully", id);
                             Ok(())
                         }
                         Err(e) => {
-                            println!("=[{}] Connection failed: {}", id, e);
+                            warn!("=[{}] Connection failed: {}", id, e);
                             stop_flag.store(true, Ordering::SeqCst);
                             Err(e)
                         }
@@ -468,7 +467,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
     }
 
     if handles.is_empty() {
-        warn!("Connection refused, handles is empty.");
+        eprintln!("Connection refused, handles is empty.");
         return Err(Error::new(
             ErrorKind::ConnectionRefused,
             "Couldn't reach host.",
@@ -477,7 +476,7 @@ pub async fn launch(address: String, team: String) -> io::Result<()> {
 
     for (id, handle) in handles.into_iter().enumerate() {
         if let Err(e) = handle.await {
-            println!("=[{}] Task failed: {:?}", id, e);
+            error!("=[{}] Task failed: {:?}", id, e);
         }
     }
 
