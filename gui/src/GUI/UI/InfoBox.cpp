@@ -5,10 +5,11 @@
 ** InfoBox
 */
 
+#include "../Raylib.hpp"
 #include "InfoBox.hpp"
-#include "Raylib.hpp"
 
 namespace GUI {
+namespace UI {
 
 InfoBox::InfoBox(): m_posTile({0.0f, 0.0f, 0.0f}), m_size(0.0f), m_lineHeight(20)
 {
@@ -85,4 +86,5 @@ void InfoBox::display() const
     }
 }
 
+} // namespace UI
 } // namespace GUI

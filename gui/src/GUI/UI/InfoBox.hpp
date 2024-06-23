@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "Data/ISelectItem.hpp"
-#include "UI/UIComponent.hpp"
+#include "../Data/ISelectItem.hpp"
+#include "UIComponent.hpp"
 
 namespace GUI {
 namespace UI {

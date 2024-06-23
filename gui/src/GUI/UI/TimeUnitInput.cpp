@@ -6,6 +6,10 @@
 */
 
 #include "TimeUnitInput.hpp"
+#include "../Raylib.hpp"
+
+namespace GUI {
+namespace UI {
 
 TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
     : timeUnit(initialValue), oldTimeUnit(initialValue), timeUnitStr(std::to_string(initialValue)), selected(false),
@@ -97,3 +101,6 @@ void TimeUnitInput::setTimeUnit(int time)
         timeUnitStr = std::to_string(timeUnit);
     }
 }
+
+} // namespace UI
+} // namespace GUI

@@ -14,8 +14,9 @@
 #include "Menu/Menu.hpp"
 #include "Menu/Settings.hpp"
 #include "Data/Map.hpp"
-#include "MessageBox.hpp"
-#include "TimeUnitInput.hpp"
+#include "UI/InfoBox.hpp"
+#include "UI/MessageBox.hpp"
+#include "UI/TimeUnitInput.hpp"
 #include "ServerMessageHandler.hpp"
 #include "define.hpp"
 #include "Skybox.hpp"
@@ -94,9 +95,9 @@ class Display {
     std::vector<std::string> endGameMessage;
 
     Raylib::RecWin m_newWindow;
-    MessageBox messageBox;
-    InfoBox infoBox;
-    TimeUnitInput timeUnitInput;
+    UI::MessageBox messageBox;
+    UI::InfoBox infoBox;
+    UI::TimeUnitInput timeUnitInput;
     Skybox skybox;
 
     Camera3D m_cam;

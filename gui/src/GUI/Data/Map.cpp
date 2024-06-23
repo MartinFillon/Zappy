@@ -12,6 +12,7 @@
 #include <vector>
 #include "../Raylib.hpp"
 #include "Inventory.hpp"
+#include "../UI/InfoBox.hpp"
 
 namespace GUI {
 namespace Data {
@@ -112,7 +113,7 @@ void Map::resize(const Pos<int, 2> &size)
     }
 }
 
-void Map::checkCollision(InfoBox &infoBox) const
+void Map::checkCollision(UI::InfoBox &infoBox) const
 {
     int mapWidth = end_x - x;
     int mapHeight = end_y - y;
@@ -149,13 +150,13 @@ void Map::checkCollision(InfoBox &infoBox) const
     }
 }
 
-void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
+void Map::checkCollision3D(UI::InfoBox &infoBox, const Camera3D &cam) const
 {
     float tileSize = 1.0f;
     Ray ray = Raylib::GetMouseRay(cam);
     RayCollision collision = {};
     RayCollision collisionTmp = {};
-    InfoBox tmpInfo = infoBox;
+    UI::InfoBox tmpInfo = infoBox;
 
     for (auto player : m_players) {
         float playerCenterX = player->getPos().x() * tileSize + tileSize / 2.0f;
@@ -193,7 +194,7 @@ void Map::checkCollision3D(InfoBox &infoBox, const Camera3D &cam) const
     }
 }
 
-void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const InfoBox &info) const
+void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, const UI::InfoBox &info) const
 {
     this->x = start_x;
     this->y = start_y;
@@ -247,7 +248,7 @@ void Map::displayTacticalView(int start_x, int start_y, int end_x, int end_y, co
     }
 }
 
-void Map::displayTacticalView3D(const InfoBox &info) const
+void Map::displayTacticalView3D(const UI::InfoBox &info) const
 {
     float tileSize = 1.0f;
 

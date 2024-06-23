@@ -9,12 +9,13 @@
 #include <iomanip>
 #include <sstream>
 
-#include "UI/MessageBox.hpp"
-#include "Raylib.hpp"
+#include "MessageBox.hpp"
+#include "../Raylib.hpp"
 #include "define.hpp"
 
 namespace GUI {
 namespace UI {
+
 MessageBox::MessageBox()
     : m_scrollOffset(0), m_lineHeight(20), m_totalLines(0), m_maxLines(0), x(0), y(0), width(0), height(0)
 {

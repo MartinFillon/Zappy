@@ -9,13 +9,13 @@
 
 #include <string>
 
-#include "../Network/Handler.hpp"
-#include "UI/UIComponent.hpp"
+#include "../../Network/Handler.hpp"
+#include "UIComponent.hpp"
 
 namespace GUI {
 namespace UI {
 
-class TimeUnitInput : public UI::UIComponent {
+class TimeUnitInput : public UIComponent {
   public:
     TimeUnitInput(int initialValue, Network::Handler &networkHandler);
     void display() const override;
