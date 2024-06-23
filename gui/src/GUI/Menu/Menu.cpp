@@ -7,7 +7,6 @@
 
 #include "Menu.hpp"
 
-
 namespace GUI {
 
 Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow):
@@ -60,7 +59,6 @@ void Menu::eventhandler()
     Vector2 cursorMove = GetMouseDelta();
     if (modeKey && (cursorMove.x > 0.001f || cursorMove.y > 0.001f )) {
         modeKey = false;
-        std::cout << "MODE CURSOR" << std::endl;
     }
     if (Raylib::isKeyPressed(KEY_UP)) {
         m_iselected_but = (m_iselected_but == 0) ? m_button.size() - 1 : m_iselected_but - 1;

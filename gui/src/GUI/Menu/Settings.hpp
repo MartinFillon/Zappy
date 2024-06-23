@@ -15,13 +15,15 @@ namespace GUI {
 class Settings {
   public:
     Settings(Raylib::RecWin &m_newWindow, bool &debug, bool is3D = true, bool isCameraFree = false, bool showCursor = true);
+    void display();
+    void eventhandler();
+
     bool is3D();
     bool isCameraFree();
     bool showCursor();
     void switchIs3D();
     void switchIsCameraFree();
     void switchShowCursor();
-    void display();
 
   private:
     std::vector<CheckBox> m_button;
@@ -31,6 +33,9 @@ class Settings {
     bool m_isCameraFree;
     bool m_showCursor;
     bool &m_debug;
+
+    size_t m_iselected_but;
+    bool modeKey;
    };
 
 } // namespace GUI
