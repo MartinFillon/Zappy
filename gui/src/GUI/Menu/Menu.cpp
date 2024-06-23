@@ -12,9 +12,9 @@ namespace GUI {
 Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow, MusicGame &music):
     AMenu(), networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false)
 {
-    m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}, music));
-    m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}, music));
-    m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}, music));
+    m_button.push_back(Button<Rectangle, bool>("start", m_inGame, music));
+    m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, music));
+    m_button.push_back(Button<Rectangle, bool>("quit", m_close, music));
     nb_but = m_button.size();
     m_iselected_but = nb_but - 1;
 }
@@ -43,7 +43,7 @@ void Menu::display()
         }
         if (modeKey) {
             if (m_iselected_but == i)
-                but.checkAction();
+                but.checkAction(rec);
             else
                 but.toDefault();
         }

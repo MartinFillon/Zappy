@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CheckBox.hpp"
+#include "Slider.hpp"
 #include "window.hpp"
 #include "AMenu.hpp"
 
@@ -27,6 +28,7 @@ class Settings : public AMenu {
 
   private:
     std::vector<CheckBox> m_button;
+    std::vector<Slider> m_slider;
     Raylib::RecWin &m_newWindow;
 
     bool m_is3D;

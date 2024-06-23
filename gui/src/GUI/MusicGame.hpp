@@ -23,7 +23,14 @@ class MusicGame {
     void updateMusic();
     void playSound();
 
+    float &getVolumeMusic();
+    float &getVolumeFx();
+
   private:
+    float m_volM;
+    float m_volFx;
+    float m_lastVolM;
+    float m_lastVolFx;
     Music m_music;
     Sound m_sound;
     bool isLoaded;
