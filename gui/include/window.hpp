@@ -18,6 +18,8 @@ constexpr float MulMenuPosButton = 0.4f;
 constexpr float MulMenuButX = 1.0f - MulMenuPosButton * 2;
 
 constexpr float MulStrtY = 0.35f;
+constexpr float MulEndY = 0.4f;
 constexpr float MulNameY = 0.175f;
+constexpr float MulCommentY = 1 - MulNameY;
 constexpr float SpacingY = 20.0f;
 constexpr float MulButFontSize = 0.5f;

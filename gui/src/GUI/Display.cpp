@@ -81,6 +81,10 @@ void Display::handleEvent()
         else
             m_settings.eventhandler();
     }
+    if (endGame && Raylib::isKeyPressed(KEY_SPACE)) {
+        endGame = false;
+        m_menu.setInGame(false);
+    }
     messageBox.handleInput();
     timeUnitInput.handleEvent();
     if (didChange3D()) {
@@ -99,6 +103,34 @@ void Display::displaySettings()
 {
     ClearBackground(WHITE);
     m_settings.display();
+}
+
+void Display::displayEndGame()
+{
+    int fontSize = HeightToFontSize(m_newWindow.height);
+    std::string title = "THE WINNER IS";
+    std::string comment = "PRESS SPACE TO RETURN TO THE MENU";
+    Vector2 sizeTitle = Raylib::getMeasureTextEx(title, fontSize / 2);
+    int sizeComment = Raylib::getMeasureTextEx(comment, fontSize / 4).x;
+
+    ClearBackground(BLACK);
+    Raylib::drawText(comment,
+        m_newWindow.x + (m_newWindow.width - sizeComment) / 2.0f,
+        m_newWindow.y + m_newWindow.height * MulCommentY,
+        fontSize / 4, GRAY);
+    Raylib::drawText(title,
+        m_newWindow.x + (m_newWindow.width - sizeTitle.x) / 2.0f,
+        m_newWindow.y + m_newWindow.height * MulEndY - sizeTitle.y,
+        fontSize / 2, PURPLE);
+    endGameMessage.push_back("Blloooop :3");
+    if (endGameMessage.empty())
+        return;
+    const std::string &str = endGameMessage.at(0);
+    int sizeText = Raylib::getMeasureTextEx(str, fontSize).x;
+    Raylib::drawText(str,
+        m_newWindow.x + (m_newWindow.width - sizeText) / 2.0f,
+        m_newWindow.y + m_newWindow.height * MulEndY,
+        fontSize, PURPLE);
 }
 
 void Display::displayGame()
@@ -135,6 +167,11 @@ void Display::run()
 
         handleEvent();
         BeginDrawing();
+        if (endGame) {
+            displayEndGame();
+            EndDrawing();
+            continue;
+        }
         if (m_menu.getInSettings())
             displaySettings();
         else {

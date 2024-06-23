@@ -79,6 +79,7 @@ class Display {
     std::vector<std::string> team;
 
   private:
+    void displayEndGame();
     void displayMenu();
     void displaySettings();
     void displayGame();
