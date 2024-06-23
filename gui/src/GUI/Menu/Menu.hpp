@@ -16,7 +16,7 @@ namespace GUI {
 
 class Menu : public AMenu {
   public:
-    Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow);
+    Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow, MusicGame &music);
     void display();
 
     void setClose(bool val);

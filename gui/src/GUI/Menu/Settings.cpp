@@ -10,13 +10,13 @@
 
 namespace GUI {
 
-Settings::Settings(Raylib::RecWin &newWindow, bool &debug, bool is3D, bool isCameraFree, bool showCursor):
+Settings::Settings(Raylib::RecWin &newWindow, MusicGame &music, bool &debug, bool is3D, bool isCameraFree, bool showCursor):
     AMenu(), m_newWindow(newWindow), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor), m_debug(debug)
 {
-    m_button.push_back(CheckBox("3D", m_is3D));
-    m_button.push_back(CheckBox("CameraFree", m_isCameraFree));
-    m_button.push_back(CheckBox("ShowCursor", m_showCursor));
-    m_button.push_back(CheckBox("Debug", m_debug));
+    m_button.push_back(CheckBox("3D", m_is3D, music));
+    m_button.push_back(CheckBox("CameraFree", m_isCameraFree, music));
+    m_button.push_back(CheckBox("ShowCursor", m_showCursor, music));
+    m_button.push_back(CheckBox("Debug", m_debug, music));
     nb_but = m_button.size();
     m_iselected_but = nb_but - 1;
 }

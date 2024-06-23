@@ -11,17 +11,21 @@
 #include "raylib.h"
 
 constexpr char DEFAULT_MUSIC_PATH[] = "gui/music/game-music-loop.mp3";
+constexpr char DEFAULT_SOUND_PATH[] = "gui/music/computer-processing-sound-effects.mp3";
 
 class MusicGame {
   public:
     MusicGame();
     ~MusicGame();
 
-    void load(const std::string &filepath = DEFAULT_MUSIC_PATH);
-    void update();
+    void load(const std::string &filepath_music = DEFAULT_MUSIC_PATH,
+      const std::string &filepath_sound = DEFAULT_SOUND_PATH);
+    void updateMusic();
+    void playSound();
 
   private:
     Music m_music;
+    Sound m_sound;
     bool isLoaded;
 
     void unload();

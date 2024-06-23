@@ -21,7 +21,7 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
                                                45.0f,
                                                CAMERA_PERSPECTIVE}
                                           ),
-      m_menu(networkHandler, m_newWindow), m_settings(m_newWindow, debug)
+      m_menu(networkHandler, m_newWindow, m_music), m_settings(m_newWindow, m_music, debug)
 {
     if (debug) {
         SetTraceLogLevel(LOG_ALL);
@@ -36,7 +36,7 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
     SetExitKey(KEY_DELETE);
     resize();
     skybox.Load();
-    music.load();
+    m_music.load();
 }
 
 Display::~Display()
@@ -51,6 +51,7 @@ void Display::handleEvent()
         resize();
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
+        m_music.playSound();
         if (m_menu.getInSettings())
             m_menu.setInSettings(false);
         else {
@@ -127,7 +128,7 @@ void Display::displayGame()
 void Display::run()
 {
     while (!m_menu.getClose() && !WindowShouldClose()) {
-        music.update();
+        m_music.updateMusic();
         if (!networkHandler.isRunning())
             m_menu.setInGame(false);
         handleServerMessage();

@@ -16,8 +16,8 @@ template <typename F, typename T>
 class Button : public AButton<F, T>
 {
   public:
-    Button(const std::string &name, T &val, std::function<void(T&)> funct):
-      AButton<F, T>(name, val, funct) {}
+    Button(const std::string &name, T &val, std::function<void(T&)> funct, MusicGame &music):
+      AButton<F, T>(name, val, funct, music) {}
 
     void toDefault(void) override {
         this->m_state = DEFAULT;
@@ -28,8 +28,10 @@ class Button : public AButton<F, T>
             this->m_state = PRESSED;
         else
             this->m_state = HOVER;
-        if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsKeyReleased(KEY_ENTER))
+        if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsKeyReleased(KEY_ENTER)) {
             this->m_funct(this->m_val);
+            this->m_music.playSound();
+        }
     }
 
     bool checkRecAction(F &rec) override {

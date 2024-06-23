@@ -95,7 +95,7 @@ class Display {
     Skybox skybox;
 
     Camera3D m_cam;
-    MusicGame music;
+    MusicGame m_music;
 
     Menu m_menu;
     Settings m_settings;

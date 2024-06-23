@@ -9,12 +9,12 @@
 
 namespace GUI {
 
-Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow):
+Menu::Menu(Network::Handler &networkHandler, Raylib::RecWin &newWindow, MusicGame &music):
     AMenu(), networkHandler(networkHandler), m_newWindow(newWindow), m_close(false), m_inGame(false), m_inSettings(false)
 {
-    m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}));
-    m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}));
-    m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}));
+    m_button.push_back(Button<Rectangle, bool>("start", m_inGame, [](bool &val){val = true;}, music));
+    m_button.push_back(Button<Rectangle, bool>("settings", m_inSettings, [](bool &val){val = true;}, music));
+    m_button.push_back(Button<Rectangle, bool>("quit", m_close, [](bool &val){val = true;}, music));
     nb_but = m_button.size();
     m_iselected_but = nb_but - 1;
 }
@@ -38,8 +38,9 @@ void Menu::display()
     for (size_t i = 0; i < m_button.size(); i++) {
         Button<Rectangle, bool> &but = m_button.at(i);
 
-        if (!modeKey && but.checkRecAction(rec))
+        if (!modeKey && but.checkRecAction(rec)) {
             m_iselected_but = i;
+        }
         if (modeKey) {
             if (m_iselected_but == i)
                 but.checkAction();
