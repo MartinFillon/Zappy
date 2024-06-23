@@ -106,7 +106,7 @@ void handle_start_incantation(client_t *cli, command_state_t *s)
     str_t *end_incant = NULL;
 
     if (cli->ai->incant.is_incant)
-        return;
+        return prepare_response_cat(&cli->io, "ko\n");
     cli->ai->incant.last_verif = verif_start_specification(cli->ai, s->game);
     if (cli->ai->incant.last_verif) {
         start_ais_elevation(s->clients, cli);
