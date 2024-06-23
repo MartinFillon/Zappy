@@ -15,10 +15,11 @@
 class TimeUnitInput {
   public:
     TimeUnitInput(int initialValue, Network::Handler &networkHandler);
-    void display(int x, int y, int width, int height) const;
+    void display() const;
     void handleEvent();
     int getTimeUnit() const;
     void setTimeUnit(int time);
+    void resize(int x, int y, int width, int height);
 
   private:
     int timeUnit;
@@ -28,6 +29,6 @@ class TimeUnitInput {
     size_t cursorPos;
     mutable float cursorBlinkTime;
     mutable bool cursorVisible;
-    mutable int x, y, width, height;
+    int x, y, width, height;
     Network::Handler &networkHandler;
 };

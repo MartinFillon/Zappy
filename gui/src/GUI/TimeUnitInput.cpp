@@ -14,12 +14,16 @@ TimeUnitInput::TimeUnitInput(int initialValue, Network::Handler &networkHandler)
 {
 }
 
-void TimeUnitInput::display(int x, int y, int width, int height) const
+void TimeUnitInput::resize(int x, int y, int width, int height)
 {
     this->x = x;
     this->y = y;
     this->width = width;
     this->height = height;
+}
+
+void TimeUnitInput::display() const
+{
     Color boxColor = selected ? DARKGRAY : LIGHTGRAY;
     Raylib::drawText("Tick Duration:", x, y - 30, 20, LIGHTGRAY);
     Raylib::drawRectangle(x, y, width, height, boxColor);

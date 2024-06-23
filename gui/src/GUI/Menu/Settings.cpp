@@ -6,6 +6,7 @@
 */
 
 #include "Settings.hpp"
+#include "window.hpp"
 
 
 namespace GUI {

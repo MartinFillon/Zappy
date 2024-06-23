@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CheckBox.hpp"
-#include "window.hpp"
 
 namespace GUI {
 
