@@ -46,7 +46,10 @@ pub async fn look_around(client: &mut TcpClient) -> Result<ResponseResult, Comma
         if let ResponseResult::Tiles(_) = res {
             return Ok(res);
         }
-        response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
+        response = client
+            .check_response()
+            .await
+            .ok_or(CommandError::NoResponseReceived)?;
     }
 }
 

@@ -106,7 +106,10 @@ impl Incantationers for Queen {
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                let response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
+                let response = client
+                    .check_response()
+                    .await
+                    .ok_or(CommandError::NoResponseReceived)?;
                 client.handle_response(response).await?;
             }
         }
@@ -329,7 +332,7 @@ impl Queen {
                         "[{}] Queen {} done. Now level {}",
                         self.info.cli_id, self.info.p_id, self.info.level
                     );
-                },
+                }
                 _ => {}
             }
         }
@@ -390,6 +393,9 @@ impl Queen {
         let r_inv = require.inv();
         let look = &self.look;
 
+        if self.info.level >= 4 && self.info.p_id % 3 != 0 {
+            return false;
+        }
         if self.info.level >= 6 && self.info.p_id % 6 != 0 {
             return false;
         }

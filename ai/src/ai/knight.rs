@@ -77,7 +77,10 @@ impl Incantationers for Knight {
     ) -> Result<ResponseResult, CommandError> {
         if let Ok(ResponseResult::Eject(ref dir)) = res {
             if backtrack_eject(client, dir.clone()).await {
-                let response = client.check_response().await.ok_or(CommandError::NoResponseReceived)?;
+                let response = client
+                    .check_response()
+                    .await
+                    .ok_or(CommandError::NoResponseReceived)?;
                 client.handle_response(response).await?;
             }
         }

@@ -117,7 +117,10 @@ impl CommandHandler for TcpClient {
     }
 
     async fn get_broadcast(&mut self) -> Result<ResponseResult, CommandError> {
-        let res = self.check_response().await.ok_or(CommandError::NoResponseReceived)?;
+        let res = self
+            .check_response()
+            .await
+            .ok_or(CommandError::NoResponseReceived)?;
         if res.starts_with("message ") {
             if let ResponseResult::Message(msg) =
                 handle_message_response(res.clone(), self.crypt())?
@@ -135,7 +138,10 @@ impl CommandHandler for TcpClient {
                 self.push_message(msg);
                 debug!("Message pushed to queue.");
             }
-            let response = self.check_response().await.ok_or(CommandError::NoResponseReceived)?;
+            let response = self
+                .check_response()
+                .await
+                .ok_or(CommandError::NoResponseReceived)?;
             return self.handle_response(response).await;
         }
 
@@ -161,8 +167,8 @@ impl CommandHandler for TcpClient {
             },
             x if x.starts_with("ko\n") => Ok(ResponseResult::KO),
             _ => {
-                warn!("Invalid Response: ({}).", response.trim_end());
-                Err(CommandError::InvalidResponse)
+                error!("Invalid Response: ({}).", response.trim_end());
+                Ok(ResponseResult::KO)
             }
         }
     }
