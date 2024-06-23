@@ -14,6 +14,7 @@ use crate::{
         inventory::inventory,
         look_around::look_around,
         take_object::take_object,
+        turn::{DirectionTurn, turn}
     },
     elevation::{Config, Inventory},
     move_towards_broadcast::{backtrack_eject, move_towards_broadcast},
@@ -157,7 +158,7 @@ impl Queen {
             );
             if info.slots == 0 && info.cli_id < NB_INIT_QUEENS - 1 {
                 Queen::spawn_queen(info.clone(), info.cli_id, &mut client).await?;
-                error!("[{}] Spawned queen.", info.cli_id);
+                info!("[{}] Spawned queen.", info.cli_id);
             }
             if info.slots >= 0 && info.cli_id > NB_INIT_QUEENS - 1 {
                 info!("[{}] Identified as NPC.", info.cli_id);
@@ -235,7 +236,7 @@ impl Queen {
         let info_clone = info.clone();
 
         fork(client).await?;
-        inventory(client).await?;
+        turn(client, DirectionTurn::Left).await?;
         tokio::spawn(async move {
             if let Err(err) = fork_ai(info_clone).await {
                 error!("[{}] AI executing task fork error: {}", info.cli_id, err);
