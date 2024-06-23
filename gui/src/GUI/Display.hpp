@@ -45,6 +45,9 @@ class Display {
     {
         endGame = end;
         endGameMessage = message;
+        for (auto &message : message) {
+            addMessage(message, SERVER);
+        }
     }
 
     int getTimeUnit() const
