@@ -15,7 +15,9 @@ namespace GUI {
 template <typename F, typename T>
 class IButton {
   public:
-    virtual void checkButtonAction(F &rec) = 0;
+    virtual void toDefault(void) = 0;
+    virtual void checkAction(void) = 0;
+    virtual bool checkRecAction(F &rec) = 0;
     virtual void draw(F &rec, int fontSize) = 0;
 };
 
