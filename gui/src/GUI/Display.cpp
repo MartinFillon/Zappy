@@ -12,7 +12,7 @@
 namespace GUI {
 
 Display::Display(const std::string &machine, int port, bool &debug, int width, int height)
-    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), map(Pos<int, 2>{1, 1}), endGame(false),
+    : team(), networkHandler(machine, port), serverMessageHandler(debug, *this), map(Pos<int, 2>{1, 1}), endGame(false), Last3D(true),
       endGameMessage(), m_newWindow((Raylib::RecWin){0, 0, width, height}), messageBox(),
       timeUnitInput(100, networkHandler), skybox(), m_cam(
                                               {(Vector3){15.0f, 5.0f, 15.0f},
@@ -28,7 +28,6 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
     } else {
         SetTraceLogLevel(LOG_ERROR);
     }
-    SetTraceLogLevel(LOG_ALL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(width, height, "Zappy");
     SetTargetFPS(60);
@@ -82,6 +81,10 @@ void Display::handleEvent()
     }
     messageBox.handleInput();
     timeUnitInput.handleEvent();
+    if (didChange3D()) {
+        resize();
+    }
+    Last3D = m_settings.is3D();
 }
 
 void Display::displayMenu()
@@ -110,17 +113,14 @@ void Display::displayGame()
         skybox.Draw();
         map.displayTacticalView3D(infoBox);
         Raylib::endMode3D();
-        infoBox.display(0, 0, 400, 300);
-        messageBox.display(0, 0 + m_newWindow.height - 200, 400, 200);
-        timeUnitInput.display(0 + 10, 0 + 340, 200, 30);
     } else {
         Raylib::drawRectangle(static_cast<float>(m_newWindow.x), static_cast<float>(m_newWindow.y),
             static_cast<float>(m_newWindow.width), static_cast<float>(m_newWindow.height), RAYWHITE);
         map.displayTacticalView(m_newWindow.x + 400, m_newWindow.y, m_newWindow.width + m_newWindow.x, m_newWindow.height + m_newWindow.y, infoBox);
-        infoBox.display(m_newWindow.x, m_newWindow.y, 400, 300);
-        messageBox.display(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
-        timeUnitInput.display(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
     }
+    infoBox.display();
+    messageBox.display();
+    timeUnitInput.display();
 }
 
 void Display::run()
@@ -167,6 +167,16 @@ void Display::resize()
 
     m_newWindow.x = (screenWidth - m_newWindow.width) / 2;
     m_newWindow.y = (screenHeight - m_newWindow.height) / 2;
+
+    if (m_settings.is3D()) {
+        messageBox.resize(0, screenHeight - 200, 400, 200);
+        infoBox.resize(0, 0, 400, 300);
+        timeUnitInput.resize(0 + 10, 0 + 340, 200, 30);
+    } else {
+        messageBox.resize(m_newWindow.x, m_newWindow.y + m_newWindow.height - 200, 400, 200);
+        infoBox.resize(m_newWindow.x, m_newWindow.y, 400, 300);
+        timeUnitInput.resize(m_newWindow.x + 10, m_newWindow.y + 340, 200, 30);
+    }
 }
 
 } // namespace GUI
