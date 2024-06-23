@@ -15,32 +15,34 @@ namespace GUI {
 class CheckBox : public AButton<Raylib::Square, bool>
 {
   public:
-    CheckBox(const std::string &name, bool &val):
-      AButton<Raylib::Square, bool>(name, val, [](bool &val){val = !val;}) {}
+    CheckBox(const std::string &name, bool &val, MusicGame &music):
+      AButton<Raylib::Square, bool>(name, val, music) {}
 
     void toDefault(void) override {
         this->m_state = DEFAULT;
     }
 
-    void checkAction(void) override {
+    void checkAction(const Raylib::Square &) override {
         if (Raylib::isMouseButtonDown(MOUSE_BUTTON_LEFT) || IsKeyDown(KEY_ENTER))
             this->m_state = PRESSED;
         else
             this->m_state = HOVER;
-        if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsKeyReleased(KEY_ENTER))
-            this->m_funct(this->m_val);
+        if (Raylib::isMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsKeyReleased(KEY_ENTER)) {
+            this->m_val = !this->m_val;
+            this->m_music.playSound();
+        }
     }
 
-    bool checkRecAction(Raylib::Square &sqr) override {
+    bool checkRecAction(const Raylib::Square &sqr) override {
         if (Raylib::checkCollisionMouseSquare(sqr)) {
-            checkAction();
+            checkAction(sqr);
             return true;
         }
         this->m_state = DEFAULT;
         return false;
     }
 
-    void draw(Raylib::Square &sqr, int fontSize) override {
+    void draw(const Raylib::Square &sqr, int fontSize) override {
         Color colorRec = BLUE;
         Color colorBackRec = WHITE;
         Color colorText = BLACK;

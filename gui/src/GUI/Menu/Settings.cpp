@@ -11,14 +11,16 @@
 
 namespace GUI {
 
-Settings::Settings(Raylib::RecWin &newWindow, bool &debug, bool is3D, bool isCameraFree, bool showCursor):
+Settings::Settings(Raylib::RecWin &newWindow, MusicGame &music, bool &debug, bool is3D, bool isCameraFree, bool showCursor):
     AMenu(), m_newWindow(newWindow), m_is3D(is3D), m_isCameraFree(isCameraFree), m_showCursor(showCursor), m_debug(debug)
 {
-    m_button.push_back(CheckBox("3D", m_is3D));
-    m_button.push_back(CheckBox("CameraFree", m_isCameraFree));
-    m_button.push_back(CheckBox("ShowCursor", m_showCursor));
-    m_button.push_back(CheckBox("Debug", m_debug));
-    nb_but = m_button.size();
+    m_button.push_back(CheckBox("3D", m_is3D, music));
+    m_button.push_back(CheckBox("CameraFree", m_isCameraFree, music));
+    m_button.push_back(CheckBox("ShowCursor", m_showCursor, music));
+    m_button.push_back(CheckBox("Debug", m_debug, music));
+    m_slider.push_back(Slider("Volume Music", music.getVolumeMusic(), music));
+    m_slider.push_back(Slider("Volume Fx", music.getVolumeFx(), music));
+    nb_but = m_button.size() + m_slider.size();
     m_iselected_but = nb_but - 1;
 }
 
@@ -42,12 +44,31 @@ void Settings::display()
             m_iselected_but = i;
         if (modeKey) {
             if (m_iselected_but == i)
-                but.checkAction();
+                but.checkAction(rec);
             else
                 but.toDefault();
         }
         but.draw(rec, fontSize / 4.0f);
         rec.y += rec.size + SpacingSetButY;
+    }
+    rec.y += SpacingSetButY;
+    Raylib::Line line = {static_cast<int>(rec.x),
+        static_cast<int>(rec.y),
+        static_cast<int>(rec.x + rec.size * 8),
+        static_cast<int>(rec.y)};
+    for (size_t i = 0; i < m_slider.size(); i++) {
+        Slider &but = m_slider.at(i);
+        if (!modeKey && but.checkRecAction(line))
+            m_iselected_but = m_button.size() + i;
+        if (modeKey) {
+            if (m_iselected_but == m_button.size() + i)
+                but.checkAction(line);
+            else
+                but.toDefault();
+        }
+        but.draw(line, fontSize / 4.0f);
+        line.sy += SpacingSliderY + SpacingSetButY;
+        line.ey = line.sy;
     }
 }
 

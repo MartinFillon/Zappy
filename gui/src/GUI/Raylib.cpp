@@ -22,6 +22,11 @@ bool checkCollisionMouseCircle(const Vector2 &vec, float radius)
     return CheckCollisionPointCircle(GetMousePosition(), vec, radius);
 }
 
+bool checkCollisionMouseCircle(const Circle &cir)
+{
+    return CheckCollisionPointCircle(GetMousePosition(), (Vector2){cir.centerX, cir.centerY}, cir.radius);
+}
+
 bool checkCollisionMouseRec(float x, float y, float width, float height)
 {
     return CheckCollisionPointRec(GetMousePosition(), {x, y, width, height});
@@ -146,6 +151,11 @@ void drawCircle(const Vector2 &vec, float radius, Color color)
     DrawCircle(vec.x, vec.y, radius, color);
 }
 
+void drawCircle(const Circle &cir, Color color)
+{
+    DrawCircle(cir.centerX, cir.centerY, cir.radius, color);
+}
+
 void drawGrid(int slices, float spacing)
 {
     DrawGrid(slices, spacing);
@@ -184,6 +194,11 @@ void drawText(const std::string &str, int x, int y, int fontSize, Color color)
 void drawLine(int sx, int sy, int ex, int ey, Color color)
 {
     DrawLine(sx, sy, ex, ey, color);
+}
+
+void drawLine(const Line &line, Color color)
+{
+    DrawLine(line.sx, line.sy, line.ex, line.ey, color);
 }
 
 bool isMouseButtonPressed(int button)
