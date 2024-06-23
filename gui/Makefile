@@ -39,6 +39,7 @@ SRC = $(BASE_SRC) 							\
 				ServerMessageHandler		\
 				MessageBox					\
 				InfoBox						\
+				MusicGame						\
 				Skybox						\
 				TimeUnitInput				\
 			)								\

@@ -36,6 +36,7 @@ Display::Display(const std::string &machine, int port, bool &debug, int width, i
     SetExitKey(KEY_DELETE);
     resize();
     skybox.Load();
+    music.load();
 }
 
 Display::~Display()
@@ -126,6 +127,7 @@ void Display::displayGame()
 void Display::run()
 {
     while (!m_menu.getClose() && !WindowShouldClose()) {
+        music.update();
         if (!networkHandler.isRunning())
             m_menu.setInGame(false);
         handleServerMessage();
