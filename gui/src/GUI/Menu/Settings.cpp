@@ -65,7 +65,7 @@ void Settings::display()
         fontSize, PURPLE);
     for (size_t i = 0; i < m_button.size(); i++) {
         CheckBox &but = m_button.at(i);
-        but.checkButtonAction(rec);
+        but.checkRecAction(rec);
         but.draw(rec, fontSize / 4.0f);
         rec.y += rec.size + SpacingSetButY;
     }

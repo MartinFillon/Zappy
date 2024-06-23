@@ -74,6 +74,8 @@ void Display::handleEvent()
         else
             map.checkCollision(infoBox);
     }
+    if (!m_menu.getInGame() && !m_menu.getInSettings())
+        m_menu.eventhandler();
     messageBox.handleInput();
     timeUnitInput.handleEvent();
 }
